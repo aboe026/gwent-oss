@@ -1652,10 +1652,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[0].rounds[0],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -1698,10 +1697,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[0].rounds[0],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -1747,10 +1745,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[0].rounds[0],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -1793,10 +1790,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[0].rounds[0],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -1842,10 +1838,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[0].rounds[0],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -1888,10 +1883,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[0].rounds[0],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -1941,10 +1935,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[0],
                       {
                         ...ogGame.players[0].rounds[1],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -1988,10 +1981,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[0],
                       {
                         ...ogGame.players[0].rounds[1],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2038,10 +2030,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[0],
                       {
                         ...ogGame.players[0].rounds[1],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2085,10 +2076,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[0],
                       {
                         ...ogGame.players[0].rounds[1],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2135,10 +2125,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[0],
                       {
                         ...ogGame.players[0].rounds[1],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2182,10 +2171,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[0],
                       {
                         ...ogGame.players[0].rounds[1],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2236,10 +2224,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[1],
                       {
                         ...ogGame.players[0].rounds[2],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2284,10 +2271,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[1],
                       {
                         ...ogGame.players[0].rounds[2],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2335,10 +2321,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[1],
                       {
                         ...ogGame.players[0].rounds[2],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2383,10 +2368,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[1],
                       {
                         ...ogGame.players[0].rounds[2],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2434,10 +2418,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[1],
                       {
                         ...ogGame.players[0].rounds[2],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2482,10 +2465,9 @@ describe('effect-muster', () => {
                       ogGame.players[0].rounds[1],
                       {
                         ...ogGame.players[0].rounds[2],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2537,10 +2519,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[1].rounds[0],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2583,10 +2564,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[1].rounds[0],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2632,10 +2612,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[1].rounds[0],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2678,10 +2657,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[1].rounds[0],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2727,10 +2705,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[1].rounds[0],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2773,10 +2750,9 @@ describe('effect-muster', () => {
                     rounds: [
                       {
                         ...ogGame.players[1].rounds[0],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2826,10 +2802,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[0],
                       {
                         ...ogGame.players[1].rounds[1],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2873,10 +2848,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[0],
                       {
                         ...ogGame.players[1].rounds[1],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2923,10 +2897,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[0],
                       {
                         ...ogGame.players[1].rounds[1],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -2970,10 +2943,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[0],
                       {
                         ...ogGame.players[1].rounds[1],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3020,10 +2992,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[0],
                       {
                         ...ogGame.players[1].rounds[1],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3067,10 +3038,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[0],
                       {
                         ...ogGame.players[1].rounds[1],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3121,10 +3091,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[1],
                       {
                         ...ogGame.players[1].rounds[2],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3169,10 +3138,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[1],
                       {
                         ...ogGame.players[1].rounds[2],
-                        close: {
-                          score: 0,
+                        close: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3220,10 +3188,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[1],
                       {
                         ...ogGame.players[1].rounds[2],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3268,10 +3235,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[1],
                       {
                         ...ogGame.players[1].rounds[2],
-                        ranged: {
-                          score: 0,
+                        ranged: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3319,10 +3285,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[1],
                       {
                         ...ogGame.players[1].rounds[2],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },
@@ -3367,10 +3332,9 @@ describe('effect-muster', () => {
                       ogGame.players[1].rounds[1],
                       {
                         ...ogGame.players[1].rounds[2],
-                        siege: {
-                          score: 0,
+                        siege: TestUtil.getDbPlayerCombatRow({
                           units: [muster],
-                        },
+                        }),
                       },
                     ],
                   },

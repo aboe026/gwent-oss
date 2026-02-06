@@ -207,18 +207,15 @@ describe('game-player-resolver', () => {
       TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -231,18 +228,15 @@ describe('game-player-resolver', () => {
             ],
           }),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -255,18 +249,15 @@ describe('game-player-resolver', () => {
       TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,

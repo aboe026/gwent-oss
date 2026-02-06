@@ -21,18 +21,13 @@ describe('effect-decoy', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [],
-            },
-            ranged: {
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 1,
-              units: [],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 2,
-              units: [],
-            },
+            }),
           }),
         ],
       })
@@ -58,18 +53,13 @@ describe('effect-decoy', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [],
-            },
-            ranged: {
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 1,
-              units: [],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 2,
-              units: [],
-            },
+            }),
           }),
         ],
       })
@@ -95,18 +85,13 @@ describe('effect-decoy', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [],
-            },
-            ranged: {
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 1,
-              units: [],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 2,
-              units: [],
-            },
+            }),
           }),
         ],
       })
@@ -133,18 +118,13 @@ describe('effect-decoy', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [],
-            },
-            ranged: {
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 1,
-              units: [],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 2,
-              units: [],
-            },
+            }),
           }),
         ],
       })
@@ -180,18 +160,13 @@ describe('effect-decoy', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [],
-            },
-            ranged: {
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 1,
-              units: [],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 2,
-              units: [],
-            },
+            }),
           }),
         ],
       })
@@ -234,18 +209,13 @@ describe('effect-decoy', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [],
-            },
-            ranged: {
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 1,
-              units: [],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 2,
-              units: [],
-            },
+            }),
           }),
         ],
       })
@@ -288,18 +258,13 @@ describe('effect-decoy', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [],
-            },
-            ranged: {
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 1,
-              units: [],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 2,
-              units: [],
-            },
+            }),
           }),
         ],
       })

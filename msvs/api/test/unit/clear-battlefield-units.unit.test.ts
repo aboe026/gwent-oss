@@ -86,20 +86,18 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -136,20 +134,18 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -186,20 +182,18 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -236,29 +230,24 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              // TODO: remove where no longer necessary
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -295,28 +284,24 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -353,28 +338,24 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -411,36 +392,30 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -485,18 +460,15 @@ describe('clear-battlefield-units', () => {
       const self = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
         deck: TestUtil.getDbGameDeck({
@@ -506,18 +478,15 @@ describe('clear-battlefield-units', () => {
       const opponent = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
         deck: TestUtil.getDbGameDeck({
@@ -656,10 +625,9 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -667,10 +635,9 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -708,10 +675,9 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -719,10 +685,9 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -760,10 +725,9 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -771,10 +735,9 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -812,14 +775,12 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -827,14 +788,12 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -872,14 +831,12 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -887,14 +844,12 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -932,14 +887,12 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -947,14 +900,12 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -992,18 +943,15 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1011,18 +959,15 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1068,18 +1013,15 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
         deck: TestUtil.getDbGameDeck({
@@ -1090,18 +1032,15 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
         deck: TestUtil.getDbGameDeck({
@@ -1241,10 +1180,9 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1253,10 +1191,9 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1295,10 +1232,9 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1307,10 +1243,9 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1349,10 +1284,9 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1361,10 +1295,9 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1403,14 +1336,12 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1419,14 +1350,12 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1465,14 +1394,12 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1481,14 +1408,12 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1527,14 +1452,12 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1543,14 +1466,12 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1589,18 +1510,15 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1609,18 +1527,15 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -1667,18 +1582,15 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
         deck: TestUtil.getDbGameDeck({
@@ -1690,18 +1602,15 @@ describe('clear-battlefield-units', () => {
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
           }),
         ],
         deck: TestUtil.getDbGameDeck({

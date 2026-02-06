@@ -1978,19 +1978,19 @@ function testCalculateEffectiveStrengths({
     .mockReturnValueOnce(hornEffect)
   const closeWeathers: PlayerWeatherUnit[] = [
     {
-      player: new ObjectId(),
+      userId: new ObjectId(),
       unit: TestUtil.getDbUnit({}),
     },
   ]
   const rangedWeathers: PlayerWeatherUnit[] = [
     {
-      player: new ObjectId(),
+      userId: new ObjectId(),
       unit: TestUtil.getDbUnit({}),
     },
   ]
   const siegeWeathers: PlayerWeatherUnit[] = [
     {
-      player: new ObjectId(),
+      userId: new ObjectId(),
       unit: TestUtil.getDbUnit({}),
     },
   ]
@@ -2010,18 +2010,15 @@ function testCalculateEffectiveStrengths({
     rounds: [
       TestUtil.getDbPlayerRound({}),
       TestUtil.getDbPlayerRound({
-        close: {
-          score: 0,
+        close: TestUtil.getDbPlayerCombatRow({
           units: [TestUtil.getDbGameUnit({})],
-        },
-        ranged: {
-          score: 0,
+        }),
+        ranged: TestUtil.getDbPlayerCombatRow({
           units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-        },
-        siege: {
-          score: 0,
+        }),
+        siege: TestUtil.getDbPlayerCombatRow({
           units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-        },
+        }),
       }),
     ],
   })
@@ -2033,17 +2030,15 @@ function testCalculateEffectiveStrengths({
         rounds: [
           TestUtil.getDbPlayerRound({}),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [
                 TestUtil.getDbGameUnit({}),
                 TestUtil.getDbGameUnit({}),
                 TestUtil.getDbGameUnit({}),
                 TestUtil.getDbGameUnit({}),
               ],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [
                 TestUtil.getDbGameUnit({}),
                 TestUtil.getDbGameUnit({}),
@@ -2051,9 +2046,8 @@ function testCalculateEffectiveStrengths({
                 TestUtil.getDbGameUnit({}),
                 TestUtil.getDbGameUnit({}),
               ],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [
                 TestUtil.getDbGameUnit({}),
                 TestUtil.getDbGameUnit({}),
@@ -2062,7 +2056,7 @@ function testCalculateEffectiveStrengths({
                 TestUtil.getDbGameUnit({}),
                 TestUtil.getDbGameUnit({}),
               ],
-            },
+            }),
           }),
         ],
       }),
@@ -2255,7 +2249,7 @@ function testCalculateEffectiveStrengthsForRow({
   const bondIdsInRow = [bondEffect._id.toString()]
   const weatherUnits: PlayerWeatherUnit[] = [
     {
-      player: userId,
+      userId,
       unit: TestUtil.getDbUnit({}),
     },
   ]

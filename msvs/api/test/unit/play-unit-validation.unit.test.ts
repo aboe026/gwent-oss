@@ -258,11 +258,9 @@ describe('play-unit-validation', () => {
           }),
           rounds: [
             TestUtil.getDbPlayerRound({
-              close: {
-                score: 0,
-                units: [],
+              close: TestUtil.getDbPlayerCombatRow({
                 modifier: existingModifier,
-              },
+              }),
             }),
           ],
         }),
@@ -302,11 +300,9 @@ describe('play-unit-validation', () => {
           }),
           rounds: [
             TestUtil.getDbPlayerRound({
-              ranged: {
-                score: 0,
-                units: [],
+              ranged: TestUtil.getDbPlayerCombatRow({
                 modifier: existingModifier,
-              },
+              }),
             }),
           ],
         }),
@@ -346,11 +342,9 @@ describe('play-unit-validation', () => {
           }),
           rounds: [
             TestUtil.getDbPlayerRound({
-              siege: {
-                score: 0,
-                units: [],
+              siege: TestUtil.getDbPlayerCombatRow({
                 modifier: existingModifier,
-              },
+              }),
             }),
           ],
         }),

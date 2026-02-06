@@ -31,28 +31,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -70,28 +68,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -114,28 +110,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -153,28 +147,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -192,28 +184,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -241,22 +231,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -274,22 +264,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -312,22 +302,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -345,22 +335,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -378,22 +368,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -601,7 +591,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
@@ -610,7 +600,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -622,7 +612,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
@@ -631,7 +621,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -661,7 +651,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
@@ -670,7 +660,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -682,7 +672,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
@@ -691,7 +681,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -738,28 +728,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -777,28 +765,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -821,28 +807,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -860,28 +844,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -899,28 +881,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -948,22 +928,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -981,22 +961,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1019,22 +999,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1052,22 +1032,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1085,22 +1065,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1308,7 +1288,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
@@ -1317,7 +1297,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -1329,7 +1309,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
@@ -1338,7 +1318,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -1368,7 +1348,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
@@ -1377,7 +1357,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -1389,7 +1369,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
@@ -1398,7 +1378,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -1445,28 +1425,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1484,28 +1462,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1528,28 +1504,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1567,28 +1541,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1606,28 +1578,26 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1655,22 +1625,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1688,22 +1658,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1726,22 +1696,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1759,22 +1729,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -1792,22 +1762,22 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2015,7 +1985,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
@@ -2024,7 +1994,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -2036,7 +2006,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
@@ -2045,7 +2015,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -2075,7 +2045,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
@@ -2084,7 +2054,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -2096,7 +2066,7 @@ describe('get-round-units', () => {
                 TestUtil.getDbGamePlayer({
                   rounds: [
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
@@ -2105,7 +2075,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -2151,54 +2121,54 @@ describe('get-round-units', () => {
               TestUtil.getDbGamePlayer({
                 rounds: [
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
               TestUtil.getDbGamePlayer({
                 rounds: [
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -2223,54 +2193,54 @@ describe('get-round-units', () => {
               TestUtil.getDbGamePlayer({
                 rounds: [
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
               TestUtil.getDbGamePlayer({
                 rounds: [
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -2315,14 +2285,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2330,14 +2299,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2356,14 +2324,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2371,14 +2338,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2402,14 +2368,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2417,14 +2382,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2443,14 +2407,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2458,14 +2421,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2484,14 +2446,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2499,14 +2460,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2535,11 +2495,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2547,11 +2507,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2570,11 +2530,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2582,11 +2542,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2610,11 +2570,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2622,11 +2582,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2645,11 +2605,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2657,11 +2617,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2680,11 +2640,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2692,11 +2652,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -2915,7 +2875,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
@@ -2924,7 +2884,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -2937,7 +2897,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
@@ -2946,7 +2906,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -2977,7 +2937,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
@@ -2986,7 +2946,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -2999,7 +2959,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
@@ -3008,7 +2968,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -3056,14 +3016,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3071,14 +3030,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3097,14 +3055,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3112,14 +3069,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3143,14 +3099,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3158,14 +3113,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3184,14 +3138,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3199,14 +3152,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3225,14 +3177,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3240,14 +3191,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3276,11 +3226,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3288,11 +3238,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3311,11 +3261,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3323,11 +3273,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3351,11 +3301,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3363,11 +3313,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3386,11 +3336,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3398,11 +3348,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3421,11 +3371,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3433,11 +3383,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3656,7 +3606,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
@@ -3665,7 +3615,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -3678,7 +3628,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
@@ -3687,7 +3637,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -3718,7 +3668,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
@@ -3727,7 +3677,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -3740,7 +3690,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
@@ -3749,7 +3699,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -3797,14 +3747,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3812,14 +3761,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3838,14 +3786,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3853,14 +3800,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3884,14 +3830,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3899,14 +3844,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3925,14 +3869,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3940,14 +3883,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3966,14 +3908,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -3981,14 +3922,13 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4017,11 +3957,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4029,11 +3969,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4052,11 +3992,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4064,11 +4004,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4092,11 +4032,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4104,11 +4044,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4127,11 +4067,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4139,11 +4079,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4162,11 +4102,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4174,11 +4114,11 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4397,7 +4337,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
@@ -4406,7 +4346,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -4419,7 +4359,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
@@ -4428,7 +4368,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -4459,7 +4399,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
@@ -4468,7 +4408,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -4481,7 +4421,7 @@ describe('get-round-units', () => {
                   rounds: [
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
@@ -4490,7 +4430,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -4537,27 +4477,27 @@ describe('get-round-units', () => {
                 rounds: [
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -4565,27 +4505,27 @@ describe('get-round-units', () => {
                 rounds: [
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -4611,27 +4551,27 @@ describe('get-round-units', () => {
                 rounds: [
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -4639,27 +4579,27 @@ describe('get-round-units', () => {
                 rounds: [
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -4705,14 +4645,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4721,14 +4660,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4748,14 +4686,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4764,14 +4701,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4796,14 +4732,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4812,14 +4747,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4839,14 +4773,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4855,14 +4788,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4882,14 +4814,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4898,14 +4829,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4935,11 +4865,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4948,11 +4878,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4972,11 +4902,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -4985,11 +4915,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5014,11 +4944,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5027,11 +4957,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5051,11 +4981,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5064,11 +4994,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5088,11 +5018,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5101,11 +5031,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5335,7 +5265,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
@@ -5344,7 +5274,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -5358,7 +5288,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
@@ -5367,7 +5297,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -5399,7 +5329,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.close._id,
@@ -5408,7 +5338,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -5422,7 +5352,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      close: {
+                      close: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.close._id,
@@ -5431,7 +5361,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -5480,14 +5410,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5496,14 +5425,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5523,14 +5451,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5539,14 +5466,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5571,14 +5497,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5587,14 +5512,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5614,14 +5538,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5630,14 +5553,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5657,14 +5579,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5673,14 +5594,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5710,11 +5630,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5723,11 +5643,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5747,11 +5667,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5760,11 +5680,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5789,11 +5709,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5802,11 +5722,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5826,11 +5746,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5839,11 +5759,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5863,11 +5783,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -5876,11 +5796,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6110,7 +6030,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
@@ -6119,7 +6039,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -6133,7 +6053,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
@@ -6142,7 +6062,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -6174,7 +6094,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.ranged._id,
@@ -6183,7 +6103,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -6197,7 +6117,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      ranged: {
+                      ranged: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.ranged._id,
@@ -6206,7 +6126,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -6255,14 +6175,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6271,14 +6190,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6298,14 +6216,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6314,14 +6231,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6346,14 +6262,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6362,14 +6277,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6389,14 +6303,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6405,14 +6318,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitBeingPlayed._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6432,14 +6344,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6448,14 +6359,13 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
                           }),
                         ],
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6485,11 +6395,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6498,11 +6408,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6522,11 +6432,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6535,11 +6445,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6564,11 +6474,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6577,11 +6487,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6601,11 +6511,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6614,11 +6524,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitBeingPlayed._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6638,11 +6548,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6651,11 +6561,11 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                     }),
                   ],
                 }),
@@ -6885,7 +6795,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
@@ -6894,7 +6804,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -6908,7 +6818,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
@@ -6917,7 +6827,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -6949,7 +6859,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsSelf.siege._id,
@@ -6958,7 +6868,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsSelf.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.weather._id,
@@ -6972,7 +6882,7 @@ describe('get-round-units', () => {
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({}),
                     TestUtil.getDbPlayerRound({
-                      siege: {
+                      siege: TestUtil.getDbPlayerCombatRow({
                         units: [
                           TestUtil.getDbGameUnit({
                             id: unitsOpponent.siege._id,
@@ -6981,7 +6891,7 @@ describe('get-round-units', () => {
                         modifier: TestUtil.getDbGameUnit({
                           id: unitsOpponent.modifier._id,
                         }),
-                      },
+                      }),
                       weathers: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.weather._id,
@@ -7029,27 +6939,27 @@ describe('get-round-units', () => {
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -7058,27 +6968,27 @@ describe('get-round-units', () => {
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -7105,27 +7015,27 @@ describe('get-round-units', () => {
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsSelf.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
@@ -7134,27 +7044,27 @@ describe('get-round-units', () => {
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({}),
                   TestUtil.getDbPlayerRound({
-                    close: {
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.close._id,
                         }),
                       ],
-                    },
-                    ranged: {
+                    }),
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.ranged._id,
                         }),
                       ],
-                    },
-                    siege: {
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [
                         TestUtil.getDbGameUnit({
                           id: unitsOpponent.siege._id,
                         }),
                       ],
-                    },
+                    }),
                   }),
                 ],
               }),
