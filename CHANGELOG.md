@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.0 - 2026-02-06
+
+### Added
+
+- Weather effect ([#53](https://github.com/aboe026/gwent/pull/53)) (Adam Boe)
+
 ## 0.19.1 - 2025-12-14
 
 ### Fixed
