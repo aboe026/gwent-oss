@@ -97,7 +97,7 @@ test('Weather applied before bond', async (t) => {
   })
 })
 
-test('Can decoy weathered unit and play it in non weathered row for full strength', async (t) => {
+test('Can decoy weathered agile unit and play it in non weathered row for full strength', async (t) => {
   const unitName1 = 'Barclay Els'
   const unitName2 = 'Biting Frost'
   const unitName3 = 'Decoy'

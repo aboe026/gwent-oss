@@ -15,8 +15,8 @@ import {
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
-import UnitGameCard from '../../components/UnitGameCard'
 import isGameUnit from '../../util/is-game-unit'
+import UnitGameCard from '../../components/UnitGameCard'
 
 /**
  * A game unit on the battlefield.

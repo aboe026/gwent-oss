@@ -25,10 +25,10 @@ import {
 import { FullUnitCards, GameDeckProps, GameProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
-import './GameInfo.css'
 import { retryCheckingAuth } from '../../util/error-util'
 import { useUserContext } from '../../UserContext'
 import UnitGameCard from '../../components/UnitGameCard'
+import './GameInfo.css'
 
 /**
  * Information about the Game and players in it.
