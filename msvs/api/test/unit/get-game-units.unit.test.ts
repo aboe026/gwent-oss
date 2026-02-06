@@ -1588,5 +1588,299 @@ describe('get-game-units', () => {
       })
     })
   })
-  // TODO: multiple rounds
+  describe('multiple rounds', () => {
+    it('returns empty array if no units', () => {
+      expect(
+        getGameUnits({
+          rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+        })
+      ).toEqual([])
+    })
+    it('returns multiple items if single unique of each', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
+        })
+      ).toEqual([
+        gameUnit1,
+        gameUnit2,
+        gameUnit3,
+        gameUnit4,
+        gameUnit5,
+        gameUnit6,
+        gameUnit7,
+        gameUnit8,
+        gameUnit9,
+        gameUnit10,
+        gameUnit11,
+        gameUnit12,
+        gameUnit13,
+        gameUnit14,
+      ])
+    })
+    it('returns multiple duplicate items if single duplicate of each', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+          ],
+        })
+      ).toEqual([
+        gameUnit1,
+        gameUnit2,
+        gameUnit3,
+        gameUnit4,
+        gameUnit5,
+        gameUnit6,
+        gameUnit7,
+        gameUnit1,
+        gameUnit2,
+        gameUnit3,
+        gameUnit4,
+        gameUnit5,
+        gameUnit6,
+        gameUnit7,
+      ])
+    })
+    it('returns multiple items if close combat', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          combat: Combat.Close,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
+        })
+      ).toEqual([gameUnit1, gameUnit2, gameUnit8, gameUnit9])
+    })
+    it('returns multiple items if ranged combat', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          combat: Combat.Ranged,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
+        })
+      ).toEqual([gameUnit3, gameUnit4, gameUnit10, gameUnit11])
+    })
+    it('returns multiple items if siege combat', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          combat: Combat.Siege,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
+        })
+      ).toEqual([gameUnit5, gameUnit6, gameUnit12, gameUnit13])
+    })
+  })
 })
