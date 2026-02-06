@@ -169,7 +169,7 @@ export default class EffectWeather {
           const gameUnitEffect: GameUnitEffectDbObject = {
             operator: EFFECT_OPERATOR.Set,
             reason,
-            total: rowGameUnit.effectiveStrength || rowUnit.strength || 0,
+            total: rowGameUnit.effectiveStrength,
           }
           if (EffectWeather.logger.isTraceEnabled()) {
             EffectWeather.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)

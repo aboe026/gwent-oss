@@ -104,9 +104,7 @@ describe('effect-scorch', () => {
         getGameUnitsCalls: [
           [
             {
-              combat: undefined,
-              players: game.players,
-              round: game.round,
+              rounds: game.players.map((player) => player.rounds[game.round - 1]),
             },
           ],
         ],
@@ -136,9 +134,7 @@ describe('effect-scorch', () => {
         getGameUnitsCalls: [
           [
             {
-              combat: undefined,
-              players: game.players,
-              round: game.round,
+              rounds: game.players.map((player) => player.rounds[game.round - 1]),
             },
           ],
         ],
@@ -170,8 +166,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -203,8 +198,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[0]],
-              round: game.round,
+              rounds: [game.players[0].rounds[game.round - 1]],
             },
           ],
         ],
@@ -245,8 +239,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -291,8 +284,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -338,8 +330,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -393,8 +384,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -424,9 +414,7 @@ describe('effect-scorch', () => {
         getGameUnitsCalls: [
           [
             {
-              combat: undefined,
-              players: game.players,
-              round: game.round,
+              rounds: game.players.map((player) => player.rounds[game.round - 1]),
             },
           ],
         ],

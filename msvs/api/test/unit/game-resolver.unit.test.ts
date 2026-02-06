@@ -5,6 +5,7 @@ import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
+import getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
 import { MoveType } from '@gwent/graphql-schema'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -665,16 +666,9 @@ async function testFromObject({
           .flat()
           .map((round) => round.moves)
           .flat(),
-        gameUnits: game.players // TODO: use getGameUnits?
-          .map((player) => player.rounds)
-          .flat()
-          .map((round) => {
-            const roundCombats = [round.close, round.ranged, round.siege].flat()
-            return roundCombats
-              .map((roundCombat) => [...roundCombat.units, ...(roundCombat.modifier ? [roundCombat.modifier] : [])])
-              .flat()
-          })
-          .flat(),
+        gameUnits: getGameUnits({
+          rounds: game.players.map((player) => player.rounds).flat(),
+        }),
         userIds: game.players.map((player) => player.user),
         presolvedUnits: units,
         presolvedUsers: users,

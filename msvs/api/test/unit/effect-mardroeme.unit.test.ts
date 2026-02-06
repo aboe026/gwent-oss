@@ -1865,8 +1865,9 @@ async function testTransformBerserkers({
           [
             {
               combat,
-              players: game.players.filter((player) => player.user.toString() === game.turn?.toString()),
-              round: game.round,
+              rounds: game.players
+                .filter((player) => player.user.toString() === game.turn?.toString())
+                .map((player) => player.rounds[game.round - 1]),
             },
           ],
         ]

@@ -532,7 +532,9 @@ describe('effect-weather', () => {
     it('does not add impact if no weatherEffect', () => {
       const currentPlayerId = new ObjectId()
       const newDeckUnit = TestUtil.getDbDeckUnit({})
-      const rowUnit = TestUtil.getDbUnit({})
+      const rowUnit = TestUtil.getDbUnit({
+        strength: 2,
+      })
       const rowGameUnit = TestUtil.getDbGameUnit({
         id: rowUnit._id,
       })
@@ -560,7 +562,7 @@ describe('effect-weather', () => {
       const currentPlayerId = new ObjectId()
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        strength: 1,
+        strength: 2,
       })
       const rowGameUnit = TestUtil.getDbGameUnit({
         id: rowUnit._id,
@@ -699,7 +701,7 @@ describe('effect-weather', () => {
         ],
       })
     })
-    it('adds impact if weather is current player and newDeckUnit with strength 0', () => {
+    it('does not add impact if weather is current player and newDeckUnit with strength 0', () => {
       const currentPlayerId = new ObjectId()
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const rowUnit = TestUtil.getDbUnit({
@@ -725,24 +727,11 @@ describe('effect-weather', () => {
             }),
           },
         ],
-        expected: {
-          [newDeckUnit.unit.toString()]: [
-            {
-              unit: rowGameUnit,
-              user: currentPlayerId,
-            },
+        expected: {},
+        debugCalls: [
+          [
+            `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" is less than "2" so not susceptible to weather effect.`,
           ],
-        },
-        newEffects: [
-          {
-            operator: EFFECT_OPERATOR.Set,
-            reason: {
-              effect: weatherEffect._id,
-              type: EffectReasonType.Unit,
-              unit: newDeckUnit.unit,
-            },
-            total: 0,
-          },
         ],
       })
     })
@@ -982,7 +971,7 @@ function testWeatherScores({
   userId,
   currentPlayerId,
   expected,
-  newEffects,
+  newEffects = [],
   traceEnabled,
   debugCalls = [],
   traceCalls = [],
@@ -996,7 +985,7 @@ function testWeatherScores({
   userId: ObjectId
   currentPlayerId: ObjectId | undefined
   expected: ImpactsByUnitId
-  newEffects: GameUnitEffectDbObject[]
+  newEffects?: GameUnitEffectDbObject[]
   traceEnabled?: boolean
   debugCalls?: string[][]
   traceCalls?: string[][]
@@ -1022,7 +1011,7 @@ function testWeatherScores({
     })
   ).toEqual(expected)
 
-  expect(rowGameUnit.effects).toEqual(newEffects || rowGameUnit.effects)
+  expect(rowGameUnit.effects).toEqual(newEffects)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
