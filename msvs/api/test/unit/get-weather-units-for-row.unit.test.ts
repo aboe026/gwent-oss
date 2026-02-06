@@ -136,7 +136,7 @@ describe('GetWeatherUnitsForRow', () => {
         units: [unit],
         expected: [
           {
-            player: userId,
+            userId: userId,
             unit,
           },
         ],
@@ -176,11 +176,11 @@ describe('GetWeatherUnitsForRow', () => {
         units: [unit1, unit2],
         expected: [
           {
-            player: userId,
+            userId: userId,
             unit: unit1,
           },
           {
-            player: userId,
+            userId: userId,
             unit: unit2,
           },
         ],
@@ -220,7 +220,7 @@ describe('GetWeatherUnitsForRow', () => {
         units: [unit1, unit2],
         expected: [
           {
-            player: userId,
+            userId: userId,
             unit: unit2,
           },
         ],

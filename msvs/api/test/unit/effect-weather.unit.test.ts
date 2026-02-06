@@ -518,7 +518,7 @@ describe('effect-weather', () => {
         weatherEffect,
         weatherUnits: [
           {
-            player: currentPlayerId,
+            userId: currentPlayerId,
             unit: TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
@@ -548,7 +548,7 @@ describe('effect-weather', () => {
         weatherEffect: undefined,
         weatherUnits: [
           {
-            player: currentPlayerId,
+            userId: currentPlayerId,
             unit: TestUtil.getDbUnit({
               id: new ObjectId(),
             }),
@@ -579,7 +579,7 @@ describe('effect-weather', () => {
         weatherEffect,
         weatherUnits: [
           {
-            player: currentPlayerId,
+            userId: currentPlayerId,
             unit: TestUtil.getDbUnit({
               id: weatherUnitId,
             }),
@@ -622,7 +622,7 @@ describe('effect-weather', () => {
         weatherEffect,
         weatherUnits: [
           {
-            player: new ObjectId(),
+            userId: new ObjectId(),
             unit: TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
@@ -665,13 +665,13 @@ describe('effect-weather', () => {
         weatherEffect,
         weatherUnits: [
           {
-            player: currentPlayerId,
+            userId: currentPlayerId,
             unit: TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
           },
           {
-            player: currentPlayerId,
+            userId: currentPlayerId,
             unit: TestUtil.getDbUnit({
               id: new ObjectId(),
             }),
@@ -721,7 +721,7 @@ describe('effect-weather', () => {
         weatherEffect,
         weatherUnits: [
           {
-            player: currentPlayerId,
+            userId: currentPlayerId,
             unit: TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
@@ -756,13 +756,13 @@ describe('effect-weather', () => {
         weatherEffect,
         weatherUnits: [
           {
-            player: currentPlayerId,
+            userId: currentPlayerId,
             unit: TestUtil.getDbUnit({
               id: new ObjectId(),
             }),
           },
           {
-            player: opponentId,
+            userId: opponentId,
             unit: TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
@@ -806,13 +806,13 @@ describe('effect-weather', () => {
         weatherEffect,
         weatherUnits: [
           {
-            player: opponentId,
+            userId: opponentId,
             unit: TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
           },
           {
-            player: opponentId,
+            userId: opponentId,
             unit: TestUtil.getDbUnit({
               id: new ObjectId(),
             }),
@@ -847,7 +847,7 @@ describe('effect-weather', () => {
       const weatherEffect = TestUtil.getDbEffect({})
       const weathersToApply = [
         {
-          player: currentPlayerId,
+          userId: currentPlayerId,
           unit: TestUtil.getDbUnit({
             id: newDeckUnit.unit,
           }),

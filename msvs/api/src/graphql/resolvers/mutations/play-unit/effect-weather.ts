@@ -140,10 +140,10 @@ export default class EffectWeather {
         // to prevent incorrectly showing a weather impact
         // which happened in a previous turn
         .sort((a, b) => {
-          if (currentPlayerId && a.player.toString() === currentPlayerId?.toString()) {
+          if (currentPlayerId && a.userId.toString() === currentPlayerId?.toString()) {
             return 1
           }
-          if (currentPlayerId && b.player.toString() === currentPlayerId?.toString()) {
+          if (currentPlayerId && b.userId.toString() === currentPlayerId?.toString()) {
             return -1
           }
           return 0
@@ -180,7 +180,7 @@ export default class EffectWeather {
           if (
             impactables.includes(weather.unit._id.toString()) &&
             currentPlayerId &&
-            weather.player.toString() === currentPlayerId.toString()
+            weather.userId.toString() === currentPlayerId.toString()
           ) {
             const impact: ImpactDbObject = {
               unit: rowGameUnit,

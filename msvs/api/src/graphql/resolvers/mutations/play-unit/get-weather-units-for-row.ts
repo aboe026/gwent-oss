@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Combat, DeckUnitDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, GameDbObject, GameUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -35,8 +35,8 @@ export default class GetWeatherUnitsForRow {
 
     if (combat) {
       const weathers: {
-        player: ObjectId
-        deckUnit: DeckUnitDbObject
+        userId: ObjectId
+        gameUnit: GameUnitDbObject
       }[] = []
 
       for (const player of game.players) {
@@ -44,24 +44,24 @@ export default class GetWeatherUnitsForRow {
         if (round) {
           for (const weather of round.weathers) {
             weathers.push({
-              player: player.user,
-              deckUnit: weather,
+              userId: player.user,
+              gameUnit: weather,
             })
           }
         }
       }
 
       for (const weather of weathers) {
-        const matchingUnit = units.find((unit) => unit._id.toString() === weather.deckUnit.unit.toString())
+        const matchingUnit = units.find((unit) => unit._id.toString() === weather.gameUnit.unit.toString())
         if (!matchingUnit) {
-          const message = `Could not find weather Unit with ID "${weather.deckUnit.unit}"`
+          const message = `Could not find weather Unit with ID "${weather.gameUnit.unit}"`
           GetWeatherUnitsForRow.logger.error(`${logPrefix} failed: ${message}`)
           throw new PresentableError(`${message}.`)
         }
 
         if (matchingUnit.combats && matchingUnit.combats.includes(combat)) {
           weatherUnits.push({
-            player: weather.player,
+            userId: weather.userId,
             unit: matchingUnit,
           })
         }
@@ -73,6 +73,6 @@ export default class GetWeatherUnitsForRow {
 }
 
 export interface PlayerWeatherUnit {
-  player: ObjectId // TODO: change to userId?
+  userId: ObjectId
   unit: UnitDbObject
 }
