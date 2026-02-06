@@ -16,6 +16,7 @@ export const DECK_MIN_UNITS = 22
 export const EFFECT_OPERATOR = {
   Plus: '+1',
   Double: 'x2',
+  Set: '=1',
 }
 
 export const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'

@@ -48,7 +48,6 @@ export default class GameStore extends Store {
       status: GameStatus.Decking,
       updated: created,
       victors: [],
-      weather: [],
     }
     if (GameStore.logger.isTraceEnabled()) {
       GameStore.logger.trace(`Adding game: "${JSON.stringify(game)}"`)

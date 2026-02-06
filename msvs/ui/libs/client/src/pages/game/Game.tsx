@@ -1,5 +1,5 @@
 import { CgPlayButton } from 'react-icons/cg'
-import { createRef, RefObject } from 'react'
+import { createRef, CSSProperties, RefObject } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useMutation, useQuery } from '@apollo/client/react'
 
@@ -32,6 +32,7 @@ import {
   RedrawDocument,
   SetDeckDocument,
   SetOrderDocument,
+  UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
   User,
@@ -446,6 +447,9 @@ function ExistingGame({
     cardSelectedUnit &&
     handUnitIds?.includes(cardSelectedUnit?.id)
   )
+  const selectedIsWeather =
+    cardSelectedUnit?.effects &&
+    cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Weather)
 
   const battlefieldHighlighted =
     game?.status === GameStatus.Playing && cardSelectedUnit && cardSelectedUnit?.name === 'Scorch' && selectedCardInHand
@@ -534,6 +538,23 @@ function ExistingGame({
     fullUnitUserName = fullUnitGamePlayerFragment?.user.name
   }
   const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckProps.deck)
+
+  let battlefieldTitle = ''
+  const battlefieldStyle: CSSProperties = {}
+  if (battlefieldHighlighted) {
+    if (isTurn) {
+      battlefieldTitle = 'Place here to destroy the strongest unit(s) on the battlefield (including your own)'
+      battlefieldStyle.cursor = 'pointer'
+      battlefieldStyle.borderStyle = 'solid'
+    } else {
+      battlefieldTitle = 'It is not your turn to play'
+      battlefieldStyle.cursor = 'not-allowed'
+      battlefieldStyle.borderStyle = 'dotted'
+    }
+  } else if (selectedIsWeather) {
+    battlefieldStyle.cursor = 'not-allowed'
+    battlefieldTitle = 'Weather can only be applied using the Weather section to the left'
+  }
 
   return gameProps.loading || gameDeckProps.loading ? (
     <Centered>
@@ -642,29 +663,19 @@ function ExistingGame({
           gameProps={gameProps}
           opponent={opponent}
           playPassLoading={playPassProps.loading}
-          playUnitLoading={playUnitProps.loading}
+          playUnitProps={playUnitProps}
+          selectedCardInHand={selectedCardInHand}
           self={self}
           setPassConfirmationOpen={setPassConfirmationOpen}
+          setCardSelected={setCardSelected}
+          setFullUnits={setFullUnits}
+          scrollHistoryIntoView={scrollHistoryIntoView}
         />
         <div
           id={HTML_IDS.GameCenterContainer}
           className={battlefieldHighlighted ? HTML_CLASSES.ItemHighlighted : ''}
-          style={{
-            borderStyle: battlefieldHighlighted ? (isTurn ? 'solid' : 'dotted') : 'none',
-            cursor:
-              battlefieldHighlighted && isTurn
-                ? 'pointer'
-                : battlefieldHighlighted && !isTurn
-                  ? 'not-allowed'
-                  : 'default',
-          }}
-          title={
-            battlefieldHighlighted && isTurn
-              ? 'Place here to destroy the strongest unit(s) on the battlefield (including your own)'
-              : battlefieldHighlighted && !isTurn
-                ? 'It is not your turn to play'
-                : ''
-          }
+          style={battlefieldStyle}
+          title={battlefieldTitle}
           onClick={async () => {
             if (
               game.status === GameStatus.Playing &&

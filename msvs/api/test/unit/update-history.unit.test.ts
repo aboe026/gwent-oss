@@ -155,6 +155,21 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
+    it('calls addMoveToCurrentPlayer once with weather impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testNewUnitDeployed({
+        deckUnit,
+        weathers: {
+          [deckUnit.unit.toString()]: [impact],
+        },
+        logPrefix,
+        expectedImpacts: [impact],
+      })
+    })
     it('calls to addMoveToCurrentPlayer for single valid muster without own impact', () => {
       const musteredUnit: BattlefieldUnit = {
         row: Combat.Close,
@@ -566,6 +581,44 @@ describe('update-history', () => {
           unit: move.unit,
         },
         decoys: {
+          [move.unit.unit.toString()]: [impact],
+        },
+        move,
+      })
+    })
+    it('calls to addMoveToCurrentPlayer with weather impact', () => {
+      const combat = Combat.Close
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const move: MoveUnitDbObject = {
+        created: new Date(),
+        reason: {
+          type: MoveReasonType.Muster,
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+        },
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          row: combat,
+        }),
+        impacts: [impact],
+      }
+      testNewUnitIndirect({
+        game: TestUtil.getDbGame({}),
+        unitId: move.unit.unit,
+        created: move.created,
+        logPrefix,
+        origin: move.source.origin as GameUnitOrigin,
+        playerId: new ObjectId().toString(),
+        reason: move.reason,
+        getBattlefieldUnitResponse: {
+          row: combat,
+          unit: move.unit,
+        },
+        weathers: {
           [move.unit.unit.toString()]: [impact],
         },
         move,
@@ -1217,6 +1270,7 @@ function testNewUnitDeployed({
   bonds = {},
   horns = {},
   decoys = {},
+  weathers = {},
   musteredOrigins,
   transformedGameUnits,
   mardroemingGameUnit,
@@ -1234,6 +1288,7 @@ function testNewUnitDeployed({
   bonds?: ImpactsByUnitId
   horns?: ImpactsByUnitId
   decoys?: ImpactsByUnitId
+  weathers?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
   transformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
@@ -1284,6 +1339,7 @@ function testNewUnitDeployed({
             game,
             horns,
             decoys,
+            weathers,
             logPrefix,
             mardroemes,
             morales,
@@ -1310,6 +1366,7 @@ function testNewUnitDeployed({
           game,
           horns,
           decoys,
+          weathers,
           logPrefix,
           mardroemes,
           morales,
@@ -1344,6 +1401,7 @@ function testNewUnitDeployed({
         deckUnit,
         game,
         decoys,
+        weathers,
         musteredOrigins,
         musters,
         playerId,
@@ -1367,6 +1425,7 @@ function testNewUnitDeployed({
         musters,
         playerId,
         decoys,
+        weathers,
         logPrefix,
         scorches,
         morales,
@@ -1415,6 +1474,7 @@ function testNewUnitIndirect({
   horns = {},
   morales = {},
   decoys = {},
+  weathers = {},
   reason,
   getBattlefieldUnitResponse,
   move,
@@ -1434,6 +1494,7 @@ function testNewUnitIndirect({
   horns?: ImpactsByUnitId
   morales?: ImpactsByUnitId
   decoys?: ImpactsByUnitId
+  weathers?: ImpactsByUnitId
   reason: MoveUnitReasonDbObject
   getBattlefieldUnitResponse: BattlefieldUnit | undefined
   move?: MoveUnitDbObject
@@ -1461,6 +1522,7 @@ function testNewUnitIndirect({
         morales,
         musters,
         decoys,
+        weathers,
         origin,
         playerId,
         reason,
@@ -1480,6 +1542,7 @@ function testNewUnitIndirect({
         morales,
         musters,
         decoys,
+        weathers,
         origin,
         playerId,
         reason,

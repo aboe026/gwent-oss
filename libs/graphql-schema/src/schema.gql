@@ -193,7 +193,6 @@ type Game @entity {
   turn: GamePlayer @column(overrideType: "ObjectId")
   updated: DateTime! @column
   victors: [User!]! @column(overrideType: "Array<ObjectId>")
-  weather: [Combat!]! @column
 }
 
 type GameConfig {
@@ -315,6 +314,7 @@ type PlayerRound @entity {
   result: RoundResult @column
   score: Int! @column
   siege: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
+  weathers: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
 }
 
 type PlayerCombatRow @entity {

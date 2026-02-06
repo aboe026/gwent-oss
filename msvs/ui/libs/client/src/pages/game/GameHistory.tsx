@@ -4,6 +4,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import {
+  DeckUnitFragment,
   EffectKey,
   GameFragment,
   GamePlayerFragment,
@@ -217,14 +218,22 @@ function PlayerHistoryMove({
       const closeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.close)
       const rangedRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.ranged)
       const siegeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.siege)
-      const units = [...closeRow.units, ...rangedRow.units, ...siegeRow.units]
-      for (const modifier of [closeRow.modifier, rangedRow.modifier, siegeRow.modifier]) {
-        if (modifier) {
-          units.push(useFragment(GameUnitFragmentDoc, modifier))
+      const unitFragments: (GameUnitFragment | DeckUnitFragment)[] = []
+      for (const roundUnits of [closeRow.units, rangedRow.units, siegeRow.units]) {
+        if (roundUnits) {
+          unitFragments.push(...useFragment(GameUnitFragmentDoc, roundUnits))
         }
       }
-      for (let i = 0; i < units.length && !isOnBattlefield; i++) {
-        if (useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, units[i]).unit).id === unit.id) {
+      for (const modifier of [closeRow.modifier, rangedRow.modifier, siegeRow.modifier]) {
+        if (modifier) {
+          unitFragments.push(useFragment(GameUnitFragmentDoc, modifier))
+        }
+      }
+      for (const weather of playerRound.weathers) {
+        unitFragments.push(useFragment(GameUnitFragmentDoc, weather))
+      }
+      for (let i = 0; i < unitFragments.length && !isOnBattlefield; i++) {
+        if (useFragment(UnitFragmentDoc, unitFragments[i].unit).id === unit.id) {
           isOnBattlefield = true
         }
       }

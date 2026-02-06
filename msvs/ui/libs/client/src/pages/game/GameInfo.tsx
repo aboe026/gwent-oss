@@ -1,8 +1,9 @@
 import { CgSync } from 'react-icons/cg'
-import { Dispatch, SetStateAction } from 'react'
+import { CSSProperties, Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import {
+  EffectKey,
   FragmentType,
   GameDeckFragmentDoc,
   GameFactionFragmentDoc,
@@ -13,15 +14,21 @@ import {
   GamePlayerFragment,
   GamePlayerFragmentDoc,
   GameStatus,
+  GameUnitFragmentDoc,
   PlayerRoundFragment,
   PlayerRoundFragmentDoc,
   RoundResult,
   useFragment,
   UnitFragmentDoc,
+  UnitEffectFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
-import { GameDeckProps, GameProps, UnitForPlayer } from './GameProps'
+import { FullUnitCards, GameDeckProps, GameProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
+import { retryCheckingAuth } from '../../util/error-util'
+import { useUserContext } from '../../UserContext'
+import UnitGameCard from '../../components/UnitGameCard'
+import './GameInfo.css'
 
 /**
  * Information about the Game and players in it.
@@ -33,9 +40,13 @@ export default function GameInfo({
   gameDeckProps,
   opponent,
   playPassLoading,
-  playUnitLoading,
+  playUnitProps,
+  selectedCardInHand,
   self,
   setPassConfirmationOpen,
+  setCardSelected,
+  setFullUnits,
+  scrollHistoryIntoView,
 }: {
   coinTossVisible: boolean
   gameDeckProps: GameDeckProps
@@ -43,15 +54,19 @@ export default function GameInfo({
   cardSelected: UnitForPlayer | undefined
   opponent: GamePlayerFragment
   playPassLoading: boolean
-  playUnitLoading: boolean
+  playUnitProps: PlayUnitProps
+  selectedCardInHand: boolean
   self: GamePlayerFragment
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  scrollHistoryIntoView: (selected: UnitForPlayer) => void
 }) {
   const sharedProps = {
     cardSelected,
     coinTossVisible,
     setPassConfirmationOpen,
-    playUnitLoading,
+    playUnitLoading: playUnitProps.loading,
     playPassLoading,
   }
   const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckProps.deck)
@@ -74,8 +89,15 @@ export default function GameInfo({
           leader: useFragment(GameLeaderFragmentDoc, opponent.leader),
         })}
         {renderSharedInfo({
+          cardSelected,
           gameProps,
           gameDeckProps: gameDeckProps,
+          selectedCardInHand,
+          isTurn: !!(gameProps.game.turn && gameProps.game.turn.user.name === self.user.name),
+          playUnitProps,
+          setCardSelected,
+          setFullUnits,
+          scrollHistoryIntoView,
         })}
         {renderPlayerInfo({
           ...sharedProps,
@@ -99,10 +121,65 @@ export default function GameInfo({
 /**
  * Information about the Game that is not specific to a certain player.
  */
-function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDeckProps; gameProps: GameProps }) {
+function renderSharedInfo({
+  cardSelected,
+  gameDeckProps,
+  gameProps,
+  selectedCardInHand,
+  isTurn,
+  playUnitProps,
+  setCardSelected,
+  setFullUnits,
+  scrollHistoryIntoView,
+}: {
+  gameDeckProps: GameDeckProps
+  gameProps: GameProps
+  cardSelected: UnitForPlayer | undefined
+  selectedCardInHand: boolean
+  isTurn: boolean
+  playUnitProps: PlayUnitProps
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  scrollHistoryIntoView: (selected: UnitForPlayer) => void
+}) {
+  const { checkAuth } = useUserContext()
   const game = gameProps.game
   if (game) {
     const loading = gameProps.loading || gameDeckProps.loading
+    const unitSelected = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
+    const weatherSelected =
+      unitSelected &&
+      selectedCardInHand &&
+      unitSelected.effects &&
+      unitSelected.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Weather)
+    let modifierClass = ''
+    let title = 'Weather'
+    const modifierStyle: CSSProperties = {}
+    if (weatherSelected) {
+      modifierClass = `${HTML_CLASSES.ItemHighlighted} game-weather-container-highlighted`
+      if (isTurn) {
+        title = `Place here to apply ${unitSelected.name} weather to the battlefield`
+        modifierStyle.cursor = 'pointer'
+      } else {
+        title = 'It is not your turn to play'
+        modifierStyle.cursor = 'not-allowed'
+        modifierStyle.borderStyle = 'dotted'
+      }
+    }
+
+    const weathers: UnitForPlayer[] = []
+    for (const player of useFragment(GamePlayerFragmentDoc, game.players)) {
+      const round = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
+      if (round) {
+        for (const weather of useFragment(GameUnitFragmentDoc, round.weathers)) {
+          weathers.push({
+            playerName: player.user.name,
+            unitFragment: weather,
+          })
+        }
+      }
+    }
+
     return (
       <div id="gameInfoSharedContainer">
         <div id="gameInfoSharedDetails" className="game-section">
@@ -122,9 +199,71 @@ function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDec
           </div>
         </div>
         {game.status === GameStatus.Playing && (
-          <div id="gameWeatherContainer" className="game-section">
-            <img id="gameWeatherIcon" src="images/effects/weather.png" title="Weather" />
-            <div id="gameWeatherCardSpot" className="game-sub-section"></div>
+          <div
+            id={HTML_IDS.GameWeatherContainer}
+            className={`game-section${modifierClass ? ` ${modifierClass}` : ''}`}
+            style={modifierStyle}
+            title={title}
+            onClick={async (event) => {
+              if (weatherSelected && !playUnitProps.loading && isTurn && game.status === GameStatus.Playing) {
+                event.stopPropagation()
+                event.preventDefault()
+                await retryCheckingAuth({
+                  checkAuth,
+                  method: async () => {
+                    await playUnitProps.playUnit({
+                      variables: {
+                        game: game.id,
+                        unit: unitSelected.id,
+                      },
+                    })
+                    setCardSelected(undefined)
+                  },
+                })
+              }
+            }}
+          >
+            <div id={HTML_IDS.GameWeatherUnits} className="game-sub-section">
+              <div id="gameWeatherIconContainer">
+                <img className="game-weather-icon" src="images/effects/weather-icon.png" title="Weather" />
+                <img className="game-weather-icon" src="images/effects/weather-icon.png" title="Weather" />
+              </div>
+              {weathers.map((weather, index) => {
+                const weatherUnit = useFragment(UnitFragmentDoc, weather.unitFragment.unit)
+                const selected =
+                  cardSelected && cardSelected.playerName === weather.playerName && unitSelected?.id === weatherUnit.id
+
+                return (
+                  <div className="weather-card-wrapper" key={index}>
+                    <UnitGameCard
+                      deckUnit={weather.unitFragment}
+                      title={weatherUnit.name}
+                      cursor={'pointer'}
+                      selected={selected}
+                      dotted={!isTurn && !selected}
+                      key={index}
+                      onFullscreen={() => {
+                        setFullUnits({
+                          currentIndex: index,
+                          units: weathers,
+                        })
+                        setCardSelected(selected ? undefined : weather)
+                      }}
+                      onClick={() => {
+                        const cardBeingPlayed = isTurn && selectedCardInHand
+                        if (!cardBeingPlayed) {
+                          const newCardSelected: UnitForPlayer | undefined = selected ? undefined : weather
+                          setCardSelected(newCardSelected)
+                          if (newCardSelected) {
+                            scrollHistoryIntoView(newCardSelected)
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>

@@ -24,7 +24,9 @@ export default class PlayUnitMutation {
       game,
       logPrefix,
       unit,
-      targetId, //
+      targetId,
+      roundUnits,
+      effects, //
     } = await PlayUnitValidation.playUnitValidation(args, context, info)
 
     const {
@@ -38,6 +40,8 @@ export default class PlayUnitMutation {
       logPrefix,
       unit,
       targetId,
+      roundUnits,
+      effects,
     })
 
     return PlayUnitResolution.playUnitResolution({

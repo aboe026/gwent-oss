@@ -76,8 +76,7 @@ export default class EffectMardroeme {
     if (player && mardroemeEffect && berserkerEffect) {
       const gameUnits = getGameUnits({
         combat,
-        players: [player],
-        round: game.round,
+        rounds: [player.rounds[game.round - 1]],
       })
       if (EffectMardroeme.logger.isTraceEnabled()) {
         EffectMardroeme.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)

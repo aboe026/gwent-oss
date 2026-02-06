@@ -639,6 +639,10 @@ async function testConfigureWebsocketServer({
 
 function testMaskError({ error }: { error: Error | PresentableError }) {
   const unwrapResolverErrorSpy = jest.spyOn(apolloErrors, 'unwrapResolverError').mockReturnValue(error)
+  const errorSpy = jest.fn().mockImplementation()
+  Api['logger'] = {
+    error: errorSpy,
+  } as any
 
   const formattedError: GraphQLFormattedError = {
     message: 'formatted-error-message',
@@ -653,4 +657,5 @@ function testMaskError({ error }: { error: Error | PresentableError }) {
   )
 
   expect(unwrapResolverErrorSpy.mock.calls).toEqual([[error]])
+  expect(errorSpy.mock.calls).toEqual(error instanceof PresentableError ? [] : [[formattedError]])
 }

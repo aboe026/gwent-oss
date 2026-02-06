@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 
+import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/battlefield-updates'
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import {
@@ -16,7 +17,6 @@ import GameStore from '../../src/database/stores/game-store'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
 import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
-import * as modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
 import * as setGameScores from '../../src/graphql/resolvers/mutations/play-unit/set-game-scores'
@@ -67,7 +67,7 @@ describe('play-unit-implementation', () => {
       errorCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
-  it('returns objects if no error', async () => {
+  it('returns objects if no error with required only', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
     })
@@ -76,6 +76,26 @@ describe('play-unit-implementation', () => {
       turn: player.user,
     })
     await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      expectedGameDeck: player.deck,
+    })
+  })
+  it('returns objects if no error with optional', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    await testPlayUnitImplementation({
+      effects: [],
+      roundUnits: [],
       game,
       updatedGame: {
         ...game,
@@ -288,6 +308,64 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes weather battlefield impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      targetId: impacts[0].unit.unit.toString(),
+      logPrefix,
+      battlefieldWeathers: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      deckUnitsAddedToHand: [impacts[0].unit],
+      expectedGameDeck: player.deck,
+    })
+  })
+  it('passes weather score impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      targetId: impacts[0].unit.unit.toString(),
+      logPrefix,
+      scoreWeathers: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      deckUnitsAddedToHand: [impacts[0].unit],
+      expectedGameDeck: player.deck,
+    })
+  })
   it('logs to trace if enabled', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -320,6 +398,8 @@ async function testPlayUnitImplementation({
   musteredUnits = [],
   musteredOrigins = {},
   mardroemes = {},
+  battlefieldWeathers = {},
+  scoreWeathers = {},
   transformedUnits = [],
   transformedGameUnits = [],
   mardroemingGameUnit,
@@ -345,6 +425,8 @@ async function testPlayUnitImplementation({
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
   mardroemes?: ImpactsByUnitId
+  battlefieldWeathers?: ImpactsByUnitId
+  scoreWeathers?: ImpactsByUnitId
   transformedUnits?: UnitDbObject[]
   transformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
@@ -371,10 +453,10 @@ async function testPlayUnitImplementation({
     }),
   ]
   const unitEffect = TestUtil.getDbEffect({
-    key: EffectKey.Muster,
+    key: EffectKey.Bond,
   })
   const musterEffect = TestUtil.getDbEffect({
-    key: EffectKey.Bond,
+    key: EffectKey.Muster,
   })
   const mardroemeEffect = TestUtil.getDbEffect({
     key: EffectKey.Mardroeme,
@@ -385,24 +467,28 @@ async function testPlayUnitImplementation({
     .mockResolvedValueOnce([unitEffect])
     .mockResolvedValueOnce([musterEffect])
     .mockResolvedValueOnce([mardroemeEffect])
-  const modifyBattlefieldWithNewUnitSpy = jest.spyOn(modifyBattlefieldWithNewUnit, 'default').mockResolvedValue({
-    scorches,
-    musters,
-    musteredUnits,
-    musteredOrigins,
-    mardroemes,
-    transformedUnits,
-    transformedGameUnits,
-    mardroemingGameUnit,
-    decoys,
-    deckUnitsAddedToHand,
-  })
+  const modifyBattlefieldWithNewUnitSpy = jest
+    .spyOn(BattlefieldUpdates, 'modifyBattlefieldWithNewUnit')
+    .mockResolvedValue({
+      scorches,
+      musters,
+      musteredUnits,
+      musteredOrigins,
+      mardroemes,
+      weathers: battlefieldWeathers,
+      transformedUnits,
+      transformedGameUnits,
+      mardroemingGameUnit,
+      decoys,
+      deckUnitsAddedToHand,
+    })
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
     .mockReturnValue({
       bonds,
       horns,
       morales,
+      weathers: scoreWeathers,
     })
   const setGameScoresSpy = jest.spyOn(setGameScores, 'default').mockImplementation()
   const updateHistorySpy = jest.spyOn(UpdateHistory, 'newUnitDeployed').mockImplementation()
@@ -444,6 +530,7 @@ async function testPlayUnitImplementation({
         {
           game,
           unitBeingPlayed: unit,
+          units: roundUnits || [],
         },
       ],
     ]
@@ -454,19 +541,20 @@ async function testPlayUnitImplementation({
       : [
           [
             {
-              units,
+              effects: effects || [],
+              units: [unit, ...(roundUnits || []), ...units],
             },
           ],
           [
             {
               units: musteredUnits,
-              effects: [unitEffect],
+              effects: [...(effects || []), unitEffect],
             },
           ],
           [
             {
               units: transformedUnits,
-              effects: [unitEffect],
+              effects: [...(effects || []), unitEffect],
             },
           ],
         ]
@@ -477,9 +565,9 @@ async function testPlayUnitImplementation({
       : [
           [
             {
-              battlefieldUnits: units,
+              battlefieldUnits: [unit, ...(roundUnits || []), ...units],
               combat,
-              effects: [unitEffect],
+              effects: [...(effects || []), unitEffect],
               game,
               logPrefix,
               newDeckUnit: deckUnit,
@@ -497,7 +585,7 @@ async function testPlayUnitImplementation({
             {
               game,
               units: [unit, ...units, ...musteredUnits, ...transformedUnits],
-              effects: [unitEffect, musterEffect, mardroemeEffect],
+              effects: [...(effects || []), unitEffect, musterEffect, mardroemeEffect],
               logPrefix,
               newDeckUnit: deckUnit,
               musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
@@ -528,6 +616,7 @@ async function testPlayUnitImplementation({
               decoys,
               transformedGameUnits,
               mardroemingGameUnit,
+              weathers: Object.keys(battlefieldWeathers).length > 0 ? battlefieldWeathers : scoreWeathers,
             },
           ],
         ]

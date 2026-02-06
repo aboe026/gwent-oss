@@ -269,21 +269,13 @@ function testMarkPlayerReady({
             ? [
                 ...player.rounds,
                 {
-                  close: {
-                    score: 0,
-                    units: [],
-                  },
+                  close: TestUtil.getDbPlayerCombatRow({}),
                   moves: [],
                   passed: false,
-                  ranged: {
-                    score: 0,
-                    units: [],
-                  },
+                  ranged: TestUtil.getDbPlayerCombatRow({}),
                   score: 0,
-                  siege: {
-                    score: 0,
-                    units: [],
-                  },
+                  siege: TestUtil.getDbPlayerCombatRow({}),
+                  weathers: [],
                 },
               ]
             : player.rounds,

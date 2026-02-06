@@ -174,3 +174,57 @@ test('Scorch ignores decoyed to determine strongest', async (t) => {
     ],
   })
 })
+
+test('Scorch takes into account weather', async (t) => {
+  const unitName1 = 'Ves'
+  const unitName2 = 'Yarpen Zigrin'
+  const unitName3 = 'Biting Frost'
+  const unitName4 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName3, unitName4],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({
+    unitName: unitName3,
+    weather: true,
+    weathering: [
+      {
+        effectiveStrength: 1,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+      {
+        effectiveStrength: 1,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 1,
+      },
+      {
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 1,
+      },
+    ],
+  })
+})

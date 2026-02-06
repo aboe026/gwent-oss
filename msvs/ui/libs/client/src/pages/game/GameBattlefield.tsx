@@ -4,6 +4,8 @@ import {
   Combat,
   GameFragment,
   GamePlayerFragment,
+  GamePlayerFragmentDoc,
+  GameUnitFragmentDoc,
   PlayerRoundFragmentDoc,
   UnitFragmentDoc,
   useFragment,
@@ -57,6 +59,21 @@ export default function GameBattlefield({
   const isTurn = game.turn?.user.name === self.user.name
   const selfPassed = useFragment(PlayerRoundFragmentDoc, self.rounds[game.round - 1]).passed
   const opponentPassed = useFragment(PlayerRoundFragmentDoc, opponent.rounds[game.round - 1]).passed
+  const weatherClose = useFragment(GamePlayerFragmentDoc, game.players).some((player) =>
+    useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1]).weathers.some((weather) =>
+      useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, weather).unit).combats?.includes(Combat.Close)
+    )
+  )
+  const weatherRanged = useFragment(GamePlayerFragmentDoc, game.players).some((player) =>
+    useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1]).weathers.some((weather) =>
+      useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, weather).unit).combats?.includes(Combat.Ranged)
+    )
+  )
+  const weatherSiege = useFragment(GamePlayerFragmentDoc, game.players).some((player) =>
+    useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1]).weathers.some((weather) =>
+      useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, weather).unit).combats?.includes(Combat.Siege)
+    )
+  )
   const sharedProps = {
     cardSelected,
     playUnitProps,
@@ -69,27 +86,28 @@ export default function GameBattlefield({
     setFullUnits,
     scrollHistoryIntoView,
   }
+
   return (
     <>
       <div
         className={`${HTML_CLASSES.GameUnitBoardSide} ${
           opponentPassed ? HTML_CLASSES.GameUnitBoardSidePassed : ''
         } game-section`}
-        title={opponentPassed ? 'Your oppponent has passed the rest of this round' : ''}
+        title={opponentPassed ? 'Your oppponent has passed the rest of this round' : undefined}
       >
-        <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Siege} />
-        <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Ranged} />
-        <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Close} />
+        <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Siege} weather={weatherSiege} />
+        <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Ranged} weather={weatherRanged} />
+        <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Close} weather={weatherClose} />
       </div>
       <div
         className={`${HTML_CLASSES.GameUnitBoardSide} ${
           selfPassed ? HTML_CLASSES.GameUnitBoardSidePassed : ''
         } game-section`}
-        title={selfPassed ? 'You have passed the rest of this round' : ''}
+        title={selfPassed ? 'You have passed the rest of this round' : undefined}
       >
-        <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Close} />
-        <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Ranged} />
-        <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Siege} />
+        <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Close} weather={weatherClose} />
+        <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Ranged} weather={weatherRanged} />
+        <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Siege} weather={weatherSiege} />
       </div>
     </>
   )

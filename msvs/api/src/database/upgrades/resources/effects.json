@@ -49,6 +49,6 @@
   },
   {
     "Name": "Weather",
-    "Ability": "Reduce the strength of all cards in the given row(s) on the battlefield, including your own."
+    "Ability": "Reduce the strength of all cards in the given row(s) on the battlefield to 1, including your own."
   }
 ]

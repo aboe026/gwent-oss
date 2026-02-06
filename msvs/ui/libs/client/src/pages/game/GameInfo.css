@@ -1,0 +1,84 @@
+#gameRefresh.decking {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#gameRefresh.playing {
+  width: 20px;
+}
+
+#gameWeatherContainer {
+  display: flex;
+  align-items: center;
+  width: calc(50% - 10px);
+  gap: 10px;
+  padding: 10px;
+}
+
+#gameWeatherContainer.game-weather-container-highlighted {
+  width: calc(50% - 14px);
+  margin-right: 0px;
+  cursor: pointer;
+}
+
+#gameWeatherIconContainer {
+  position: absolute;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  justify-content: space-between;
+  opacity: 0.65;
+}
+
+#gameWeatherUnits {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+#gameInfoOpponentContainer {
+  flex-direction: column-reverse;
+}
+
+#gameInfoSharedContainer {
+  display: flex;
+  height: 10%;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+#gameInfoSharedDetails {
+  width: calc(50% - 10px);
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.game-weather-icon {
+  height: 80%;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.weather-card-wrapper {
+  position: relative;
+  display: flex;
+  height: 100%;
+  min-width: 10px;
+  padding-right: 10px;
+  aspect-ratio: 309 / 444;
+}
+
+.weather-card-wrapper:last-child {
+  margin-right: -10px;
+}
+
+.weather-card-wrapper:last-child,
+.weather-card-wrapper:hover,
+.weather-card-wrapper-selected {
+  min-width: 40px;
+}

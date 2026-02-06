@@ -3,6629 +3,1884 @@ import getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-ga
 import TestUtil from '../util/test-util'
 
 describe('get-game-units', () => {
-  describe('round 1', () => {
-    const round = 1
+  it('returns empty array if rounds empty', () => {
+    expect(
+      getGameUnits({
+        rounds: [],
+      })
+    ).toEqual([])
+  })
+  describe('single round', () => {
+    it('returns empty array if no units', () => {
+      expect(
+        getGameUnits({
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+      ).toEqual([])
+    })
     describe('no combat', () => {
-      it('returns empty array if no units in player rounds', () => {
-        expect(
-          getGameUnits({
-            players: [
-              TestUtil.getDbGamePlayer({
-                rounds: [TestUtil.getDbPlayerRound({})],
-              }),
-              TestUtil.getDbGamePlayer({
-                rounds: [TestUtil.getDbPlayerRound({})],
-              }),
-            ],
-            round,
+      describe('single unit', () => {
+        it('returns single item if close unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns single item if close modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns single item if ranged unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns single item if ranged modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns single item if siege unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns single item if siege modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+      })
+      describe('multiple units', () => {
+        describe('close only', () => {
+          it('returns multiple items if close units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
           })
-        ).toEqual([])
-      })
-      describe('first player', () => {
-        it('returns single item if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
+          it('returns multiple items if close unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if close unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if close modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
         })
-        it('returns single item if present in close modifier', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
+        describe('ranged only', () => {
+          it('returns multiple items if ranged units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if ranged unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if ranged unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if ranged modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
         })
-        it('returns single item if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
+        describe('siege only', () => {
+          it('returns multiple items if siege units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if siege unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if siege unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if siege modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
         })
-        it('returns single item if present in ranged modifier', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
+        describe('mixed', () => {
+          it('returns multiple items if units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit2],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege modifier', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple items if present in close row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2, gameUnit3])
+          })
+          it('returns multiple items if modifiers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in siege row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit3,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and ranged rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2, gameUnit3])
+          })
+          it('returns multiple items if weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    weathers: [gameUnit1, gameUnit2, gameUnit3],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2, gameUnit3])
+          })
+          it('returns multiple items if units, modifiers and weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            const gameUnit4 = TestUtil.getDbGameUnit({})
+            const gameUnit5 = TestUtil.getDbGameUnit({})
+            const gameUnit6 = TestUtil.getDbGameUnit({})
+            const gameUnit7 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
+                      modifier: gameUnit4,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit5],
+                      modifier: gameUnit6,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in all rows without modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3])
-        })
-        it('returns multiple items if present in all rows with modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3],
-                        modifier: deckUnit4,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5],
-                        modifier: deckUnit6,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-        it('returns multiple items if multiple present in all rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5, deckUnit6],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-      })
-      describe('second player', () => {
-        it('returns single item if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in close modifier', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege modifier', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple items if present in close row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in siege row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and ranged rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in all rows without modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3])
-        })
-        it('returns multiple items if present in all rows with modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3],
-                        modifier: deckUnit4,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5],
-                        modifier: deckUnit6,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-        it('returns multiple items if multiple present in all rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5, deckUnit6],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
+                    weathers: [gameUnit7],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2, gameUnit3, gameUnit4, gameUnit5, gameUnit6, gameUnit7])
+          })
         })
       })
     })
     describe('close combat', () => {
       const combat = Combat.Close
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
+      describe('single unit', () => {
+        it('returns single item if close unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns single item if close modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns empty array if ranged unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
             })
           ).toEqual([])
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
+        it('returns empty array if ranged modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit])
+          ).toEqual([])
         })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
+        it('returns empty array if siege unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit])
+          ).toEqual([])
         })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
+        it('returns empty array if siege modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit1, deckUnit2])
+          ).toEqual([])
         })
       })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+      describe('multiple units', () => {
+        describe('close only', () => {
+          it('returns multiple items if close units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if close unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns single item if close unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
+          it('returns single item if close modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+        describe('ranged only', () => {
+          it('returns empty array if ranged units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if ranged unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if ranged unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if ranged modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
         })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+        describe('siege only', () => {
+          it('returns empty array if siege units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if siege unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if siege unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if siege modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
         })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+        describe('mixed', () => {
+          it('returns single item if units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit2],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
+          it('returns single item if modifiers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit3,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
+          it('returns empty array if weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({}),
+                    weathers: [gameUnit1, gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns multiple items if units, modifiers and weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            const gameUnit4 = TestUtil.getDbGameUnit({})
+            const gameUnit5 = TestUtil.getDbGameUnit({})
+            const gameUnit6 = TestUtil.getDbGameUnit({})
+            const gameUnit7 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
+                      modifier: gameUnit4,
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit5],
+                      modifier: gameUnit6,
+                    }),
+                    weathers: [gameUnit7],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
         })
       })
     })
     describe('ranged combat', () => {
       const combat = Combat.Ranged
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
+      describe('single unit', () => {
+        it('returns empty array if close unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
             })
           ).toEqual([])
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
+        it('returns empty array if close modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit])
+          ).toEqual([])
         })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
+        it('returns single item if ranged unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit])
+          ).toEqual([gameUnit])
         })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
+        it('returns single item if ranged modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit1, deckUnit2])
+          ).toEqual([gameUnit])
+        })
+        it('returns empty array if siege unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([])
+        })
+        it('returns empty array if siege modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([])
         })
       })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+      describe('multiple units', () => {
+        describe('close only', () => {
+          it('returns empty array if close units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if close unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if close unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if close modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+        describe('ranged only', () => {
+          it('returns multiple items if ranged units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if ranged unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns single item if ranged unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
+          it('returns single item if ranged modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
         })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+        describe('siege only', () => {
+          it('returns empty array if siege units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if siege unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if siege unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if siege modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
         })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+        describe('mixed', () => {
+          it('returns single item if units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit2],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit2])
+          })
+          it('returns single item if modifiers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit3,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit2])
+          })
+          it('returns empty array if weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({}),
+                    weathers: [gameUnit1, gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns multiple items if units, modifiers and weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            const gameUnit4 = TestUtil.getDbGameUnit({})
+            const gameUnit5 = TestUtil.getDbGameUnit({})
+            const gameUnit6 = TestUtil.getDbGameUnit({})
+            const gameUnit7 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
+                      modifier: gameUnit4,
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit5],
+                      modifier: gameUnit6,
+                    }),
+                    weathers: [gameUnit7],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit3, gameUnit4])
+          })
         })
       })
     })
     describe('siege combat', () => {
       const combat = Combat.Siege
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            ranged: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
+      describe('single unit', () => {
+        it('returns empty array if close unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
             })
           ).toEqual([])
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
+        it('returns empty array if close modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit])
+          ).toEqual([])
         })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
+        it('returns empty array if ranged unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit])
+          ).toEqual([])
         })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
+        it('returns empty array if ranged modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
           expect(
             getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
               combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
             })
-          ).toEqual([deckUnit1, deckUnit2])
+          ).toEqual([])
+        })
+        it('returns single item if siege unit', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    units: [gameUnit],
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
+        })
+        it('returns single item if siege modifier', () => {
+          const gameUnit = TestUtil.getDbGameUnit({})
+          expect(
+            getGameUnits({
+              combat,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: TestUtil.getDbPlayerCombatRow({
+                    modifier: gameUnit,
+                  }),
+                }),
+              ],
+            })
+          ).toEqual([gameUnit])
         })
       })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
+      describe('multiple units', () => {
+        describe('close only', () => {
+          it('returns empty array if close units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if close unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if close unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if close modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
+        describe('ranged only', () => {
+          it('returns empty array if ranged units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if ranged unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if ranged unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns empty array if ranged modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
         })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
+        describe('siege only', () => {
+          it('returns multiple items if siege units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1, gameUnit2],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns multiple items if siege unit and modifier', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
+                    }),
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1, gameUnit2])
+          })
+          it('returns single item if siege unit and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
+          it('returns single item if siege modifier and weather', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
+                    }),
+                    weathers: [gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit1])
+          })
         })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
+        describe('mixed', () => {
+          it('returns single item if units', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit2],
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit3])
+          })
+          it('returns single item if modifiers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit1,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      modifier: gameUnit3,
                     }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit3])
+          })
+          it('returns empty array if weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({}),
+                    weathers: [gameUnit1, gameUnit2],
+                  }),
+                ],
+              })
+            ).toEqual([])
+          })
+          it('returns multiple items if units, modifiers and weathers', () => {
+            const gameUnit1 = TestUtil.getDbGameUnit({})
+            const gameUnit2 = TestUtil.getDbGameUnit({})
+            const gameUnit3 = TestUtil.getDbGameUnit({})
+            const gameUnit4 = TestUtil.getDbGameUnit({})
+            const gameUnit5 = TestUtil.getDbGameUnit({})
+            const gameUnit6 = TestUtil.getDbGameUnit({})
+            const gameUnit7 = TestUtil.getDbGameUnit({})
+            expect(
+              getGameUnits({
+                combat,
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit1],
+                      modifier: gameUnit2,
                     }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit3],
+                      modifier: gameUnit4,
+                    }),
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [gameUnit5],
+                      modifier: gameUnit6,
+                    }),
+                    weathers: [gameUnit7],
+                  }),
+                ],
+              })
+            ).toEqual([gameUnit5, gameUnit6])
+          })
         })
       })
     })
   })
-  describe('round 2', () => {
-    const round = 2
-    const previousRound = TestUtil.getDbPlayerRound({
-      close: {
-        score: 0,
-        units: [TestUtil.getDbDeckUnit({})],
-      },
-      ranged: {
-        score: 0,
-        units: [TestUtil.getDbDeckUnit({})],
-      },
-      siege: {
-        score: 0,
-        units: [TestUtil.getDbDeckUnit({})],
-      },
+  describe('multiple rounds', () => {
+    it('returns empty array if no units', () => {
+      expect(
+        getGameUnits({
+          rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+        })
+      ).toEqual([])
     })
-    describe('no combat', () => {
-      it('returns empty array if no units in player rounds', () => {
-        expect(
-          getGameUnits({
-            players: [
-              TestUtil.getDbGamePlayer({
-                rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-              }),
-              TestUtil.getDbGamePlayer({
-                rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-              }),
-            ],
-            round,
-          })
-        ).toEqual([])
-      })
-      describe('first player', () => {
-        it('returns single item if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
+    it('returns multiple items if single unique of each', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
         })
-        it('returns single modifier if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple items if present in close row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in siege row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and ranged rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in all rows without modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3])
-        })
-        it('returns multiple items if present in all rows with modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3],
-                        modifier: deckUnit4,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5],
-                        modifier: deckUnit6,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-        it('returns multiple items if multiple present in all rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5, deckUnit6],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-      })
-      describe('second player', () => {
-        it('returns single item if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple items if present in close row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in siege row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and ranged rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in all rows without modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3])
-        })
-        it('returns multiple items if present in all rows with modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3],
-                        modifier: deckUnit4,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5],
-                        modifier: deckUnit6,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-        it('returns multiple items if multiple present in all rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5, deckUnit6],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-      })
+      ).toEqual([
+        gameUnit1,
+        gameUnit2,
+        gameUnit3,
+        gameUnit4,
+        gameUnit5,
+        gameUnit6,
+        gameUnit7,
+        gameUnit8,
+        gameUnit9,
+        gameUnit10,
+        gameUnit11,
+        gameUnit12,
+        gameUnit13,
+        gameUnit14,
+      ])
     })
-    describe('close combat', () => {
-      const combat = Combat.Close
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          previousRound,
-          TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
+    it('returns multiple duplicate items if single duplicate of each', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+          ],
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
-        })
-      })
+      ).toEqual([
+        gameUnit1,
+        gameUnit2,
+        gameUnit3,
+        gameUnit4,
+        gameUnit5,
+        gameUnit6,
+        gameUnit7,
+        gameUnit1,
+        gameUnit2,
+        gameUnit3,
+        gameUnit4,
+        gameUnit5,
+        gameUnit6,
+        gameUnit7,
+      ])
     })
-    describe('ranged combat', () => {
-      const combat = Combat.Ranged
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          previousRound,
-          TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
+    it('returns multiple items if close combat', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          combat: Combat.Close,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
-        })
-      })
+      ).toEqual([gameUnit1, gameUnit2, gameUnit8, gameUnit9])
     })
-    describe('siege combat', () => {
-      const combat = Combat.Siege
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          previousRound,
-          TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            ranged: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
+    it('returns multiple items if ranged combat', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          combat: Combat.Ranged,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
         })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
-        })
-      })
+      ).toEqual([gameUnit3, gameUnit4, gameUnit10, gameUnit11])
     })
-  })
-  describe('round 3', () => {
-    const round = 3
-    const previousRound = TestUtil.getDbPlayerRound({
-      close: {
-        score: 0,
-        units: [TestUtil.getDbDeckUnit({})],
-      },
-      ranged: {
-        score: 0,
-        units: [TestUtil.getDbDeckUnit({})],
-      },
-      siege: {
-        score: 0,
-        units: [TestUtil.getDbDeckUnit({})],
-      },
-    })
-    describe('no combat', () => {
-      it('returns empty array if no units in player rounds', () => {
-        expect(
-          getGameUnits({
-            players: [
-              TestUtil.getDbGamePlayer({
-                rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-              }),
-              TestUtil.getDbGamePlayer({
-                rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-              }),
-            ],
-            round,
-          })
-        ).toEqual([])
-      })
-      describe('first player', () => {
-        it('returns single item if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple items if present in close row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in siege row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and ranged rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in all rows without modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3])
-        })
-        it('returns multiple items if present in all rows with modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3],
-                        modifier: deckUnit4,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5],
-                        modifier: deckUnit6,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-        it('returns multiple items if multiple present in all rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5, deckUnit6],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-      })
-      describe('second player', () => {
-        it('returns single item if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in close row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in ranged row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single item if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single modifier if present in siege row', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple items if present in close row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in siege row', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and ranged rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in close and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in ranged and siege rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present in all rows without modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3])
-        })
-        it('returns multiple items if present in all rows with modifiers', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3],
-                        modifier: deckUnit4,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5],
-                        modifier: deckUnit6,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-        it('returns multiple items if multiple present in all rows', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          const deckUnit5 = TestUtil.getDbDeckUnit({})
-          const deckUnit6 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit5, deckUnit6],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
-        })
-      })
-    })
-    describe('close combat', () => {
-      const combat = Combat.Close
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          previousRound,
-          previousRound,
-          TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
-        })
-      })
-    })
-    describe('ranged combat', () => {
-      const combat = Combat.Ranged
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          previousRound,
-          previousRound,
-          TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
-        })
-      })
-    })
-    describe('siege combat', () => {
-      const combat = Combat.Siege
-      const opponent = TestUtil.getDbGamePlayer({
-        rounds: [
-          previousRound,
-          previousRound,
-          TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-            ranged: {
-              score: 0,
-              units: [TestUtil.getDbDeckUnit({})],
-            },
-          }),
-        ],
-      })
-      describe('first player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                opponent,
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('second player', () => {
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single opponent item if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns single opponent modifier if present', () => {
-          const deckUnit = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit])
-        })
-        it('returns multiple opponent items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                opponent,
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-      })
-      describe('both players', () => {
-        it('returns empty array if no units in player rounds', () => {
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns empty array if no units present in row', () => {
-          expect(
-            getGameUnits({
-              players: [opponent, opponent],
-              round,
-              combat,
-            })
-          ).toEqual([])
-        })
-        it('returns single items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns single modifiers if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit1,
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [],
-                        modifier: deckUnit2,
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2])
-        })
-        it('returns multiple items if present', () => {
-          const deckUnit1 = TestUtil.getDbDeckUnit({})
-          const deckUnit2 = TestUtil.getDbDeckUnit({})
-          const deckUnit3 = TestUtil.getDbDeckUnit({})
-          const deckUnit4 = TestUtil.getDbDeckUnit({})
-          expect(
-            getGameUnits({
-              players: [
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit1, deckUnit2],
-                      },
-                    }),
-                  ],
-                }),
-                TestUtil.getDbGamePlayer({
-                  rounds: [
-                    previousRound,
-                    previousRound,
-                    TestUtil.getDbPlayerRound({
-                      close: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      ranged: {
-                        score: 0,
-                        units: [TestUtil.getDbDeckUnit({})],
-                      },
-                      siege: {
-                        score: 0,
-                        units: [deckUnit3, deckUnit4],
-                      },
-                    }),
-                  ],
-                }),
-              ],
-              round,
-              combat,
-            })
-          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4])
-        })
-      })
+    it('returns multiple items if siege combat', () => {
+      const gameUnit1 = TestUtil.getDbGameUnit({})
+      const gameUnit2 = TestUtil.getDbGameUnit({})
+      const gameUnit3 = TestUtil.getDbGameUnit({})
+      const gameUnit4 = TestUtil.getDbGameUnit({})
+      const gameUnit5 = TestUtil.getDbGameUnit({})
+      const gameUnit6 = TestUtil.getDbGameUnit({})
+      const gameUnit7 = TestUtil.getDbGameUnit({})
+      const gameUnit8 = TestUtil.getDbGameUnit({})
+      const gameUnit9 = TestUtil.getDbGameUnit({})
+      const gameUnit10 = TestUtil.getDbGameUnit({})
+      const gameUnit11 = TestUtil.getDbGameUnit({})
+      const gameUnit12 = TestUtil.getDbGameUnit({})
+      const gameUnit13 = TestUtil.getDbGameUnit({})
+      const gameUnit14 = TestUtil.getDbGameUnit({})
+      expect(
+        getGameUnits({
+          combat: Combat.Siege,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit1],
+                modifier: gameUnit2,
+              },
+              ranged: {
+                units: [gameUnit3],
+                modifier: gameUnit4,
+              },
+              siege: {
+                units: [gameUnit5],
+                modifier: gameUnit6,
+              },
+              weathers: [gameUnit7],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                units: [gameUnit8],
+                modifier: gameUnit9,
+              },
+              ranged: {
+                units: [gameUnit10],
+                modifier: gameUnit11,
+              },
+              siege: {
+                units: [gameUnit12],
+                modifier: gameUnit13,
+              },
+              weathers: [gameUnit14],
+            }),
+          ],
+        })
+      ).toEqual([gameUnit5, gameUnit6, gameUnit12, gameUnit13])
     })
   })
 })

@@ -1,10 +1,11 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, Game, GamePlayer, GameStatus, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { Game, GamePlayer, GameStatus, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
+import getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
 import { MoveType } from '@gwent/graphql-schema'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -19,18 +20,15 @@ describe('game-resolver', () => {
         user: creatorId,
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -43,18 +41,15 @@ describe('game-resolver', () => {
             ],
           }),
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -67,18 +62,15 @@ describe('game-resolver', () => {
       TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -194,7 +186,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -228,13 +219,12 @@ describe('game-resolver', () => {
           turn: players[1],
           updated: game.updated,
           victors: [],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
       })
     })
-    it('returns game with weather', async () => {
+    it('returns game with modifiers', async () => {
       const users = [
         TestUtil.getUser({
           id: game.creator,
@@ -244,7 +234,18 @@ describe('game-resolver', () => {
       await testFromObject({
         game: {
           ...game,
-          weather: [Combat.Ranged],
+          players: game.players.map((player) => {
+            return {
+              ...player,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    modifier: TestUtil.getDbGameUnit({}),
+                  }),
+                }),
+              ],
+            }
+          }),
         },
         expected: {
           config: game.config,
@@ -257,7 +258,43 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [],
-          weather: [Combat.Ranged],
+        },
+        players,
+        resolvedUsers: users,
+      })
+    })
+    it('returns game with weathers', async () => {
+      const users = [
+        TestUtil.getUser({
+          id: game.creator,
+        }),
+      ]
+      const players = [TestUtil.getGamePlayer({}), TestUtil.getGamePlayer({})]
+      await testFromObject({
+        game: {
+          ...game,
+          players: game.players.map((player) => {
+            return {
+              ...player,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  weathers: [TestUtil.getDbGameUnit({})],
+                }),
+              ],
+            }
+          }),
+        },
+        expected: {
+          config: game.config,
+          created: game.created,
+          creator: users[0],
+          id: game._id.toString(),
+          players,
+          round: game.round,
+          status: game.status as GameStatus,
+          turn: undefined,
+          updated: game.updated,
+          victors: [],
         },
         players,
         resolvedUsers: users,
@@ -289,7 +326,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [users[0]],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -321,7 +357,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [users[1]],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -353,7 +388,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [users[0], users[1]],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -415,18 +449,15 @@ describe('game-resolver', () => {
             TestUtil.getDbGamePlayer({
               rounds: [
                 TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
+                  close: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                  },
-                  ranged: {
-                    score: 0,
+                  }),
+                  ranged: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({})],
-                  },
-                  siege: {
-                    score: 0,
+                  }),
+                  siege: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                  },
+                  }),
                   moves: [
                     TestUtil.getDbMove({
                       type: MoveType.Unit,
@@ -447,18 +478,15 @@ describe('game-resolver', () => {
             TestUtil.getDbGamePlayer({
               rounds: [
                 TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
+                  close: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({})],
-                  },
-                  ranged: {
-                    score: 0,
+                  }),
+                  ranged: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                  },
-                  siege: {
-                    score: 0,
+                  }),
+                  siege: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                  },
+                  }),
                   moves: [
                     TestUtil.getDbMove({
                       type: MoveType.Unit,
@@ -471,18 +499,15 @@ describe('game-resolver', () => {
                   ],
                 }),
                 TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
+                  close: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                  },
-                  ranged: {
-                    score: 0,
+                  }),
+                  ranged: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                  },
-                  siege: {
-                    score: 0,
+                  }),
+                  siege: TestUtil.getDbPlayerCombatRow({
                     units: [TestUtil.getDbGameUnit({})],
-                  },
+                  }),
                   moves: [
                     TestUtil.getDbMove({
                       type: MoveType.Unit,
@@ -623,11 +648,9 @@ async function testFromObject({
           .flat()
           .map((round) => round.moves)
           .flat(),
-        gameUnits: game.players
-          .map((player) => player.rounds)
-          .flat()
-          .map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units])
-          .flat(),
+        gameUnits: getGameUnits({
+          rounds: game.players.map((player) => player.rounds).flat(),
+        }),
         userIds: game.players.map((player) => player.user),
         presolvedUnits: units,
         presolvedUsers: users,

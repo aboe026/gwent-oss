@@ -104,9 +104,7 @@ describe('effect-scorch', () => {
         getGameUnitsCalls: [
           [
             {
-              combat: undefined,
-              players: game.players,
-              round: game.round,
+              rounds: game.players.map((player) => player.rounds[game.round - 1]),
             },
           ],
         ],
@@ -136,9 +134,7 @@ describe('effect-scorch', () => {
         getGameUnitsCalls: [
           [
             {
-              combat: undefined,
-              players: game.players,
-              round: game.round,
+              rounds: game.players.map((player) => player.rounds[game.round - 1]),
             },
           ],
         ],
@@ -170,8 +166,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -203,8 +198,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[0]],
-              round: game.round,
+              rounds: [game.players[0].rounds[game.round - 1]],
             },
           ],
         ],
@@ -245,8 +239,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -291,8 +284,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -338,8 +330,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -393,8 +384,7 @@ describe('effect-scorch', () => {
           [
             {
               combat: Combat.Close,
-              players: [game.players[1]],
-              round: game.round,
+              rounds: [game.players[1].rounds[game.round - 1]],
             },
           ],
         ],
@@ -424,9 +414,7 @@ describe('effect-scorch', () => {
         getGameUnitsCalls: [
           [
             {
-              combat: undefined,
-              players: game.players,
-              round: game.round,
+              rounds: game.players.map((player) => player.rounds[game.round - 1]),
             },
           ],
         ],
@@ -601,10 +589,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [scorchedUnit],
-            },
+            }),
           }),
         ],
       })
@@ -623,18 +610,15 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbDeckUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbDeckUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -653,18 +637,15 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbDeckUnit({})],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbDeckUnit({})],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [TestUtil.getDbDeckUnit({})],
-            },
+            }),
           }),
         ],
       })
@@ -694,10 +675,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch],
-            },
+            }),
           }),
         ],
       })
@@ -737,10 +717,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch],
-            },
+            }),
           }),
         ],
       })
@@ -780,10 +759,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch],
-            },
+            }),
           }),
         ],
       })
@@ -827,10 +805,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch1, unitToScorch2],
-            },
+            }),
           }),
         ],
       })
@@ -883,10 +860,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            ranged: {
-              score: 0,
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch1, unitToScorch2],
-            },
+            }),
           }),
         ],
       })
@@ -939,10 +915,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            siege: {
-              score: 0,
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch1, unitToScorch2],
-            },
+            }),
           }),
         ],
       })
@@ -999,18 +974,15 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch1],
-            },
-            ranged: {
-              score: 0,
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch2],
-            },
-            siege: {
-              score: 0,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch3],
-            },
+            }),
           }),
         ],
       })
@@ -1064,10 +1036,9 @@ describe('effect-scorch', () => {
       const player = TestUtil.getDbGamePlayer({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
-              score: 0,
+            close: TestUtil.getDbPlayerCombatRow({
               units: [unitToScorch],
-            },
+            }),
           }),
         ],
       })

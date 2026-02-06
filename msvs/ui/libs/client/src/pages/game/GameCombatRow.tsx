@@ -38,6 +38,7 @@ export default function GameCombatRow({
   scrollHistoryIntoView,
   setCardSelected,
   setFullUnits,
+  weather,
 }: {
   cardSelected: UnitForPlayer | undefined
   combat: Combat
@@ -51,6 +52,7 @@ export default function GameCombatRow({
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  weather?: boolean
 }) {
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
@@ -59,6 +61,9 @@ export default function GameCombatRow({
   const decoySelected =
     cardSelectedUnit?.effects &&
     cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy)
+  const weatherSelected =
+    cardSelectedUnit?.effects &&
+    cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Weather)
   const validRow =
     isSelf &&
     selectedCardInHand &&
@@ -66,10 +71,11 @@ export default function GameCombatRow({
     cardSelectedUnit.combats.includes(combat) &&
     !cardSelectedUnit.modifier &&
     !scorchSelected &&
-    !decoySelected
+    !decoySelected &&
+    !weatherSelected
   const invalidRow = cardSelectedUnit?.combats && !cardSelectedUnit.combats.includes(combat) && !scorchSelected
-  let description = scorchSelected ? '' : `${titledCombat} combat units`
-  if (cardSelectedUnit && !scorchSelected) {
+  let description = scorchSelected || weatherSelected ? '' : `${titledCombat} combat units`
+  if (cardSelectedUnit && !scorchSelected && !weatherSelected) {
     if (isSelf) {
       if (cardSelectedUnit.modifier) {
         description = 'Cannot be deployed as row unit, only as row modifier to the left.'
@@ -104,31 +110,33 @@ export default function GameCombatRow({
   const modifierStyle: CSSProperties = {}
   const validModifier = isSelf && !modifier && cardSelectedUnit?.modifier
   const invalidModifier = (cardSelectedUnit?.modifier && modifier) || (cardSelectedUnit && !cardSelectedUnit.modifier)
-  if (isSelf) {
-    if (cardSelectedUnit) {
-      if (modifier) {
-        modifierTitle = `Modifier already set to ${cardSelectedUnit.name} for ${titledCombat} combat row`
-        modifierStyle.cursor = 'not-allowed'
-      } else {
-        if (cardSelectedUnit.modifier) {
-          modifierClass = HTML_CLASSES.ItemHighlighted
-          if (isTurn) {
-            modifierTitle = `Place here for ${cardSelectedUnit.name} to modify the ${titledCombat} combat row`
-            modifierStyle.cursor = 'pointer'
+  if (!weatherSelected) {
+    if (isSelf) {
+      if (cardSelectedUnit) {
+        if (modifier) {
+          modifierTitle = `Modifier already set to ${cardSelectedUnit.name} for ${titledCombat} combat row`
+          modifierStyle.cursor = 'not-allowed'
+        } else {
+          if (cardSelectedUnit.modifier) {
+            modifierClass = HTML_CLASSES.ItemHighlighted
+            if (isTurn) {
+              modifierTitle = `Place here for ${cardSelectedUnit.name} to modify the ${titledCombat} combat row`
+              modifierStyle.cursor = 'pointer'
+            } else {
+              modifierTitle = 'It is not your turn to play'
+              modifierStyle.borderStyle = 'dotted'
+              modifierStyle.cursor = 'not-allowed'
+            }
           } else {
-            modifierTitle = 'It is not your turn to play'
-            modifierStyle.borderStyle = 'dotted'
+            modifierTitle = `${cardSelectedUnit.name} is not a combat row modifier`
             modifierStyle.cursor = 'not-allowed'
           }
-        } else {
-          modifierTitle = `${cardSelectedUnit.name} is not a combat row modifier`
-          modifierStyle.cursor = 'not-allowed'
         }
       }
+    } else if (cardSelectedUnit) {
+      modifierTitle = `${cardSelectedUnit.name} cannot fight for your opponent`
+      modifierStyle.cursor = 'not-allowed'
     }
-  } else if (cardSelectedUnit) {
-    modifierTitle = `${cardSelectedUnit.name} cannot fight for your opponent`
-    modifierStyle.cursor = 'not-allowed'
   }
   let id = ''
   if (combat === Combat.Close) {
@@ -199,6 +207,7 @@ export default function GameCombatRow({
         </ContainerFixedAspectRatio>
       </div>
       <div className="game-sub-section game-combat-row-units">
+        {weather && <div className={HTML_CLASSES.GameCombatRowWeather}></div>}
         <img
           className="game-unit-combat-row-icon game-unit-combat-row-icon-start"
           src={`images/combats/${combat.toLocaleLowerCase()}-icon.png`}
@@ -212,7 +221,7 @@ export default function GameCombatRow({
             cursor: (validRow || scorchSelected) && isTurn ? 'pointer' : cardSelectedUnit ? 'not-allowed' : 'default',
             borderStyle: validRow ? (isTurn ? 'solid' : 'dotted') : 'none',
           }}
-          title={description}
+          title={description ? description : undefined}
           onClick={async () => {
             if (isSelf && isTurn && cardSelectedUnit && validRow && !playUnitProps.loading) {
               await retryCheckingAuth({

@@ -1,5 +1,6 @@
 import CombatRowResolver from '../../src/graphql/resolvers/types/combat-row-resolver'
 import { GameUnit, Move, MoveReasonType, PlayerRound, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 import { PlayerRoundDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
@@ -13,18 +14,19 @@ describe('player-round-resolver', () => {
       const round = TestUtil.getDbPlayerRound({
         passed: false,
         score: 4,
-        close: {
+        close: TestUtil.getDbPlayerCombatRow({
           score: 1,
           units: [TestUtil.getDbGameUnit({})],
-        },
-        ranged: {
+        }),
+        ranged: TestUtil.getDbPlayerCombatRow({
           score: 2,
           units: [TestUtil.getDbGameUnit({})],
-        },
-        siege: {
+        }),
+        siege: TestUtil.getDbPlayerCombatRow({
           score: 3,
           units: [TestUtil.getDbGameUnit({})],
-        },
+        }),
+        weathers: [TestUtil.getDbGameUnit({})],
       })
       const units = [
         TestUtil.getUnit({
@@ -35,6 +37,9 @@ describe('player-round-resolver', () => {
         }),
         TestUtil.getUnit({
           id: round.siege.units[0].unit,
+        }),
+        TestUtil.getUnit({
+          id: round.weathers[0].unit,
         }),
       ]
       const gameUnits: GameUnit[][] = [
@@ -54,6 +59,12 @@ describe('player-round-resolver', () => {
           TestUtil.getGameUnitFromDbGameUnit({
             gameUnit: round.siege.units[0],
             unit: units[2],
+          }),
+        ],
+        [
+          TestUtil.getGameUnitFromDbGameUnit({
+            gameUnit: round.siege.units[0],
+            unit: units[3],
           }),
         ],
       ]
@@ -65,18 +76,19 @@ describe('player-round-resolver', () => {
           moves: [],
           passed: false,
           score: 4,
-          close: {
+          close: TestUtil.getPlayerCombatRow({
             score: 1,
             units: gameUnits[0],
-          },
-          ranged: {
+          }),
+          ranged: TestUtil.getPlayerCombatRow({
             score: 2,
             units: gameUnits[1],
-          },
-          siege: {
+          }),
+          siege: TestUtil.getPlayerCombatRow({
             score: 3,
             units: gameUnits[2],
-          },
+          }),
+          weathers: gameUnits[3],
         },
       })
     })
@@ -85,18 +97,19 @@ describe('player-round-resolver', () => {
         result: RoundResult.Won,
         passed: false,
         score: 4,
-        close: {
+        close: TestUtil.getDbPlayerCombatRow({
           score: 1,
           units: [TestUtil.getDbGameUnit({})],
-        },
-        ranged: {
+        }),
+        ranged: TestUtil.getDbPlayerCombatRow({
           score: 2,
           units: [TestUtil.getDbGameUnit({})],
-        },
-        siege: {
+        }),
+        siege: TestUtil.getDbPlayerCombatRow({
           score: 3,
           units: [TestUtil.getDbGameUnit({})],
-        },
+        }),
+        weathers: [TestUtil.getDbGameUnit({})],
       })
       const units = [
         TestUtil.getUnit({
@@ -107,6 +120,9 @@ describe('player-round-resolver', () => {
         }),
         TestUtil.getUnit({
           id: round.siege.units[0].unit,
+        }),
+        TestUtil.getUnit({
+          id: round.weathers[0].unit,
         }),
       ]
       const gameUnits: GameUnit[][] = [
@@ -126,6 +142,12 @@ describe('player-round-resolver', () => {
           TestUtil.getGameUnitFromDbGameUnit({
             gameUnit: round.siege.units[0],
             unit: units[2],
+          }),
+        ],
+        [
+          TestUtil.getGameUnitFromDbGameUnit({
+            gameUnit: round.weathers[0],
+            unit: units[3],
           }),
         ],
       ]
@@ -138,18 +160,19 @@ describe('player-round-resolver', () => {
           moves: [],
           passed: false,
           score: 4,
-          close: {
+          close: TestUtil.getPlayerCombatRow({
             score: 1,
             units: gameUnits[0],
-          },
-          ranged: {
+          }),
+          ranged: TestUtil.getPlayerCombatRow({
             score: 2,
             units: gameUnits[1],
-          },
-          siege: {
+          }),
+          siege: TestUtil.getPlayerCombatRow({
             score: 3,
             units: gameUnits[2],
-          },
+          }),
+          weathers: gameUnits[3],
         },
       })
     })
@@ -172,18 +195,18 @@ describe('player-round-resolver', () => {
       await testFromArray({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
+            close: TestUtil.getDbPlayerCombatRow({
               score: 1,
               units: [gameUnits[0]],
-            },
-            ranged: {
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 2,
               units: [gameUnits[1]],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 3,
               units: [gameUnits[2]],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -200,18 +223,18 @@ describe('player-round-resolver', () => {
             ],
           }),
           TestUtil.getDbPlayerRound({
-            close: {
+            close: TestUtil.getDbPlayerCombatRow({
               score: 4,
               units: [gameUnits[2]],
-            },
-            ranged: {
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 5,
               units: [gameUnits[3]],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 6,
               units: [gameUnits[4]],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -248,18 +271,18 @@ describe('player-round-resolver', () => {
       await testFromArray({
         rounds: [
           TestUtil.getDbPlayerRound({
-            close: {
+            close: TestUtil.getDbPlayerCombatRow({
               score: 1,
               units: [gameUnits[0]],
-            },
-            ranged: {
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 2,
               units: [gameUnits[1]],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 3,
               units: [gameUnits[2]],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -276,18 +299,18 @@ describe('player-round-resolver', () => {
             ],
           }),
           TestUtil.getDbPlayerRound({
-            close: {
+            close: TestUtil.getDbPlayerCombatRow({
               score: 4,
               units: [gameUnits[2]],
-            },
-            ranged: {
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
               score: 5,
               units: [gameUnits[3]],
-            },
-            siege: {
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
               score: 6,
               units: [gameUnits[4]],
-            },
+            }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -336,12 +359,18 @@ async function testFromObject({
     users: users || resolvedUsers,
     units: units || resolvedUnits,
   })
+  const resolvedWeathers = [
+    TestUtil.getGameUnit({
+      unit: (units || resolvedUnits)[3],
+    }),
+  ]
   const combatRowFromObjectSpy = jest
     .spyOn(CombatRowResolver, 'fromObject')
     .mockResolvedValueOnce(expected.close)
     .mockResolvedValueOnce(expected.ranged)
     .mockResolvedValueOnce(expected.siege)
   const movesFromArraySpy = jest.spyOn(MoveResolver, 'fromArray').mockResolvedValue(movesFromArray)
+  const gameUnitFromArraySpy = jest.spyOn(GameUnitResolver, 'fromArray').mockResolvedValue(resolvedWeathers)
 
   await expect(
     PlayerRoundResolver.fromObject({
@@ -355,7 +384,7 @@ async function testFromObject({
     [
       {
         moves: round.moves,
-        gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units],
+        gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units, ...round.weathers],
         presolvedUnits: units,
         presolvedUsers: users,
       },
@@ -390,6 +419,14 @@ async function testFromObject({
       },
     ],
   ])
+  expect(gameUnitFromArraySpy.mock.calls).toEqual([
+    [
+      {
+        gameUnits: round.weathers,
+        units: units || resolvedUnits,
+      },
+    ],
+  ])
 }
 
 async function testFromArray({
@@ -414,21 +451,19 @@ async function testFromArray({
   const playerRoundFromObjectCalls: any[][] = []
   for (const round of rounds) {
     const resolvedRound: PlayerRound = {
-      close: {
+      close: TestUtil.getPlayerCombatRow({
         score: round.close.score,
-        units: [],
-      },
-      ranged: {
+      }),
+      ranged: TestUtil.getPlayerCombatRow({
         score: round.ranged.score,
-        units: [],
-      },
-      siege: {
+      }),
+      siege: TestUtil.getPlayerCombatRow({
         score: round.siege.score,
-        units: [],
-      },
+      }),
       moves: [],
       passed: false,
       score: round.score,
+      weathers: [],
     }
     playerRoundFromObjectSpy.mockResolvedValueOnce(resolvedRound)
     resolvedRounds.push(resolvedRound)

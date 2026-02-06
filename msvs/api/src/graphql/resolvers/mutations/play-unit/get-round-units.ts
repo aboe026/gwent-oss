@@ -7,34 +7,51 @@ import UnitStore from '../../../../database/stores/unit-store'
  * @param config The configuration used to get the Units.
  * @param config.game The game whose currently deployed battlefield units on the current round should be retreived.
  * @param config.unitBeingPlayed The current unit being played and for which the database object has already been retreived, making it unnecessary to retreive it again.
+ * @param config.units Any potential Unit objects which have already been retrieved.
  * @returns An array of all database Units on the battlefield in the current round of the game, including the unitBeingPlayed.
  */
 export default async function getRoundUnits({
   game,
   unitBeingPlayed,
+  units,
 }: {
   game: GameDbObject
   unitBeingPlayed: UnitDbObject
+  units?: UnitDbObject[]
 }): Promise<UnitDbObject[]> {
-  const unitIds: string[] = [unitBeingPlayed.toString()] // to be removed at end, used just for now to ignore potential duplicates
+  const unitIds: string[] = []
+
+  const existingUnitIds = [unitBeingPlayed._id.toString()]
+  if (units) {
+    existingUnitIds.push(...units.map((unit) => unit._id.toString()))
+  }
+
   for (const player of game.players) {
     const round = player.rounds[game.round - 1]
-    const rowUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
-    for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
-      if (modifier) {
-        rowUnits.push(modifier)
+    for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
+      if (!unitIds.includes(rowUnit.unit.toString()) && !existingUnitIds.includes(rowUnit.unit.toString())) {
+        unitIds.push(rowUnit.unit.toString())
       }
     }
-    for (const rowUnit of rowUnits) {
-      if (!unitIds.includes(rowUnit.unit.toString())) {
-        unitIds.push(rowUnit.unit.toString())
+    for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
+      if (
+        modifier &&
+        !unitIds.includes(modifier.unit.toString()) &&
+        !existingUnitIds.includes(modifier.unit.toString())
+      ) {
+        unitIds.push(modifier.unit.toString())
+      }
+    }
+    for (const weather of round.weathers) {
+      if (!unitIds.includes(weather.unit.toString()) && !existingUnitIds.includes(weather.unit.toString())) {
+        unitIds.push(weather.unit.toString())
       }
     }
   }
 
-  const units = await UnitStore.get({
-    ids: unitIds.slice(1), // remove the deckUnit we have already retrieved
-  })
-
-  return [...units, unitBeingPlayed]
+  return unitIds.length > 0
+    ? UnitStore.get({
+        ids: unitIds,
+      })
+    : []
 }

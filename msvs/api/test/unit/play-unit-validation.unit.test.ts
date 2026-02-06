@@ -258,11 +258,9 @@ describe('play-unit-validation', () => {
           }),
           rounds: [
             TestUtil.getDbPlayerRound({
-              close: {
-                score: 0,
-                units: [],
+              close: TestUtil.getDbPlayerCombatRow({
                 modifier: existingModifier,
-              },
+              }),
             }),
           ],
         }),
@@ -302,11 +300,9 @@ describe('play-unit-validation', () => {
           }),
           rounds: [
             TestUtil.getDbPlayerRound({
-              ranged: {
-                score: 0,
-                units: [],
+              ranged: TestUtil.getDbPlayerCombatRow({
                 modifier: existingModifier,
-              },
+              }),
             }),
           ],
         }),
@@ -346,11 +342,9 @@ describe('play-unit-validation', () => {
           }),
           rounds: [
             TestUtil.getDbPlayerRound({
-              siege: {
-                score: 0,
-                units: [],
+              siege: TestUtil.getDbPlayerCombatRow({
                 modifier: existingModifier,
-              },
+              }),
             }),
           ],
         }),
@@ -843,6 +837,42 @@ describe('play-unit-validation', () => {
       logPrefix,
       expectedDeckUnit: deckUnit,
       expectedCombat: Combat.Close,
+    })
+  })
+  it('sets combat to undefined if weather', async () => {
+    const deckUnit = TestUtil.getDbDeckUnit({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [deckUnit],
+          }),
+        }),
+      ],
+    })
+    const effects = [
+      TestUtil.getDbEffect({
+        key: EffectKey.Weather,
+      }),
+    ]
+    const unit = TestUtil.getDbUnit({
+      id: deckUnit.unit,
+      effects: effects.map((effect) => effect._id),
+    })
+    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+    await testPlayUnitValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      effects,
+      unitId: deckUnit.unit.toString(),
+      verifyMongoIdResponses: [undefined],
+      units: [unit],
+      logPrefix,
+      expectedDeckUnit: deckUnit,
+      expectedCombat: undefined,
     })
   })
   it('logs to trace if enabled', async () => {

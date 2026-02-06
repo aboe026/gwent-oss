@@ -28,10 +28,9 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           }),
@@ -53,10 +52,9 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].close,
-                  score: 0,
-                },
+                }),
                 score: 0,
               },
             ],
@@ -74,10 +72,9 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           }),
@@ -97,10 +94,9 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].close,
-                  score: 0,
-                },
+                }),
                 score: 0,
               },
             ],
@@ -114,10 +110,9 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           }),
@@ -139,10 +134,9 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].ranged,
-                  score: 0,
-                },
+                }),
                 score: 0,
               },
             ],
@@ -160,10 +154,9 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           }),
@@ -183,10 +176,9 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].ranged,
-                  score: 0,
-                },
+                }),
                 score: 0,
               },
             ],
@@ -200,10 +192,9 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           }),
@@ -225,10 +216,9 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].siege,
-                  score: 0,
-                },
+                }),
                 score: 0,
               },
             ],
@@ -246,10 +236,9 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           }),
@@ -269,10 +258,9 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].siege,
-                  score: 0,
-                },
+                }),
                 score: 0,
               },
             ],
@@ -286,14 +274,13 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -315,10 +302,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].close,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -336,14 +323,13 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -363,10 +349,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].close,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -380,14 +366,13 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -409,10 +394,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].ranged,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -430,14 +415,13 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -457,10 +441,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].ranged,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -474,14 +458,13 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -503,10 +486,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].siege,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -524,14 +507,13 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -551,10 +533,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].siege,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -568,28 +550,26 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 2,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -608,10 +588,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].close,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -621,10 +601,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].close,
                   score: 2,
-                },
+                }),
                 score: 2,
               },
             ],
@@ -638,28 +618,26 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 2,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -678,10 +656,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].ranged,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -691,10 +669,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].ranged,
                   score: 2,
-                },
+                }),
                 score: 2,
               },
             ],
@@ -708,28 +686,26 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 2,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -748,10 +724,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].siege,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -761,10 +737,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].siege,
                   score: 2,
-                },
+                }),
                 score: 2,
               },
             ],
@@ -778,28 +754,26 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 2,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -818,10 +792,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].close,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -831,10 +805,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].ranged,
                   score: 2,
-                },
+                }),
                 score: 2,
               },
             ],
@@ -848,28 +822,26 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 2,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -888,10 +860,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].close,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -901,10 +873,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].siege,
                   score: 2,
-                },
+                }),
                 score: 2,
               },
             ],
@@ -918,28 +890,26 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 2,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -958,10 +928,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].ranged,
                   score: 1,
-                },
+                }),
                 score: 1,
               },
             ],
@@ -971,10 +941,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                siege: {
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].siege,
                   score: 2,
-                },
+                }),
                 score: 2,
               },
             ],
@@ -988,8 +958,7 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
@@ -998,15 +967,14 @@ describe('set-game-scores', () => {
                       effectiveStrength: 2,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 3,
@@ -1015,7 +983,7 @@ describe('set-game-scores', () => {
                       effectiveStrength: 4,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -1034,10 +1002,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].close,
                   score: 3,
-                },
+                }),
                 score: 3,
               },
             ],
@@ -1047,10 +1015,10 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].close,
                   score: 7,
-                },
+                }),
                 score: 7,
               },
             ],
@@ -1064,8 +1032,7 @@ describe('set-game-scores', () => {
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 1,
@@ -1074,23 +1041,21 @@ describe('set-game-scores', () => {
                       effectiveStrength: 2,
                     }),
                   ],
-                },
-                ranged: {
-                  score: 0,
+                }),
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 4,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
           TestUtil.getDbGamePlayer({
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
                     TestUtil.getDbGameUnit({
                       effectiveStrength: 5,
@@ -1099,8 +1064,8 @@ describe('set-game-scores', () => {
                       effectiveStrength: 6,
                     }),
                   ],
-                },
-                siege: {
+                }),
+                siege: TestUtil.getDbPlayerCombatRow({
                   score: 0,
                   units: [
                     TestUtil.getDbGameUnit({
@@ -1110,7 +1075,7 @@ describe('set-game-scores', () => {
                       effectiveStrength: 8,
                     }),
                   ],
-                },
+                }),
               }),
             ],
           }),
@@ -1129,14 +1094,14 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[0].rounds[0],
-                close: {
+                close: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].close,
                   score: 3,
-                },
-                ranged: {
+                }),
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[0].rounds[0].ranged,
                   score: 4,
-                },
+                }),
                 score: 7,
               },
             ],
@@ -1146,14 +1111,14 @@ describe('set-game-scores', () => {
             rounds: [
               {
                 ...origGame.players[1].rounds[0],
-                ranged: {
+                ranged: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].ranged,
                   score: 11,
-                },
-                siege: {
+                }),
+                siege: TestUtil.getDbPlayerCombatRow({
                   ...origGame.players[1].rounds[0].siege,
                   score: 15,
-                },
+                }),
                 score: 26,
               },
             ],

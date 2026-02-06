@@ -74,6 +74,8 @@ export default class GamePage {
     CombatRowRangedOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowRangedOpponent}`),
     CombatRowSiegeOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowSiegeOpponent}`),
     HistoryError: historyContainer.find(`.${HTML_CLASSES.GameHistoryError}`),
+    WeatherContainer: existingGameContainer.find(`#${HTML_IDS.GameWeatherContainer}`),
+    WeatherUnits: existingGameContainer.find(`#${HTML_IDS.GameWeatherUnits}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -143,12 +145,39 @@ export default class GamePage {
     await t.click(GamePage.elements.NewGameCreate)
   }
 
-  static async verifyMiddle({ round }: { round?: number }) {
+  static async verifyMiddle({ round, players }: { round?: number; players: GamePlayerExpected[] }) {
     await t.expect(GamePage.elements.Round.exists).eql(!!round)
     if (round) {
       await t.expect(GamePage.elements.Round.visible).ok()
       await t.expect(GamePage.elements.Round.innerText).eql(`Round: ${round}`)
+      await GamePage.verifyWeather({
+        players,
+      })
     }
+  }
+
+  static async verifyWeather({ players }: { players: GamePlayerExpected[] }) {
+    const expected: string[] = []
+    for (const player of players) {
+      if (player.weathering) {
+        for (const weather of player.weathering) {
+          expected.push(weather)
+        }
+      }
+    }
+    const actual: string[] = []
+
+    const units = await GamePage.elements.WeatherUnits.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+    const count = await units.count
+    for (let i = 0; i < count; i++) {
+      const card = units.nth(i)
+      const cardName = await card.getAttribute('title')
+      const isSelected = await card.hasClass(HTML_CLASSES.ItemHighlighted)
+      const isDotted = await E2eHelper.hasDottedBorder(card)
+      actual.push(`${cardName}${isSelected ? ' selected' : ''}${isDotted ? ' dotted' : ''}`)
+    }
+
+    await t.expect(actual).eql(expected)
   }
 
   static async verifySelf({
@@ -412,6 +441,7 @@ export default class GamePage {
     userName,
     highlightedBattlefieldCard,
     highlightedHandCard,
+    weathered,
   }: {
     rowSelector: Selector
     isSelf: boolean
@@ -421,6 +451,7 @@ export default class GamePage {
     units: CombatUnit[]
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHandCard?: HighlightedHandCard
+    weathered: boolean
   }): Promise<boolean> {
     let highlightedBattlefieldCardFound = false
     await t.expect(rowSelector.exists).ok()
@@ -474,6 +505,13 @@ export default class GamePage {
     const actualDotted = await E2eHelper.hasDottedBorder(cardsContainer)
     const expectedDotted = expectedHighlighted && highlightedHandCard.dotted
     await t.expect(actualDotted).eql(expectedDotted || false, message)
+
+    // weather
+    await t.expect(rowSelector.find(`.${HTML_CLASSES.GameCombatRowWeather}`).exists).eql(weathered, message)
+    if (weathered) {
+      await t.expect(rowSelector.find(`.${HTML_CLASSES.GameCombatRowWeather}`).visible).ok()
+    }
+
     return highlightedBattlefieldCardFound
   }
 
@@ -560,6 +598,15 @@ export default class GamePage {
       await t
         .expect(GamePage.elements.BattlefieldOpponent.hasClass(HTML_CLASSES.GameUnitBoardSidePassed))
         .eql(!!opponent.passed)
+      const weatheredClose = [...(self.weathering || []), ...(opponent.weathering || [])].some((weather) =>
+        ['Biting Frost'].includes(weather)
+      )
+      const weatheredRanged = [...(self.weathering || []), ...(opponent.weathering || [])].some((weather) =>
+        ['Impenetrable Fog', 'Skellige Storm'].includes(weather)
+      )
+      const weatheredSiege = [...(self.weathering || []), ...(opponent.weathering || [])].some((weather) =>
+        ['Torrential Rain', 'Skellige Storm'].includes(weather)
+      )
       const highlightedBattlefieldCardFoundCloseSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Close,
         rowSelector: GamePage.elements.CombatRowCloseSelf,
@@ -569,6 +616,7 @@ export default class GamePage {
         userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredClose,
       })
       const highlightedBattlefieldCardFoundRangedSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Ranged,
@@ -579,6 +627,7 @@ export default class GamePage {
         userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredRanged,
       })
       const highlightedBattlefieldCardFoundSiegeSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Siege,
@@ -589,6 +638,7 @@ export default class GamePage {
         userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredSiege,
       })
       const highlightedBattlefieldCardFoundCloseOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Close,
@@ -599,6 +649,7 @@ export default class GamePage {
         userName: opponent.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredClose,
       })
       const highlightedBattlefieldCardFoundRangedOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Ranged,
@@ -609,6 +660,7 @@ export default class GamePage {
         userName: opponent.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredRanged,
       })
       const highlightedBattlefieldCardFoundSiegeOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Siege,
@@ -619,6 +671,7 @@ export default class GamePage {
         highlightedBattlefieldCard,
         userName: opponent.name || '',
         highlightedHandCard,
+        weathered: weatheredSiege,
       })
       const highlightedBattlefieldCardFound =
         highlightedBattlefieldCardFoundCloseSelf ||
@@ -780,6 +833,7 @@ export default class GamePage {
     }
     await GamePage.verifyMiddle({
       round: !self.ready || !opponent.ready || victors ? undefined : round,
+      players: [self, opponent],
     })
     await GamePage.verifySelf({
       name: self.name,
@@ -826,6 +880,7 @@ export default class GamePage {
         close: self.close,
         ranged: self.ranged,
         siege: self.siege,
+        weathering: self.weathering,
       },
       opponent: {
         name: opponent.name,
@@ -835,6 +890,7 @@ export default class GamePage {
         close: opponent.close,
         ranged: opponent.ranged,
         siege: opponent.siege,
+        weathering: opponent.weathering,
       },
       redraws,
       turnOrder,
@@ -967,6 +1023,15 @@ export default class GamePage {
     await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
   }
 
+  static async fullscreenWeatherCard({ unitName, instance = 1 }: { unitName: string; instance?: number }) {
+    const card = await GamePage.getWeatherCard({
+      unitName,
+      instance,
+    })
+    await t.hover(card.find(`.${HTML_CLASSES.UnitGameCardStrength}`))
+    await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
+  }
+
   static async verifyError(error: string) {
     await t.expect(GamePage.elements.Error.innerText).eql(error)
   }
@@ -1057,6 +1122,7 @@ export default class GamePage {
     modifier,
     decoyTarget,
     eligibleRows,
+    weather,
     verify = true,
   }: {
     unitName: string
@@ -1064,6 +1130,7 @@ export default class GamePage {
     modifier?: boolean
     eligibleRows?: Combat[]
     decoyTarget?: string
+    weather?: boolean
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
@@ -1087,7 +1154,7 @@ export default class GamePage {
     let combatRow: Selector | undefined = undefined
     const eligibleCombatRows: CombatAndRow[] = []
     if (!eligibleRows) {
-      eligibleRows = [row]
+      eligibleRows = weather ? [] : [row]
     }
     if (row === Combat.Close) {
       combatRow = closeCombatRow
@@ -1138,6 +1205,8 @@ export default class GamePage {
             )
             .notOk(`Modifier for row "${nonCombatRow.combat}" is not highlighted`)
         }
+      } else if (weather) {
+        await t.expect(GamePage.elements.WeatherContainer.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       } else {
         for (const eligibleCombatRow of eligibleCombatRows) {
           await t
@@ -1167,6 +1236,8 @@ export default class GamePage {
         decoying: true,
       })
       await t.click(target)
+    } else if (weather) {
+      await t.click(GamePage.elements.WeatherContainer)
     } else {
       await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`))
     }
@@ -1360,6 +1431,28 @@ export default class GamePage {
     return matchingCard
   }
 
+  static async getWeatherCard({ unitName, instance }: { unitName: string; instance?: number }) {
+    const weatherCards = await GamePage.elements.WeatherContainer.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+    const weatherCardCounts = await weatherCards.count
+    let matchingCard: Selector | undefined
+    let namedInstance = 1
+    for (let i = 0; i < weatherCardCounts && !matchingCard; i++) {
+      const rowCard = weatherCards.nth(i)
+      const cardTitle = (await rowCard.getAttribute('title')) || ''
+      if (cardTitle === unitName) {
+        if (namedInstance === instance) {
+          matchingCard = rowCard
+        } else {
+          namedInstance++
+        }
+      }
+    }
+    if (!matchingCard) {
+      throw Error(`Could not find weather "${unitName}" instance "${instance}" to select`)
+    }
+    return matchingCard
+  }
+
   static async selectBattlefieldCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
     const card = await this.getBattlefieldCard({
       unitName,
@@ -1503,6 +1596,7 @@ export interface GamePlayerExpected {
   close?: CombatRow
   ranged?: CombatRow
   siege?: CombatRow
+  weathering?: string[]
 }
 
 interface ImpactSelection {
@@ -1597,6 +1691,7 @@ interface CenterPlayer {
   close?: CombatRow
   ranged?: CombatRow
   siege?: CombatRow
+  weathering?: string[]
 }
 
 interface CombatAndRow {

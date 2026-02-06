@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 
 import { addListsToMap } from '@gwent/utils'
 import {
+  Combat,
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
@@ -13,8 +14,10 @@ import {
 import EffectBond from './effect-bond'
 import EffectHorn from './effect-horn'
 import EffectMorale from './effect-morale'
+import EffectWeather from './effect-weather'
 import GetEffectWithKey from './get-effect-with-key'
 import getUnitIdsWithEffect from './get-unit-ids-with-effect'
+import GetWeatherUnitsForRow, { PlayerWeatherUnit } from './get-weather-units-for-row'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -25,6 +28,7 @@ import PresentableError from '../../../../util/presentable-error'
  */
 export default class CalculateGameEffectiveStrengths {
   private static logger = getLogger('CalculateGameEffectiveStrengths')
+
   /**
    * Set the effective strengths for all units played in the current round of a game, taking into account unit effects and leader abilities present.
    *
@@ -55,10 +59,16 @@ export default class CalculateGameEffectiveStrengths {
     musteredUnitIds: string[]
     transformedUnitIds: string[]
   }): StrengthImpacts {
+    const weathers: ImpactsByUnitId = {}
     const bonds: ImpactsByUnitId = {}
     const morales: ImpactsByUnitId = {}
     const horns: ImpactsByUnitId = {}
 
+    const weatherEffect = GetEffectWithKey.getEffectWithKey({
+      effectKey: EffectKey.Weather,
+      effects,
+      logPrefix,
+    })
     const moraleEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Morale,
       effects,
@@ -74,18 +84,54 @@ export default class CalculateGameEffectiveStrengths {
       effects,
       logPrefix,
     })
+    const closeWeathers = GetWeatherUnitsForRow.getWeatherUnitsForRow({
+      logPrefix,
+      game,
+      combat: Combat.Close,
+      units,
+    })
+    const rangedWeathers = GetWeatherUnitsForRow.getWeatherUnitsForRow({
+      logPrefix,
+      game,
+      combat: Combat.Ranged,
+      units,
+    })
+    const siegeWeathers = GetWeatherUnitsForRow.getWeatherUnitsForRow({
+      logPrefix,
+      game,
+      combat: Combat.Siege,
+      units,
+    })
 
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
-      for (const row of [round.close, round.ranged, round.siege]) {
+      const close = {
+        combat: Combat.Close,
+        row: round.close,
+        weathers: closeWeathers,
+      }
+      const ranged = {
+        combat: Combat.Ranged,
+        row: round.ranged,
+        weathers: rangedWeathers,
+      }
+      const siege = {
+        combat: Combat.Siege,
+        row: round.siege,
+        weathers: siegeWeathers,
+      }
+      for (const row of [close, ranged, siege]) {
         const {
+          weathers: rowWeathers,
           bonds: rowBonds,
           horns: rowHorns,
           morales: rowMorales,
         } = CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-          row,
+          row: row.row,
           units,
           logPrefix,
+          weatherUnits: row.weathers,
+          weatherEffect,
           moraleEffect,
           bondEffect,
           hornEffect,
@@ -94,6 +140,10 @@ export default class CalculateGameEffectiveStrengths {
           transformedUnitIds,
           userId: player.user,
           currentPlayerId: game.turn,
+        })
+        addListsToMap({
+          baseMap: weathers,
+          newLists: rowWeathers,
         })
         addListsToMap({
           baseMap: bonds,
@@ -111,6 +161,7 @@ export default class CalculateGameEffectiveStrengths {
     }
 
     return {
+      weathers,
       bonds,
       morales,
       horns,
@@ -124,6 +175,8 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.row The combat row contianing the units to calculate effective strengths for.
    * @param config.units All the database Unit objects present in the round for the game.
    * @param config.logPrefix What to prepend log statements with.
+   * @param config.weatherUnits A list of Units for the weathers effecting the row the unit under consideration is apart of.
+   * @param config.weatherEffect The Effect database document for the Weather effect.
    * @param config.moraleEffect The Effect database document for the Morale effect.
    * @param config.bondEffect The Effect database document for the Bond effect.
    * @param config.hornEffect The Effect database document for the Horn effect.
@@ -138,6 +191,8 @@ export default class CalculateGameEffectiveStrengths {
     row,
     units,
     logPrefix,
+    weatherUnits,
+    weatherEffect,
     moraleEffect,
     bondEffect,
     hornEffect,
@@ -150,6 +205,8 @@ export default class CalculateGameEffectiveStrengths {
     row: PlayerCombatRowDbObject
     units: UnitDbObject[]
     logPrefix: string
+    weatherUnits: PlayerWeatherUnit[]
+    weatherEffect: EffectDbObject | undefined
     moraleEffect: EffectDbObject | undefined
     bondEffect: EffectDbObject | undefined
     hornEffect: EffectDbObject | undefined
@@ -159,6 +216,7 @@ export default class CalculateGameEffectiveStrengths {
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
   }): StrengthImpacts {
+    const weathers: ImpactsByUnitId = {}
     const bonds: ImpactsByUnitId = {}
     const morales: ImpactsByUnitId = {}
     const horns: ImpactsByUnitId = {}
@@ -200,6 +258,19 @@ export default class CalculateGameEffectiveStrengths {
         rowGameUnit.effectiveStrength = rowUnit.strength
         rowGameUnit.effects = []
 
+        addListsToMap({
+          baseMap: weathers,
+          newLists: EffectWeather.weatherScores({
+            logPrefix,
+            newDeckUnit,
+            rowGameUnit,
+            rowUnit,
+            weatherUnits,
+            userId,
+            weatherEffect,
+            currentPlayerId,
+          }),
+        })
         addListsToMap({
           baseMap: bonds,
           newLists: EffectBond.applyBonds({
@@ -251,6 +322,7 @@ export default class CalculateGameEffectiveStrengths {
     }
 
     return {
+      weathers,
       bonds,
       morales,
       horns,
@@ -259,6 +331,7 @@ export default class CalculateGameEffectiveStrengths {
 }
 
 export interface StrengthImpacts {
+  weathers: ImpactsByUnitId
   morales: ImpactsByUnitId
   bonds: ImpactsByUnitId
   horns: ImpactsByUnitId

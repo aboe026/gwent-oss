@@ -113,10 +113,11 @@ export default class PlayUnitValidation {
       })
     }
     const isDecoy = effects && effects.some((effect) => effect.key === EffectKey.Decoy)
+    const isWeather = effects && effects.some((effect) => effect.key === EffectKey.Weather)
 
     let roundUnits: UnitDbObject[] | undefined = undefined
 
-    if (!isDecoy) {
+    if (!isDecoy && !isWeather) {
       if (unit.combats && unit.combats.length > 1 && !combat) {
         const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -192,6 +193,10 @@ export default class PlayUnitValidation {
         throw new PresentableError(message)
       }
       combat = battlefieldUnit.row
+    }
+
+    if (isWeather) {
+      combat = undefined
     }
 
     return {

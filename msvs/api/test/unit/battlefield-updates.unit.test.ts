@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 
+import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/battlefield-updates'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import {
   DeckUnitDbObject,
@@ -12,15 +13,13 @@ import {
 import deepClone from '../util/deep-clone'
 import EffectDecoy from '../../src/graphql/resolvers/mutations/play-unit/effect-decoy'
 import EffectMardroeme from '../../src/graphql/resolvers/mutations/play-unit/effect-mardroeme'
+import EffectWeather from '../../src/graphql/resolvers/mutations/play-unit/effect-weather'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
-import modifyBattlefieldWithNewUnit, {
-  addNewUnitToBattlefield,
-} from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
 import MusterBattlefield, { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import ScorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import TestUtil from '../util/test-util'
 
-describe('modify-battlefield-with-new-unit', () => {
+describe('battlefield-updates', () => {
   describe('modifyBattlefieldWithNewUnit', () => {
     it('returns undefined if no impacts', async () => {
       await testModifyBattlefieldWithNewUnit({
@@ -205,11 +204,94 @@ describe('modify-battlefield-with-new-unit', () => {
         deckUnitAddedToHand: impacts[0].unit,
       })
     })
+    it('returns single impact for weather', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      await testModifyBattlefieldWithNewUnit({
+        newDeckUnit,
+        newUnit: TestUtil.getDbUnit({}),
+        weatherImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
+        newUnitHasWeather: true,
+      })
+    })
+    it('returns multiple impacts for weather', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      await testModifyBattlefieldWithNewUnit({
+        newDeckUnit,
+        newUnit: TestUtil.getDbUnit({}),
+        weatherImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
+        newUnitHasWeather: true,
+      })
+    })
   })
   describe('addNewUnitToBattlefield', () => {
     describe('close combat', () => {
       const combat = Combat.Close
       describe('only unit', () => {
+        it('removes weather from hand and but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -244,10 +326,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -299,11 +380,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    close: {
-                      score: 0,
-                      units: [],
+                    close: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -354,10 +433,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -409,11 +487,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    close: {
-                      score: 0,
-                      units: [],
+                    close: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -430,6 +506,58 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('other units', () => {
+        it('removes weather from hand but does not add add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbGameUnit({})],
+                }),
+              }),
+            ],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [origGame.players[0].deck.hand[0]],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -444,10 +572,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -472,10 +599,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].close.units[0], newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -507,10 +633,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -535,11 +660,10 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].close.units[0]],
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -572,10 +696,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -598,10 +721,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].close.units[0], newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -635,10 +757,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -661,11 +782,10 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].close.units[0]],
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -682,6 +802,51 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('second round', () => {
+        it('removes weather from hand but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -717,10 +882,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[0].rounds[0],
                   {
                     ...origGame.players[0].rounds[1],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -773,11 +937,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[0].rounds[0],
                   {
                     ...origGame.players[0].rounds[1],
-                    close: {
-                      score: 0,
-                      units: [],
+                    close: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -829,10 +991,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[1].rounds[0],
                   {
                     ...origGame.players[1].rounds[1],
-                    close: {
-                      score: 0,
+                    close: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -885,11 +1046,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[1].rounds[0],
                   {
                     ...origGame.players[1].rounds[1],
-                    close: {
-                      score: 0,
-                      units: [],
+                    close: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -909,6 +1068,51 @@ describe('modify-battlefield-with-new-unit', () => {
     describe('ranged combat', () => {
       const combat = Combat.Ranged
       describe('only unit', () => {
+        it('removes weather from hand but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -943,10 +1147,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -998,11 +1201,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    ranged: {
-                      score: 0,
-                      units: [],
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1053,10 +1254,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1108,11 +1308,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    ranged: {
-                      score: 0,
-                      units: [],
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1129,6 +1327,58 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('other units', () => {
+        it('removes weather from hand but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbGameUnit({})],
+                }),
+              }),
+            ],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [origGame.players[0].deck.hand[0]],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -1143,10 +1393,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -1171,10 +1420,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].ranged.units[0], newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1206,10 +1454,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -1234,11 +1481,10 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].ranged.units[0]],
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1268,10 +1514,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -1297,10 +1542,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].ranged.units[0], newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1331,10 +1575,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: 0,
+                ranged: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -1360,11 +1603,10 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].ranged.units[0]],
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1381,6 +1623,51 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('second round', () => {
+        it('removes weather from hand but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -1416,10 +1703,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[0].rounds[0],
                   {
                     ...origGame.players[0].rounds[1],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1472,11 +1758,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[0].rounds[0],
                   {
                     ...origGame.players[0].rounds[1],
-                    ranged: {
-                      score: 0,
-                      units: [],
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1528,10 +1812,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[1].rounds[0],
                   {
                     ...origGame.players[1].rounds[1],
-                    ranged: {
-                      score: 0,
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1584,11 +1867,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[1].rounds[0],
                   {
                     ...origGame.players[1].rounds[1],
-                    ranged: {
-                      score: 0,
-                      units: [],
+                    ranged: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1608,6 +1889,51 @@ describe('modify-battlefield-with-new-unit', () => {
     describe('siege combat', () => {
       const combat = Combat.Siege
       describe('only unit', () => {
+        it('removes weather from hand but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -1642,10 +1968,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1697,11 +2022,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    siege: {
-                      score: 0,
-                      units: [],
+                    siege: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1752,10 +2075,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1807,11 +2129,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    siege: {
-                      score: 0,
-                      units: [],
+                    siege: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1828,6 +2148,58 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('other units', () => {
+        it('removes weather from hand but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbGameUnit({})],
+                }),
+              }),
+            ],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [origGame.players[0].deck.hand[0]],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -1842,10 +2214,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -1870,10 +2241,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].siege.units[0], newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -1905,10 +2275,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -1933,11 +2302,10 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[0].rounds[0],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].siege.units[0]],
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -1967,10 +2335,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -1996,10 +2363,9 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].siege.units[0], newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -2030,10 +2396,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                siege: {
-                  score: 0,
+                siege: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -2059,11 +2424,10 @@ describe('modify-battlefield-with-new-unit', () => {
                 rounds: [
                   {
                     ...origGame.players[1].rounds[0],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].siege.units[0]],
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -2080,6 +2444,51 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('second round', () => {
+        it('removes weather from hand but does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -2115,10 +2524,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[0].rounds[0],
                   {
                     ...origGame.players[0].rounds[1],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -2171,11 +2579,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[0].rounds[0],
                   {
                     ...origGame.players[0].rounds[1],
-                    siege: {
-                      score: 0,
-                      units: [],
+                    siege: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -2227,10 +2633,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[1].rounds[0],
                   {
                     ...origGame.players[1].rounds[1],
-                    siege: {
-                      score: 0,
+                    siege: TestUtil.getDbPlayerCombatRow({
                       units: [newDeckUnit],
-                    },
+                    }),
                   },
                 ],
               },
@@ -2283,11 +2688,9 @@ describe('modify-battlefield-with-new-unit', () => {
                   origGame.players[1].rounds[0],
                   {
                     ...origGame.players[1].rounds[1],
-                    siege: {
-                      score: 0,
-                      units: [],
+                    siege: TestUtil.getDbPlayerCombatRow({
                       modifier: newDeckUnit,
-                    },
+                    }),
                   },
                 ],
               },
@@ -2307,6 +2710,51 @@ describe('modify-battlefield-with-new-unit', () => {
     describe('no combat', () => {
       const combat = null
       describe('only unit', () => {
+        it('removes weather from hand and does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and does not add it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -2338,7 +2786,6 @@ describe('modify-battlefield-with-new-unit', () => {
                   ...origGame.players[0].deck,
                   hand: [],
                 },
-                rounds: origGame.players[0].rounds,
               },
               origGame.players[1],
             ],
@@ -2399,6 +2846,58 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('other units', () => {
+        it('removes weather from hand and does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbGameUnit({})],
+                }),
+              }),
+            ],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [origGame.players[0].deck.hand[0]],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -2413,10 +2912,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -2469,10 +2967,9 @@ describe('modify-battlefield-with-new-unit', () => {
             }),
             rounds: [
               TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
+                close: TestUtil.getDbPlayerCombatRow({
                   units: [TestUtil.getDbGameUnit({})],
-                },
+                }),
               }),
             ],
           })
@@ -2507,6 +3004,51 @@ describe('modify-battlefield-with-new-unit', () => {
         })
       })
       describe('second round', () => {
+        it('removes weather from hand and does not add it to row for round for first player', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  hand: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+            weather: true,
+          })
+        })
         it('removes from hand and adds it to row for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -2615,6 +3157,8 @@ async function testModifyBattlefieldWithNewUnit({
   mardroemingGameUnit,
   decoyImpacts = {},
   deckUnitAddedToHand,
+  weatherImpacts = {},
+  newUnitHasWeather = false,
 }: {
   newDeckUnit: DeckUnitDbObject
   newUnit: UnitDbObject
@@ -2628,6 +3172,8 @@ async function testModifyBattlefieldWithNewUnit({
   mardroemingGameUnit?: GameUnitDbObject
   decoyImpacts?: ImpactsByUnitId
   deckUnitAddedToHand?: DeckUnitDbObject
+  weatherImpacts?: ImpactsByUnitId
+  newUnitHasWeather?: boolean
 }) {
   const battlefieldUnits = [TestUtil.getDbUnit({})]
   const combat = Combat.Close
@@ -2636,12 +3182,17 @@ async function testModifyBattlefieldWithNewUnit({
   const game = TestUtil.getDbGame({})
   const logPrefix = 'log-prefix'
 
+  const addNewUnitToBattlefieldSpy = jest.spyOn(BattlefieldUpdates, 'addNewUnitToBattlefield').mockReturnValue()
+  const weatherBattlefieldSpy = jest.spyOn(EffectWeather, 'weatherBattlefield').mockReturnValue({
+    impacts: weatherImpacts,
+    newUnitHasWeather,
+  })
+  const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockReturnValue(scorchImpacts)
   const musterBattlefieldSpy = jest.spyOn(MusterBattlefield, 'musterBattlefield').mockResolvedValue({
     impacts: musterImpacts,
     musteredUnits,
     musteredOrigins,
   })
-  const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockReturnValue(scorchImpacts)
   const transformBerserkersSpy = jest.spyOn(EffectMardroeme, 'transformBerserkers').mockResolvedValue({
     impacts: mardroemeImpacts,
     transformedUnits: mardroemeTransformedUnits,
@@ -2654,7 +3205,7 @@ async function testModifyBattlefieldWithNewUnit({
   })
 
   await expect(
-    modifyBattlefieldWithNewUnit({
+    BattlefieldUpdates.modifyBattlefieldWithNewUnit({
       battlefieldUnits,
       effects,
       game,
@@ -2675,8 +3226,31 @@ async function testModifyBattlefieldWithNewUnit({
     mardroemingGameUnit: mardroemingGameUnit,
     decoys: decoyImpacts,
     deckUnitsAddedToHand: deckUnitAddedToHand ? [deckUnitAddedToHand] : [],
+    weathers: weatherImpacts,
   })
 
+  expect(addNewUnitToBattlefieldSpy.mock.calls).toEqual([
+    [
+      {
+        combat,
+        game,
+        newDeckUnit,
+        newUnit,
+        weather: newUnitHasWeather,
+      },
+    ],
+  ])
+  expect(weatherBattlefieldSpy.mock.calls).toEqual([
+    [
+      {
+        effects,
+        game,
+        logPrefix,
+        newDeckUnit,
+        newUnit,
+      },
+    ],
+  ])
   expect(musterBattlefieldSpy.mock.calls).toEqual([
     [
       {
@@ -2728,21 +3302,24 @@ function testAddNewUnitToBattlefield({
   combat,
   newDeckUnit,
   newUnit,
+  weather = false,
   game,
   expected,
 }: {
   combat: Combat | null
   newDeckUnit: DeckUnitDbObject
   newUnit: UnitDbObject
+  weather?: boolean
   game: GameDbObject
   expected: GameDbObject
 }) {
   expect(
-    addNewUnitToBattlefield({
+    BattlefieldUpdates.addNewUnitToBattlefield({
       combat,
       game,
       newDeckUnit,
       newUnit,
+      weather,
     })
   ).toEqual(undefined)
 
