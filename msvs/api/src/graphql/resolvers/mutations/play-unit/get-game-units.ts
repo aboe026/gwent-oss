@@ -5,7 +5,6 @@ import { Combat, GameUnitDbObject, PlayerRoundDbObject } from '@gwent/graphql-sc
  *
  * @param config The configuration used to get all GameUnit database documents.
  * @param config.combat An optional combat type to limit results to.
- * @param config.players The players in the game to get GameUnits for.
  * @param config.rounds The Rounds of Game Players to get GameUnits for.
  * @returns A list of all GameUnit database objects which are currently on the battlefield for the given players in a game.
  */
