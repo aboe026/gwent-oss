@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.1 - 2026-02-06
+
+### Fixed
+
+- Upgrade dependencies ([#54](https://github.com/aboe026/gwent/pull/54)) (Adam Boe)
+
 ## 0.20.0 - 2026-02-06
 
 ### Added
