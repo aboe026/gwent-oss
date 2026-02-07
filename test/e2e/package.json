@@ -14,9 +14,9 @@
     "lint:fix": "yarn g:lint-fix",
     "remove-context-overrides": "yarn g:ts-node scripts/remove-context-overrides.ts",
     "start": "yarn g:npm-run-all --sequential build start-testcafe",
-    "start-testcafe": "cross-env START_APP=true testcafe --config-file=build/.testcaferc.js",
+    "start-testcafe": "cross-env START_APP=true testcafe 'edge --disable-features=LocalNetworkAccessChecks' --config-file=build/.testcaferc.js",
     "start-gwent": "cd $PROJECT_CWD && cross-env SESSION_TIMEOUT_SECONDS=60 MONGO_DB=gwent-e2e yarn start",
-    "test": "cross-env MONGO_DB=gwent testcafe --config-file=build/.testcaferc.js --debug-on-fail",
+    "test": "cross-env MONGO_DB=gwent testcafe 'edge --disable-features=LocalNetworkAccessChecks' --config-file=build/.testcaferc.js --debug-on-fail",
     "start-docker": "yarn remove-context-overrides && docker run --rm -v $PROJECT_CWD:/gwent -w /gwent/test/e2e -it testcafe/testcafe:yarn-pnp chromium build/tests --config-file=build/.testcaferc.js",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
     "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn remove-context-overrides'",
@@ -34,11 +34,11 @@
     "cross-env": "10.1.0",
     "graphql": "16.12.0",
     "graphql-request": "6.1.0",
-    "graphql-ws": "6.0.6",
-    "mongodb": "7.0.0",
-    "testcafe": "3.7.2",
+    "graphql-ws": "6.0.7",
+    "mongodb": "7.1.0",
+    "testcafe": "3.7.4",
     "url-join": "4.0.1",
-    "ws": "8.18.3"
+    "ws": "8.19.0"
   },
   "devDependencies": {
     "@types/node": "22.18.0",

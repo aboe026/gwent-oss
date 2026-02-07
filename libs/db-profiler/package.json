@@ -15,8 +15,8 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "fs-extra": "11.3.2",
-    "mongodb": "7.0.0"
+    "fs-extra": "11.3.3",
+    "mongodb": "7.1.0"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
