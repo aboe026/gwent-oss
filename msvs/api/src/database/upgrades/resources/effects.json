@@ -45,7 +45,7 @@
   },
   {
     "Name": "Spy",
-    "Ability": "Place on your opponent's battlefield (counts towards opponent's total) and draw 2 cards from your deck."
+    "Ability": "Place on your opponent's battlefield (counts towards opponent's total) and hand up to 2 random cards from your undrawn pile."
   },
   {
     "Name": "Weather",
