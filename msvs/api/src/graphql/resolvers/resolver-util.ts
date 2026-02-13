@@ -207,6 +207,12 @@ export default class ResolverUtil {
               userIdsToResolve.push(userId)
             }
           }
+          if (!presolvedUsers && !userIds && unitMove.target) {
+            const userId = unitMove.target.toString()
+            if (!userIdsToResolve.includes(userId)) {
+              userIdsToResolve.push(userId)
+            }
+          }
         }
       }
     }

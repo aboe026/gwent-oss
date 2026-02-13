@@ -42,6 +42,8 @@ export default class UpdateHistory {
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
+   * @param config.spies Any potential units that were spied by the new battlefield unit being played.
+   * @param config.targetId The potential target an effect is being applied to.
    * @param config.weathers Any potential weather units that were deployed by the new battlefield unit being played.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    */
@@ -52,6 +54,7 @@ export default class UpdateHistory {
     logPrefix,
     combat,
     decoys,
+    spies,
     scorches,
     mardroemes,
     mardroemingGameUnit,
@@ -62,6 +65,7 @@ export default class UpdateHistory {
     morales,
     weathers,
     musteredOrigins,
+    targetId,
   }: {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
@@ -69,6 +73,7 @@ export default class UpdateHistory {
     logPrefix: string
     combat: Combat | null | undefined
     decoys: ImpactsByUnitId
+    spies: ImpactsByUnitId
     scorches: ImpactsByUnitId
     mardroemes: ImpactsByUnitId
     transformedGameUnits?: GameUnitDbObject[]
@@ -79,6 +84,7 @@ export default class UpdateHistory {
     morales: ImpactsByUnitId
     weathers: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
+    targetId: string | null | undefined
   }) {
     const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
       game,
@@ -93,6 +99,7 @@ export default class UpdateHistory {
       musters[deckUnit.unit.toString()] ||
       scorches[deckUnit.unit.toString()] ||
       decoys[deckUnit.unit.toString()] ||
+      spies[deckUnit.unit.toString()] ||
       weathers[deckUnit.unit.toString()]
     const move: MoveUnitDbObject = {
       created: new Date(),
@@ -112,6 +119,9 @@ export default class UpdateHistory {
       },
       type: MoveType.Unit,
     }
+    if (targetId) {
+      move.target = new ObjectId(targetId)
+    }
     UpdateHistory.addMoveToCurrentPlayer({
       game,
       move,
@@ -125,6 +135,7 @@ export default class UpdateHistory {
           game,
           horns,
           decoys,
+          spies,
           logPrefix,
           mardroemes,
           morales,
@@ -166,6 +177,7 @@ export default class UpdateHistory {
           game,
           horns,
           decoys,
+          spies,
           logPrefix,
           mardroemes,
           morales,
@@ -199,6 +211,7 @@ export default class UpdateHistory {
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
+   * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
    * @param config.weathers Any potential units the new battlefield unit Weathered when deployed.
    * @param config.reason Why the new unit is indirectly being added to the battlefield.
@@ -217,6 +230,7 @@ export default class UpdateHistory {
     bonds,
     horns,
     decoys,
+    spies,
     morales,
     weathers,
     reason,
@@ -233,6 +247,7 @@ export default class UpdateHistory {
     bonds: ImpactsByUnitId
     horns: ImpactsByUnitId
     decoys: ImpactsByUnitId
+    spies: ImpactsByUnitId
     morales: ImpactsByUnitId
     weathers: ImpactsByUnitId
     reason: MoveUnitReasonDbObject
@@ -255,6 +270,7 @@ export default class UpdateHistory {
       horns[unitId.toString()] ||
       morales[unitId.toString()] ||
       decoys[unitId.toString()] ||
+      spies[unitId.toString()] ||
       weathers[unitId.toString()]
     const move: MoveUnitDbObject = {
       created,

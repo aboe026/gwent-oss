@@ -12,6 +12,9 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- do not let opponent see details of spy impacts
+
+- no spaces in username?
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row

@@ -61,11 +61,15 @@ export default function GameCombatRow({
   const decoySelected =
     cardSelectedUnit?.effects &&
     cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy)
+  const spySelected =
+    cardSelectedUnit?.effects &&
+    cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Spy)
   const weatherSelected =
     cardSelectedUnit?.effects &&
     cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Weather)
+  const validPlayer = spySelected ? !isSelf : isSelf
   const validRow =
-    isSelf &&
+    validPlayer &&
     selectedCardInHand &&
     cardSelectedUnit?.combats &&
     cardSelectedUnit.combats.includes(combat) &&
@@ -77,8 +81,10 @@ export default function GameCombatRow({
   let description = scorchSelected || weatherSelected ? '' : `${titledCombat} combat units`
   if (cardSelectedUnit && !scorchSelected && !weatherSelected) {
     if (isSelf) {
-      if (cardSelectedUnit.modifier) {
-        description = 'Cannot be deployed as row unit, only as row modifier to the left.'
+      if (spySelected) {
+        description = 'Cannot deploy spy to own battlefield, only opponents'
+      } else if (cardSelectedUnit.modifier) {
+        description = 'Cannot be deployed as row unit, only as row modifier to the left'
       } else {
         if (validRow) {
           if (isTurn) {
@@ -89,6 +95,12 @@ export default function GameCombatRow({
         } else if (invalidRow) {
           description = `${cardSelectedUnit.name} is not eligible to fight in ${titledCombat} combat`
         }
+      }
+    } else if (spySelected) {
+      if (validRow) {
+        description = `Place here for ${cardSelectedUnit.name} to spy on your opponent in ${titledCombat} combat`
+      } else {
+        description = `${cardSelectedUnit.name} is not eligible to fight in ${titledCombat} combat`
       }
     } else {
       description = `${cardSelectedUnit.name} cannot fight for your opponent`
@@ -223,7 +235,7 @@ export default function GameCombatRow({
           }}
           title={description ? description : undefined}
           onClick={async () => {
-            if (isSelf && isTurn && cardSelectedUnit && validRow && !playUnitProps.loading) {
+            if (isTurn && cardSelectedUnit && validRow && !playUnitProps.loading) {
               await retryCheckingAuth({
                 checkAuth,
                 method: async () => {
@@ -232,6 +244,7 @@ export default function GameCombatRow({
                       game: game.id,
                       combat: combat,
                       unit: cardSelectedUnit.id,
+                      target: spySelected ? player.user.id : undefined,
                     },
                   })
                   setCardSelected(undefined)

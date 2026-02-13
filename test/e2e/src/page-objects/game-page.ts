@@ -345,6 +345,9 @@ export default class GamePage {
             } else if (move.reason?.type === MoveReasonType.Transform) {
               action = 'transformed'
             }
+            if (move.targetUserName) {
+              action += ` to spy on ${move.targetUserName}`
+            }
             let description = `${move.userName}: ${move.unitName} ${action} ${row}`
             if (move.reason) {
               if (move.reason.type === MoveReasonType.Transform) {
@@ -1123,6 +1126,7 @@ export default class GamePage {
     decoyTarget,
     eligibleRows,
     weather,
+    spy,
     verify = true,
   }: {
     unitName: string
@@ -1131,12 +1135,19 @@ export default class GamePage {
     eligibleRows?: Combat[]
     decoyTarget?: string
     weather?: boolean
+    spy?: boolean
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
-    const closeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowCloseSelf}`)
-    const rangedCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowRangedSelf}`)
-    const siegeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowSiegeSelf}`)
+    const closeCombatRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowCloseOpponent : HTML_IDS.GameCombatRowCloseSelf}`
+    )
+    const rangedCombatRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowRangedOpponent : HTML_IDS.GameCombatRowRangedSelf}`
+    )
+    const siegeCombatRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowSiegeOpponent : HTML_IDS.GameCombatRowSiegeSelf}`
+    )
     const nonCombatRows: CombatAndRow[] = [
       {
         combat: Combat.Close,
@@ -1226,6 +1237,7 @@ export default class GamePage {
           .notOk(`Row "${nonCombatRow.combat}" is not highlighted`)
       }
     }
+    // TODO: verify opponent/opposite not highlighted
     if (modifier) {
       await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`))
     } else if (decoyTarget) {
@@ -1624,6 +1636,7 @@ export interface HistoryMove {
     name: string
   }
   origin?: GameUnitOrigin
+  targetUserName?: string
 }
 
 export interface HistoryImpactMoves {

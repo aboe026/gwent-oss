@@ -189,7 +189,11 @@ function PlayerHistoryMove({
     })
     pointable = true
     primaryText = unit.name
-    let placement = gameUnit.row ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
+    let placement = ''
+    if (unitMove.target) {
+      placement += ` to spy on ${unitMove.target.name} `
+    }
+    placement += gameUnit.row ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
     if (unitMove.reason.unit?.unit.name) {
       if (unitMove.reason.type === MoveReasonType.Transform) {
         placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`

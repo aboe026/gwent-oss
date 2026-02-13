@@ -50,7 +50,7 @@ export default class PlayUnitValidation {
     })
     const unitId = args.unit
     let combat = args.combat
-    const targetId = args.target
+    let targetId = args.target
 
     const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${game._id}"`
     const resolverUtil = new ResolverUtil({
@@ -113,6 +113,7 @@ export default class PlayUnitValidation {
       })
     }
     const isDecoy = effects && effects.some((effect) => effect.key === EffectKey.Decoy)
+    const isSpy = effects && effects.some((effect) => effect.key === EffectKey.Spy)
     const isWeather = effects && effects.some((effect) => effect.key === EffectKey.Weather)
 
     let roundUnits: UnitDbObject[] | undefined = undefined
@@ -195,6 +196,36 @@ export default class PlayUnitValidation {
       combat = battlefieldUnit.row
     }
 
+    if (isSpy) {
+      const opponents = game.players.filter((player) => player.user.toString() !== userId.toString())
+      if (!targetId) {
+        if (opponents.length === 1) {
+          targetId = opponents[0].user.toString()
+        } else {
+          const message = `Argument "target" required for units with "${EffectKey.Spy}" effect and game with multiple opponents.`
+          PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+          throw new PresentableError(message)
+        }
+      } else {
+        resolverUtil.verifyMongoIds({
+          ids: [targetId],
+          label: 'Target ID',
+        })
+
+        if (targetId === userId.toString()) {
+          const message = `Invalid spy target "${targetId}": Cannot be self, must be an opponent.`
+          PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+          throw new PresentableError(message)
+        }
+        const opponent = opponents.find((player) => player.user.toString() === targetId)
+        if (!opponent) {
+          const message = `Invalid spy target "${targetId}: Could not find that opponent on game.`
+          PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+          throw new PresentableError(message)
+        }
+      }
+    }
+
     if (isWeather) {
       combat = undefined
     }
@@ -208,6 +239,9 @@ export default class PlayUnitValidation {
       targetId,
       roundUnits,
       effects,
+      isDecoy: !!isDecoy,
+      isSpy: !!isSpy,
+      isWeather: !!isWeather,
     }
   }
 }
@@ -221,4 +255,7 @@ export interface ValidatedPlayUnit {
   targetId: string | undefined | null
   roundUnits?: UnitDbObject[]
   effects?: EffectDbObject[]
+  isDecoy: boolean
+  isSpy: boolean
+  isWeather: boolean
 }

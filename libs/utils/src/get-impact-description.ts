@@ -49,7 +49,7 @@ export default function getImpactDescription({
   } else if (effectKey === EffectKey.Scorch) {
     return 'scorched from battlefield'
   } else if (effectKey === EffectKey.Spy) {
-    return 'spied into battlefield'
+    return 'spied from undrawn into hand'
   } else if (effectKey === EffectKey.Weather) {
     return 'weathered in battlefield'
   }

@@ -7,6 +7,7 @@ import {
   MoralingExpected,
   MusteringExpected,
   ScorchingExpected,
+  SpyingExpected,
   WeatheringExpected,
 } from './e2e-helper'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/node-client'
@@ -103,6 +104,7 @@ export class GameManager {
     bonding,
     impacts,
     decoying,
+    spying,
     weathering,
     modifier,
     weather,
@@ -120,6 +122,7 @@ export class GameManager {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    spying?: SpyingExpected
     weathering?: WeatheringExpected[]
     impacts?: number
     modifier?: boolean
@@ -143,6 +146,7 @@ export class GameManager {
         decoyTarget: decoying?.name,
         eligibleRows: eligibleCombats,
         weather,
+        spy: !!spying,
       })
     } else {
       let targetId: string | undefined = undefined
@@ -178,9 +182,17 @@ export class GameManager {
       mustering,
       bonding,
       decoying,
+      spying,
       weathering,
       impacts,
     })
+    if (spying) {
+      const expectedHandCount = this.self.gamePlayer.hand
+      this.self.deck.hand = (await this.self.client.getGameDeck(this.gameId)).hand
+      if (this.self.deck.hand.length !== expectedHandCount) {
+        throw Error(`Expected hand count of "${expectedHandCount}" but got "${this.self.deck.hand.length}"`)
+      }
+    }
     if (this.shouldVerify || verify) {
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,

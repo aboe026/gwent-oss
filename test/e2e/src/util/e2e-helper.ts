@@ -375,6 +375,7 @@ export class E2eHelper {
     mustering,
     bonding,
     decoying,
+    spying,
     weathering,
     impacts,
   }: {
@@ -393,6 +394,7 @@ export class E2eHelper {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    spying?: SpyingExpected
     weathering?: WeatheringExpected[]
     impacts?: number
   }) {
@@ -409,7 +411,7 @@ export class E2eHelper {
         player,
         unitName: deckUnit.unit.name,
       })
-    } else {
+    } else if (!spying) {
       E2eHelper.addUnitToGamePlayer({
         player,
         unitName: deckUnit.unit.name,
@@ -520,6 +522,18 @@ export class E2eHelper {
         } as any,
       })
     }
+    if (spying) {
+      E2eHelper.addUnitToGamePlayer({
+        player: spying.opponent,
+        row: spying.row,
+        unitName: spying.name,
+        strength: spying.effectiveStrength,
+      })
+      const undrawns = player.undrawn || 0
+      const numUndrawnToHand = undrawns > 2 ? 2 : undrawns
+      player.hand = (player.hand || 0) + numUndrawnToHand
+      player.undrawn = (player.undrawn || 0) - numUndrawnToHand
+    }
     if (weathering) {
       for (const weather of weathering) {
         if (weather.effectiveStrength !== undefined && weather.row !== undefined) {
@@ -554,6 +568,8 @@ export class E2eHelper {
         effectKey = EffectKey.Bond
       } else if (decoying) {
         effectKey = EffectKey.Decoy
+      } else if (spying) {
+        effectKey = EffectKey.Spy
       } else if (weathering) {
         effectKey = EffectKey.Weather
       }
@@ -563,6 +579,9 @@ export class E2eHelper {
       } else {
         if (decoying) {
           numImpacts = 1
+        } else if (spying) {
+          const undrawns = player.undrawn || 0
+          numImpacts = undrawns > 2 ? 2 : undrawns
         } else {
           numImpacts = (scorching || mardroeming || moraling || mustering || bonding || horning || weathering || [])
             ?.length
@@ -579,6 +598,7 @@ export class E2eHelper {
                 number: numImpacts,
               }
             : undefined,
+        targetUserName: spying ? spying.opponent.name : undefined,
       })
     }
     if (moves && mustering) {
@@ -774,6 +794,15 @@ export interface DecoyingExpected {
   name: string
   row: Combat
   strength?: number
+  effectiveStrength: number
+  instance?: number
+}
+
+export interface SpyingExpected {
+  player: GamePlayerExpected
+  opponent: GamePlayerExpected
+  name: string
+  row: Combat
   effectiveStrength: number
   instance?: number
 }

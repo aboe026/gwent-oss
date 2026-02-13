@@ -96,6 +96,13 @@ export default class MoveResolver {
           throw Error(`Could not find source user "${unitMove.source.user}"`)
         }
       }
+      let resolvedTargetUser: User | undefined = undefined
+      if (unitMove.target) {
+        resolvedTargetUser = resolvedUsers.find((user) => user.id === unitMove.target?.toString())
+        if (!resolvedTargetUser) {
+          throw Error(`Could not find target user "${unitMove.target}"`)
+        }
+      }
       return {
         created: unitMove.created,
         unit: await GameUnitResolver.fromObject({
@@ -115,6 +122,7 @@ export default class MoveResolver {
           origin: unitMove.source.origin as GameUnitOrigin,
           user: resolvedSourceUser,
         },
+        target: resolvedTargetUser,
         __typename: 'MoveUnit',
       }
     }

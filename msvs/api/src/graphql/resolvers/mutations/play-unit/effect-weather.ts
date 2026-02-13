@@ -5,7 +5,6 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectFromUnitDbObject,
-  EffectKey,
   GameDbObject,
   GameUnitDbObject,
   GameUnitEffectDbObject,
@@ -14,7 +13,6 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
-import GetEffectWithKey from './get-effect-with-key'
 import { ImpactsByUnitId } from '../../resolver-util'
 import { PlayerWeatherUnit } from './get-weather-units-for-row'
 
@@ -28,44 +26,29 @@ export default class EffectWeather {
    * Applies potential weathering unit to battlefield, adding it unless a Clear Weather which removes all weathers.
    *
    * @param config The configuration used to weather the battlefield.
-   * @param config.effects The Effect database documents containing Weather if any unit has that effect.
    * @param config.game The Game the potential weather is for.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The new DeckUnit being added to the battlefield.
    * @param config.newUnit The new Unit being added to the battlefield.
+   * @param config.isWeather Whether or not the new unit being played has the Weather effect.
    * @returns Any potential impacts the new unit has on the battlefield in terms of Weather, as well as if the new unit itself has the Weather effect.
    */
   static weatherBattlefield({
-    effects,
     game,
     logPrefix,
     newDeckUnit,
     newUnit,
+    isWeather,
   }: {
-    effects: EffectDbObject[]
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
-  }): WeatheredBattlefield {
+    isWeather: boolean
+  }): ImpactsByUnitId {
     const impacts: ImpactDbObject[] = []
-    const weatherEffect = GetEffectWithKey.getEffectWithKey({
-      effectKey: EffectKey.Weather,
-      effects,
-      logPrefix,
-    })
-    if (EffectWeather.logger.isTraceEnabled()) {
-      EffectWeather.logger.trace(`${logPrefix} weatherEffect: "${JSON.stringify(weatherEffect)}"`)
-    }
-    const newUnitHasWeather =
-      weatherEffect &&
-      newUnit.effects &&
-      newUnit.effects.map((id) => id.toString()).includes(weatherEffect._id.toString())
-    if (EffectWeather.logger.isTraceEnabled()) {
-      EffectWeather.logger.trace(`${logPrefix} newUnitHasWeather: "${newUnitHasWeather}"`)
-    }
 
-    if (newUnitHasWeather) {
+    if (isWeather) {
       for (const player of game.players) {
         const round = player.rounds[game.round - 1]
         const clearWeather = !newUnit.combats || newUnit.combats.length === 0
@@ -88,10 +71,7 @@ export default class EffectWeather {
       }
     }
 
-    return {
-      impacts: impacts.length > 0 ? { [newDeckUnit.unit.toString()]: impacts } : {},
-      newUnitHasWeather: !!newUnitHasWeather,
-    }
+    return impacts.length > 0 ? { [newDeckUnit.unit.toString()]: impacts } : {}
   }
 
   /**
@@ -207,9 +187,4 @@ export default class EffectWeather {
 
     return impacts
   }
-}
-
-export interface WeatheredBattlefield {
-  impacts: ImpactsByUnitId
-  newUnitHasWeather: boolean
 }
