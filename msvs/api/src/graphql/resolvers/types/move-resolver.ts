@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import {
   DeckUnit,
@@ -36,6 +37,7 @@ export default class MoveResolver {
    * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the database to resolve.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
+   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Move object matching its GraphQL schema definition.
    * @throws {Error} if the move type is invalid.
    */
@@ -44,11 +46,13 @@ export default class MoveResolver {
     leader,
     units,
     users,
+    spyUser,
   }: {
     move: MoveDbObject
     leader?: Leader
     units?: Unit[]
     users?: User[]
+    spyUser: ObjectId
   }): Promise<Move> {
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
@@ -113,6 +117,7 @@ export default class MoveResolver {
           impacts: unitMove.impacts,
           units: resolvedUnits,
           users: resolvedUsers,
+          spyUser,
         }),
         reason: {
           type: unitMove.reason.type as MoveReasonType,
@@ -136,16 +141,19 @@ export default class MoveResolver {
    * @param config.moves The array of Move database objects to convert.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
+   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Move array matching the GraphQL schema definition.
    */
   static async fromArray({
     moves,
     units,
     users,
+    spyUser,
   }: {
     moves: MoveDbObject[]
     units?: Unit[]
     users?: User[]
+    spyUser: ObjectId
   }): Promise<Move[]> {
     if (moves.length === 0) {
       return []
@@ -189,6 +197,7 @@ export default class MoveResolver {
           leader,
           units: resolvedUnits,
           users: resolvedUsers,
+          spyUser,
         })
       )
     }

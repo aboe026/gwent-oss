@@ -111,24 +111,28 @@ export default class EffectMuster {
     })
 
     for (const impact of sortedImpacts) {
-      const unit = musteredUnits.find((musteredUnit) => musteredUnit._id.toString() === impact.unit.unit.toString())
-      if (!unit) {
-        const message = `Could not find unit "${impact.unit.unit}" from muster impact`
-        EffectMuster.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
-        throw Error(`${message}.`)
+      if (impact.unit !== undefined) {
+        const unit = musteredUnits.find((musteredUnit) => musteredUnit._id.toString() === impact.unit?.unit.toString())
+        if (!unit) {
+          const message = `Could not find unit "${impact.unit?.unit}" from muster impact`
+          EffectMuster.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
+          throw Error(`${message}.`)
+        }
+        const combat = unit.combats ? (unit.combats[0] as Combat) : undefined
+        if (!combat) {
+          const message = `Cannot muster unit "${unit._id}" without combat`
+          EffectMuster.logger.error(`${logPrefix} ${message}`)
+          throw Error(`${message}.`)
+        }
+        EffectMuster.musterUnitToBattlefield({
+          combat,
+          game,
+          muster: impact.unit,
+          origin: musteredOrigins[unit._id.toString()],
+        })
+      } else {
+        // TODO: does this condition even need to be accounted for?
       }
-      const combat = unit.combats ? (unit.combats[0] as Combat) : undefined
-      if (!combat) {
-        const message = `Cannot muster unit "${unit._id}" without combat`
-        EffectMuster.logger.error(`${logPrefix} ${message}`)
-        throw Error(`${message}.`)
-      }
-      EffectMuster.musterUnitToBattlefield({
-        combat,
-        game,
-        muster: impact.unit,
-        origin: musteredOrigins[unit._id.toString()],
-      })
     }
 
     return {

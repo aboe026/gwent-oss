@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import CombatRowResolver from './combat-row-resolver'
 import GameUnitResolver from './game-unit-resolver'
 import getGameUnits from '../mutations/play-unit/get-game-units'
@@ -17,16 +19,19 @@ export default class PlayerRoundResolver {
    * @param config.round The database object to resolve to its GraphQL type.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
+   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved PlayerRound object matching its GraphQL schema definition.
    */
   static async fromObject({
     round,
     units,
     users,
+    spyUser,
   }: {
     round: PlayerRoundDbObject
     units?: Unit[]
     users?: User[]
+    spyUser: ObjectId
   }): Promise<PlayerRound> {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: round.moves,
@@ -56,6 +61,7 @@ export default class PlayerRoundResolver {
         moves: round.moves,
         units: resolvedUnits,
         users: resolvedUsers,
+        spyUser,
       }),
       passed: round.passed,
       weathers: await GameUnitResolver.fromArray({
@@ -72,16 +78,19 @@ export default class PlayerRoundResolver {
    * @param config.rounds The database objects to resolve to their GraphQL types.
    * @param config.users An optional list of pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @param config.units An optional list of pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
+   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved PlayerRound array matching the GraphQL schema definition.
    */
   static async fromArray({
     rounds,
     users,
     units,
+    spyUser,
   }: {
     rounds: PlayerRoundDbObject[]
     users?: User[]
     units?: Unit[]
+    spyUser: ObjectId
   }): Promise<PlayerRound[]> {
     if (rounds.length === 0) {
       return []
@@ -103,6 +112,7 @@ export default class PlayerRoundResolver {
           round,
           units: resolvedUnits,
           users: resolvedUsers,
+          spyUser,
         })
       )
     }

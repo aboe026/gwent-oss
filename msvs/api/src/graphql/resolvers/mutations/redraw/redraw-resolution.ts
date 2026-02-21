@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
 import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
@@ -25,6 +26,7 @@ export default class RedrawResolution {
    * @param config.gameDeck The GameDeck after the unit was redrawn.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.to The deck unit that was randomly selected to replace the from unit.
+   * @param config.userId The ID of the user redrawing.
    * @returns The random DeckUnit that replaces their redrawn Unit in their hand with fields resolved.
    * @throws {PresentableError} if known problem resolving redrawn unit.
    */
@@ -34,12 +36,14 @@ export default class RedrawResolution {
     gameDeck,
     logPrefix,
     to,
+    userId,
   }: {
     from: DeckUnitDbObject
     game: GameDbObject
     gameDeck: GameDeckDbObject | undefined
     logPrefix: string
     to: DeckUnitDbObject
+    userId: ObjectId
   }): Promise<DeckUnit> {
     const resolvedTo = await DeckUnitResolver.fromObject({
       deckUnit: to,
@@ -50,6 +54,7 @@ export default class RedrawResolution {
 
     const resolvedGame = await GameResolver.fromObject({
       game,
+      spyUser: userId,
     })
     if (RedrawResolution.logger.isTraceEnabled()) {
       RedrawResolution.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)

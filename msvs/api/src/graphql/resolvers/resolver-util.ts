@@ -218,7 +218,7 @@ export default class ResolverUtil {
     }
 
     for (const impact of impactsToResolve) {
-      if (!presolvedUnits) {
+      if (!presolvedUnits && impact.unit) {
         const impactUnitId = impact.unit.unit.toString()
         if (!unitIdsToResolve.includes(impactUnitId)) {
           unitIdsToResolve.push(impactUnitId)

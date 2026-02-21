@@ -165,6 +165,11 @@ export default class UpdateHistory {
         throw Error(`${message}.`)
       }
       for (const muster of musters[deckUnit.unit.toString()]) {
+        if (!muster.unit) {
+          const message = 'No unit provided for muster'
+          UpdateHistory.logger.error(`${logPrefix} failed: ${message}, musters: "${JSON.stringify(musters)}"`)
+          throw Error(`${message}.`)
+        }
         const origin = musteredOrigins[muster.unit.unit.toString()]
         if (!origin) {
           const message = `Could not find origin for mustered unit "${muster.unit.unit}"`

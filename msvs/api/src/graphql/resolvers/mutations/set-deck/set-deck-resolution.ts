@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { DeckSetPayload, GameSetPayload } from '../../subscription-resolver'
 import EventManager from '../../../event-manager'
@@ -23,6 +24,7 @@ export default class SetDeckResolution {
    * @param config.game The game with the deck set for it.
    * @param config.gameDeck The GameDeck for the user after the deck was set on the game.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.userId The ID of the user setting the Deck.
    * @returns The GameDeck that was set for the game with fields resolved.
    * @throws {PresentableError} if known problem setting deck.
    */
@@ -30,10 +32,12 @@ export default class SetDeckResolution {
     game,
     gameDeck,
     logPrefix,
+    userId,
   }: {
     game: GameDbObject
     gameDeck: GameDeckDbObject
     logPrefix: string
+    userId: ObjectId
   }): Promise<GameDeck> {
     const resolvedGameDeck = await GameDeckResolver.fromObject({
       gameDeck,
@@ -43,6 +47,7 @@ export default class SetDeckResolution {
     }
     const resolvedGame = await GameResolver.fromObject({
       game,
+      spyUser: userId,
     })
     if (SetDeckResolution.logger.isTraceEnabled()) {
       SetDeckResolution.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)
@@ -66,6 +71,7 @@ export default class SetDeckResolution {
           gameDeck,
           logPrefix: `setOrder via ${logPrefix}`,
           allowImplicit: false,
+          userId,
         })
       } catch (err: unknown) {
         if (

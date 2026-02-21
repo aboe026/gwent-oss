@@ -40,6 +40,9 @@ export default class GamesQuery {
     if (GamesQuery.logger.isTraceEnabled()) {
       GamesQuery.logger.trace(`${logPrefix} games: "${JSON.stringify(games)}"`)
     }
-    return GameResolver.fromArray(games)
+    return GameResolver.fromArray({
+      games,
+      spyUser: userId,
+    })
   }
 }

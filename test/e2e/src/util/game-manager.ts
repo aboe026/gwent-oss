@@ -367,23 +367,27 @@ export default async function createGameManager({
     faction: selfFaction,
     leaderName: self?.leader || getDefaultLeaderName(selfFaction),
     name: `self-deck-${label}`,
-    unitNames: await E2eHelper.getUnitsForDeck({
-      client: selfClient,
-      faction: selfFaction,
-      specials: [...(self?.specialUnitNames || []), ...(self?.handUnitNames || [])],
-      ignores: self?.ignoreUnitNames,
-    }),
+    unitNames:
+      self?.deckUnitNames ||
+      (await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: selfFaction,
+        specials: [...(self?.specialUnitNames || []), ...(self?.handUnitNames || [])],
+        ignores: self?.ignoreUnitNames,
+      })),
   })
   const opponentDeck = await opponentClient.addDeck({
     faction: opponentFaction,
     leaderName: opponent?.leader || getDefaultLeaderName(opponentFaction),
     name: `opponent-deck-${label}`,
-    unitNames: await E2eHelper.getUnitsForDeck({
-      client: opponentClient,
-      faction: opponentFaction,
-      specials: [...(opponent?.specialUnitNames || []), ...(opponent?.handUnitNames || [])],
-      ignores: opponent?.ignoreUnitNames,
-    }),
+    unitNames:
+      opponent?.deckUnitNames ||
+      (await E2eHelper.getUnitsForDeck({
+        client: opponentClient,
+        faction: opponentFaction,
+        specials: [...(opponent?.specialUnitNames || []), ...(opponent?.handUnitNames || [])],
+        ignores: opponent?.ignoreUnitNames,
+      })),
   })
 
   await selfClient.setDeck({
@@ -499,6 +503,7 @@ function getDefaultLeaderName(faction: FactionKey): string {
 interface GameManagerSetupPlayer {
   faction: FactionKey
   leader?: string
+  deckUnitNames?: string[]
   specialUnitNames?: string[]
   handUnitNames?: string[]
   ignoreUnitNames?: string[]

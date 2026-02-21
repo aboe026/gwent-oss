@@ -42,6 +42,7 @@ export default class RedrawMutation {
       gameDeck: updatedGame.players.find((player) => player.user.toString() === userId.toString())?.deck,
       logPrefix,
       to,
+      userId,
     })
   }
 }

@@ -20,7 +20,8 @@ export default class PlayPassMutation {
   static async playPassMutation(args: MutationPlayPassArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const {
       game,
-      logPrefix, //
+      logPrefix,
+      userId, //
     } = await PlayPassValidation.playPassValidation(args, context, info)
 
     const {
@@ -29,12 +30,14 @@ export default class PlayPassMutation {
     } = await PlayPassImplementation.playPassImplementation({
       game,
       logPrefix,
+      userId,
     })
 
     return PlayPassResolution.playPassResolution({
       game: updatedGame,
       logPrefix,
       roundOver,
+      userId,
     })
   }
 }

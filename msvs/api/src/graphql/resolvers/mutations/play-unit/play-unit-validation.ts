@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
@@ -242,6 +243,7 @@ export default class PlayUnitValidation {
       isDecoy: !!isDecoy,
       isSpy: !!isSpy,
       isWeather: !!isWeather,
+      userId,
     }
   }
 }
@@ -258,4 +260,5 @@ export interface ValidatedPlayUnit {
   isDecoy: boolean
   isSpy: boolean
   isWeather: boolean
+  userId: ObjectId
 }

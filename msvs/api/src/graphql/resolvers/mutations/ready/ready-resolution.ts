@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
 import { Game } from '@gwent/graphql-schema/resolver-typings'
@@ -19,11 +20,21 @@ export default class ReadyResolution {
    * @param config The configuration used to resolve the game marked as ready.
    * @param config.game The game with the impact of the ready applied.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.userId The ID of the user readying the Game.
    * @returns The Game that is now ready for the user with fields resolved.
    */
-  static async readyResolution({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): Promise<Game> {
+  static async readyResolution({
+    game,
+    logPrefix,
+    userId,
+  }: {
+    game: GameDbObject
+    logPrefix: string
+    userId: ObjectId
+  }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
+      spyUser: userId,
     })
     if (ReadyResolution.logger.isTraceEnabled()) {
       ReadyResolution.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)

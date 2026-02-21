@@ -13,6 +13,7 @@ A list of things to be done in the future.
 Existing problems in the codebase that need to be fixed.
 
 - do not let opponent see details of spy impacts
+- ensure highlighting works properly
 
 - no spaces in username?
 - include "to" for impact so know exactly which unit it transformed into?
@@ -26,6 +27,7 @@ Existing problems in the codebase that need to be fixed.
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
+- have Impact.unit field be "required" (never null) in database typings? (mapping?)
 - automate check in build process to ensure package.json versions incremented (and all same)?
 - use INFO logging more? Like any time action successful (game created, unit played, etc)?
 - remove need for classes just for log4js spying

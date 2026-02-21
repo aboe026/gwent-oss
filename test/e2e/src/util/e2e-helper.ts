@@ -399,6 +399,7 @@ export class E2eHelper {
     impacts?: number
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
+    let undrawnSpiedIntoHand = 0
     if (!row) {
       row = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
     }
@@ -523,16 +524,17 @@ export class E2eHelper {
       })
     }
     if (spying) {
-      E2eHelper.addUnitToGamePlayer({
-        player: spying.opponent,
-        row: spying.row,
-        unitName: spying.name,
-        strength: spying.effectiveStrength,
-      })
+      if (spying.row && spying.name)
+        E2eHelper.addUnitToGamePlayer({
+          player: spying.opponent,
+          row: spying.row,
+          unitName: spying.name,
+          strength: spying.effectiveStrength,
+        })
       const undrawns = player.undrawn || 0
-      const numUndrawnToHand = undrawns > 2 ? 2 : undrawns
-      player.hand = (player.hand || 0) + numUndrawnToHand
-      player.undrawn = (player.undrawn || 0) - numUndrawnToHand
+      undrawnSpiedIntoHand = undrawns > 2 ? 2 : undrawns
+      player.hand = (player.hand || 0) + undrawnSpiedIntoHand
+      player.undrawn = (player.undrawn || 0) - undrawnSpiedIntoHand
     }
     if (weathering) {
       for (const weather of weathering) {
@@ -580,8 +582,7 @@ export class E2eHelper {
         if (decoying) {
           numImpacts = 1
         } else if (spying) {
-          const undrawns = player.undrawn || 0
-          numImpacts = undrawns > 2 ? 2 : undrawns
+          numImpacts = undrawnSpiedIntoHand
         } else {
           numImpacts = (scorching || mardroeming || moraling || mustering || bonding || horning || weathering || [])
             ?.length

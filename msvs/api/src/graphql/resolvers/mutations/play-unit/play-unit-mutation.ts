@@ -29,7 +29,8 @@ export default class PlayUnitMutation {
       effects,
       isDecoy,
       isSpy,
-      isWeather, //
+      isWeather,
+      userId,
     } = await PlayUnitValidation.playUnitValidation(args, context, info)
 
     const {
@@ -48,6 +49,7 @@ export default class PlayUnitMutation {
       isDecoy,
       isSpy,
       isWeather,
+      userId,
     })
 
     return PlayUnitResolution.playUnitResolution({
@@ -56,6 +58,7 @@ export default class PlayUnitMutation {
       gameDeck,
       logPrefix,
       handDeckUnitsAdded,
+      userId,
     })
   }
 }

@@ -210,7 +210,7 @@ export default class Api {
   }
 
   /**
-   * Mask unkown errors for security.
+   * Mask unknown errors for security.
    *
    * @param formattedError The formatted GraphQL error.
    * @param error The original error, wrapped in GraphQLError.

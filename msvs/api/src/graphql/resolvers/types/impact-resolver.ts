@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { GameUnitOrigin, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from './game-unit-resolver'
@@ -18,16 +19,19 @@ export default class ImpactResolver {
    * @param config.impact The Impact to convert.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
+   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Impact object matching its GraphQL schema definition.
    */
   static async fromObject({
     impact,
     units,
     users,
+    spyUser,
   }: {
     impact: ImpactDbObject
     units?: Unit[]
     users?: User[]
+    spyUser: ObjectId
   }): Promise<Impact> {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       impacts: [impact],
@@ -35,8 +39,8 @@ export default class ImpactResolver {
       presolvedUnits: units,
     })
 
-    const impactUnit = resolvedUnits.find((unit) => unit.id === impact.unit.unit.toString())
-    if (!impactUnit) {
+    const impactUnit = resolvedUnits.find((unit) => unit.id === impact.unit?.unit.toString())
+    if (impact.unit && !impactUnit) {
       const message = `Could not find impact unit "${impact.unit.unit}"`
       ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
       throw Error(`${message}.`)
@@ -57,11 +61,16 @@ export default class ImpactResolver {
         throw Error(`${message}.`)
       }
     }
+    const hideSpy = impact.spy && spyUser?.toString() !== impact.user.toString()
+
     return {
-      unit: await GameUnitResolver.fromObject({
-        gameUnit: impact.unit,
-        unit: impactUnit,
-      }),
+      unit:
+        impact.unit && !hideSpy
+          ? await GameUnitResolver.fromObject({
+              gameUnit: impact.unit,
+              unit: impactUnit,
+            })
+          : undefined,
       user: impactUser,
       source: impact.source
         ? {
@@ -79,16 +88,19 @@ export default class ImpactResolver {
    * @param config.impacts The array of Impact database objects to convert.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
+   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Impact array matching the GraphQL schema definition.
    */
   static async fromArray({
     impacts,
     units,
     users,
+    spyUser,
   }: {
     impacts: ImpactDbObject[] | undefined
     units?: Unit[]
     users?: User[]
+    spyUser: ObjectId
   }): Promise<Impact[] | undefined> {
     if (ImpactResolver.logger.isTraceEnabled()) {
       ImpactResolver.logger.trace(`impacts: "${JSON.stringify(impacts)}"`)
@@ -111,6 +123,7 @@ export default class ImpactResolver {
             impact,
             units: resolvedUnits,
             users: resolvedUsers,
+            spyUser,
           })
         )
       }
