@@ -12,7 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- do not let opponent see details of spy impacts
 - ensure highlighting works properly
 
 - no spaces in username?
@@ -123,11 +122,6 @@ New things that should be added to the codebase.
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
     - Apparently there are no duplicates allowed with latest patch?
-- Spy
-  - Test spy with only 1 unit left in undrawn (should only bring that 1 to battlefield)
-  - Test spy with no units left in undrawn (should not bring anything to battlefield)
-  - must specify targetId if more than 1 opponet
-  - targetId not required if only 1 opponent
 - add "target" param to "playUnit" mutation:
   - for decoys, it is required to know which unit to swap back into hand
   - for spies, it is optional if only 1 other opponent, otherwise required

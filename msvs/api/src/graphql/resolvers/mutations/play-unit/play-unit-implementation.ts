@@ -138,7 +138,7 @@ export default class PlayUnitImplementation {
       mardroemes,
       transformedGameUnits,
       mardroemingGameUnit,
-      targetId,
+      targetId: isSpy ? targetId : undefined,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
