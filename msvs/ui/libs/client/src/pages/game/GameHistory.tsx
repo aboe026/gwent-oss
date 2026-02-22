@@ -161,6 +161,8 @@ function PlayerHistoryMove({
   let pointable = false
   let impacts: ImpactFragment[] | undefined | null
   let gameUnit: GameUnitFragment | undefined
+  let cardPlayer = player
+
   if (playerMove.move.__typename === 'MoveLeader') {
     const leaderMove = useFragment(MoveLeaderFragmentDoc, playerMove.move)
     primaryText = `Activated leader ${leaderMove.leader.name} ability`
@@ -216,9 +218,16 @@ function PlayerHistoryMove({
     image = unit.images[gameUnit.artStyle - 1]
     imageTitle = unit.name
 
-    if (cardSelectedUnit?.id === unit.id && cardSelected?.playerName === player.user.name) {
-      isSelected = true
-      const playerRound = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
+    const potentialCardPlayer = useFragment(GamePlayerFragmentDoc, game.players).find(
+      (player) => player.user.name === unitMove.target?.name
+    )
+    if (!potentialCardPlayer) {
+      throw Error(`Could not find player for History move "${JSON.stringify(unitMove)}"`)
+    }
+    cardPlayer = potentialCardPlayer
+    isSelected = cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
+    if (isSelected) {
+      const playerRound = useFragment(PlayerRoundFragmentDoc, cardPlayer.rounds[game.round - 1])
       const closeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.close)
       const rangedRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.ranged)
       const siegeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.siege)
@@ -260,11 +269,11 @@ function PlayerHistoryMove({
             const gameUnit = useFragment(GameUnitFragmentDoc, useFragment(MoveUnitFragmentDoc, playerMove.move).unit)
             const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
             setCardSelected(
-              cardSelectedUnit?.id === unit.id && cardSelected?.playerName === player.user.name
+              cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
                 ? undefined
                 : {
                     unitFragment: gameUnit,
-                    playerName: player.user.name,
+                    playerName: cardPlayer.user.name,
                   }
             )
           }

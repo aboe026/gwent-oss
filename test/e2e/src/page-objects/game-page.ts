@@ -1348,14 +1348,20 @@ export default class GamePage {
     await t.click(GamePage.elements.SummaryGames)
   }
 
-  static async getHistoryUnit({ playerName, unitName, row, round }: HighlightedHistory): Promise<Selector> {
+  static async getHistoryUnit({
+    playerName,
+    unitName,
+    row,
+    round,
+    spyOpponent,
+  }: HighlightedHistory): Promise<Selector> {
     const totalRounds = await GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
       .count
     const roundContainer = GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`).nth(
       totalRounds - round
     )
     const movesCount = await roundContainer.child().count
-    const expectedMoveText = `${playerName}: ${unitName} deployed as ${toTitleCase(row)}`
+    const expectedMoveText = `${playerName}: ${unitName} deployed${spyOpponent ? ` to spy on ${spyOpponent}` : ''} as ${toTitleCase(row)}`
     let historyMove: Selector | undefined = undefined
     for (let j = 1; j < movesCount && !historyMove; j++) {
       const move = roundContainer.child().nth(j)
@@ -1378,12 +1384,13 @@ export default class GamePage {
     return historyMove
   }
 
-  static async selectHistoryUnit({ playerName, unitName, row, round }: HighlightedHistory) {
+  static async selectHistoryUnit({ playerName, unitName, row, round, spyOpponent }: HighlightedHistory) {
     const historyUnit = await GamePage.getHistoryUnit({
       playerName,
       unitName,
       round,
       row,
+      spyOpponent,
     })
     await t.click(historyUnit)
   }
@@ -1682,6 +1689,7 @@ export interface HighlightedHistory {
   row: Combat
   round: number
   dotted?: boolean
+  spyOpponent?: string
 }
 
 export interface CombatUnit {

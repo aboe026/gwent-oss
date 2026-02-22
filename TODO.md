@@ -122,9 +122,6 @@ New things that should be added to the codebase.
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
     - Apparently there are no duplicates allowed with latest patch?
-- add "target" param to "playUnit" mutation:
-  - for decoys, it is required to know which unit to swap back into hand
-  - for spies, it is optional if only 1 other opponent, otherwise required
 - Better game summarization (graphs?)
   - points per round
   - time per round

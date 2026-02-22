@@ -10,21 +10,21 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 fixture('Game Effect Spy')
 
 test('Spy close combat unit', async (t) => {
-  const unitName1 = 'Prince Stennis'
+  const unitName = 'Prince Stennis'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.NorthernRealms,
-      handUnitNames: [unitName1],
+      handUnitNames: [unitName],
     },
   })
   await gameManager.initialize({})
   const handUnitIds = gameManager.self.deck.hand.map((handUnit) => handUnit.unit.id)
 
   await gameManager.deploy({
-    unitName: unitName1,
+    unitName,
     spying: {
-      name: unitName1,
+      name: unitName,
       player: gameManager.self.gamePlayer,
       opponent: gameManager.opponent.gamePlayer,
       row: Combat.Close,
@@ -37,7 +37,7 @@ test('Spy close combat unit', async (t) => {
   })
   await GamePage.toggleImpacts({
     round: gameManager.round,
-    unitName: unitName1,
+    unitName,
     userName: gameManager.self.gamePlayer.name,
   })
   await GamePage.verifyImpacts({
@@ -45,7 +45,7 @@ test('Spy close combat unit', async (t) => {
       {
         effectKey: EffectKey.Spy,
         round: gameManager.round,
-        unitName: unitName1,
+        unitName,
         userName: gameManager.self.gamePlayer.name,
         impacts: [
           {
@@ -63,22 +63,22 @@ test('Spy close combat unit', async (t) => {
 })
 
 test('Spy siege combat unit', async (t) => {
-  const unitName1 = 'Thaler'
+  const unitName = 'Thaler'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.NorthernRealms,
-      handUnitNames: [unitName1],
+      handUnitNames: [unitName],
     },
   })
   await gameManager.initialize({})
   const handUnitIds = gameManager.self.deck.hand.map((handUnit) => handUnit.unit.id)
 
   await gameManager.deploy({
-    unitName: unitName1,
+    unitName,
     combat: Combat.Siege,
     spying: {
-      name: unitName1,
+      name: unitName,
       player: gameManager.self.gamePlayer,
       opponent: gameManager.opponent.gamePlayer,
       row: Combat.Siege,
@@ -91,7 +91,7 @@ test('Spy siege combat unit', async (t) => {
   })
   await GamePage.toggleImpacts({
     round: gameManager.round,
-    unitName: unitName1,
+    unitName,
     userName: gameManager.self.gamePlayer.name,
   })
   await GamePage.verifyImpacts({
@@ -99,7 +99,7 @@ test('Spy siege combat unit', async (t) => {
       {
         effectKey: EffectKey.Spy,
         round: gameManager.round,
-        unitName: unitName1,
+        unitName,
         userName: gameManager.self.gamePlayer.name,
         impacts: [
           {
