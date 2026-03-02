@@ -307,7 +307,7 @@ function PlayerHistoryMove({
                     })
                     setCardSelected({
                       unitFragment: gameUnit,
-                      playerName: player.user.name,
+                      playerName: cardPlayer.user.name,
                     })
                   }
                 }}
