@@ -52,7 +52,7 @@ export default class MoveResolver {
     leader?: Leader
     units?: Unit[]
     users?: User[]
-    spyUser: ObjectId
+    spyUser?: ObjectId
   }): Promise<Move> {
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
@@ -153,7 +153,7 @@ export default class MoveResolver {
     moves: MoveDbObject[]
     units?: Unit[]
     users?: User[]
-    spyUser: ObjectId
+    spyUser?: ObjectId
   }): Promise<Move[]> {
     if (moves.length === 0) {
       return []

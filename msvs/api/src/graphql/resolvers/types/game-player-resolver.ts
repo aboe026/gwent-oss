@@ -25,7 +25,7 @@ export default class GamePlayerResolver {
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @param config.gameStatus The current status of the Game.
-   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
+   * @param config.userId The ID of the User to resolve the Game for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved GamePlayer object matching its GraphQL schema definition.
    */
   static async fromObject({
@@ -35,7 +35,7 @@ export default class GamePlayerResolver {
     users,
     units,
     gameStatus,
-    spyUser,
+    userId,
   }: {
     faction?: Faction | undefined
     leader?: Leader | undefined
@@ -43,7 +43,7 @@ export default class GamePlayerResolver {
     users?: User[]
     units?: Unit[]
     gameStatus: GameStatus
-    spyUser: ObjectId
+    userId?: ObjectId
   }): Promise<GamePlayer> {
     let counts: GamePlayerUnitCounts | undefined = undefined
     if (gameStatus !== GameStatus.Decking) {
@@ -91,7 +91,7 @@ export default class GamePlayerResolver {
         rounds: player.rounds,
         users: resolvedUsers,
         units: resolvedUnits,
-        spyUser,
+        spyUser: userId,
       }),
       user: playerUser,
     }
@@ -105,7 +105,7 @@ export default class GamePlayerResolver {
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @param config.gameStatus The current status of the Game.
-   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
+   * @param config.userId The ID of the User to resolve the Game for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
   static async fromArray({
@@ -113,13 +113,13 @@ export default class GamePlayerResolver {
     users,
     units,
     gameStatus,
-    spyUser,
+    userId,
   }: {
     players: GamePlayerDbObject[]
     users?: User[]
     units?: Unit[]
     gameStatus: GameStatus
-    spyUser: ObjectId
+    userId?: ObjectId
   }): Promise<GamePlayer[]> {
     if (players.length === 0) {
       return []
@@ -172,7 +172,7 @@ export default class GamePlayerResolver {
           faction,
           leader,
           gameStatus,
-          spyUser,
+          userId,
         })
       )
     }

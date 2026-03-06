@@ -54,7 +54,7 @@ export default class RedrawResolution {
 
     const resolvedGame = await GameResolver.fromObject({
       game,
-      spyUser: userId,
+      userId,
     })
     if (RedrawResolution.logger.isTraceEnabled()) {
       RedrawResolution.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)

@@ -31,7 +31,7 @@ export default class ImpactResolver {
     impact: ImpactDbObject
     units?: Unit[]
     users?: User[]
-    spyUser: ObjectId
+    spyUser?: ObjectId
   }): Promise<Impact> {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       impacts: [impact],
@@ -61,7 +61,7 @@ export default class ImpactResolver {
         throw Error(`${message}.`)
       }
     }
-    const hideSpy = impact.spy && spyUser?.toString() !== impact.user.toString()
+    const hideSpy = spyUser && impact.spy && spyUser?.toString() !== impact.user.toString()
 
     return {
       unit:
@@ -100,7 +100,7 @@ export default class ImpactResolver {
     impacts: ImpactDbObject[] | undefined
     units?: Unit[]
     users?: User[]
-    spyUser: ObjectId
+    spyUser?: ObjectId
   }): Promise<Impact[] | undefined> {
     if (ImpactResolver.logger.isTraceEnabled()) {
       ImpactResolver.logger.trace(`impacts: "${JSON.stringify(impacts)}"`)

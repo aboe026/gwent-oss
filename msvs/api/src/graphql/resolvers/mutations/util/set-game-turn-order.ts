@@ -132,7 +132,7 @@ export default class SetGameTurnOrder {
 
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,
-      spyUser: userId,
+      userId,
     })
 
     EventManager.pubsub.publish(PubSubEvents.OrderSet, {

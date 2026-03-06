@@ -14,6 +14,7 @@ import GetUnitStats from './get-unit-stats'
 import groupBy from './group-by'
 import RandomizeDeckUnits from './randomize-deck-units'
 import randomizeOrder from './randomize-order'
+import setNestedProperty from './set-nested-property'
 import sleep from './sleep'
 import sortObjectArray from './sort'
 import toTitleCase from './to-title-case'
@@ -36,6 +37,7 @@ export {
   humanizeTime,
   RandomizeDeckUnits,
   randomizeOrder,
+  setNestedProperty,
   sleep,
   sortObjectArray,
   toTitleCase,

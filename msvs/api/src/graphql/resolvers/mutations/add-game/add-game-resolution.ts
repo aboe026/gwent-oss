@@ -39,7 +39,7 @@ export default class AddGameResolution {
     const resolvedGame = await GameResolver.fromObject({
       game,
       users: [...opponents, await UserResolver.fromId(creatorId)],
-      spyUser: creatorId,
+      userId: creatorId,
     })
 
     if (AddGameResolution.logger.isTraceEnabled()) {

@@ -38,7 +38,7 @@ export default class PlayPassResolution {
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
-      spyUser: userId,
+      userId,
     })
 
     if (PlayPassResolution.logger.isTraceEnabled()) {

@@ -72,7 +72,7 @@ export default class EffectSpy {
             min: 0,
             max: self.deck.undrawn.length,
           })
-          const undrawnToMoveToHand = self.deck.undrawn.splice(index, 1)[0]
+          const undrawnToMoveToHand = self.deck.undrawn.splice(index - 1, 1)[0]
           EffectSpy.logger.debug(
             `${logPrefix} moving undrawn unit "${undrawnToMoveToHand.unit}" to hand due to spy "${newDeckUnit.unit}"`
           )

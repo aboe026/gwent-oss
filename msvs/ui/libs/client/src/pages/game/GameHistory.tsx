@@ -218,13 +218,15 @@ function PlayerHistoryMove({
     image = unit.images[gameUnit.artStyle - 1]
     imageTitle = unit.name
 
-    const potentialCardPlayer = useFragment(GamePlayerFragmentDoc, game.players).find(
-      (player) => player.user.name === unitMove.target?.name
-    )
-    if (!potentialCardPlayer) {
-      throw Error(`Could not find player for History move "${JSON.stringify(unitMove)}"`)
+    if (unitMove.target?.name) {
+      const potentialCardPlayer = useFragment(GamePlayerFragmentDoc, game.players).find(
+        (player) => player.user.name === unitMove.target?.name
+      )
+      if (!potentialCardPlayer) {
+        throw Error(`Could not find player for History move "${JSON.stringify(unitMove)}"`)
+      }
+      cardPlayer = potentialCardPlayer
     }
-    cardPlayer = potentialCardPlayer
     isSelected = cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
     if (isSelected) {
       const playerRound = useFragment(PlayerRoundFragmentDoc, cardPlayer.rounds[game.round - 1])

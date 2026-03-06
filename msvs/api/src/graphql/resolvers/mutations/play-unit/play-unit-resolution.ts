@@ -45,7 +45,6 @@ export default class PlayUnitResolution {
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
-      spyUser: userId,
     })
     if (PlayUnitResolution.logger.isTraceEnabled()) {
       PlayUnitResolution.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)
@@ -67,7 +66,7 @@ export default class PlayUnitResolution {
 
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedOnGame, {
       unitPlayedOnGame: {
-        game: resolvedGame,
+        game: resolvedGame, // userId will be filtered in ../../subscription-resolver.ts
         unit: resolvedUnit,
       },
     } as UnitPlayedOnGamePayload)
@@ -82,11 +81,14 @@ export default class PlayUnitResolution {
       unitPlayedFromDeck: {
         deck: resolvedGameDeck,
         game: resolvedGame,
-        handed: handed,
+        handed,
         unit: resolvedUnit,
       },
     } as UnitPlayedFromDeckPayload)
 
-    return resolvedGame
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
+      userId,
+    })
   }
 }

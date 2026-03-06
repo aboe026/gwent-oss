@@ -31,7 +31,7 @@ export default class PlayerRoundResolver {
     round: PlayerRoundDbObject
     units?: Unit[]
     users?: User[]
-    spyUser: ObjectId
+    spyUser?: ObjectId
   }): Promise<PlayerRound> {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: round.moves,
@@ -90,7 +90,7 @@ export default class PlayerRoundResolver {
     rounds: PlayerRoundDbObject[]
     users?: User[]
     units?: Unit[]
-    spyUser: ObjectId
+    spyUser?: ObjectId
   }): Promise<PlayerRound[]> {
     if (rounds.length === 0) {
       return []

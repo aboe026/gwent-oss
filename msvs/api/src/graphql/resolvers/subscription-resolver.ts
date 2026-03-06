@@ -4,7 +4,8 @@ import { withFilter } from 'graphql-subscriptions'
 import { Context } from '@gwent/graphql-schema/context'
 import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
 import EventManager from '../event-manager'
-import { getNestedProperty } from '@gwent/utils'
+import GameResolver from './types/game-resolver'
+import { getNestedProperty, setNestedProperty } from '@gwent/utils'
 import { PubSubEvents } from '@gwent/constants'
 
 /**
@@ -104,6 +105,14 @@ export default class SubscriptionResolver {
               subscriptionName: 'passPlayed',
             })
         ),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+          return SubscriptionResolver.hideImpactUnits({
+            ctx,
+            payload,
+            subscriptionName: 'passPlayed',
+          })
+        },
       },
       roundEndedForDeck: {
         subscribe: withFilter(
@@ -122,6 +131,15 @@ export default class SubscriptionResolver {
               nestedGamePath: 'game',
             })
         ),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+          return SubscriptionResolver.hideImpactUnits({
+            ctx,
+            payload,
+            subscriptionName: 'roundEndedForDeck',
+            nestedGamePath: 'game',
+          })
+        },
       },
       unitPlayedFromDeck: {
         subscribe: withFilter(
@@ -132,8 +150,23 @@ export default class SubscriptionResolver {
               payload,
               subscriptionName: 'unitPlayedFromDeck',
               nestedDeckPath: 'deck.from',
+            }) &&
+            SubscriptionResolver.filterPlayerOnGame({
+              ctx,
+              payload,
+              subscriptionName: 'unitPlayedFromDeck',
+              nestedGamePath: 'game',
             })
         ),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+          return SubscriptionResolver.hideImpactUnits({
+            ctx,
+            payload,
+            subscriptionName: 'unitPlayedFromDeck',
+            nestedGamePath: 'game',
+          })
+        },
       },
       unitPlayedOnGame: {
         subscribe: withFilter(
@@ -146,6 +179,15 @@ export default class SubscriptionResolver {
               nestedGamePath: 'game',
             })
         ),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+          return SubscriptionResolver.hideImpactUnits({
+            ctx,
+            payload,
+            subscriptionName: 'unitPlayedOnGame',
+            nestedGamePath: 'game',
+          })
+        },
       },
       unitRedrawn: {
         subscribe: withFilter(
@@ -281,6 +323,61 @@ export default class SubscriptionResolver {
       SubscriptionResolver.logger.debug(`Not publishing ${subscriptionName} for game "${gameId}": No user on context.`)
     }
     return false
+  }
+
+  private static hideImpactUnits({
+    payload,
+    ctx,
+    subscriptionName,
+    nestedGamePath,
+  }: {
+    payload: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    ctx: Context
+    subscriptionName: string
+    nestedGamePath?: string
+  }) {
+    if (SubscriptionResolver.logger.isTraceEnabled()) {
+      SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame ctx: "${JSON.stringify(ctx)}"`)
+      SubscriptionResolver.logger.trace(
+        `${subscriptionName} filterPlayerOnGame subscriptionName: "${subscriptionName}"`
+      )
+      SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame nestedGamePath: "${nestedGamePath}"`)
+    }
+    const userId = ctx.session?.user?._id.toString()
+    const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`
+    const game = getNestedProperty<Game>({
+      obj: payload,
+      nestedProperty,
+    })
+    if (!game) {
+      const message = `Could not find game in payload for subscription "${subscriptionName}"`
+      SubscriptionResolver.logger.error(
+        `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
+      )
+      throw Error(`${message}.`)
+    }
+
+    if (!userId) {
+      const message = `Could not find user in payload for subscription "${subscriptionName}"`
+      SubscriptionResolver.logger.error(
+        `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
+      )
+      throw Error(`${message}.`)
+    }
+
+    const maskedGame = GameResolver.maskSpiedHandUnits({
+      game,
+      userId,
+    })
+
+    setNestedProperty({
+      obj: payload,
+      path: nestedProperty,
+      value: maskedGame,
+    })
+
+    return payload[subscriptionName]
   }
 }
 

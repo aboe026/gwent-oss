@@ -22,19 +22,19 @@ export default class GameResolver {
    * @param config.game The Game to convert.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
-   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
+   * @param config.userId The ID of the User to resolve the Game for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Game object matching its GraphQL schema definition.
    */
   static async fromObject({
     game,
     users,
     units,
-    spyUser,
+    userId,
   }: {
     game: GameDbObject
     users?: User[]
     units?: Unit[]
-    spyUser: ObjectId
+    userId?: ObjectId
   }): Promise<Game> {
     const status = game.status as GameStatus
     const rounds = game.players.map((player) => player.rounds).flat()
@@ -52,7 +52,7 @@ export default class GameResolver {
       gameStatus: status,
       users: resolvedUsers,
       units: resolvedUnits,
-      spyUser,
+      userId,
     })
 
     const creator = resolvedUsers.find((user) => user.id === game.creator.toString())
@@ -126,7 +126,7 @@ export default class GameResolver {
           game,
           users,
           units,
-          spyUser,
+          userId: spyUser,
         })
       )
     }
@@ -157,7 +157,38 @@ export default class GameResolver {
 
     return GameResolver.fromObject({
       game: game as GameDbObject,
-      spyUser,
+      userId: spyUser,
     })
+  }
+
+  static maskSpiedHandUnits({ game, userId }: { game: Game; userId: ObjectId | string }): Game {
+    return {
+      ...game,
+      players: game.players.map((player) => {
+        return {
+          ...player,
+          rounds: player.rounds.map((round) => {
+            return {
+              ...round,
+              moves: round.moves.map((move) => {
+                if (move.__typename === 'MoveUnit') {
+                  return {
+                    ...move,
+                    impacts: move.impacts?.map((impact) => {
+                      const hideImpactUnit = move.target?.id && impact.user.id !== userId.toString()
+                      return {
+                        ...impact,
+                        unit: hideImpactUnit ? undefined : impact.unit,
+                      }
+                    }),
+                  }
+                }
+                return move
+              }),
+            }
+          }),
+        }
+      }),
+    }
   }
 }

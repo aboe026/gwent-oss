@@ -126,6 +126,8 @@ test('Spy does not show opponents handed units in impacts', async (t) => {
     },
     opponentFirst: true,
   })
+  await gameManager.initialize({})
+
   await gameManager.deploy({
     unitName,
     spying: {
@@ -136,8 +138,6 @@ test('Spy does not show opponents handed units in impacts', async (t) => {
       effectiveStrength: 5,
     },
   })
-
-  await gameManager.initialize({})
   await GamePage.toggleImpacts({
     round: gameManager.round,
     unitName,

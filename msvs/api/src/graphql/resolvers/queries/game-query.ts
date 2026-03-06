@@ -44,7 +44,7 @@ export default class GameQuery {
 
     return GameResolver.fromObject({
       game,
-      spyUser: userId,
+      userId,
     })
   }
 }
