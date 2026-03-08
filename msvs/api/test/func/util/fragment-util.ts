@@ -246,7 +246,9 @@ export function getGamePlayerFragment(): string {
       siege {
         ${getPlayerCombatRowFragment()}
       }
-
+      weathers {
+        ${getGameUnitFragment()}
+      }
     }
     user {
       ${getUserFragment()}

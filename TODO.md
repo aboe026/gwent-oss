@@ -12,7 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- ensure highlighting works properly
+- change Impact unit type to be GameUnit or DeckUnit?
 
 - no spaces in username?
 - include "to" for impact so know exactly which unit it transformed into?

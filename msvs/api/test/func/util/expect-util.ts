@@ -520,6 +520,7 @@ export function expectizePlayerRound({
     score,
     siege,
     result,
+    weathers: [],
   }
 }
 

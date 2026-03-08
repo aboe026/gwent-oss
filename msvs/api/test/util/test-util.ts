@@ -944,14 +944,19 @@ export default class TestUtil {
   }: {
     unit: Unit
     artStyle?: number
-    effectiveStrength?: number
+    effectiveStrength?: number | null
     effects?: GameUnitEffect[]
     row?: Combat | null
   }): GameUnit {
     return {
       artStyle,
       unit,
-      effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
+      effectiveStrength:
+        effectiveStrength || effectiveStrength === null
+          ? effectiveStrength
+          : unit.strength === undefined
+            ? null
+            : unit.strength,
       effects,
       row,
     }

@@ -287,11 +287,17 @@ type MovePass @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
 }
 
 type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
+  "When the Move was made."
   created: DateTime! @column
+  "The Unit which was Moved."
   unit: GameUnit! @column(overrideType: "GameUnitDbObject")
+  "Other Units the Move impacted in the Game."
   impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
+  "What caused the Move to happen."
   reason: MoveUnitReason! @column(overrideType: "MoveUnitReasonDbObject")
+  "Where the Unit which made the Move came from."
   source: GameUnitSource! @column(overrideType: "GameUnitSourceDbObject")
+  "The Game Player that was Spied on."
   target: User @column(overrideType: "ObjectId")
 }
 

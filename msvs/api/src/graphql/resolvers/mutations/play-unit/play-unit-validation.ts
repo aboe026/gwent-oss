@@ -220,7 +220,7 @@ export default class PlayUnitValidation {
         }
         const opponent = opponents.find((player) => player.user.toString() === targetId)
         if (!opponent) {
-          const message = `Invalid spy target "${targetId}: Could not find that opponent on game.`
+          const message = `Invalid spy target "${targetId}": Could not find that opponent on game.`
           PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
           throw new PresentableError(message)
         }
