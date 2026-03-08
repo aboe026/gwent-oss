@@ -325,6 +325,16 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Hides the Units of Impacts for opponents on a subscription payload for a game.
+   *
+   * @param config The configuration used to hide the Impact Units for Opponents.
+   * @param config.payload The payload to be returned to the Subscription.
+   * @param config.ctx The context containing the User the Subscription will be returned to.
+   * @param config.subscriptionName The name of the subscription being executed.
+   * @param config.nestedGamePath The optional path of the property within the payload which contains the game.
+   * @returns The payload for the subscription.
+   */
   private static hideImpactUnits({
     payload,
     ctx,
@@ -335,7 +345,8 @@ export default class SubscriptionResolver {
     ctx: Context
     subscriptionName: string
     nestedGamePath?: string
-  }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }): any {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame ctx: "${JSON.stringify(ctx)}"`)

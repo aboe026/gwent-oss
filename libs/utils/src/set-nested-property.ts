@@ -1,3 +1,11 @@
+/**
+ * Sets a property/field on an object at a nested depth.
+ *
+ * @param config The configuration used to set the nested property.
+ * @param config.obj The object containing the nested path to set the value of.
+ * @param config.path The path within the object to set the value of.
+ * @param config.value The value to set on the nested path within the object.
+ */
 export default function setNestedProperty<T>({
   obj,
   path,
@@ -6,7 +14,7 @@ export default function setNestedProperty<T>({
   obj: T
   path: string
   value: any // eslint-disable-line @typescript-eslint/no-explicit-any
-}): void {
+}) {
   const keys = path.split('.')
   let current: any = obj // eslint-disable-line @typescript-eslint/no-explicit-any
 

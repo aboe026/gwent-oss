@@ -161,6 +161,14 @@ export default class GameResolver {
     })
   }
 
+  /**
+   * Remove the Unit on Impacts for spied hand cards of Opponents.
+   *
+   * @param config The configuration used to mask the Units on Impacts for opponents Spies.
+   * @param config.game The Game to mask spies for.
+   * @param config.userId The ID of the user the game is being returned for, and whose Impacts will be excluded from masking.
+   * @returns The Game with Opponents spied Impact Units removed.
+   */
   static maskSpiedHandUnits({ game, userId }: { game: Game; userId: ObjectId | string }): Game {
     return {
       ...game,
