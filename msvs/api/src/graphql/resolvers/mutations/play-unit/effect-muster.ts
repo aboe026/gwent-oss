@@ -131,7 +131,9 @@ export default class EffectMuster {
           origin: musteredOrigins[unit._id.toString()],
         })
       } else {
-        // TODO: does this condition even need to be accounted for?
+        const message = `Impact for muster does not have unit: "${JSON.stringify(impact)}"`
+        EffectMuster.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
+        throw Error(`${message}.`)
       }
     }
 

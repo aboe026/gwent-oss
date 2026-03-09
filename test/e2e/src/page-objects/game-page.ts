@@ -1237,7 +1237,24 @@ export default class GamePage {
           .notOk(`Row "${nonCombatRow.combat}" is not highlighted`)
       }
     }
-    // TODO: verify opponent/opposite not highlighted
+    const otherCloseRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowCloseSelf : HTML_IDS.GameCombatRowCloseOpponent}`
+    )
+    const otherRangedRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowRangedSelf : HTML_IDS.GameCombatRowRangedOpponent}`
+    )
+    const otherSiegeRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowSiegeSelf : HTML_IDS.GameCombatRowSiegeOpponent}`
+    )
+    await t
+      .expect(otherCloseRow.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted))
+      .notOk(`${spy ? 'Self' : 'Opponent'} Close row is not highlighted`)
+    await t
+      .expect(otherRangedRow.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted))
+      .notOk(`${spy ? 'Self' : 'Opponent'} Ranged row is not highlighted`)
+    await t
+      .expect(otherSiegeRow.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted))
+      .notOk(`${spy ? 'Self' : 'Opponent'} Siege row is not highlighted`)
     if (modifier) {
       await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`))
     } else if (decoyTarget) {
