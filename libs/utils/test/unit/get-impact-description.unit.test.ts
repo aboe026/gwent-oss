@@ -138,7 +138,7 @@ describe('getImpactDescription', () => {
       getImpactDescription({
         effectKey: EffectKey.Spy,
       })
-    ).toEqual('spied into battlefield')
+    ).toEqual('spied from undrawn into hand')
   })
   it('returns correct text for Weather', () => {
     expect(

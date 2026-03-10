@@ -38,7 +38,6 @@ export default class PlayPassResolution {
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
-      userId,
     })
 
     if (PlayPassResolution.logger.isTraceEnabled()) {
@@ -70,6 +69,9 @@ export default class PlayPassResolution {
       }
     }
 
-    return resolvedGame
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
+      userId,
+    })
   }
 }

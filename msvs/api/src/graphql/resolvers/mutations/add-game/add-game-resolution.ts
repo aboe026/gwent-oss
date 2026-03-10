@@ -39,7 +39,6 @@ export default class AddGameResolution {
     const resolvedGame = await GameResolver.fromObject({
       game,
       users: [...opponents, await UserResolver.fromId(creatorId)],
-      userId: creatorId,
     })
 
     if (AddGameResolution.logger.isTraceEnabled()) {
@@ -50,6 +49,9 @@ export default class AddGameResolution {
       gameAdded: resolvedGame,
     } as GameAddedPayload)
 
-    return resolvedGame
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
+      userId: creatorId,
+    })
   }
 }

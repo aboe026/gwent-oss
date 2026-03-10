@@ -273,6 +273,7 @@ async function testPlayPassValidation({
     await expect(promise).resolves.toEqual({
       game: isGamePlayerResponse instanceof Error ? undefined : isGamePlayerResponse?.game,
       logPrefix,
+      userId: isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse._id,
     })
   }
 
