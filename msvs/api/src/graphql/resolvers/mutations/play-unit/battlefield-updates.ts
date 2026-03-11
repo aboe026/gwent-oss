@@ -82,7 +82,7 @@ export default class BattlefieldUpdates {
       newDeckUnit,
       targetId,
     })
-    if (spiedUnitsAddedToHand) {
+    if (spiedUnitsAddedToHand.length > 0) {
       deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
     }
 
