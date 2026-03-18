@@ -66,7 +66,7 @@ export default class PlayUnitResolution {
 
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedOnGame, {
       unitPlayedOnGame: {
-        game: resolvedGame, // userId will be filtered in ../../subscription-resolver.ts
+        game: resolvedGame,
         unit: resolvedUnit,
       },
     } as UnitPlayedOnGamePayload)

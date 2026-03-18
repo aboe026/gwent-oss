@@ -132,13 +132,15 @@ export default class SetGameTurnOrder {
 
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,
-      userId,
     })
 
     EventManager.pubsub.publish(PubSubEvents.OrderSet, {
       orderSet: resolvedGame,
     } as OrderSetPayload)
 
-    return resolvedGame
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
+      userId,
+    })
   }
 }

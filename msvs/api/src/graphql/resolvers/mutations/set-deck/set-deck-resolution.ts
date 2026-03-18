@@ -47,7 +47,6 @@ export default class SetDeckResolution {
     }
     const resolvedGame = await GameResolver.fromObject({
       game,
-      userId,
     })
     if (SetDeckResolution.logger.isTraceEnabled()) {
       SetDeckResolution.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)

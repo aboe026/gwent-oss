@@ -22,19 +22,16 @@ export default class GameResolver {
    * @param config.game The Game to convert.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
-   * @param config.userId The ID of the User to resolve the Game for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Game object matching its GraphQL schema definition.
    */
   static async fromObject({
     game,
     users,
     units,
-    userId,
   }: {
     game: GameDbObject
     users?: User[]
     units?: Unit[]
-    userId?: ObjectId
   }): Promise<Game> {
     const status = game.status as GameStatus
     const rounds = game.players.map((player) => player.rounds).flat()
@@ -52,7 +49,6 @@ export default class GameResolver {
       gameStatus: status,
       users: resolvedUsers,
       units: resolvedUnits,
-      userId,
     })
 
     const creator = resolvedUsers.find((user) => user.id === game.creator.toString())
@@ -95,10 +91,9 @@ export default class GameResolver {
    *
    * @param config The configuration used to convert the Games.
    * @param config.games The Game database documents to convert.
-   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Game array matching the GraphQL schema definition.
    */
-  static async fromArray({ games, spyUser }: { games: GameDbObject[]; spyUser: ObjectId }): Promise<Game[]> {
+  static async fromArray({ games }: { games: GameDbObject[] }): Promise<Game[]> {
     if (games.length === 0) {
       return []
     }
@@ -126,7 +121,6 @@ export default class GameResolver {
           game,
           users,
           units,
-          userId: spyUser,
         })
       )
     }
@@ -138,11 +132,10 @@ export default class GameResolver {
    *
    * @param config The configuration used to convert the Game.
    * @param config.id The ObjectId of the Game to convert.
-   * @param config.spyUser The user to resolve GameUnits on spy Impacts for. Ensures that players cannot see which units spied into opponents hands.
    * @returns The resolved Game object with the given ID.
    * @throws {Error} if a Game with the given ID does not exist.
    */
-  static async fromId({ id, spyUser }: { id: ObjectId | string; spyUser: ObjectId }): Promise<Game> {
+  static async fromId({ id }: { id: ObjectId | string }): Promise<Game> {
     const game = await GameStore.getById({
       id,
     })
@@ -157,7 +150,6 @@ export default class GameResolver {
 
     return GameResolver.fromObject({
       game: game as GameDbObject,
-      userId: spyUser,
     })
   }
 

@@ -40,9 +40,15 @@ export default class GamesQuery {
     if (GamesQuery.logger.isTraceEnabled()) {
       GamesQuery.logger.trace(`${logPrefix} games: "${JSON.stringify(games)}"`)
     }
-    return GameResolver.fromArray({
+    const resolvedGames = await GameResolver.fromArray({
       games,
-      spyUser: userId,
     })
+
+    return resolvedGames.map((resolvedGame) =>
+      GameResolver.maskSpiedHandUnits({
+        game: resolvedGame,
+        userId,
+      })
+    )
   }
 }

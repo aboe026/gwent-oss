@@ -42,8 +42,12 @@ export default class GameQuery {
       info,
     })
 
-    return GameResolver.fromObject({
+    const resolvedGame = await GameResolver.fromObject({
       game,
+    })
+
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
       userId,
     })
   }

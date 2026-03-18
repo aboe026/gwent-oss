@@ -34,7 +34,6 @@ export default class ReadyResolution {
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
-      userId,
     })
     if (ReadyResolution.logger.isTraceEnabled()) {
       ReadyResolution.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)
@@ -44,6 +43,9 @@ export default class ReadyResolution {
       gameReady: resolvedGame,
     } as GameReadyPayload)
 
-    return resolvedGame
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
+      userId,
+    })
   }
 }
