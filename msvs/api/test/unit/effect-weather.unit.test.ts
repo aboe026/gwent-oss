@@ -4,7 +4,6 @@ import {
   Combat,
   DeckUnitDbObject,
   EffectDbObject,
-  EffectKey,
   GameDbObject,
   GameUnitDbObject,
   GameUnitEffectDbObject,
@@ -12,8 +11,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
-import EffectWeather, { WeatheredBattlefield } from '../../src/graphql/resolvers/mutations/play-unit/effect-weather'
-import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
+import EffectWeather from '../../src/graphql/resolvers/mutations/play-unit/effect-weather'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { PlayerWeatherUnit } from '../../src/graphql/resolvers/mutations/play-unit/get-weather-units-for-row'
 import TestUtil from '../util/test-util'
@@ -40,10 +38,8 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        expected: {
-          newUnitHasWeather: false,
-          impacts: {},
-        },
+        isWeather: false,
+        expected: {},
       })
     })
     it('does not impact if weather with combats', () => {
@@ -72,11 +68,8 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
-        expected: {
-          newUnitHasWeather: true,
-          impacts: {},
-        },
+        isWeather: true,
+        expected: {},
         debugCalls: [[`${logPrefix} adding weather "${newUnit._id}"`]],
       })
     })
@@ -107,11 +100,8 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
-        expected: {
-          newUnitHasWeather: true,
-          impacts: {},
-        },
+        isWeather: true,
+        expected: {},
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${opponentId}"`],
@@ -150,17 +140,14 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
+        isWeather: true,
         expected: {
-          newUnitHasWeather: true,
-          impacts: {
-            [newUnit._id.toString()]: [
-              {
-                unit: existingWeathers[0],
-                user: userId,
-              },
-            ],
-          },
+          [newUnit._id.toString()]: [
+            {
+              unit: existingWeathers[0],
+              user: userId,
+            },
+          ],
         },
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
@@ -200,17 +187,14 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
+        isWeather: true,
         expected: {
-          newUnitHasWeather: true,
-          impacts: {
-            [newUnit._id.toString()]: [
-              {
-                unit: existingWeathers[0],
-                user: opponentId,
-              },
-            ],
-          },
+          [newUnit._id.toString()]: [
+            {
+              unit: existingWeathers[0],
+              user: opponentId,
+            },
+          ],
         },
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
@@ -254,21 +238,18 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
+        isWeather: true,
         expected: {
-          newUnitHasWeather: true,
-          impacts: {
-            [newUnit._id.toString()]: [
-              {
-                unit: existingWeathers[0],
-                user: userId,
-              },
-              {
-                unit: existingWeathers[1],
-                user: opponentId,
-              },
-            ],
-          },
+          [newUnit._id.toString()]: [
+            {
+              unit: existingWeathers[0],
+              user: userId,
+            },
+            {
+              unit: existingWeathers[1],
+              user: opponentId,
+            },
+          ],
         },
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
@@ -308,21 +289,18 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
+        isWeather: true,
         expected: {
-          newUnitHasWeather: true,
-          impacts: {
-            [newUnit._id.toString()]: [
-              {
-                unit: existingWeathers[0],
-                user: userId,
-              },
-              {
-                unit: existingWeathers[1],
-                user: userId,
-              },
-            ],
-          },
+          [newUnit._id.toString()]: [
+            {
+              unit: existingWeathers[0],
+              user: userId,
+            },
+            {
+              unit: existingWeathers[1],
+              user: userId,
+            },
+          ],
         },
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
@@ -362,21 +340,18 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
+        isWeather: true,
         expected: {
-          newUnitHasWeather: true,
-          impacts: {
-            [newUnit._id.toString()]: [
-              {
-                unit: existingWeathers[0],
-                user: opponentId,
-              },
-              {
-                unit: existingWeathers[1],
-                user: opponentId,
-              },
-            ],
-          },
+          [newUnit._id.toString()]: [
+            {
+              unit: existingWeathers[0],
+              user: opponentId,
+            },
+            {
+              unit: existingWeathers[1],
+              user: opponentId,
+            },
+          ],
         },
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
@@ -425,72 +400,30 @@ describe('effect-weather', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: newUnit._id,
         }),
-        weatherEffect,
+        isWeather: true,
         expected: {
-          newUnitHasWeather: true,
-          impacts: {
-            [newUnit._id.toString()]: [
-              {
-                unit: existingWeathers[0],
-                user: userId,
-              },
-              {
-                unit: existingWeathers[1],
-                user: userId,
-              },
-              {
-                unit: existingWeathers[2],
-                user: opponentId,
-              },
-              {
-                unit: existingWeathers[3],
-                user: opponentId,
-              },
-            ],
-          },
+          [newUnit._id.toString()]: [
+            {
+              unit: existingWeathers[0],
+              user: userId,
+            },
+            {
+              unit: existingWeathers[1],
+              user: userId,
+            },
+            {
+              unit: existingWeathers[2],
+              user: opponentId,
+            },
+            {
+              unit: existingWeathers[3],
+              user: opponentId,
+            },
+          ],
         },
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${opponentId}"`],
-        ],
-      })
-    })
-    it('logs to trace if enabled', () => {
-      const userId = new ObjectId()
-      const weatherEffect = TestUtil.getDbEffect({})
-      const newUnit = TestUtil.getDbUnit({
-        effects: [weatherEffect._id],
-        combats: [Combat.Close],
-      })
-      testWeatherBattlefield({
-        logPrefix,
-        game: TestUtil.getDbGame({
-          turn: userId,
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              user: userId,
-              rounds: [TestUtil.getDbPlayerRound({})],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [TestUtil.getDbPlayerRound({})],
-            }),
-          ],
-        }),
-        newUnit,
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: newUnit._id,
-        }),
-        weatherEffect,
-        expected: {
-          newUnitHasWeather: true,
-          impacts: {},
-        },
-        debugCalls: [[`${logPrefix} adding weather "${newUnit._id}"`]],
-        traceEnabled: true,
-        traceCalls: [
-          [`${logPrefix} weatherEffect: "${JSON.stringify(weatherEffect)}"`],
-          [`${logPrefix} newUnitHasWeather: "true"`],
         ],
       })
     })
@@ -909,56 +842,34 @@ function testWeatherBattlefield({
   logPrefix,
   newDeckUnit,
   newUnit,
-  weatherEffect,
+  isWeather,
   expected,
-  traceEnabled,
   debugCalls = [],
-  traceCalls = [],
 }: {
   game: GameDbObject
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
   newUnit: UnitDbObject
-  weatherEffect?: EffectDbObject
-  expected: WeatheredBattlefield
-  traceEnabled?: boolean
+  isWeather: boolean
+  expected: ImpactsByUnitId
   debugCalls?: string[][]
-  traceCalls?: string[][]
 }) {
-  const effects = [TestUtil.getDbEffect({})]
-  const getEffectWithKeySpy = jest.spyOn(GetEffectWithKey, 'getEffectWithKey')
-  if (weatherEffect) {
-    getEffectWithKeySpy.mockReturnValue(weatherEffect)
-  }
   const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
   EffectWeather['logger'] = {
     debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
   } as any
 
   expect(
     EffectWeather.weatherBattlefield({
-      effects,
       game,
       logPrefix,
       newDeckUnit,
       newUnit,
+      isWeather,
     })
   ).toEqual(expected)
 
-  expect(getEffectWithKeySpy.mock.calls).toEqual([
-    [
-      {
-        effectKey: EffectKey.Weather,
-        effects,
-        logPrefix,
-      },
-    ],
-  ])
   expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
 function testWeatherScores({

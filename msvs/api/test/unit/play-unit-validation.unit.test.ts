@@ -21,888 +21,894 @@ import UnitStore from '../../src/database/stores/unit-store'
 
 describe('play-unit-validation', () => {
   const user = TestUtil.getDbUser({})
-  it('throws error if isAuthenticated throws error', async () => {
-    const error = Error('isAuthenticated error')
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: error,
-      expectedError: error,
+  describe('invalid', () => {
+    it('throws error if isAuthenticated throws error', async () => {
+      const error = Error('isAuthenticated error')
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: error,
+        expectedError: error,
+      })
     })
-  })
-  it('throws error if isGamePlayer throws error', async () => {
-    const error = Error('isGamePlayer error')
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: error,
-      expectedError: error,
+    it('throws error if isGamePlayer throws error', async () => {
+      const error = Error('isGamePlayer error')
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: error,
+        expectedError: error,
+      })
     })
-  })
-  it('throws error if verifyMongoIds throws error', async () => {
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-        }),
-        TestUtil.getDbGamePlayer({}),
-      ],
-    })
-    const error = Error('verifyMongoIds error')
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      verifyMongoIdResponses: [error],
-      expectedError: error,
-    })
-  })
-  it('throws error if validateGame throws error', async () => {
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-        }),
-        TestUtil.getDbGamePlayer({}),
-      ],
-    })
-    const error = Error('validateGame error')
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      validateGameError: error,
-      expectedError: error,
-    })
-  })
-  it('throws error if unit is not in hand', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({}),
-        }),
-      ],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = 'Unit not in hand.'
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      logPrefix,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if unit is in hand more than once', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit, deckUnit],
+    it('throws error if verifyMongoIds throws error', async () => {
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
           }),
-        }),
-      ],
+          TestUtil.getDbGamePlayer({}),
+        ],
+      })
+      const error = Error('verifyMongoIds error')
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        verifyMongoIdResponses: [error],
+        expectedError: error,
+      })
     })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Found more than 1 unit with ID "${deckUnit.unit}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      logPrefix,
-      expectedError: Error(`${message}.`),
-      errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([deckUnit, deckUnit])}"`]],
-    })
-  })
-  it('throws error if unit does not exist', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('throws error if validateGame throws error', async () => {
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
           }),
-        }),
-      ],
+          TestUtil.getDbGamePlayer({}),
+        ],
+      })
+      const error = Error('validateGame error')
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        validateGameError: error,
+        expectedError: error,
+      })
     })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = 'Unit does not exist.'
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [],
-      logPrefix,
-      expectedError: Error(message),
-      errorCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if unit exists more than once', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('throws error if unit is not in hand', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({}),
           }),
-        }),
-      ],
+        ],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = 'Unit not in hand.'
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        logPrefix,
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
     })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Found multiple units with ID "${deckUnit.unit}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit, unit],
-      logPrefix,
-      expectedError: Error(`${message}.`),
-      errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([unit, unit])}"`]],
-    })
-  })
-  it('throws error if no combats specified and unit has multiple combats', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [Combat.Close, Combat.Ranged],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if combat specified does not match unit combats', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [Combat.Close, Combat.Ranged],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Combat "${Combat.Siege}" does match unit combats of "${JSON.stringify(unit.combats)}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      combat: Combat.Siege,
-      units: [unit],
-      logPrefix,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if modifier already set for close', async () => {
-    const combat = Combat.Close
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [combat],
-      modifier: true,
-    })
-    const existingModifier = TestUtil.getDbGameUnit({})
-    const game = TestUtil.getDbGame({
-      round: 1,
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              close: TestUtil.getDbPlayerCombatRow({
-                modifier: existingModifier,
-              }),
+    it('throws error if unit is in hand more than once', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit, deckUnit],
             }),
-          ],
-        }),
-      ],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      combat,
-      units: [unit],
-      logPrefix,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if modifier already set for ranged', async () => {
-    const combat = Combat.Ranged
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [combat],
-      modifier: true,
-    })
-    const existingModifier = TestUtil.getDbGameUnit({})
-    const game = TestUtil.getDbGame({
-      round: 1,
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
           }),
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              ranged: TestUtil.getDbPlayerCombatRow({
-                modifier: existingModifier,
-              }),
+        ],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Found more than 1 unit with ID "${deckUnit.unit}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        logPrefix,
+        expectedError: Error(`${message}.`),
+        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([deckUnit, deckUnit])}"`]],
+      })
+    })
+    it('throws error if unit does not exist', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
             }),
-          ],
-        }),
-      ],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      combat,
-      units: [unit],
-      logPrefix,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if modifier already set for siege', async () => {
-    const combat = Combat.Siege
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [combat],
-      modifier: true,
-    })
-    const existingModifier = TestUtil.getDbGameUnit({})
-    const game = TestUtil.getDbGame({
-      round: 1,
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
           }),
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              siege: TestUtil.getDbPlayerCombatRow({
-                modifier: existingModifier,
-              }),
+        ],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = 'Unit does not exist.'
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [],
+        logPrefix,
+        expectedError: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if unit exists more than once', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
             }),
-          ],
-        }),
-      ],
+          }),
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Found multiple units with ID "${deckUnit.unit}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit, unit],
+        logPrefix,
+        expectedError: Error(`${message}.`),
+        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([unit, unit])}"`]],
+      })
     })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      combat,
-      units: [unit],
-      logPrefix,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    it('throws error if no combats specified and unit has multiple combats', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [Combat.Close, Combat.Ranged],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if combat specified does not match unit combats', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [Combat.Close, Combat.Ranged],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Combat "${Combat.Siege}" does match unit combats of "${JSON.stringify(unit.combats)}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        combat: Combat.Siege,
+        units: [unit],
+        logPrefix,
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if modifier already set for close', async () => {
+      const combat = Combat.Close
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [combat],
+        modifier: true,
+      })
+      const existingModifier = TestUtil.getDbGameUnit({})
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  modifier: existingModifier,
+                }),
+              }),
+            ],
+          }),
+        ],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        combat,
+        units: [unit],
+        logPrefix,
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if modifier already set for ranged', async () => {
+      const combat = Combat.Ranged
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [combat],
+        modifier: true,
+      })
+      const existingModifier = TestUtil.getDbGameUnit({})
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  modifier: existingModifier,
+                }),
+              }),
+            ],
+          }),
+        ],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        combat,
+        units: [unit],
+        logPrefix,
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if modifier already set for siege', async () => {
+      const combat = Combat.Siege
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [combat],
+        modifier: true,
+      })
+      const existingModifier = TestUtil.getDbGameUnit({})
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  modifier: existingModifier,
+                }),
+              }),
+            ],
+          }),
+        ],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        combat,
+        units: [unit],
+        logPrefix,
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if decoy without target', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
+        }),
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Argument "target" required for units with "${EffectKey.Decoy}" effect.`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        effects,
+        expectedDeckUnit: deckUnit,
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if target id invalid', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
+        }),
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const error = Error('verifyMongoIds error')
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        targetId: 'invalid',
+        effects,
+        expectedDeckUnit: deckUnit,
+        verifyMongoIdResponses: [undefined, error],
+        expectedError: error,
+      })
+    })
+    it('throws error if target not found on battlefield', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
+        }),
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const target = TestUtil.getDbGameUnit({})
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Target "${target.unit}" does not exist on the battlefield for player "${user._id}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        targetId: target.unit.toString(),
+        effects,
+        expectedDeckUnit: deckUnit,
+        verifyMongoIdResponses: [undefined, undefined],
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if unit not found for target', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
+        }),
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const target = TestUtil.getDbGameUnit({})
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Could not find Unit for target "${target.unit}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        targetId: target.unit.toString(),
+        effects,
+        expectedDeckUnit: deckUnit,
+        verifyMongoIdResponses: [undefined, undefined],
+        getBattlefieldUnitResponse: {
+          row: Combat.Close,
+          unit: target,
+        },
+        roundUnits: [],
+        expectedError: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if target is hero', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
+        }),
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const target = TestUtil.getDbGameUnit({})
+      const targetUnit = TestUtil.getDbUnit({
+        id: target.unit,
+        hero: true,
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Invalid decoy target "${target.unit}": Cannot be hero.`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        targetId: target.unit.toString(),
+        effects,
+        expectedDeckUnit: deckUnit,
+        verifyMongoIdResponses: [undefined, undefined],
+        getBattlefieldUnitResponse: {
+          row: Combat.Close,
+          unit: target,
+        },
+        roundUnits: [targetUnit],
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if target is special', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
+        }),
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const target = TestUtil.getDbGameUnit({})
+      const targetUnit = TestUtil.getDbUnit({
+        id: target.unit,
+        special: true,
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Invalid decoy target "${target.unit}": Cannot be special.`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        targetId: target.unit.toString(),
+        effects,
+        expectedDeckUnit: deckUnit,
+        verifyMongoIdResponses: [undefined, undefined],
+        getBattlefieldUnitResponse: {
+          row: Combat.Close,
+          unit: target,
+        },
+        roundUnits: [targetUnit],
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if combat specified does not match target combat', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+          }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
+        }),
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const target = TestUtil.getDbGameUnit({})
+      const targetUnit = TestUtil.getDbUnit({
+        id: target.unit,
+        combats: [Combat.Close],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      const message = `Invalid combat "${Combat.Ranged}": Target "${target.unit}" is in row "${Combat.Close}".`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        combat: Combat.Ranged,
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        targetId: target.unit.toString(),
+        effects,
+        expectedDeckUnit: deckUnit,
+        verifyMongoIdResponses: [undefined, undefined],
+        getBattlefieldUnitResponse: {
+          row: Combat.Close,
+          unit: target,
+        },
+        roundUnits: [targetUnit],
+        expectedError: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
     })
   })
-  it('throws error if decoy without target', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+  describe('valid', () => {
+    it('returns objects if no errors and no combat specified for unit with no combat', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
           }),
-        }),
-      ],
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        expectedDeckUnit: deckUnit,
+      })
     })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Argument "target" required for units with "${EffectKey.Decoy}" effect.`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      effects,
-      expectedDeckUnit: deckUnit,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if target id invalid', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('returns objects if no errors and no combat specified for unit with single combat', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
           }),
-        }),
-      ],
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [Combat.Ranged],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        expectedCombat: Combat.Ranged,
+        expectedDeckUnit: deckUnit,
+      })
     })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const error = Error('verifyMongoIds error')
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      targetId: 'invalid',
-      effects,
-      expectedDeckUnit: deckUnit,
-      verifyMongoIdResponses: [undefined, error],
-      expectedError: error,
-    })
-  })
-  it('throws error if target not found on battlefield', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('returns objects if no errors and combat specified for unit with multiple combats', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
           }),
-        }),
-      ],
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [Combat.Ranged, Combat.Siege],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        combat: Combat.Siege,
+        units: [unit],
+        logPrefix,
+        expectedCombat: Combat.Siege,
+        expectedDeckUnit: deckUnit,
+      })
     })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const target = TestUtil.getDbGameUnit({})
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Target "${target.unit}" does not exist on the battlefield for player "${user._id}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      targetId: target.unit.toString(),
-      effects,
-      expectedDeckUnit: deckUnit,
-      verifyMongoIdResponses: [undefined, undefined],
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if unit not found for target', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('returns objects if no errors and combat specified for modifier with multiple combats', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
           }),
-        }),
-      ],
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [Combat.Close, Combat.Ranged, Combat.Siege],
+        modifier: true,
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        combat: Combat.Siege,
+        units: [unit],
+        logPrefix,
+        expectedCombat: Combat.Siege,
+        expectedDeckUnit: deckUnit,
+      })
     })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const target = TestUtil.getDbGameUnit({})
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Could not find Unit for target "${target.unit}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      targetId: target.unit.toString(),
-      effects,
-      expectedDeckUnit: deckUnit,
-      verifyMongoIdResponses: [undefined, undefined],
-      getBattlefieldUnitResponse: {
-        row: Combat.Close,
-        unit: target,
-      },
-      roundUnits: [],
-      expectedError: Error(message),
-      errorCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if target is hero', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('retrieves effects and roundUnits if valid decoy', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
           }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Decoy,
         }),
-      ],
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const target = TestUtil.getDbGameUnit({})
+      const targetUnit = TestUtil.getDbUnit({
+        id: target.unit,
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        effects,
+        targetId: target.unit.toString(),
+        unitId: deckUnit.unit.toString(),
+        verifyMongoIdResponses: [undefined, undefined],
+        units: [unit],
+        roundUnits: [targetUnit],
+        getBattlefieldUnitResponse: {
+          row: Combat.Close,
+          unit: target,
+        },
+        logPrefix,
+        expectedDeckUnit: deckUnit,
+        expectedCombat: Combat.Close,
+        isDecoy: true,
+      })
     })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const target = TestUtil.getDbGameUnit({})
-    const targetUnit = TestUtil.getDbUnit({
-      id: target.unit,
-      hero: true,
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Invalid decoy target "${target.unit}": Cannot be hero.`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      targetId: target.unit.toString(),
-      effects,
-      expectedDeckUnit: deckUnit,
-      verifyMongoIdResponses: [undefined, undefined],
-      getBattlefieldUnitResponse: {
-        row: Combat.Close,
-        unit: target,
-      },
-      roundUnits: [targetUnit],
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if target is special', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('sets combat to undefined if weather', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
           }),
+        ],
+      })
+      const effects = [
+        TestUtil.getDbEffect({
+          key: EffectKey.Weather,
         }),
-      ],
+      ]
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        effects: effects.map((effect) => effect._id),
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        effects,
+        unitId: deckUnit.unit.toString(),
+        verifyMongoIdResponses: [undefined],
+        units: [unit],
+        logPrefix,
+        expectedDeckUnit: deckUnit,
+        expectedCombat: undefined,
+        isWeather: true,
+      })
     })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const target = TestUtil.getDbGameUnit({})
-    const targetUnit = TestUtil.getDbUnit({
-      id: target.unit,
-      special: true,
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Invalid decoy target "${target.unit}": Cannot be special.`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      targetId: target.unit.toString(),
-      effects,
-      expectedDeckUnit: deckUnit,
-      verifyMongoIdResponses: [undefined, undefined],
-      getBattlefieldUnitResponse: {
-        row: Combat.Close,
-        unit: target,
-      },
-      roundUnits: [targetUnit],
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if combat specified does not match target combat', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
+    it('logs to trace if enabled', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [deckUnit],
+            }),
           }),
-        }),
-      ],
-    })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const target = TestUtil.getDbGameUnit({})
-    const targetUnit = TestUtil.getDbUnit({
-      id: target.unit,
-      combats: [Combat.Close],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = `Invalid combat "${Combat.Ranged}": Target "${target.unit}" is in row "${Combat.Close}".`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      combat: Combat.Ranged,
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      targetId: target.unit.toString(),
-      effects,
-      expectedDeckUnit: deckUnit,
-      verifyMongoIdResponses: [undefined, undefined],
-      getBattlefieldUnitResponse: {
-        row: Combat.Close,
-        unit: target,
-      },
-      roundUnits: [targetUnit],
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('returns objects if no errors and no combat specified for unit with no combat', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      expectedDeckUnit: deckUnit,
-    })
-  })
-  it('returns objects if no errors and no combat specified for unit with single combat', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [Combat.Ranged],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      expectedCombat: Combat.Ranged,
-      expectedDeckUnit: deckUnit,
-    })
-  })
-  it('returns objects if no errors and combat specified for unit with multiple combats', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [Combat.Ranged, Combat.Siege],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      combat: Combat.Siege,
-      units: [unit],
-      logPrefix,
-      expectedCombat: Combat.Siege,
-      expectedDeckUnit: deckUnit,
-    })
-  })
-  it('returns objects if no errors and combat specified for modifier with multiple combats', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      round: 1,
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-          rounds: [TestUtil.getDbPlayerRound({})],
-        }),
-      ],
-    })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [Combat.Close, Combat.Ranged, Combat.Siege],
-      modifier: true,
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      combat: Combat.Siege,
-      units: [unit],
-      logPrefix,
-      expectedCombat: Combat.Siege,
-      expectedDeckUnit: deckUnit,
-    })
-  })
-  it('retrieves effects and roundUnits if valid decoy', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Decoy,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const target = TestUtil.getDbGameUnit({})
-    const targetUnit = TestUtil.getDbUnit({
-      id: target.unit,
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      effects,
-      targetId: target.unit.toString(),
-      unitId: deckUnit.unit.toString(),
-      verifyMongoIdResponses: [undefined, undefined],
-      units: [unit],
-      roundUnits: [targetUnit],
-      getBattlefieldUnitResponse: {
-        row: Combat.Close,
-        unit: target,
-      },
-      logPrefix,
-      expectedDeckUnit: deckUnit,
-      expectedCombat: Combat.Close,
-    })
-  })
-  it('sets combat to undefined if weather', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const effects = [
-      TestUtil.getDbEffect({
-        key: EffectKey.Weather,
-      }),
-    ]
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      effects: effects.map((effect) => effect._id),
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      effects,
-      unitId: deckUnit.unit.toString(),
-      verifyMongoIdResponses: [undefined],
-      units: [unit],
-      logPrefix,
-      expectedDeckUnit: deckUnit,
-      expectedCombat: undefined,
-    })
-  })
-  it('logs to trace if enabled', async () => {
-    const deckUnit = TestUtil.getDbDeckUnit({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            hand: [deckUnit],
-          }),
-        }),
-      ],
-    })
-    const unit = TestUtil.getDbUnit({
-      id: deckUnit.unit,
-      combats: [Combat.Ranged],
-    })
-    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    await testPlayUnitValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      unitId: deckUnit.unit.toString(),
-      units: [unit],
-      logPrefix,
-      expectedCombat: Combat.Ranged,
-      expectedDeckUnit: deckUnit,
-      traceEnabled: true,
+        ],
+      })
+      const unit = TestUtil.getDbUnit({
+        id: deckUnit.unit,
+        combats: [Combat.Ranged],
+      })
+      const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+      await testPlayUnitValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        unitId: deckUnit.unit.toString(),
+        units: [unit],
+        logPrefix,
+        expectedCombat: Combat.Ranged,
+        expectedDeckUnit: deckUnit,
+        traceEnabled: true,
+      })
     })
   })
 })
@@ -923,6 +929,9 @@ async function testPlayUnitValidation({
   expectedError,
   expectedCombat,
   expectedDeckUnit,
+  isDecoy = false,
+  isSpy = false,
+  isWeather = false,
   errorCalls = [],
   warnCalls = [],
   traceEnabled,
@@ -942,6 +951,9 @@ async function testPlayUnitValidation({
   expectedError?: Error
   expectedCombat?: Combat
   expectedDeckUnit?: DeckUnitDbObject
+  isDecoy?: boolean
+  isSpy?: boolean
+  isWeather?: boolean
   errorCalls?: string[][]
   warnCalls?: string[][]
   traceEnabled?: boolean
@@ -1031,6 +1043,10 @@ async function testPlayUnitValidation({
       roundUnits: roundUnits,
       effects: units && units[0].effects ? effects : undefined,
       targetId,
+      isDecoy,
+      isSpy,
+      isWeather,
+      userId: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse._id,
     })
   }
 
