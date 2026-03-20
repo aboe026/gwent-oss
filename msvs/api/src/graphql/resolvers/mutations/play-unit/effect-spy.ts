@@ -81,7 +81,6 @@ export default class EffectSpy {
           impacts.push({
             unit: undrawnToMoveToHand,
             user: self.user,
-            spy: true,
           })
         }
       } else {

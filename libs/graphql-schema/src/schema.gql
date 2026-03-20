@@ -271,7 +271,7 @@ type Leader @entity {
 }
 
 "A unit which was impacted by another unit."
-type Impact @entity(additionalFields: [{ path: "spy?", type: "Boolean" }]) {
+type Impact @entity {
   unit: GameUnit @column(overrideType: "GameUnitDbObject")
   user: User! @column(overrideType: "ObjectId")
   source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
