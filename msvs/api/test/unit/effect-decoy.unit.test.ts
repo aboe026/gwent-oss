@@ -36,6 +36,40 @@ describe('effect-decoy', () => {
         logPrefix,
         combat,
         targetId,
+        isDecoy: false,
+        game: TestUtil.getDbGame({
+          players: [player],
+          turn: player.user,
+          round: 1,
+        }),
+        newDeckUnit,
+        expected: {
+          impacts: {},
+          deckUnitAddedToHand: undefined,
+        },
+      })
+    })
+    it('does not return impact or deckUnit added to hand if no targetId', () => {
+      const combat = Combat.Close
+      const targetId = ''
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: TestUtil.getDbPlayerCombatRow({}),
+            ranged: TestUtil.getDbPlayerCombatRow({
+              score: 1,
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
+              score: 2,
+            }),
+          }),
+        ],
+      })
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      testDecoyFromBattlefield({
+        logPrefix,
+        combat,
+        targetId,
         game: TestUtil.getDbGame({
           players: [player],
           turn: player.user,
@@ -345,6 +379,7 @@ function testDecoyFromBattlefield({
   newDeckUnit,
   combat,
   targetId,
+  isDecoy = true,
   decoyFromRowResponse,
   expected,
   decoyFromRowCalls = [],
@@ -355,6 +390,7 @@ function testDecoyFromBattlefield({
   newDeckUnit: DeckUnitDbObject
   combat?: Combat
   targetId: string | undefined | null
+  isDecoy?: boolean
   decoyFromRowResponse?: ImpactDbObject | undefined
   expected: PotentialDecoy | Error
   decoyFromRowCalls?: any[][]
@@ -374,6 +410,7 @@ function testDecoyFromBattlefield({
         newDeckUnit,
         combat,
         targetId,
+        isDecoy,
       })
     ).toThrow(expected)
   } else {
@@ -384,6 +421,7 @@ function testDecoyFromBattlefield({
         newDeckUnit,
         combat,
         targetId,
+        isDecoy,
       })
     ).toEqual(expected)
   }

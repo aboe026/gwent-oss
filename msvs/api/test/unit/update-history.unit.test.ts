@@ -275,7 +275,7 @@ describe('update-history', () => {
         mardroemes,
         transformedGameUnits: [
           TestUtil.getDbGameUnit({
-            id: impact.unit.unit,
+            id: impact.unit?.unit,
           }),
         ],
         expectedImpacts: [impact],
@@ -301,7 +301,7 @@ describe('update-history', () => {
         mardroemingGameUnit: mardroeming.unit,
         transformedGameUnits: [
           TestUtil.getDbGameUnit({
-            id: impact.unit.unit,
+            id: impact.unit?.unit,
           }),
         ],
         expectedImpacts: [impact],
@@ -1271,9 +1271,11 @@ function testNewUnitDeployed({
   horns = {},
   decoys = {},
   weathers = {},
+  spies = {},
   musteredOrigins,
   transformedGameUnits,
   mardroemingGameUnit,
+  targetId,
   logPrefix,
   error,
   expectedImpacts: expectedImpacts,
@@ -1289,9 +1291,11 @@ function testNewUnitDeployed({
   horns?: ImpactsByUnitId
   decoys?: ImpactsByUnitId
   weathers?: ImpactsByUnitId
+  spies?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
   transformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
+  targetId?: string
   logPrefix: string
   error?: Error
   expectedImpacts?: ImpactDbObject[]
@@ -1331,7 +1335,7 @@ function testNewUnitDeployed({
   const newUnitIndirectCalls: any[][] = []
   if (musters[deckUnit.unit.toString()]) {
     for (const muster of musters[deckUnit.unit.toString()]) {
-      if (musteredOrigins && musteredOrigins[muster.unit.unit.toString()]) {
+      if (musteredOrigins && muster.unit && musteredOrigins[muster.unit.unit.toString()]) {
         newUnitIndirectCalls.push([
           {
             bonds,
@@ -1344,6 +1348,7 @@ function testNewUnitDeployed({
             mardroemes,
             morales,
             musters,
+            spies,
             origin: musteredOrigins && musteredOrigins[muster.unit.unit.toString()],
             playerId,
             reason: {
@@ -1371,6 +1376,7 @@ function testNewUnitDeployed({
           mardroemes,
           morales,
           musters,
+          spies,
           origin: GameUnitOrigin.Nondeck,
           playerId,
           reason: {
@@ -1411,8 +1417,10 @@ function testNewUnitDeployed({
         bonds,
         horns,
         mardroemes,
+        spies,
         transformedGameUnits,
         mardroemingGameUnit,
+        targetId,
       })
     ).toThrow(error)
   } else {
@@ -1432,8 +1440,10 @@ function testNewUnitDeployed({
         bonds,
         horns,
         mardroemes,
+        spies,
         transformedGameUnits,
         mardroemingGameUnit,
+        targetId,
       })
     ).toEqual(undefined)
   }
@@ -1475,6 +1485,7 @@ function testNewUnitIndirect({
   morales = {},
   decoys = {},
   weathers = {},
+  spies = {},
   reason,
   getBattlefieldUnitResponse,
   move,
@@ -1495,6 +1506,7 @@ function testNewUnitIndirect({
   morales?: ImpactsByUnitId
   decoys?: ImpactsByUnitId
   weathers?: ImpactsByUnitId
+  spies?: ImpactsByUnitId
   reason: MoveUnitReasonDbObject
   getBattlefieldUnitResponse: BattlefieldUnit | undefined
   move?: MoveUnitDbObject
@@ -1523,6 +1535,7 @@ function testNewUnitIndirect({
         musters,
         decoys,
         weathers,
+        spies,
         origin,
         playerId,
         reason,
@@ -1543,6 +1556,7 @@ function testNewUnitIndirect({
         musters,
         decoys,
         weathers,
+        spies,
         origin,
         playerId,
         reason,

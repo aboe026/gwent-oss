@@ -89,11 +89,10 @@ export default class GameResolver {
   /**
    * Converts an array of Game database objects to an array of Game GraphQL objects.
    *
-   * @param config The configuration used to convert the Games.
-   * @param config.games The Game database documents to convert.
+   * @param games The Game database documents to convert.
    * @returns The resolved Game array matching the GraphQL schema definition.
    */
-  static async fromArray({ games }: { games: GameDbObject[] }): Promise<Game[]> {
+  static async fromArray(games: GameDbObject[]): Promise<Game[]> {
     if (games.length === 0) {
       return []
     }
@@ -130,12 +129,11 @@ export default class GameResolver {
   /**
    * Retrieves a Game with the given ID and converts it to the GraphQL object equivalent.
    *
-   * @param config The configuration used to convert the Game.
-   * @param config.id The ObjectId of the Game to convert.
+   * @param id The ObjectId of the Game to convert.
    * @returns The resolved Game object with the given ID.
    * @throws {Error} if a Game with the given ID does not exist.
    */
-  static async fromId({ id }: { id: ObjectId | string }): Promise<Game> {
+  static async fromId(id: ObjectId | string): Promise<Game> {
     const game = await GameStore.getById({
       id,
     })

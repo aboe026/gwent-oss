@@ -88,6 +88,7 @@ describe('set-order-validation', () => {
         gameDeck: game.players[0].deck,
         logPrefix: `setOrder by "${user._id}" to users "undefined" on game "${game._id}"`,
         userIds: undefined,
+        userId: user._id,
       },
     })
   })
@@ -114,6 +115,7 @@ describe('set-order-validation', () => {
         gameDeck: game.players[0].deck,
         logPrefix: `setOrder by "${user._id}" to users "${JSON.stringify(userIds)}" on game "${game._id}"`,
         userIds,
+        userId: user._id,
       },
     })
   })

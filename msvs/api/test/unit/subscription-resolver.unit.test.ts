@@ -50,15 +50,19 @@ describe('subscription-resolver', () => {
         },
         passPlayed: {
           subscribe: expect.any(Function),
+          resolve: expect.any(Function),
         },
         roundEndedForDeck: {
           subscribe: expect.any(Function),
+          resolve: expect.any(Function),
         },
         unitPlayedFromDeck: {
           subscribe: expect.any(Function),
+          resolve: expect.any(Function),
         },
         unitPlayedOnGame: {
           subscribe: expect.any(Function),
+          resolve: expect.any(Function),
         },
         unitRedrawn: {
           subscribe: expect.any(Function),
@@ -156,6 +160,7 @@ describe('subscription-resolver', () => {
             deck: TestUtil.getGameDeck({}),
             game: TestUtil.getGame({}),
             unit: TestUtil.getDeckUnit({}),
+            handed: [TestUtil.getDeckUnit({})],
           },
         }
         const unitPlayedOnGamePayload: UnitPlayedOnGamePayload = {
@@ -279,6 +284,14 @@ describe('subscription-resolver', () => {
               ctx: context,
               payload: roundEndedForDeckPayload,
               subscriptionName: 'roundEndedForDeck',
+              nestedGamePath: 'game',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: unitPlayedFromDeckPayload,
+              subscriptionName: 'unitPlayedFromDeck',
               nestedGamePath: 'game',
             },
           ],

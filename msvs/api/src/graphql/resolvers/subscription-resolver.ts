@@ -348,12 +348,10 @@ export default class SubscriptionResolver {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }): any {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
-      SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame payload: "${JSON.stringify(payload)}"`)
-      SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame ctx: "${JSON.stringify(ctx)}"`)
-      SubscriptionResolver.logger.trace(
-        `${subscriptionName} filterPlayerOnGame subscriptionName: "${subscriptionName}"`
-      )
-      SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame nestedGamePath: "${nestedGamePath}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits ctx: "${JSON.stringify(ctx)}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits subscriptionName: "${subscriptionName}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits nestedGamePath: "${nestedGamePath}"`)
     }
     const userId = ctx.session?.user?._id.toString()
     const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`

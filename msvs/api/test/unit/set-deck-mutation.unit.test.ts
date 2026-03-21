@@ -118,6 +118,7 @@ async function testSetDeckMutation({
               game: updatedGame,
               gameDeck,
               logPrefix,
+              userId: user._id,
             },
           ],
         ]
