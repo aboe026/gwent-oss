@@ -2,7 +2,6 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
-  DeckUnitDbObject,
   GameDbObject,
   GameStatus,
   GameUnitDbObject,
@@ -275,6 +274,7 @@ describe('resolver-util', () => {
       TestUtil.getDbUser({}),
       TestUtil.getDbUser({}),
       TestUtil.getDbUser({}),
+      TestUtil.getDbUser({}),
     ]
     const moves = [
       TestUtil.getDbMove({
@@ -350,6 +350,14 @@ describe('resolver-util', () => {
         unit: TestUtil.getDbGameUnit({
           id: units[0]._id,
         }),
+        target: users[5]._id,
+      }),
+      TestUtil.getDbMove({
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          id: units[0]._id,
+        }),
+        target: users[5]._id,
       }),
       TestUtil.getDbMove({
         type: MoveType.Leader,
@@ -401,6 +409,32 @@ describe('resolver-util', () => {
         },
       })
     })
+    it('does not resolve units in impact if no unit', async () => {
+      const presolvedUsers = [TestUtil.getUser({})]
+      await testresolveUsersAndUnits({
+        presolvedUsers,
+        impacts: [
+          {
+            user: new ObjectId(),
+            source: {
+              origin: GameUnitOrigin.Hand,
+              user: new ObjectId(),
+            },
+          },
+        ],
+        expected: {
+          units: [],
+          users: presolvedUsers,
+        },
+        unitsFromIdsCalls: [
+          [
+            {
+              ids: [],
+            },
+          ],
+        ],
+      })
+    })
     it('returns multiple item arrays if presolved are multiple items', async () => {
       const presolvedUnits = [TestUtil.getUnit({}), TestUtil.getUnit({})]
       const presolvedUsers = [TestUtil.getUser({}), TestUtil.getUser({})]
@@ -414,7 +448,7 @@ describe('resolver-util', () => {
       })
     })
     it('reaches out to resolve units and users', async () => {
-      const usersSubset = [users[0], users[1], users[2], users[3]]
+      const usersSubset = [users[0], users[5], users[1], users[2], users[3]]
       const resolvedUnits = units.map((dbUnit) =>
         TestUtil.getUnitFromDbUnit({
           unit: dbUnit,
@@ -428,14 +462,6 @@ describe('resolver-util', () => {
           }),
           TestUtil.getDbGameUnit({
             id: units[0]._id,
-          }),
-        ],
-        deckUnits: [
-          TestUtil.getDbGameUnit({
-            id: units[1]._id,
-          }),
-          TestUtil.getDbGameUnit({
-            id: units[1]._id,
           }),
         ],
         moves,
@@ -491,7 +517,7 @@ describe('resolver-util', () => {
       })
     })
     it('only resolves users if units presolved', async () => {
-      const usersSubset = [users[0], users[1], users[2], users[3]]
+      const usersSubset = [users[0], users[5], users[1], users[2], users[3]]
       const resolvedUnits = units.map((dbUnit) =>
         TestUtil.getUnitFromDbUnit({
           unit: dbUnit,
@@ -691,7 +717,6 @@ async function testresolveUsersAndUnits({
   impacts,
   userIds,
   gameUnits,
-  deckUnits,
   presolvedUsers,
   presolvedUnits,
   resolvedUnits,
@@ -704,7 +729,6 @@ async function testresolveUsersAndUnits({
   impacts?: ImpactDbObject[]
   userIds?: (ObjectId | string)[]
   gameUnits?: GameUnitDbObject[]
-  deckUnits?: DeckUnitDbObject[]
   presolvedUsers?: User[]
   presolvedUnits?: Unit[]
   resolvedUsers?: User[]
@@ -725,7 +749,6 @@ async function testresolveUsersAndUnits({
   await expect(
     ResolverUtil.resolveUsersAndUnits({
       gameUnits,
-      deckUnits,
       impacts,
       moves,
       presolvedUnits,

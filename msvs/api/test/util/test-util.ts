@@ -726,6 +726,7 @@ export default class TestUtil {
     unit = TestUtil.getDbGameUnit({}),
     leaderId = new ObjectId(),
     impacts,
+    target,
   }: {
     type: MoveType
     reason?: MoveUnitReasonDbObject
@@ -733,6 +734,7 @@ export default class TestUtil {
     unit?: GameUnitDbObject
     leaderId?: ObjectId
     impacts?: ImpactDbObject[]
+    target?: ObjectId
   }): MoveDbObject {
     if (type === MoveType.Unit) {
       const unitMove: MoveUnitDbObject = {
@@ -742,6 +744,7 @@ export default class TestUtil {
         type: MoveType.Unit,
         unit,
         impacts,
+        target,
       }
       return unitMove
     } else if (type === MoveType.Leader) {
