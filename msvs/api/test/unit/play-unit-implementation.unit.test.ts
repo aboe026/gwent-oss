@@ -113,9 +113,10 @@ describe('play-unit-implementation', () => {
       players: [player],
       turn: player.user,
     })
+    const gameUnit = TestUtil.getDbGameUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -127,7 +128,7 @@ describe('play-unit-implementation', () => {
       },
       logPrefix,
       scorches: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
       expectedGameDeck: player.deck,
     })
@@ -141,11 +142,12 @@ describe('play-unit-implementation', () => {
       turn: player.user,
     })
     const musteredUnit = TestUtil.getDbUnit({})
+    const gameUnit = TestUtil.getDbGameUnit({
+      id: musteredUnit._id,
+    })
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({
-          id: musteredUnit._id,
-        }),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -158,7 +160,7 @@ describe('play-unit-implementation', () => {
       logPrefix,
       musteredUnits: [musteredUnit],
       musters: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
       expectedGameDeck: player.deck,
     })
@@ -172,11 +174,12 @@ describe('play-unit-implementation', () => {
       turn: player.user,
     })
     const mardroemeUnit = TestUtil.getDbUnit({})
+    const gameUnit = TestUtil.getDbGameUnit({
+      id: mardroemeUnit._id,
+    })
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({
-          id: mardroemeUnit._id,
-        }),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -188,12 +191,12 @@ describe('play-unit-implementation', () => {
       },
       logPrefix,
       transformedUnits: [mardroemeUnit],
-      transformedGameUnits: [impacts[0].unit],
+      transformedGameUnits: [gameUnit],
       mardroemingGameUnit: TestUtil.getDbGameUnit({
         id: mardroemeUnit._id,
       }),
       mardroemes: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
       expectedGameDeck: player.deck,
     })
@@ -206,9 +209,10 @@ describe('play-unit-implementation', () => {
       players: [player],
       turn: player.user,
     })
+    const gameUnit = TestUtil.getDbGameUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -220,7 +224,7 @@ describe('play-unit-implementation', () => {
       },
       logPrefix,
       bonds: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
       expectedGameDeck: player.deck,
     })
@@ -233,9 +237,10 @@ describe('play-unit-implementation', () => {
       players: [player],
       turn: player.user,
     })
+    const gameUnit = TestUtil.getDbGameUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -247,7 +252,7 @@ describe('play-unit-implementation', () => {
       },
       logPrefix,
       horns: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
       expectedGameDeck: player.deck,
     })
@@ -260,9 +265,10 @@ describe('play-unit-implementation', () => {
       players: [player],
       turn: player.user,
     })
+    const gameUnit = TestUtil.getDbGameUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -274,7 +280,7 @@ describe('play-unit-implementation', () => {
       },
       logPrefix,
       morales: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
       expectedGameDeck: player.deck,
     })
@@ -287,9 +293,10 @@ describe('play-unit-implementation', () => {
       players: [player],
       turn: player.user,
     })
+    const gameUnit = TestUtil.getDbGameUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -299,13 +306,45 @@ describe('play-unit-implementation', () => {
         ...game,
         updated: new Date(),
       },
-      targetId: impacts[0].unit.unit.toString(),
+      targetId: gameUnit.unit.toString(),
       logPrefix,
       decoys: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
-      deckUnitsAddedToHand: [impacts[0].unit],
+      deckUnitsAddedToHand: [gameUnit],
       expectedGameDeck: player.deck,
+      isDecoy: true,
+    })
+  })
+  it('passes spy impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const gameUnit = TestUtil.getDbGameUnit({})
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: gameUnit,
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      targetId: gameUnit.unit.toString(),
+      logPrefix,
+      spies: {
+        [gameUnit.unit.toString()]: impacts,
+      },
+      deckUnitsAddedToHand: [gameUnit],
+      expectedGameDeck: player.deck,
+      isSpy: true,
     })
   })
   it('passes weather battlefield impacts to move', async () => {
@@ -316,9 +355,10 @@ describe('play-unit-implementation', () => {
       players: [player],
       turn: player.user,
     })
+    const gameUnit = TestUtil.getDbGameUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -328,12 +368,12 @@ describe('play-unit-implementation', () => {
         ...game,
         updated: new Date(),
       },
-      targetId: impacts[0].unit.unit.toString(),
+      targetId: gameUnit.unit.toString(),
       logPrefix,
       battlefieldWeathers: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
-      deckUnitsAddedToHand: [impacts[0].unit],
+      deckUnitsAddedToHand: [gameUnit],
       expectedGameDeck: player.deck,
     })
   })
@@ -345,9 +385,10 @@ describe('play-unit-implementation', () => {
       players: [player],
       turn: player.user,
     })
+    const gameUnit = TestUtil.getDbGameUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: gameUnit,
         user: new ObjectId(),
       },
     ]
@@ -357,12 +398,12 @@ describe('play-unit-implementation', () => {
         ...game,
         updated: new Date(),
       },
-      targetId: impacts[0].unit.unit.toString(),
+      targetId: gameUnit.unit.toString(),
       logPrefix,
       scoreWeathers: {
-        [impacts[0].unit.unit.toString()]: impacts,
+        [gameUnit.unit.toString()]: impacts,
       },
-      deckUnitsAddedToHand: [impacts[0].unit],
+      deckUnitsAddedToHand: [gameUnit],
       expectedGameDeck: player.deck,
     })
   })
@@ -393,6 +434,9 @@ async function testPlayUnitImplementation({
   effects,
   roundUnits,
   logPrefix,
+  isDecoy = false,
+  isSpy = false,
+  isWeather = false,
   scorches = {},
   musters = {},
   musteredUnits = [],
@@ -407,6 +451,7 @@ async function testPlayUnitImplementation({
   horns = {},
   morales = {},
   decoys = {},
+  spies = {},
   deckUnitsAddedToHand = [],
   targetId,
   error,
@@ -420,6 +465,9 @@ async function testPlayUnitImplementation({
   effects?: EffectDbObject[]
   roundUnits?: UnitDbObject[]
   logPrefix: string
+  isDecoy?: boolean
+  isSpy?: boolean
+  isWeather?: boolean
   scorches?: ImpactsByUnitId
   musters?: ImpactsByUnitId
   musteredUnits?: UnitDbObject[]
@@ -434,6 +482,7 @@ async function testPlayUnitImplementation({
   horns?: ImpactsByUnitId
   morales?: ImpactsByUnitId
   decoys?: ImpactsByUnitId
+  spies?: ImpactsByUnitId
   deckUnitsAddedToHand?: DeckUnitDbObject[]
   targetId?: string
   error?: Error
@@ -481,6 +530,7 @@ async function testPlayUnitImplementation({
       mardroemingGameUnit,
       decoys,
       deckUnitsAddedToHand,
+      spies,
     })
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
@@ -513,6 +563,10 @@ async function testPlayUnitImplementation({
     effects,
     roundUnits,
     targetId,
+    isDecoy,
+    isSpy,
+    isWeather,
+    userId: new ObjectId(),
   })
   if (error) {
     await expect(promise).rejects.toThrow(error)
@@ -573,6 +627,9 @@ async function testPlayUnitImplementation({
               newDeckUnit: deckUnit,
               newUnit: unit,
               targetId,
+              isDecoy,
+              isSpy,
+              isWeather,
             },
           ],
         ]
@@ -614,6 +671,8 @@ async function testPlayUnitImplementation({
               morales,
               mardroemes,
               decoys,
+              spies,
+              targetId: isSpy ? targetId : undefined,
               transformedGameUnits,
               mardroemingGameUnit,
               weathers: Object.keys(battlefieldWeathers).length > 0 ? battlefieldWeathers : scoreWeathers,
