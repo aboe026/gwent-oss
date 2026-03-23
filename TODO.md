@@ -12,8 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- remove "spyUser" in resolvers and just have the game "mask" method?
-
 - Restructure GameUnit
   - change GameUnit to be FieldUnit
   - make new WeatherUnit
