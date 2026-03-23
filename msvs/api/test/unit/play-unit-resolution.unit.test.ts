@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import EventManager from '../../src/graphql/event-manager'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
@@ -19,6 +21,7 @@ describe('play-unit-resolution', () => {
 
 async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean }) {
   const logPrefix = 'log-prefix'
+  const userId = new ObjectId()
   const game = TestUtil.getDbGame({})
   const deckUnit = TestUtil.getDbDeckUnit({})
   const gameDeck = TestUtil.getDbGameDeck({})
@@ -26,6 +29,7 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
+  const maskedGame = TestUtil.getGame({})
   const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
     deckUnit,
   })
@@ -36,6 +40,7 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
   const gameDeckResolverFromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(resolvedGameDeck)
   const deckUnitFromArraySpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(resolvedHanded)
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
+  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const traceSpy = jest.fn().mockImplementation()
   PlayUnitResolution['logger'] = {
     trace: traceSpy,
@@ -49,8 +54,9 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
       gameDeck,
       logPrefix,
       handDeckUnitsAdded: handed,
+      userId,
     })
-  ).resolves.toEqual(resolvedGame)
+  ).resolves.toEqual(maskedGame)
 
   expect(gameResolverFromObjectSpy.mock.calls).toEqual([
     [
@@ -99,6 +105,14 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
           unit: resolvedDeckUnit,
           handed: resolvedHanded,
         },
+      },
+    ],
+  ])
+  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        game: resolvedGame,
+        userId,
       },
     ],
   ])

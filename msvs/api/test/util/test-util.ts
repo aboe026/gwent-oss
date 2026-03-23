@@ -19,7 +19,12 @@ import {
   GameUnitSource,
   Impact,
   Leader,
+  Move,
+  MovePass,
+  MoveUnit,
+  MoveUnitReason,
   PlayerCombatRow,
+  PlayerRound,
   Redraw,
   Unit,
   UnitStats,
@@ -763,6 +768,42 @@ export default class TestUtil {
     }
   }
 
+  static getMoveUnit({
+    created = new Date(),
+    reason = {
+      type: MoveReasonType.Deploy,
+    },
+    source = {
+      origin: GameUnitOrigin.Hand,
+    },
+    unit,
+    impacts = [],
+    target,
+  }: {
+    created?: Date
+    reason?: MoveUnitReason
+    source?: GameUnitSource
+    unit: GameUnit
+    impacts?: Impact[]
+    target?: User
+  }): MoveUnit {
+    return {
+      __typename: 'MoveUnit',
+      created,
+      reason,
+      source,
+      unit,
+      impacts,
+      target,
+    }
+  }
+
+  static getMovePass({ created = new Date() }: { created?: Date }): MovePass {
+    return {
+      created,
+    }
+  }
+
   static getDbPlayerCombatRow({
     score = 0,
     units = [],
@@ -825,6 +866,28 @@ export default class TestUtil {
     return round
   }
 
+  static getPlayerRound({
+    passed = false,
+    score = 0,
+    moves = [],
+    weathers = [],
+  }: {
+    passed?: boolean
+    score?: number
+    moves?: Move[]
+    weathers?: GameUnit[]
+  }): PlayerRound {
+    return {
+      close: TestUtil.getPlayerCombatRow({}),
+      moves,
+      passed,
+      ranged: TestUtil.getPlayerCombatRow({}),
+      score,
+      siege: TestUtil.getPlayerCombatRow({}),
+      weathers,
+    }
+  }
+
   static getDbGamePlayer({
     deck = TestUtil.getDbGameDeck({}),
     ready = false,
@@ -852,15 +915,17 @@ export default class TestUtil {
     user,
     faction,
     leader,
+    rounds = [],
   }: {
     ready?: boolean
     user?: User
     faction?: Faction
     leader?: Leader
+    rounds?: PlayerRound[]
   }): GamePlayer {
     return {
       ready,
-      rounds: [],
+      rounds,
       user: user || TestUtil.getUser({}),
       faction,
       leader,

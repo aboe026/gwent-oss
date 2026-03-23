@@ -350,25 +350,25 @@ export default class SubscriptionResolver {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits ctx: "${JSON.stringify(ctx)}"`)
-      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits subscriptionName: "${subscriptionName}"`)
       SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits nestedGamePath: "${nestedGamePath}"`)
     }
-    const userId = ctx.session?.user?._id.toString()
     const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`
-    const game = getNestedProperty<Game>({
-      obj: payload,
-      nestedProperty,
-    })
-    if (!game) {
-      const message = `Could not find game in payload for subscription "${subscriptionName}"`
+    const userId = ctx.session?.user?._id.toString()
+
+    if (!userId) {
+      const message = `Could not find user in context for subscription "${subscriptionName}"`
       SubscriptionResolver.logger.error(
         `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
       )
       throw Error(`${message}.`)
     }
 
-    if (!userId) {
-      const message = `Could not find user in payload for subscription "${subscriptionName}"`
+    const game = getNestedProperty<Game>({
+      obj: payload,
+      nestedProperty,
+    })
+    if (!game) {
+      const message = `Could not find game in payload for subscription "${subscriptionName}"`
       SubscriptionResolver.logger.error(
         `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
       )

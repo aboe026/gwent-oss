@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb'
 import { Context } from '@gwent/graphql-schema/context'
 import { Deck, Game } from '@gwent/graphql-schema/resolver-typings'
 import EventManager from '../../src/graphql/event-manager'
+import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import { PubSubEvents } from '@gwent/constants'
 import SubscriptionResolver, {
   DeckAddedPayload,
@@ -28,6 +29,7 @@ describe('subscription-resolver', () => {
       const asyncIteratorSpy = jest.spyOn(EventManager.pubsub, 'asyncIterableIterator').mockReturnValue('' as any)
       const filterDeckOwnerSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckOwner').mockResolvedValue('')
       const filterPlayerOnGameSpy = jest.spyOn(SubscriptionResolver as any, 'filterPlayerOnGame').mockResolvedValue('')
+      const hideImpactUnitsSpy = jest.spyOn(SubscriptionResolver as any, 'hideImpactUnits').mockReturnValue({})
       const result = SubscriptionResolver.getResolvers()
       expect(result).toEqual({
         deckAdded: {
@@ -194,6 +196,11 @@ describe('subscription-resolver', () => {
         withFilterSpy.mock.calls[9][1](unitPlayedOnGamePayload, undefined, context)
         withFilterSpy.mock.calls[10][1](unitRedrawnPayload, undefined, context)
 
+        expect((result.passPlayed as any).resolve(passPlayedPayload, undefined, context)).toEqual({})
+        expect((result.roundEndedForDeck as any).resolve(roundEndedForDeckPayload, undefined, context)).toEqual({})
+        expect((result.unitPlayedFromDeck as any).resolve(unitPlayedFromDeckPayload, undefined, context)).toEqual({})
+        expect((result.unitPlayedOnGame as any).resolve(unitPlayedOnGamePayload, undefined, context)).toEqual({})
+
         expect(filterDeckOwnerSpy.mock.calls).toEqual([
           [
             {
@@ -308,6 +315,39 @@ describe('subscription-resolver', () => {
               ctx: context,
               payload: unitRedrawnPayload,
               subscriptionName: 'unitRedrawn',
+              nestedGamePath: 'game',
+            },
+          ],
+        ])
+        expect(hideImpactUnitsSpy.mock.calls).toEqual([
+          [
+            {
+              ctx: context,
+              payload: passPlayedPayload,
+              subscriptionName: 'passPlayed',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: roundEndedForDeckPayload,
+              subscriptionName: 'roundEndedForDeck',
+              nestedGamePath: 'game',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: unitPlayedFromDeckPayload,
+              subscriptionName: 'unitPlayedFromDeck',
+              nestedGamePath: 'game',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: unitPlayedOnGamePayload,
+              subscriptionName: 'unitPlayedOnGame',
               nestedGamePath: 'game',
             },
           ],
@@ -473,6 +513,106 @@ describe('subscription-resolver', () => {
         expected: true,
         debugCalls: [[`Publishing ${subscriptionName} for game "${game.id}" to user "${userId}".`]],
         traceEnabled: true,
+      })
+    })
+  })
+  describe('hideImpactUnits', () => {
+    it('throws error if no user on context', () => {
+      const payload = {
+        testSubscriptionName: TestUtil.getGame({}),
+      }
+      const message = `Could not find user in context for subscription "testSubscriptionName"`
+      testHideImpactUnits({
+        ctx: {
+          session: {},
+        },
+        payload,
+        subscriptionName: 'testSubscriptionName',
+        expected: Error(`${message}.`),
+        errorCalls: [[`${message}, nestedProperty: "testSubscriptionName", payload: "${JSON.stringify(payload)}"`]],
+      })
+    })
+    it('throws error if no game in payload', () => {
+      const payload = {
+        testSubscriptionName: undefined,
+      }
+      const message = `Could not find game in payload for subscription "testSubscriptionName"`
+      testHideImpactUnits({
+        ctx: {
+          session: {
+            user: TestUtil.getDbUser({}),
+          },
+        },
+        payload,
+        subscriptionName: 'testSubscriptionName',
+        expected: Error(`${message}.`),
+        errorCalls: [[`${message}, nestedProperty: "testSubscriptionName", payload: "${JSON.stringify(payload)}"`]],
+      })
+    })
+    it('returns masked game if no errors without nestedGamePath', () => {
+      const maskedGame = TestUtil.getGame({})
+      testHideImpactUnits({
+        ctx: {
+          session: {
+            user: TestUtil.getDbUser({}),
+          },
+        },
+        payload: {
+          testSubscriptionName: TestUtil.getGame({}),
+        },
+        subscriptionName: 'testSubscriptionName',
+        maskedGame,
+        expected: maskedGame,
+      })
+    })
+    it('returns masked game if no errors with nestedGamePath', () => {
+      const maskedGame = TestUtil.getGame({})
+      testHideImpactUnits({
+        ctx: {
+          session: {
+            user: TestUtil.getDbUser({}),
+          },
+        },
+        payload: {
+          testSubscriptionName: {
+            testNestedGamePath: TestUtil.getGame({}),
+          },
+        },
+        subscriptionName: 'testSubscriptionName',
+        nestedGamePath: 'testNestedGamePath',
+        maskedGame,
+        expected: {
+          testNestedGamePath: maskedGame,
+        },
+      })
+    })
+    it('logs to trace if enabled', () => {
+      const ctx = {
+        session: {
+          user: TestUtil.getDbUser({}),
+        },
+      }
+      const payload = {
+        testSubscriptionName: {
+          testNestedGamePath: TestUtil.getGame({}),
+        },
+      }
+      const maskedGame = TestUtil.getGame({})
+      testHideImpactUnits({
+        ctx,
+        payload,
+        subscriptionName: 'testSubscriptionName',
+        maskedGame,
+        nestedGamePath: 'testNestedGamePath',
+        expected: {
+          testNestedGamePath: maskedGame,
+        },
+        traceEnabled: true,
+        traceCalls: [
+          [`testSubscriptionName hideImpactUnits payload: "${JSON.stringify(payload)}"`],
+          [`testSubscriptionName hideImpactUnits ctx: "${JSON.stringify(ctx)}"`],
+          [`testSubscriptionName hideImpactUnits nestedGamePath: "testNestedGamePath"`],
+        ],
       })
     })
   })
@@ -648,4 +788,101 @@ function testFilterPlayerOnGame({
         ]
       : []
   )
+}
+
+function testHideImpactUnits({
+  payload,
+  ctx,
+  subscriptionName,
+  nestedGamePath,
+  maskedGame,
+  expected,
+  traceEnabled,
+  errorCalls = [],
+  traceCalls = [],
+}: {
+  payload: any
+  ctx: Context
+  subscriptionName: string
+  nestedGamePath?: string
+  maskedGame?: Game
+  expected?: any | Error
+  traceEnabled?: boolean
+  errorCalls?: string[][]
+  traceCalls?: string[][]
+}) {
+  const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`
+  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits')
+  if (maskedGame) {
+    maskSpiedHandUnitsSpy.mockReturnValue(maskedGame)
+  }
+  const getNestedPropertySpy = jest.spyOn(utils, 'getNestedProperty')
+  const setNestedPropertySpy = jest.spyOn(utils, 'setNestedProperty')
+  const errorSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  SubscriptionResolver['logger'] = {
+    error: errorSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  if (expected instanceof Error) {
+    expect(() =>
+      SubscriptionResolver['hideImpactUnits']({
+        ctx,
+        payload,
+        subscriptionName,
+        nestedGamePath,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      SubscriptionResolver['hideImpactUnits']({
+        ctx,
+        payload,
+        subscriptionName,
+        nestedGamePath,
+      })
+    ).toEqual(expected)
+  }
+
+  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual(
+    maskedGame
+      ? [
+          [
+            {
+              game: getNestedPropertySpy.mock.results[0].value,
+              userId: ctx.session?.user?._id.toString(),
+            },
+          ],
+        ]
+      : []
+  )
+  expect(getNestedPropertySpy.mock.calls).toEqual(
+    ctx.session?.user?._id
+      ? [
+          [
+            {
+              obj: payload,
+              nestedProperty,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(setNestedPropertySpy.mock.calls).toEqual(
+    expected instanceof Error
+      ? []
+      : [
+          [
+            {
+              obj: payload,
+              path: nestedProperty,
+              value: maskedGame,
+            },
+          ],
+        ]
+  )
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

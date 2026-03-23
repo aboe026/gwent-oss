@@ -42,8 +42,11 @@ async function testPlayUnitMutation({
   resolutionError?: Error
 }) {
   const logPrefix = 'log-prefix'
+  const user = TestUtil.getDbUser({})
   const context: Context = {
-    session: {},
+    session: {
+      user,
+    },
   }
   const game = TestUtil.getDbGame({})
   const updatedGame: GameDbObject = {
@@ -78,6 +81,10 @@ async function testPlayUnitMutation({
       logPrefix,
       unit,
       targetId,
+      isDecoy: true,
+      isSpy: true,
+      isWeather: true,
+      userId: user._id,
     })
   }
   const implementationSpy = jest.spyOn(PlayUnitImplementation, 'playUnitImplementation')
@@ -118,6 +125,10 @@ async function testPlayUnitMutation({
               logPrefix,
               unit,
               targetId,
+              isDecoy: true,
+              isSpy: true,
+              isWeather: true,
+              userId: user._id,
             },
           ],
         ]
@@ -133,6 +144,7 @@ async function testPlayUnitMutation({
               gameDeck,
               logPrefix,
               handDeckUnitsAdded: [handDeckUnitAdded],
+              userId: user._id,
             },
           ],
         ]

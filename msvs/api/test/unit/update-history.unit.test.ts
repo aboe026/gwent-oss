@@ -39,6 +39,25 @@ describe('update-history', () => {
         errorCalls: [[`${logPrefix} failed: ${message}, musters: "${JSON.stringify(musters)}"`]],
       })
     })
+    it('throws error if muster does not have unit', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        user: new ObjectId(),
+      }
+      const musters = {
+        [deckUnit.unit.toString()]: [impact],
+      }
+      const message = 'No unit provided for muster'
+      testNewUnitDeployed({
+        deckUnit,
+        musters,
+        musteredOrigins: {},
+        logPrefix,
+        error: Error(`${message}.`),
+        expectedImpacts: [impact],
+        errorCalls: [[`${logPrefix} failed: ${message}, musters: "${JSON.stringify(musters)}"`]],
+      })
+    })
     it('throws error if mustered unit does not have origin', () => {
       const musteredUnit: BattlefieldUnit = {
         row: Combat.Close,
@@ -152,6 +171,22 @@ describe('update-history', () => {
           [deckUnit.unit.toString()]: [impact],
         },
         logPrefix,
+        expectedImpacts: [impact],
+      })
+    })
+    it('calls addMoveToCurrentPlayer once with spy impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testNewUnitDeployed({
+        deckUnit,
+        spies: {
+          [deckUnit.unit.toString()]: [impact],
+        },
+        logPrefix,
+        targetId: new ObjectId().toString(),
         expectedImpacts: [impact],
       })
     })
@@ -1326,6 +1361,9 @@ function testNewUnitDeployed({
       origin: GameUnitOrigin.Hand,
     },
     type: MoveType.Unit,
+  }
+  if (targetId) {
+    move.target = new ObjectId(targetId)
   }
   const addMoveToCurrentPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToCurrentPlayer').mockImplementation()
   const getBattlefieldUnitSpy = jest

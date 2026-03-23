@@ -531,6 +531,7 @@ async function testSetGameTurnOrder({
   traceCalls?: string[][]
   traceEnabled?: boolean
 }) {
+  const userId = new ObjectId()
   const getFactionByKeySpy = jest.spyOn(FactionStore, 'getByKey').mockResolvedValue(factionByKeyResponse)
   const randomizeOrderSpy = jest.spyOn(gwentUtils, 'randomizeOrder')
   const randomPlayers: string[] = []
@@ -547,7 +548,9 @@ async function testSetGameTurnOrder({
     })
     resolveGameSpy.mockResolvedValue(resolvedGame)
   }
+  const maskedGame = TestUtil.getGame({})
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
+  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
@@ -566,11 +569,12 @@ async function testSetGameTurnOrder({
     userIds,
     logPrefix,
     allowImplicit,
+    userId,
   })
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(promise).resolves.toEqual(resolvedGame)
+    await expect(promise).resolves.toEqual(maskedGame)
   }
 
   expect(getFactionByKeySpy.mock.calls).toEqual([
@@ -591,6 +595,18 @@ async function testSetGameTurnOrder({
             PubSubEvents.OrderSet,
             {
               orderSet: resolvedGame,
+            },
+          ],
+        ]
+  )
+  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual(
+    error
+      ? []
+      : [
+          [
+            {
+              game: resolvedGame,
+              userId,
             },
           ],
         ]
