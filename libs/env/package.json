@@ -16,7 +16,7 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "dotenv": "17.2.4",
+    "dotenv": "17.3.1",
     "envalid": "8.1.1"
   },
   "devDependencies": {
