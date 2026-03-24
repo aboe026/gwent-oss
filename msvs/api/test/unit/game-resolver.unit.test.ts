@@ -605,6 +605,258 @@ describe('game-resolver', () => {
       })
     })
   })
+  describe('maskSpiedHandUnits', () => {
+    it('does not mask single impact unit of self', () => {
+      const self = TestUtil.getUser({})
+      const impactUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({}),
+      })
+      const game = TestUtil.getGame({
+        players: [
+          TestUtil.getGamePlayer({
+            user: self,
+            rounds: [
+              TestUtil.getPlayerRound({
+                moves: [
+                  TestUtil.getMoveUnit({
+                    unit: TestUtil.getGameUnit({
+                      unit: TestUtil.getUnit({}),
+                    }),
+                    target: TestUtil.getUser({}),
+                    impacts: [
+                      TestUtil.getImpact({
+                        user: self,
+                        unit: impactUnit,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+      testMaskSpiedHandUnits({
+        game: game,
+        userId: self.id,
+        expected: {
+          ...game,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  moves: [
+                    {
+                      ...game.players[0].rounds[0].moves[0],
+                      impacts: [
+                        {
+                          ...(game.players[0].rounds[0].moves[0] as any).impacts[0],
+                          unit: impactUnit,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      })
+    })
+    it('does not mask impact unit of self surrounded by other moves', () => {
+      const self = TestUtil.getUser({})
+      const impactUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({}),
+      })
+      const game = TestUtil.getGame({
+        players: [
+          TestUtil.getGamePlayer({
+            user: self,
+            rounds: [
+              TestUtil.getPlayerRound({
+                moves: [
+                  TestUtil.getMoveUnit({
+                    unit: TestUtil.getGameUnit({
+                      unit: TestUtil.getUnit({}),
+                    }),
+                  }),
+                  TestUtil.getMoveUnit({
+                    unit: TestUtil.getGameUnit({
+                      unit: TestUtil.getUnit({}),
+                    }),
+                    target: TestUtil.getUser({}),
+                    impacts: [
+                      TestUtil.getImpact({
+                        user: self,
+                        unit: impactUnit,
+                      }),
+                    ],
+                  }),
+                  TestUtil.getMovePass({}),
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+      testMaskSpiedHandUnits({
+        game: game,
+        userId: self.id,
+        expected: {
+          ...game,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  moves: [
+                    game.players[0].rounds[0].moves[0],
+                    {
+                      ...game.players[0].rounds[0].moves[1],
+                      impacts: [
+                        {
+                          ...(game.players[0].rounds[0].moves[1] as any).impacts[0],
+                          unit: impactUnit,
+                        },
+                      ],
+                    },
+                    game.players[0].rounds[0].moves[2],
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      })
+    })
+    it('masks single impact unit of opponent', () => {
+      const self = TestUtil.getUser({})
+      const game = TestUtil.getGame({
+        players: [
+          TestUtil.getGamePlayer({
+            user: self,
+            rounds: [
+              TestUtil.getPlayerRound({
+                moves: [
+                  TestUtil.getMoveUnit({
+                    unit: TestUtil.getGameUnit({
+                      unit: TestUtil.getUnit({}),
+                    }),
+                    target: TestUtil.getUser({}),
+                    impacts: [
+                      TestUtil.getImpact({
+                        user: TestUtil.getUser({}),
+                        unit: TestUtil.getGameUnit({
+                          unit: TestUtil.getUnit({}),
+                        }),
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+      testMaskSpiedHandUnits({
+        game: game,
+        userId: self.id,
+        expected: {
+          ...game,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  moves: [
+                    {
+                      ...game.players[0].rounds[0].moves[0],
+                      impacts: [
+                        {
+                          ...(game.players[0].rounds[0].moves[0] as any).impacts[0],
+                          unit: undefined,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      })
+    })
+    it('masks impact unit of opponent surrounded by other moves', () => {
+      const self = TestUtil.getUser({})
+      const game = TestUtil.getGame({
+        players: [
+          TestUtil.getGamePlayer({
+            user: self,
+            rounds: [
+              TestUtil.getPlayerRound({
+                moves: [
+                  TestUtil.getMoveUnit({
+                    unit: TestUtil.getGameUnit({
+                      unit: TestUtil.getUnit({}),
+                    }),
+                  }),
+                  TestUtil.getMoveUnit({
+                    unit: TestUtil.getGameUnit({
+                      unit: TestUtil.getUnit({}),
+                    }),
+                    target: TestUtil.getUser({}),
+                    impacts: [
+                      TestUtil.getImpact({
+                        user: TestUtil.getUser({}),
+                        unit: TestUtil.getGameUnit({
+                          unit: TestUtil.getUnit({}),
+                        }),
+                      }),
+                    ],
+                  }),
+                  TestUtil.getMovePass({}),
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+      testMaskSpiedHandUnits({
+        game: game,
+        userId: self.id,
+        expected: {
+          ...game,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  moves: [
+                    game.players[0].rounds[0].moves[0],
+                    {
+                      ...game.players[0].rounds[0].moves[1],
+                      impacts: [
+                        {
+                          ...(game.players[0].rounds[0].moves[1] as any).impacts[0],
+                          unit: undefined,
+                        },
+                      ],
+                    },
+                    game.players[0].rounds[0].moves[2],
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      })
+    })
+  })
 })
 
 async function testFromObject({
@@ -768,4 +1020,13 @@ async function testFromId({
         ]
       : []
   )
+}
+
+function testMaskSpiedHandUnits({ game, userId, expected }: { game: Game; userId: ObjectId | string; expected: Game }) {
+  expect(
+    GameResolver.maskSpiedHandUnits({
+      game,
+      userId,
+    })
+  ).toEqual(expected)
 }

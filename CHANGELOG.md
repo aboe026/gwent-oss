@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.21.0 - 2026-03-23
+
+### Added
+
+- Spy effect ([#55](https://github.com/aboe026/gwent/pull/55)) (Adam Boe)
+
 ## 0.20.1 - 2026-02-06
 
 ### Fixed

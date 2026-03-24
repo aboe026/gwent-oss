@@ -207,12 +207,18 @@ export default class ResolverUtil {
               userIdsToResolve.push(userId)
             }
           }
+          if (!presolvedUsers && !userIds && unitMove.target) {
+            const userId = unitMove.target.toString()
+            if (!userIdsToResolve.includes(userId)) {
+              userIdsToResolve.push(userId)
+            }
+          }
         }
       }
     }
 
     for (const impact of impactsToResolve) {
-      if (!presolvedUnits) {
+      if (!presolvedUnits && impact.unit) {
         const impactUnitId = impact.unit.unit.toString()
         if (!unitIdsToResolve.includes(impactUnitId)) {
           unitIdsToResolve.push(impactUnitId)

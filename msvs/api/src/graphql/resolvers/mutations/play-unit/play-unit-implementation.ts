@@ -30,6 +30,9 @@ export default class PlayUnitImplementation {
    * @param config.targetId The Unit ID that a potential Decoy card should target.
    * @param config.effects The Effects for the new DeckUnit that have been pre-fetched. If not provided, will be retrieved.
    * @param config.roundUnits The Units for all players in the game round that have been pre-fetched. If not provided, will be retrieved.
+   * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
+   * @param config.isSpy Whether or not the new unit being played has the Spy effect.
+   * @param config.isWeather Whether or not the new unit being played has the Weather effect.
    * @returns The Game and GameDeck with the unit played for the user.
    * @throws {PresentableError} if known problem playing unit.
    * @throws {Error} if unforseen problem adding the user.
@@ -43,6 +46,9 @@ export default class PlayUnitImplementation {
     targetId,
     effects = [],
     roundUnits = [],
+    isDecoy,
+    isSpy,
+    isWeather,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
     if (!playerId) {
@@ -70,6 +76,7 @@ export default class PlayUnitImplementation {
       musteredUnits,
       musteredOrigins,
       scorches,
+      spies,
       decoys,
       deckUnitsAddedToHand,
       weathers: weatherBattlefieldImpacts,
@@ -82,6 +89,9 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
       newUnit: unit,
       targetId,
+      isDecoy,
+      isSpy,
+      isWeather,
     })
 
     const musterEffects = await getUnitEffects({
@@ -119,6 +129,7 @@ export default class PlayUnitImplementation {
       musteredOrigins,
       playerId,
       logPrefix,
+      spies,
       scorches,
       bonds,
       horns,
@@ -127,6 +138,7 @@ export default class PlayUnitImplementation {
       mardroemes,
       transformedGameUnits,
       mardroemingGameUnit,
+      targetId: isSpy ? targetId : undefined,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

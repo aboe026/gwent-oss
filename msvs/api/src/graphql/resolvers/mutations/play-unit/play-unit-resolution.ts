@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../../types/deck-unit-resolver'
@@ -24,6 +25,7 @@ export default class PlayUnitResolution {
    * @param config.gameDeck The game deck after the unit has been played.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.handDeckUnitsAdded Any potential DeckUnits added to the players game hand.
+   * @param config.userId The ID of the user playing the Unit.
    * @returns The Game with the unit played for the user with fields resolved.
    */
   static async playUnitResolution({
@@ -32,12 +34,14 @@ export default class PlayUnitResolution {
     gameDeck,
     handDeckUnitsAdded,
     logPrefix,
+    userId,
   }: {
     deckUnit: DeckUnitDbObject
     game: GameDbObject
     gameDeck: GameDeckDbObject
     handDeckUnitsAdded: DeckUnitDbObject[]
     logPrefix: string
+    userId: ObjectId
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
@@ -77,11 +81,14 @@ export default class PlayUnitResolution {
       unitPlayedFromDeck: {
         deck: resolvedGameDeck,
         game: resolvedGame,
-        handed: handed,
+        handed,
         unit: resolvedUnit,
       },
     } as UnitPlayedFromDeckPayload)
 
-    return resolvedGame
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
+      userId,
+    })
   }
 }

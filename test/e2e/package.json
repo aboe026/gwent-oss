@@ -1,6 +1,6 @@
 {
   "name": "@gwent/test-e2e",
-  "version": "0.20.1",
+  "version": "0.21.0",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
   "scripts": {

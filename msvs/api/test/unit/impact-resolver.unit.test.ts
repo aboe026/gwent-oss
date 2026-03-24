@@ -14,7 +14,7 @@ describe('impact-resolver', () => {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
-      const message = `Could not find impact unit "${impact.unit.unit}"`
+      const message = `Could not find impact unit "${impact.unit?.unit}"`
       await testFromObject({
         impact,
         expected: Error(`${message}.`),
@@ -31,7 +31,7 @@ describe('impact-resolver', () => {
         impact,
         resolvedUnits: [
           TestUtil.getUnit({
-            id: impact.unit.unit,
+            id: impact.unit?.unit,
           }),
         ],
         expected: Error(`${message}.`),
@@ -52,7 +52,7 @@ describe('impact-resolver', () => {
         impact,
         resolvedUnits: [
           TestUtil.getUnit({
-            id: impact.unit.unit,
+            id: impact.unit?.unit,
           }),
         ],
         resolvedUsers: [
@@ -71,10 +71,10 @@ describe('impact-resolver', () => {
       }
       const gameUnit = TestUtil.getGameUnit({
         unit: TestUtil.getUnit({
-          id: impact.unit.unit,
+          id: impact.unit?.unit,
         }),
-        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
-        artStyle: impact.unit.artStyle,
+        effectiveStrength: impact.unit?.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit?.artStyle,
         effects: [],
       })
       const impactUser = TestUtil.getUser({
@@ -98,10 +98,10 @@ describe('impact-resolver', () => {
       }
       const gameUnit = TestUtil.getGameUnit({
         unit: TestUtil.getUnit({
-          id: impact.unit.unit,
+          id: impact.unit?.unit,
         }),
-        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
-        artStyle: impact.unit.artStyle,
+        effectiveStrength: impact.unit?.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit?.artStyle,
         effects: [],
       })
       const impactUser = TestUtil.getUser({
@@ -131,10 +131,10 @@ describe('impact-resolver', () => {
       }
       const gameUnit = TestUtil.getGameUnit({
         unit: TestUtil.getUnit({
-          id: impact.unit.unit,
+          id: impact.unit?.unit,
         }),
-        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
-        artStyle: impact.unit.artStyle,
+        effectiveStrength: impact.unit?.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit?.artStyle,
         effects: [],
       })
       await testFromObject({
@@ -344,12 +344,14 @@ async function testFromArray({
   if (impacts) {
     for (const impact of impacts) {
       const resolvedImpact: Impact = {
-        unit: TestUtil.getGameUnitFromDbGameUnit({
-          gameUnit: impact.unit,
-        }),
         user: TestUtil.getUser({
           id: impact.user,
         }),
+      }
+      if (impact.unit) {
+        resolvedImpact.unit = TestUtil.getGameUnitFromDbGameUnit({
+          gameUnit: impact.unit,
+        })
       }
       impactFromObjectSpy.mockResolvedValueOnce(resolvedImpact)
       resolvedImpacts.push(resolvedImpact)

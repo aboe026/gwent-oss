@@ -55,6 +55,7 @@ async function testGame({
   const resolvedGame = TestUtil.getGame({
     id: gameId,
   })
+  const maskedGame = TestUtil.getGame({})
   const args: QueryGameArgs = {
     id: gameId,
   }
@@ -74,6 +75,7 @@ async function testGame({
     }
   }
   const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
+  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
 
   const promise = GameQuery.game(args, context, null as any)
   const error =
@@ -85,7 +87,7 @@ async function testGame({
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(promise).resolves.toEqual(resolvedGame)
+    await expect(promise).resolves.toEqual(maskedGame)
   }
 
   expect(isAuthenticatedSpy.mock.calls).toEqual([
@@ -116,6 +118,18 @@ async function testGame({
           [
             {
               game: isGamePlayerResponse instanceof Error ? undefined : isGamePlayerResponse?.game,
+            },
+          ],
+        ]
+  )
+  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual(
+    error
+      ? []
+      : [
+          [
+            {
+              game: resolvedGame,
+              userId: isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse._id,
             },
           ],
         ]

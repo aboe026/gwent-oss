@@ -345,6 +345,9 @@ export default class GamePage {
             } else if (move.reason?.type === MoveReasonType.Transform) {
               action = 'transformed'
             }
+            if (move.targetUserName) {
+              action += ` to spy on ${move.targetUserName}`
+            }
             let description = `${move.userName}: ${move.unitName} ${action} ${row}`
             if (move.reason) {
               if (move.reason.type === MoveReasonType.Transform) {
@@ -1123,6 +1126,7 @@ export default class GamePage {
     decoyTarget,
     eligibleRows,
     weather,
+    spy,
     verify = true,
   }: {
     unitName: string
@@ -1131,12 +1135,19 @@ export default class GamePage {
     eligibleRows?: Combat[]
     decoyTarget?: string
     weather?: boolean
+    spy?: boolean
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
-    const closeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowCloseSelf}`)
-    const rangedCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowRangedSelf}`)
-    const siegeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowSiegeSelf}`)
+    const closeCombatRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowCloseOpponent : HTML_IDS.GameCombatRowCloseSelf}`
+    )
+    const rangedCombatRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowRangedOpponent : HTML_IDS.GameCombatRowRangedSelf}`
+    )
+    const siegeCombatRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowSiegeOpponent : HTML_IDS.GameCombatRowSiegeSelf}`
+    )
     const nonCombatRows: CombatAndRow[] = [
       {
         combat: Combat.Close,
@@ -1226,6 +1237,24 @@ export default class GamePage {
           .notOk(`Row "${nonCombatRow.combat}" is not highlighted`)
       }
     }
+    const otherCloseRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowCloseSelf : HTML_IDS.GameCombatRowCloseOpponent}`
+    )
+    const otherRangedRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowRangedSelf : HTML_IDS.GameCombatRowRangedOpponent}`
+    )
+    const otherSiegeRow = GamePage.elements.CenterContainer.find(
+      `#${spy ? HTML_IDS.GameCombatRowSiegeSelf : HTML_IDS.GameCombatRowSiegeOpponent}`
+    )
+    await t
+      .expect(otherCloseRow.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted))
+      .notOk(`${spy ? 'Self' : 'Opponent'} Close row is not highlighted`)
+    await t
+      .expect(otherRangedRow.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted))
+      .notOk(`${spy ? 'Self' : 'Opponent'} Ranged row is not highlighted`)
+    await t
+      .expect(otherSiegeRow.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted))
+      .notOk(`${spy ? 'Self' : 'Opponent'} Siege row is not highlighted`)
     if (modifier) {
       await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`))
     } else if (decoyTarget) {
@@ -1336,14 +1365,20 @@ export default class GamePage {
     await t.click(GamePage.elements.SummaryGames)
   }
 
-  static async getHistoryUnit({ playerName, unitName, row, round }: HighlightedHistory): Promise<Selector> {
+  static async getHistoryUnit({
+    playerName,
+    unitName,
+    row,
+    round,
+    spyOpponent,
+  }: HighlightedHistory): Promise<Selector> {
     const totalRounds = await GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
       .count
     const roundContainer = GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`).nth(
       totalRounds - round
     )
     const movesCount = await roundContainer.child().count
-    const expectedMoveText = `${playerName}: ${unitName} deployed as ${toTitleCase(row)}`
+    const expectedMoveText = `${playerName}: ${unitName} deployed${spyOpponent ? ` to spy on ${spyOpponent}` : ''} as ${toTitleCase(row)}`
     let historyMove: Selector | undefined = undefined
     for (let j = 1; j < movesCount && !historyMove; j++) {
       const move = roundContainer.child().nth(j)
@@ -1366,12 +1401,13 @@ export default class GamePage {
     return historyMove
   }
 
-  static async selectHistoryUnit({ playerName, unitName, row, round }: HighlightedHistory) {
+  static async selectHistoryUnit({ playerName, unitName, row, round, spyOpponent }: HighlightedHistory) {
     const historyUnit = await GamePage.getHistoryUnit({
       playerName,
       unitName,
       round,
       row,
+      spyOpponent,
     })
     await t.click(historyUnit)
   }
@@ -1624,6 +1660,7 @@ export interface HistoryMove {
     name: string
   }
   origin?: GameUnitOrigin
+  targetUserName?: string
 }
 
 export interface HistoryImpactMoves {
@@ -1669,6 +1706,7 @@ export interface HighlightedHistory {
   row: Combat
   round: number
   dotted?: boolean
+  spyOpponent?: string
 }
 
 export interface CombatUnit {

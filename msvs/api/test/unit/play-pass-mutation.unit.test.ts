@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import { MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -49,6 +51,7 @@ async function testPlayPassMutation({
   roundOver?: boolean
 }) {
   const logPrefix = 'log-prefix'
+  const userId = new ObjectId()
   const game = TestUtil.getDbGame({})
   const updatedGame: GameDbObject = {
     ...game,
@@ -58,7 +61,11 @@ async function testPlayPassMutation({
     game: updatedGame,
   })
   const context: Context = {
-    session: {},
+    session: {
+      user: TestUtil.getDbUser({
+        id: userId,
+      }),
+    },
   }
   const args: MutationPlayPassArgs = {
     game: game._id.toString(),
@@ -71,6 +78,7 @@ async function testPlayPassMutation({
     validationSpy.mockResolvedValue({
       game,
       logPrefix,
+      userId,
     })
   }
   const implementationSpy = jest.spyOn(PlayPassImplementation, 'playPassImplementation')
@@ -106,6 +114,7 @@ async function testPlayPassMutation({
             {
               game,
               logPrefix,
+              userId,
             },
           ],
         ]
@@ -119,6 +128,7 @@ async function testPlayPassMutation({
               game: updatedGame,
               logPrefix,
               roundOver: !!roundOver,
+              userId,
             },
           ],
         ]

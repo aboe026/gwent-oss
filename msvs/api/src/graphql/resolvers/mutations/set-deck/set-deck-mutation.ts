@@ -43,6 +43,7 @@ export default class SetDeckMutation {
       game: updatedGame,
       gameDeck,
       logPrefix,
+      userId,
     })
   }
 }

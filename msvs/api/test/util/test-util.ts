@@ -19,7 +19,12 @@ import {
   GameUnitSource,
   Impact,
   Leader,
+  Move,
+  MovePass,
+  MoveUnit,
+  MoveUnitReason,
   PlayerCombatRow,
+  PlayerRound,
   Redraw,
   Unit,
   UnitStats,
@@ -726,6 +731,7 @@ export default class TestUtil {
     unit = TestUtil.getDbGameUnit({}),
     leaderId = new ObjectId(),
     impacts,
+    target,
   }: {
     type: MoveType
     reason?: MoveUnitReasonDbObject
@@ -733,6 +739,7 @@ export default class TestUtil {
     unit?: GameUnitDbObject
     leaderId?: ObjectId
     impacts?: ImpactDbObject[]
+    target?: ObjectId
   }): MoveDbObject {
     if (type === MoveType.Unit) {
       const unitMove: MoveUnitDbObject = {
@@ -742,6 +749,7 @@ export default class TestUtil {
         type: MoveType.Unit,
         unit,
         impacts,
+        target,
       }
       return unitMove
     } else if (type === MoveType.Leader) {
@@ -757,6 +765,42 @@ export default class TestUtil {
         type: MoveType.Pass,
       }
       return passMove
+    }
+  }
+
+  static getMoveUnit({
+    created = new Date(),
+    reason = {
+      type: MoveReasonType.Deploy,
+    },
+    source = {
+      origin: GameUnitOrigin.Hand,
+    },
+    unit,
+    impacts = [],
+    target,
+  }: {
+    created?: Date
+    reason?: MoveUnitReason
+    source?: GameUnitSource
+    unit: GameUnit
+    impacts?: Impact[]
+    target?: User
+  }): MoveUnit {
+    return {
+      __typename: 'MoveUnit',
+      created,
+      reason,
+      source,
+      unit,
+      impacts,
+      target,
+    }
+  }
+
+  static getMovePass({ created = new Date() }: { created?: Date }): MovePass {
+    return {
+      created,
     }
   }
 
@@ -822,6 +866,28 @@ export default class TestUtil {
     return round
   }
 
+  static getPlayerRound({
+    passed = false,
+    score = 0,
+    moves = [],
+    weathers = [],
+  }: {
+    passed?: boolean
+    score?: number
+    moves?: Move[]
+    weathers?: GameUnit[]
+  }): PlayerRound {
+    return {
+      close: TestUtil.getPlayerCombatRow({}),
+      moves,
+      passed,
+      ranged: TestUtil.getPlayerCombatRow({}),
+      score,
+      siege: TestUtil.getPlayerCombatRow({}),
+      weathers,
+    }
+  }
+
   static getDbGamePlayer({
     deck = TestUtil.getDbGameDeck({}),
     ready = false,
@@ -849,15 +915,17 @@ export default class TestUtil {
     user,
     faction,
     leader,
+    rounds = [],
   }: {
     ready?: boolean
     user?: User
     faction?: Faction
     leader?: Leader
+    rounds?: PlayerRound[]
   }): GamePlayer {
     return {
       ready,
-      rounds: [],
+      rounds,
       user: user || TestUtil.getUser({}),
       faction,
       leader,
@@ -944,14 +1012,19 @@ export default class TestUtil {
   }: {
     unit: Unit
     artStyle?: number
-    effectiveStrength?: number
+    effectiveStrength?: number | null
     effects?: GameUnitEffect[]
     row?: Combat | null
   }): GameUnit {
     return {
       artStyle,
       unit,
-      effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
+      effectiveStrength:
+        effectiveStrength || effectiveStrength === null
+          ? effectiveStrength
+          : unit.strength === undefined
+            ? null
+            : unit.strength,
       effects,
       row,
     }

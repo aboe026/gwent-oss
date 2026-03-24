@@ -35,8 +35,8 @@ export default class ImpactResolver {
       presolvedUnits: units,
     })
 
-    const impactUnit = resolvedUnits.find((unit) => unit.id === impact.unit.unit.toString())
-    if (!impactUnit) {
+    const impactUnit = resolvedUnits.find((unit) => unit.id === impact.unit?.unit.toString())
+    if (impact.unit && !impactUnit) {
       const message = `Could not find impact unit "${impact.unit.unit}"`
       ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
       throw Error(`${message}.`)
@@ -57,11 +57,14 @@ export default class ImpactResolver {
         throw Error(`${message}.`)
       }
     }
+
     return {
-      unit: await GameUnitResolver.fromObject({
-        gameUnit: impact.unit,
-        unit: impactUnit,
-      }),
+      unit:
+        impact.unit &&
+        (await GameUnitResolver.fromObject({
+          gameUnit: impact.unit,
+          unit: impactUnit,
+        })),
       user: impactUser,
       source: impact.source
         ? {

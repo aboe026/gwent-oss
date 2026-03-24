@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import EventManager from '../../src/graphql/event-manager'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import { PubSubEvents } from '@gwent/constants'
@@ -17,12 +19,15 @@ describe('ready-resolution', () => {
 
 async function testReadyResolution({ traceEnabled }: { traceEnabled?: boolean }) {
   const logPrefix = 'log-prefix'
+  const userId = new ObjectId()
   const game = TestUtil.getDbGame({})
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
+  const maskedGame = TestUtil.getGame({})
   const gameResolverFromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
+  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const traceSpy = jest.fn().mockImplementation()
   ReadyResolution['logger'] = {
     trace: traceSpy,
@@ -33,8 +38,9 @@ async function testReadyResolution({ traceEnabled }: { traceEnabled?: boolean })
     ReadyResolution.readyResolution({
       game,
       logPrefix,
+      userId,
     })
-  ).resolves.toEqual(resolvedGame)
+  ).resolves.toEqual(maskedGame)
 
   expect(gameResolverFromObjectSpy.mock.calls).toEqual([
     [
@@ -48,6 +54,14 @@ async function testReadyResolution({ traceEnabled }: { traceEnabled?: boolean })
       PubSubEvents.GameReady,
       {
         gameReady: resolvedGame,
+      },
+    ],
+  ])
+  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        game: resolvedGame,
+        userId,
       },
     ],
   ])

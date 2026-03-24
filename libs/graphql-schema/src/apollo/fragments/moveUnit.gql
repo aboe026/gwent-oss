@@ -17,4 +17,8 @@ fragment MoveUnit on MoveUnit {
   source {
     origin
   }
+  target {
+    id
+    name
+  }
 }

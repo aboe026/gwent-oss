@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import EventManager from '../../src/graphql/event-manager'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
@@ -32,9 +34,16 @@ describe('play-pass-resolution', () => {
 
 async function testPlayPassResolution({ roundOver, traceEnabled }: { roundOver: boolean; traceEnabled?: boolean }) {
   const logPrefix = 'log-prefix'
+  const userId = new ObjectId()
   const game = TestUtil.getDbGame({})
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
+  })
+  const maskedGame = TestUtil.getGameFromDbGame({
+    game: {
+      ...game,
+      updated: new Date(Date.now() + 5000),
+    },
   })
   const resolvedGameDeck1 = TestUtil.getGameDeckFromDbGameDeck(game.players[0].deck)
   const resolvedGameDeck2 = TestUtil.getGameDeckFromDbGameDeck(game.players[1].deck)
@@ -44,6 +53,7 @@ async function testPlayPassResolution({ roundOver, traceEnabled }: { roundOver: 
     .spyOn(GameDeckResolver, 'fromObject')
     .mockResolvedValueOnce(resolvedGameDeck1)
     .mockResolvedValueOnce(resolvedGameDeck2)
+  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const traceSpy = jest.fn().mockImplementation()
   PlayPassResolution['logger'] = {
     trace: traceSpy,
@@ -55,8 +65,9 @@ async function testPlayPassResolution({ roundOver, traceEnabled }: { roundOver: 
       game,
       logPrefix,
       roundOver,
+      userId,
     })
-  ).resolves.toEqual(resolvedGame)
+  ).resolves.toEqual(maskedGame)
 
   expect(gameResolverFromObjectSpy.mock.calls).toEqual([
     [
@@ -110,6 +121,14 @@ async function testPlayPassResolution({ roundOver, traceEnabled }: { roundOver: 
         ]
       : []
   )
+  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        game: resolvedGame,
+        userId,
+      },
+    ],
+  ])
   const traceCalls: string[][] = []
   if (traceEnabled) {
     traceCalls.push([`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`])

@@ -17,7 +17,7 @@ describe('login-validation', () => {
       warnCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
-  it('throws error if unkown error', async () => {
+  it('throws error if unknown error', async () => {
     const error = Error('network timeout')
     await testLoginValidation({
       name,

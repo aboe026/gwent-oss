@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
@@ -72,6 +73,7 @@ export default class PlayPassValidation {
     return {
       game,
       logPrefix,
+      userId,
     }
   }
 }
@@ -79,4 +81,5 @@ export default class PlayPassValidation {
 export interface ValidatedPlayPass {
   game: GameDbObject
   logPrefix: string
+  userId: ObjectId
 }

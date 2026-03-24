@@ -1,8 +1,9 @@
-import { Combat, FactionKey } from '@gwent/node-client'
+import { Combat, EffectKey, FactionKey } from '@gwent/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
+import { sortObjectArray } from '@gwent/utils'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
@@ -307,6 +308,305 @@ test('Fullscreening different unit types highlights them', async (t) => {
       row: Combat.Close,
       playerName: gameManager.self.gamePlayer.name,
       round: gameManager.round,
+    },
+  })
+})
+
+test('Selecting spied hand card highlights it and impact', async (t) => {
+  const unitName = 'Prince Stennis'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName],
+    },
+  })
+  const handUnitIds = gameManager.self.deck.hand.map((handUnit) => handUnit.unit.id)
+
+  await gameManager.deploy({
+    unitName,
+    spying: {
+      name: unitName,
+      player: gameManager.self.gamePlayer,
+      opponent: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 5,
+    },
+  })
+  const newHandUnits = sortObjectArray({
+    array: gameManager.self.deck.hand.filter((handUnit) => !handUnitIds.includes(handUnit.unit.id)),
+    sortProperties: ['unit.name', 'unit.id'],
+  })
+  await gameManager.initialize({})
+
+  await GamePage.toggleImpacts({
+    round: gameManager.round,
+    unitName,
+    userName: gameManager.self.gamePlayer.name,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Spy,
+        round: gameManager.round,
+        unitName,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: newHandUnits[0].unit.name,
+            username: gameManager.self.gamePlayer.name,
+          },
+          {
+            unitName: newHandUnits[1].unit.name,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+  await GamePage.selectHandUnit({
+    unitName: newHandUnits[0].unit.name,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Spy,
+        round: gameManager.round,
+        unitName,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: newHandUnits[0].unit.name,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+          {
+            unitName: newHandUnits[1].unit.name,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+})
+
+test('Selecting spying battlefield card highlights it and history', async (t) => {
+  const unitName = 'Prince Stennis'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName],
+    },
+  })
+
+  await gameManager.deploy({
+    unitName,
+    spying: {
+      name: unitName,
+      player: gameManager.self.gamePlayer,
+      opponent: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 5,
+    },
+  })
+  await gameManager.initialize({})
+
+  await GamePage.selectBattlefieldCard({
+    unitName,
+    row: Combat.Close,
+    self: false,
+  })
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      unitName,
+      row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
+    },
+    highlightedHistory: {
+      unitName,
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Close,
+    },
+  })
+})
+
+test('Selecting spying history highlights it and battlefield card', async (t) => {
+  const unitName = 'Prince Stennis'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName],
+    },
+  })
+
+  await gameManager.deploy({
+    unitName,
+    spying: {
+      name: unitName,
+      player: gameManager.self.gamePlayer,
+      opponent: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 5,
+    },
+  })
+  await gameManager.initialize({})
+
+  await GamePage.selectHistoryUnit({
+    unitName,
+    row: Combat.Close,
+    playerName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+    spyOpponent: gameManager.opponent.gamePlayer.name,
+  })
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      unitName,
+      row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
+    },
+    highlightedHistory: {
+      unitName,
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Close,
+    },
+  })
+})
+
+test('Fullscreening spying history units highlights them', async (t) => {
+  const unitName = 'Prince Stennis'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName],
+    },
+  })
+  await gameManager.initialize({})
+  const handUnitIds = gameManager.self.deck.hand.map((handUnit) => handUnit.unit.id)
+
+  await gameManager.deploy({
+    unitName,
+    spying: {
+      name: unitName,
+      player: gameManager.self.gamePlayer,
+      opponent: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 5,
+    },
+  })
+  const newHandUnits = sortObjectArray({
+    array: gameManager.self.deck.hand.filter((handUnit) => !handUnitIds.includes(handUnit.unit.id)),
+    sortProperties: ['unit.name', 'unit.id'],
+  })
+  await GamePage.selectHistoryMoveImage({
+    round: gameManager.round,
+    unitName,
+    userName: gameManager.self.gamePlayer.name,
+  })
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      unitName,
+      row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
+    },
+    highlightedHistory: {
+      unitName,
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Close,
+    },
+  })
+  await FullCard.close()
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      unitName,
+      row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
+    },
+    highlightedHistory: {
+      unitName,
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Close,
+    },
+  })
+
+  await GamePage.toggleImpacts({
+    round: gameManager.round,
+    unitName,
+    userName: gameManager.self.gamePlayer.name,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Spy,
+        round: gameManager.round,
+        unitName,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: newHandUnits[0].unit.name,
+            username: gameManager.self.gamePlayer.name,
+          },
+          {
+            unitName: newHandUnits[1].unit.name,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+  await GamePage.selectImpactImage({
+    move: {
+      round: gameManager.round,
+      unitName,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    impact: {
+      unitName: newHandUnits[0].unit.name,
+      userName: gameManager.self.gamePlayer.name,
+    },
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Spy,
+        round: gameManager.round,
+        unitName,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: newHandUnits[0].unit.name,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+          {
+            unitName: newHandUnits[1].unit.name,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+  await gameManager.verify({
+    highlightedHandCard: {
+      unitName: newHandUnits[0].unit.name,
+      dotted: true,
+      rows: newHandUnits[0].unit.combats,
+    },
+  })
+  await FullCard.close()
+  await gameManager.verify({
+    highlightedHandCard: {
+      unitName: newHandUnits[0].unit.name,
+      dotted: true,
+      rows: newHandUnits[0].unit.combats,
     },
   })
 })

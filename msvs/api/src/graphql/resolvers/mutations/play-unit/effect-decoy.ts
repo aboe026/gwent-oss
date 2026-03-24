@@ -26,6 +26,7 @@ export default class EffectDecoy {
    * @param config.newDeckUnit The Decoy unit being played.
    * @param config.combat The combat row the new unit, and in effect the target, are in.
    * @param config.targetId The ID of the battlefield unit to replace with the Decoy.
+   * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @throws {PresentableError} If problem decoying target.
    * @returns If the unit being played is a Decoy, the unit removed from the battlefield and its Impact, otherwise undefined.
    */
@@ -35,16 +36,18 @@ export default class EffectDecoy {
     newDeckUnit,
     combat,
     targetId,
+    isDecoy,
   }: {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     combat: Combat | null | undefined
     targetId: string | undefined | null
+    isDecoy: boolean
   }): PotentialDecoy {
     let impact: ImpactDbObject | undefined = undefined
 
-    if (targetId && combat) {
+    if (isDecoy && targetId && combat) {
       const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
       if (!player) {
         const message = `Could not find player "${game.turn}" in game "${game._id}"`

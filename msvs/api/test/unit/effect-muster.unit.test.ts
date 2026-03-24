@@ -98,7 +98,57 @@ describe('effect-muster', () => {
       const impact = TestUtil.getDbImpact({
         unit: TestUtil.getDbGameUnit({}),
       })
-      const message = `Could not find unit "${impact.unit.unit}" from muster impact`
+      const message = `Could not find unit "${impact.unit?.unit}" from muster impact`
+      await testMusterBattlefield({
+        logPrefix,
+        game,
+        battlefieldUnits: [newUnit],
+        newDeckUnit,
+        musterEffect,
+        musterableUnits: [musterableUnit],
+        getMusterImpactResponses: [
+          {
+            impact,
+            origin: GameUnitOrigin.Hand,
+          },
+        ],
+        expected: Error(`${message}.`),
+        unitStoreGetCalls: [
+          [
+            {
+              namePrefix: undefined,
+              names: [newUnit.name],
+              ignoreIds: [newUnit._id],
+            },
+          ],
+        ],
+        getMusterImpactCalls: [
+          [
+            {
+              game,
+              logPrefix,
+              potentialMuster: musterableUnit,
+            },
+          ],
+        ],
+        debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+        errorCalls: [[`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`]],
+      })
+    })
+    it('throws error if unit not found for impact', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const musterEffect = TestUtil.getDbEffect({})
+      const newUnit = TestUtil.getDbUnit({
+        id: newDeckUnit.unit,
+        effects: [musterEffect._id],
+      })
+      const musterableUnit = TestUtil.getDbUnit({
+        combats: [Combat.Close],
+      })
+      const impact = {
+        user: new ObjectId(),
+      }
+      const message = `Impact for muster does not have unit: "${JSON.stringify(impact)}"`
       await testMusterBattlefield({
         logPrefix,
         game,

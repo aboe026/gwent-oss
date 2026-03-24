@@ -272,7 +272,7 @@ type Leader @entity {
 
 "A unit which was impacted by another unit."
 type Impact @entity {
-  unit: GameUnit! @column(overrideType: "GameUnitDbObject")
+  unit: GameUnit @column(overrideType: "GameUnitDbObject")
   user: User! @column(overrideType: "ObjectId")
   source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
 }
@@ -287,11 +287,18 @@ type MovePass @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
 }
 
 type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
+  "When the Move was made."
   created: DateTime! @column
+  "The Unit which was Moved."
   unit: GameUnit! @column(overrideType: "GameUnitDbObject")
+  "Other Units the Move impacted in the Game."
   impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
+  "What caused the Move to happen."
   reason: MoveUnitReason! @column(overrideType: "MoveUnitReasonDbObject")
+  "Where the Unit which made the Move came from."
   source: GameUnitSource! @column(overrideType: "GameUnitSourceDbObject")
+  "The Game Player that was Spied on."
+  target: User @column(overrideType: "ObjectId")
 }
 
 type MoveUnitReason @entity {
@@ -472,7 +479,7 @@ type Mutation {
   "Pass for the rest of the round in a game."
   playPass(game: ID!): Game!
 
-  "Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. Specify target for Decoys."
+  "Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. Specify target for Decoy or Spy."
   playUnit(game: ID!, unit: ID!, combat: Combat, target: ID): Game!
 
   "Mark player as ready to play the game, no more deck modifications allowed."

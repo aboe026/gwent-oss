@@ -12,6 +12,7 @@ import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
+import EffectSpy from './effect-spy'
 import EffectWeather from './effect-weather'
 import { ImpactsByUnitId } from '../../resolver-util'
 
@@ -33,6 +34,9 @@ export default class BattlefieldUpdates {
    * @param config.newDeckUnit The new DeckUnit being introduced to the battlefield.
    * @param config.newUnit The new Unit being introduced to the battlefield.
    * @param config.targetId The ID of a potential Unit being targeted by the new battlefield unit. Used for Decoy and Spies.
+   * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
+   * @param config.isSpy Whether or not the new unit being played has the Spy effect.
+   * @param config.isWeather Whether or not the new unit being played has the Weather effect.
    * @returns Any impacts the new unit has on the battlefield.
    */
   static async modifyBattlefieldWithNewUnit({
@@ -44,6 +48,9 @@ export default class BattlefieldUpdates {
     newDeckUnit,
     newUnit,
     targetId,
+    isDecoy,
+    isSpy,
+    isWeather,
   }: {
     battlefieldUnits: UnitDbObject[]
     combat?: Combat | null
@@ -53,23 +60,39 @@ export default class BattlefieldUpdates {
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
     targetId: string | undefined | null
+    isDecoy: boolean
+    isSpy: boolean
+    isWeather: boolean
   }): Promise<ModificationImpacts> {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
 
-    const { impacts: weatherImpacts, newUnitHasWeather } = EffectWeather.weatherBattlefield({
-      effects,
+    const weatherImpacts = EffectWeather.weatherBattlefield({
       game,
       logPrefix,
       newDeckUnit,
       newUnit,
+      isWeather,
     })
+
+    const { deckUnitsAddedToHand: spiedUnitsAddedToHand, impacts: spyImpacts } = EffectSpy.spyBattlefield({
+      combat,
+      game,
+      isSpy,
+      logPrefix,
+      newDeckUnit,
+      targetId,
+    })
+    if (spiedUnitsAddedToHand.length > 0) {
+      deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
+    }
 
     BattlefieldUpdates.addNewUnitToBattlefield({
       combat,
       game,
       newDeckUnit,
       newUnit,
-      weather: newUnitHasWeather,
+      weather: isWeather,
+      spy: isSpy,
     })
 
     const scorches = EffectScorch.scorchBattlefield({
@@ -109,6 +132,7 @@ export default class BattlefieldUpdates {
       newDeckUnit,
       combat,
       targetId,
+      isDecoy,
     })
     if (deckUnitAddedToHand) {
       deckUnitsAddedToHand.push(deckUnitAddedToHand)
@@ -121,6 +145,7 @@ export default class BattlefieldUpdates {
       musteredUnits,
       musteredOrigins,
       mardroemes: mardroemeImpacts,
+      spies: spyImpacts,
       transformedUnits,
       transformedGameUnits,
       mardroemingGameUnit,
@@ -137,6 +162,7 @@ export default class BattlefieldUpdates {
    * @param config.newDeckUnit The DeckUnit to add to the battlefield.
    * @param config.newUnit The new Unit being introduced to the battlefield.
    * @param config.weather Whether or not the new unit being added to the battlefield has the Weather effect.
+   * @param config.spy Whether or not the new unit being added to the battlefield has the Spy effect.
    */
   static addNewUnitToBattlefield({
     combat,
@@ -144,12 +170,14 @@ export default class BattlefieldUpdates {
     newDeckUnit,
     newUnit,
     weather,
+    spy,
   }: {
     combat?: Combat | null
     game: GameDbObject
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
     weather: boolean
+    spy: boolean
   }) {
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
@@ -157,7 +185,7 @@ export default class BattlefieldUpdates {
         player.deck.hand = player.deck.hand.filter(
           (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
         )
-        if (!weather) {
+        if (!weather && !spy) {
           if (combat === Combat.Close) {
             if (newUnit.modifier) {
               round.close.modifier = newDeckUnit
@@ -191,6 +219,7 @@ interface ModificationImpacts {
   musteredUnits: UnitDbObject[]
   musteredOrigins: MusteredOrigins
   mardroemes: ImpactsByUnitId
+  spies: ImpactsByUnitId
   transformedUnits: UnitDbObject[]
   transformedGameUnits: GameUnitDbObject[]
   mardroemingGameUnit: GameUnitDbObject | undefined

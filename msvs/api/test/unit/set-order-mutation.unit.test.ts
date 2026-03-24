@@ -56,6 +56,7 @@ async function testSetOrderMutation({
       gameDeck,
       logPrefix,
       userIds: args.users,
+      userId: user._id,
     })
   }
   const setGameTurnOrderSpy = jest.spyOn(SetGameTurnOrder, 'setGameTurnOrder')
@@ -85,6 +86,7 @@ async function testSetOrderMutation({
               userIds: [],
               allowImplicit: true,
               logPrefix,
+              userId: user._id,
             },
           ],
         ]

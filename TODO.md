@@ -12,6 +12,14 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- Restructure GameUnit
+  - change GameUnit to be FieldUnit
+  - make new WeatherUnit
+  - have union GameUnit = DeckUnit | FieldUnit | WeatherUnit
+  - have GameUnit require Combat/row
+  - have "type" field in database for GameUnit so can know which kind it is in Impact resolver (no way to determine by context there)
+  - could remove "spy" field on impact db docs (and target check in game-resolver), and just rely on if type === DeckUnit and not the user
+- no spaces in username?
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row
@@ -23,6 +31,7 @@ Existing problems in the codebase that need to be fixed.
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
+- have Impact.unit field be "required" (never null) in database typings? (mapping?)
 - automate check in build process to ensure package.json versions incremented (and all same)?
 - use INFO logging more? Like any time action successful (game created, unit played, etc)?
 - remove need for classes just for log4js spying
@@ -118,9 +127,6 @@ New things that should be added to the codebase.
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
     - Apparently there are no duplicates allowed with latest patch?
-- add "target" param to "playUnit" mutation:
-  - for decoys, it is required to know which unit to swap back into hand
-  - for spies, it is optional if only 1 other opponent, otherwise required
 - Better game summarization (graphs?)
   - points per round
   - time per round

@@ -7,6 +7,7 @@ import {
   MoralingExpected,
   MusteringExpected,
   ScorchingExpected,
+  SpyingExpected,
   WeatheringExpected,
 } from './e2e-helper'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/node-client'
@@ -103,6 +104,7 @@ export class GameManager {
     bonding,
     impacts,
     decoying,
+    spying,
     weathering,
     modifier,
     weather,
@@ -120,6 +122,7 @@ export class GameManager {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    spying?: SpyingExpected
     weathering?: WeatheringExpected[]
     impacts?: number
     modifier?: boolean
@@ -143,6 +146,7 @@ export class GameManager {
         decoyTarget: decoying?.name,
         eligibleRows: eligibleCombats,
         weather,
+        spy: !!spying,
       })
     } else {
       let targetId: string | undefined = undefined
@@ -178,9 +182,17 @@ export class GameManager {
       mustering,
       bonding,
       decoying,
+      spying,
       weathering,
       impacts,
     })
+    if (spying) {
+      const expectedHandCount = this.self.gamePlayer.hand
+      this.self.deck.hand = (await this.self.client.getGameDeck(this.gameId)).hand
+      if (this.self.deck.hand.length !== expectedHandCount) {
+        throw Error(`Expected hand count of "${expectedHandCount}" but got "${this.self.deck.hand.length}"`)
+      }
+    }
     if (this.shouldVerify || verify) {
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,
@@ -355,23 +367,27 @@ export default async function createGameManager({
     faction: selfFaction,
     leaderName: self?.leader || getDefaultLeaderName(selfFaction),
     name: `self-deck-${label}`,
-    unitNames: await E2eHelper.getUnitsForDeck({
-      client: selfClient,
-      faction: selfFaction,
-      specials: [...(self?.specialUnitNames || []), ...(self?.handUnitNames || [])],
-      ignores: self?.ignoreUnitNames,
-    }),
+    unitNames:
+      self?.deckUnitNames ||
+      (await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: selfFaction,
+        specials: [...(self?.specialUnitNames || []), ...(self?.handUnitNames || [])],
+        ignores: self?.ignoreUnitNames,
+      })),
   })
   const opponentDeck = await opponentClient.addDeck({
     faction: opponentFaction,
     leaderName: opponent?.leader || getDefaultLeaderName(opponentFaction),
     name: `opponent-deck-${label}`,
-    unitNames: await E2eHelper.getUnitsForDeck({
-      client: opponentClient,
-      faction: opponentFaction,
-      specials: [...(opponent?.specialUnitNames || []), ...(opponent?.handUnitNames || [])],
-      ignores: opponent?.ignoreUnitNames,
-    }),
+    unitNames:
+      opponent?.deckUnitNames ||
+      (await E2eHelper.getUnitsForDeck({
+        client: opponentClient,
+        faction: opponentFaction,
+        specials: [...(opponent?.specialUnitNames || []), ...(opponent?.handUnitNames || [])],
+        ignores: opponent?.ignoreUnitNames,
+      })),
   })
 
   await selfClient.setDeck({
@@ -487,6 +503,7 @@ function getDefaultLeaderName(faction: FactionKey): string {
 interface GameManagerSetupPlayer {
   faction: FactionKey
   leader?: string
+  deckUnitNames?: string[]
   specialUnitNames?: string[]
   handUnitNames?: string[]
   ignoreUnitNames?: string[]

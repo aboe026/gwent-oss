@@ -181,6 +181,38 @@ describe('move-resolver', () => {
           error: Error(`Could not find source user "${userId}"`),
         })
       })
+      it('throws error if target user not found', async () => {
+        const gameUnit = TestUtil.getGameUnit({
+          unit: TestUtil.getUnit({}),
+        })
+        const userId = new ObjectId()
+        const move: MoveUnitDbObject = {
+          created: new Date(),
+          unit: TestUtil.getDbGameUnit({
+            artStyle: gameUnit.artStyle,
+            effectiveStrength: gameUnit.effectiveStrength,
+            effects: [],
+            id: new ObjectId(gameUnit.unit.id),
+          }),
+          type: MoveType.Unit,
+          reason: {
+            type: MoveReasonType.Deploy,
+          },
+          source: {
+            origin: GameUnitOrigin.Hand,
+          },
+          target: userId,
+        }
+        await testFromObject({
+          move,
+          resolvedUnits: [
+            TestUtil.getUnit({
+              id: gameUnit.unit.id,
+            }),
+          ],
+          error: Error(`Could not find target user "${userId}"`),
+        })
+      })
       it('resolves with no reason or source', async () => {
         const gameUnit = TestUtil.getGameUnit({
           unit: TestUtil.getUnit({}),
@@ -225,7 +257,7 @@ describe('move-resolver', () => {
           },
         })
       })
-      it('resolves with reason and source without prefetches', async () => {
+      it('resolves with reason source and target without prefetches', async () => {
         const gameUnit = TestUtil.getGameUnit({
           unit: TestUtil.getUnit({}),
         })
@@ -237,7 +269,8 @@ describe('move-resolver', () => {
           deckUnit,
           unit: reasonUnit,
         })
-        const user = TestUtil.getUser({})
+        const sourceUser = TestUtil.getUser({})
+        const targetUser = TestUtil.getUser({})
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
@@ -253,8 +286,9 @@ describe('move-resolver', () => {
           },
           source: {
             origin: GameUnitOrigin.Hand,
-            user: new ObjectId(user.id),
+            user: new ObjectId(sourceUser.id),
           },
+          target: new ObjectId(targetUser.id),
         }
         await testFromObject({
           move,
@@ -264,7 +298,7 @@ describe('move-resolver', () => {
             }),
             reasonUnit,
           ],
-          resolvedUsers: [user],
+          resolvedUsers: [sourceUser, targetUser],
           gameUnitFromObjectResponse: gameUnit,
           deckUnitFromObjectResponse: resolvedReasonUnit,
           expected: {
@@ -277,13 +311,14 @@ describe('move-resolver', () => {
             },
             source: {
               origin: GameUnitOrigin.Hand,
-              user: user,
+              user: sourceUser,
             },
+            target: targetUser,
             __typename: 'MoveUnit',
           },
         })
       })
-      it('resolves with reason and source with prefetches', async () => {
+      it('resolves with reason source and target with prefetches', async () => {
         const gameUnit = TestUtil.getGameUnit({
           unit: TestUtil.getUnit({}),
         })
@@ -295,7 +330,8 @@ describe('move-resolver', () => {
           deckUnit,
           unit: reasonUnit,
         })
-        const user = TestUtil.getUser({})
+        const sourceUser = TestUtil.getUser({})
+        const targetUser = TestUtil.getUser({})
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
@@ -311,8 +347,9 @@ describe('move-resolver', () => {
           },
           source: {
             origin: GameUnitOrigin.Hand,
-            user: new ObjectId(user.id),
+            user: new ObjectId(sourceUser.id),
           },
+          target: new ObjectId(targetUser.id),
         }
         await testFromObject({
           move,
@@ -322,7 +359,7 @@ describe('move-resolver', () => {
             }),
             reasonUnit,
           ],
-          users: [user],
+          users: [sourceUser, targetUser],
           gameUnitFromObjectResponse: gameUnit,
           deckUnitFromObjectResponse: resolvedReasonUnit,
           expected: {
@@ -335,8 +372,9 @@ describe('move-resolver', () => {
             },
             source: {
               origin: GameUnitOrigin.Hand,
-              user: user,
+              user: sourceUser,
             },
+            target: targetUser,
             __typename: 'MoveUnit',
           },
         })

@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
 import { Game } from '@gwent/graphql-schema/resolver-typings'
@@ -21,16 +22,19 @@ export default class PlayPassResolution {
    * @param config.game The game that was passed on.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.roundOver Whether or not the pass action resulted in the round ending.
+   * @param config.userId The ID of the user playing the pass.
    * @returns The Game with the round passed for the user with all fields resolved.
    */
   static async playPassResolution({
     game,
     logPrefix,
     roundOver,
+    userId,
   }: {
     game: GameDbObject
     logPrefix: string
     roundOver: boolean
+    userId: ObjectId
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
@@ -65,6 +69,9 @@ export default class PlayPassResolution {
       }
     }
 
-    return resolvedGame
+    return GameResolver.maskSpiedHandUnits({
+      game: resolvedGame,
+      userId,
+    })
   }
 }

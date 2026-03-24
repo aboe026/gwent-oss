@@ -110,6 +110,13 @@
   border-radius: 10px;
 }
 
+.move-impact-unit-unknown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: xx-large;
+}
+
 .move-impact-hide {
   display: flex;
   justify-content: center;
