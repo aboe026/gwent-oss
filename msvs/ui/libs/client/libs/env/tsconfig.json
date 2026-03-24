@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "target": "es5",
-    "resolveJsonModule": false
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": false,
+    "target": "es2020"
   },
   "extends": "../../../../../../tsconfig",
   "include": ["src/**/*"]

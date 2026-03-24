@@ -1,8 +1,4 @@
 {
-  "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node"
-  },
   "extends": "../../tsconfig",
   "include": ["src/**/*", "package.json", ".testcaferc.ts"],
   "references": [

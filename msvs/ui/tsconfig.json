@@ -1,8 +1,4 @@
 {
-  "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node"
-  },
   "extends": "../../tsconfig",
   "include": ["package.json", "src/**/*"],
   "references": [{ "path": "../../libs/env" }, { "path": "../../libs/utils" }]

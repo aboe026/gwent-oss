@@ -1,11 +1,15 @@
 import type { Configuration } from 'webpack'
 import CopyWebpackPlugin from 'copy-webpack-plugin'
+import { fileURLToPath } from 'url'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackShellPluginNext from 'webpack-shell-plugin-next'
 
 import { NODE_ENV } from '@gwent/env'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (env: any, argv: any) => {
