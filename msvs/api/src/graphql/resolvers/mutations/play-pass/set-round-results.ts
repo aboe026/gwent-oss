@@ -39,7 +39,7 @@ export default class SetRoundResults {
     const winners: ObjectId[] = []
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
-      let result = round.result
+      let result: RoundResult
       if (round.score === highestScore) {
         if (usersWithHighestScore > 1) {
           result = RoundResult.Drew

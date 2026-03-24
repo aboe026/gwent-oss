@@ -35,7 +35,7 @@ export default function getImpactDescription({
   } else if (effectKey === EffectKey.Morale) {
     return 'moraled in strength'
   } else if (effectKey === EffectKey.Muster) {
-    let resolvedOrigin = ''
+    let resolvedOrigin: string
     if (origin === GameUnitOrigin.Hand) {
       resolvedOrigin = 'Hand'
     } else if (origin === GameUnitOrigin.Undrawn) {

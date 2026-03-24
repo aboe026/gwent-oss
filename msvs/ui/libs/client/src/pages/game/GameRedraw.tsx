@@ -239,7 +239,7 @@ function RedrawCard({
   const fromCardDotted = fromCardSelected && !handUnitIds.includes(fromCardUnit.id)
   const isPair = index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawProps.loading)
   const redrawAvailable = cardSelected && index === gameDeck.redraws.length && selectedCardInHand
-  let redrawTitle = ''
+  let redrawTitle: string
   if (redrawAvailable) {
     redrawTitle = 'Place here to redraw for a random unit from your Draw pile'
   } else if (cardSelected) {

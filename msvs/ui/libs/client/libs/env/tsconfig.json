@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "lib": ["ES2024", "DOM"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": false,

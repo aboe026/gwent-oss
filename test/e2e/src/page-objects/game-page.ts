@@ -1162,7 +1162,7 @@ export default class GamePage {
         selector: siegeCombatRow,
       },
     ]
-    let combatRow: Selector | undefined = undefined
+    let combatRow: Selector | undefined
     const eligibleCombatRows: CombatAndRow[] = []
     if (!eligibleRows) {
       eligibleRows = weather ? [] : [row]
@@ -1425,7 +1425,7 @@ export default class GamePage {
     decoying?: boolean
     instance?: number
   }) {
-    let rowSelector: Selector | undefined = undefined
+    let rowSelector: Selector | undefined
     if (self) {
       if (row === Combat.Close) {
         rowSelector = GamePage.elements.CombatRowCloseSelf

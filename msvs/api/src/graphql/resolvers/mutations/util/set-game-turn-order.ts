@@ -102,7 +102,7 @@ export default class SetGameTurnOrder {
       }
     }
 
-    let userIdsForOrder: string[] = []
+    let userIdsForOrder: string[]
     if (userIds && userIds.length > 0) {
       if (SetGameTurnOrder.logger.isTraceEnabled()) {
         SetGameTurnOrder.logger.trace(`${logPrefix} setGameTurnOrder userIds provided, not randomizing order`)

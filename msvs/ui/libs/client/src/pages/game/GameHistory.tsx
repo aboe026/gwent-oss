@@ -152,7 +152,7 @@ function PlayerHistoryMove({
   const descriptionClass = `game-history-move-user-description ${
     isSelf ? 'game-history-move-user-description-self' : 'game-history-move-user-description-opponent'
   }`
-  let primaryText = ''
+  let primaryText: string
   let secondaryText = ''
   let image = ''
   let imageTitle = ''

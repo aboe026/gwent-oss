@@ -103,7 +103,7 @@ export async function getLeaderId({ name, faction }: { name?: string; faction?: 
   if (response.errors) {
     throw Error(JSON.stringify(response.errors))
   }
-  let leader: Leader | undefined = undefined
+  let leader: Leader | undefined
   if (name) {
     leader = (response.data?.leaders as any).find((leader: any) => leader.name === name)
   } else if (faction) {

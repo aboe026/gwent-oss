@@ -43,7 +43,7 @@ export default class GameUnitEffectResolver {
     effect?: Effect
     leader?: Leader
   }): Promise<GameUnitEffect> {
-    let reason: EffectReason | undefined = undefined
+    let reason: EffectReason | undefined
     if (gameUnitEffect.reason.type === EffectReasonType.Unit) {
       const unitReasonDbObject = gameUnitEffect.reason as EffectFromUnitDbObject
       const unitReason: EffectFromUnit = {
