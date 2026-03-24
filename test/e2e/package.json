@@ -41,7 +41,7 @@
     "ws": "8.20.0"
   },
   "devDependencies": {
-    "@types/node": "22.18.0",
+    "@types/node": "24.12.0",
     "@types/url-join": "4.0.3",
     "@types/ws": "8.18.1",
     "replace-in-file": "7.2.0"
