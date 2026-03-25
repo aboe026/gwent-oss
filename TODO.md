@@ -118,6 +118,7 @@ Existing problems in the codebase that need to be fixed.
 - Have api and ui use same Dockerfile (just with different build args)
 - Fold [deck-filter.ts](libs/graphql-schema/src/deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - had to convert [webpack.config.ts](msvs/ui/libs/client/webpack.config.ts) to be ESM because having separate `tsconfig.webpack.json` for it wouldn't work
+- why does jest have delay now? new tsconfig.test.json?
 
 ## Features
 
