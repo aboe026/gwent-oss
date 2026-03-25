@@ -44,7 +44,7 @@ export default class GameUnitResolver {
       return []
     }
 
-    let resolvedUnits: Unit[] = []
+    let resolvedUnits: Unit[]
     if (units) {
       resolvedUnits = units
     } else {

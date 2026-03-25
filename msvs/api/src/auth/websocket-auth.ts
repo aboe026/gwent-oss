@@ -60,7 +60,7 @@ export default class WebSocketAuth {
           }
 
           if (sessionId && sessionId !== encodedSessionId) {
-            let session: SessionDataWithUser | null | undefined = undefined
+            let session: SessionDataWithUser | null | undefined
             try {
               session = await new Promise((resolve, reject) => {
                 mongoStore.get(sessionId, (err, session) => {

@@ -258,13 +258,15 @@ export default class Upgrade2 extends Upgrade {
     }
 
     for (const unit of units) {
-      let occurrences = 0
+      let occurrences: number
       try {
         occurrences = validatePositiveInteger(unit.Occurrences, {
           allowZero: false,
         })
       } catch (err) {
-        throw Error(`Unit "${unit.Name}" has invalid "Occurrences": ${err}`)
+        throw Error(`Unit "${unit.Name}" has invalid "Occurrences": ${err}`, {
+          cause: err,
+        })
       }
       for (let i = 0; i < occurrences; i++) {
         Upgrade2.logger.debug(`Adding unit "${unit.Name}" ${i + 1}/${occurrences}`)

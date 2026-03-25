@@ -30,6 +30,14 @@ const sharedConfig: Config = {
   resetModules: true,
   restoreMocks: true,
   testPathIgnorePatterns: ['e2e'],
+  transform: {
+    '.*\\.test\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: path.join(process.env.PROJECT_CWD || '.', 'tsconfig.test.json'),
+      },
+    ],
+  },
 }
 
 const config: Config = {

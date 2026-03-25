@@ -217,7 +217,7 @@ test('Speed Run', async (t) => {
     units: [...handUnitNames1, ...drawUnitNames1].sort(),
     verifyRedirect: false,
   })
-  let gameDeck1 = await client1.getGameDeck(gameId)
+  const gameDeck1 = await client1.getGameDeck(gameId)
   const gamePlayer1: GamePlayerExpected = {
     name: username1,
     discard: 0,
@@ -263,7 +263,6 @@ test('Speed Run', async (t) => {
     userId: (await client1.currentUser()).id,
     unitNames: handUnitNames1,
   })
-  gameDeck1 = await client1.getGameDeck(gameId)
 
   await Banner.goTo(Banner.elements.MenuProfile)
   await ProfilePage.verify({

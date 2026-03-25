@@ -575,7 +575,7 @@ export class E2eHelper {
       } else if (weathering) {
         effectKey = EffectKey.Weather
       }
-      let numImpacts = 0
+      let numImpacts: number
       if (impacts !== undefined) {
         numImpacts = impacts
       } else {

@@ -150,7 +150,7 @@ export default function GameCombatRow({
       modifierStyle.cursor = 'not-allowed'
     }
   }
-  let id = ''
+  let id: string
   if (combat === Combat.Close) {
     id = isSelf ? HTML_IDS.GameCombatRowCloseSelf : HTML_IDS.GameCombatRowCloseOpponent
   } else if (combat === Combat.Ranged) {

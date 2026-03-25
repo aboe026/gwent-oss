@@ -40,7 +40,9 @@ export default class UserStore extends Store {
       ) {
         const message = `User with name "${name}" already exists.`
         UserStore.logger.warn(message)
-        throw Error(message)
+        throw Error(message, {
+          cause: err,
+        })
       } else {
         UserStore.logger.error(err)
         throw err

@@ -1,6 +1,6 @@
 {
   "name": "@gwent/db-profiler",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "author": "Adam Boe",
   "description": "Database profiler to analyze operations",
   "main": "build/src/index.js",
@@ -15,8 +15,8 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "fs-extra": "11.3.3",
-    "mongodb": "7.1.0"
+    "fs-extra": "11.3.4",
+    "mongodb": "7.1.1"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",

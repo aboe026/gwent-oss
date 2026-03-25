@@ -16,6 +16,7 @@ export default class LoginImplementation {
    * @param config.context The GraphQL context on which to save the user to use for authentication and authorization on subsequent queries/mutations/subscriptions.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.user The user to set on the context.
+   * @returns The context updated with the user on it.
    */
   static loginImplementation({
     context,
@@ -25,7 +26,7 @@ export default class LoginImplementation {
     context: Context
     logPrefix: string
     user: UserDbObject
-  }) {
+  }): Context {
     if (context?.session?.user) {
       LoginImplementation.logger.trace(`${logPrefix} overwriting user on context session.`)
       context.session.user = user
@@ -45,5 +46,6 @@ export default class LoginImplementation {
         },
       }
     }
+    return context
   }
 }

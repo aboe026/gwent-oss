@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "target": "es5",
-    "resolveJsonModule": false
+    "lib": ["ES2024", "DOM"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": false,
+    "target": "es2020"
   },
   "extends": "../../../../../../tsconfig",
   "include": ["src/**/*"]
