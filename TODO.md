@@ -116,7 +116,8 @@ Existing problems in the codebase that need to be fixed.
 - Get unit test coverage working for .tsx files
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
-- Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
+- Fold [deck-filter.ts](libs/graphql-schema/src/deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
+- had to convert [webpack.config.ts](msvs/ui/libs/client/webpack.config.ts) to be ESM because having separate `tsconfig.webpack.json` for it wouldn't work
 
 ## Features
 

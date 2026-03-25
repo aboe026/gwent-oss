@@ -61,7 +61,11 @@ function testLoginImplementation({
       logPrefix,
       user,
     })
-  ).toEqual(undefined)
+  ).toEqual({
+    session: {
+      user,
+    },
+  })
 
   if (context) {
     expect(context).toEqual({

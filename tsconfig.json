@@ -117,6 +117,7 @@
     { "path": "msvs/ui" },
     { "path": "msvs/ui/libs/client" },
     { "path": "test/e2e" },
-    { "path": "test/chaos" }
+    { "path": "test/chaos" },
+    { "path": "./tsconfig.test.json" }
   ]
 }

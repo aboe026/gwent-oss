@@ -53,7 +53,7 @@ export default class DeckStore extends Store {
       ) {
         const message = `Deck with name "${name}" already exists for user "${userId}"`
         DeckStore.logger.warn(message)
-        throw new Error(message, { cause: err })
+        throw Error(message, { cause: err })
       } else {
         DeckStore.logger.error(`Error adding deck for user "${userId}": ${err}`)
         throw err

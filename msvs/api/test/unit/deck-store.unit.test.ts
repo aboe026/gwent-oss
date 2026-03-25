@@ -188,7 +188,16 @@ async function testAdd({
     userId: userId.toString(),
   })
   if (error) {
-    await expect(promise).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(
+      new Error(
+        error.message,
+        isMongoError
+          ? {
+              cause: error,
+            }
+          : undefined
+      )
+    )
   } else {
     await expect(promise).resolves.toEqual(deck)
   }
