@@ -34,7 +34,7 @@ const sharedConfig: Config = {
     '.*\\.test\\.tsx?$': [
       'ts-jest',
       {
-        tsconfig: 'tsconfig.test.json',
+        tsconfig: path.join(process.env.PROJECT_CWD || '.', 'tsconfig.test.json'),
       },
     ],
   },
