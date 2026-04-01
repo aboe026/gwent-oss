@@ -1,6 +1,13 @@
 import { getLogger } from 'log4js'
 
-import { Combat, DeckUnitDbObject, GameDbObject, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  Combat,
+  DeckUnitDbObject,
+  GameDbObject,
+  GameUnitDbObject,
+  ImpactDbObject,
+} from '@gwent/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent/graphql-schema'
 import { getRandomNumber } from '@gwent/utils'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
@@ -51,12 +58,16 @@ export default class EffectSpy {
         EffectSpy.logger.debug(
           `${logPrefix} putting spy "${newDeckUnit.unit}" in "${combat}" row of opponent "${targetId}"`
         )
+        const gameUnit: GameUnitDbObject = {
+          ...newDeckUnit,
+          row: combat,
+        }
         if (combat === Combat.Close) {
-          round.close.units.push(newDeckUnit)
+          round.close.units.push(gameUnit)
         } else if (combat === Combat.Ranged) {
-          round.ranged.units.push(newDeckUnit)
+          round.ranged.units.push(gameUnit)
         } else {
-          round.siege.units.push(newDeckUnit)
+          round.siege.units.push(gameUnit)
         }
       } else {
         const message = `Could not find opponent "${targetId}"`
@@ -79,7 +90,11 @@ export default class EffectSpy {
           self.deck.hand.push(undrawnToMoveToHand)
           deckUnitsAddedToHand.push(undrawnToMoveToHand)
           impacts.push({
-            unit: undrawnToMoveToHand,
+            unit: {
+              ...undrawnToMoveToHand,
+              type: GameUnitType.Deck,
+              row: combat,
+            },
             user: self.user,
           })
         }

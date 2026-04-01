@@ -18,6 +18,7 @@ import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'
 import { ImpactsByUnitId } from '../../resolver-util'
+import { GameUnitType } from '@gwent/graphql-schema'
 
 /**
  * A class to modify the battlefield if a scorching unit is played.
@@ -246,7 +247,10 @@ export default class EffectScorch {
 
     return unitsScorched.map((unitScorched) => {
       return {
-        unit: unitScorched,
+        unit: {
+          ...unitScorched,
+          type: GameUnitType.Field,
+        },
         user: player.user,
       }
     })

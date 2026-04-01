@@ -11,7 +11,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
-import { EffectReasonType } from '@gwent/graphql-schema'
+import { EffectReasonType, GameUnitType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 
 /**
@@ -153,7 +153,10 @@ export default class EffectBond {
         const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
         if (impactables.includes(bondingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
           const impact: ImpactDbObject = {
-            unit: rowGameUnit,
+            unit: {
+              ...rowGameUnit,
+              type: GameUnitType.Field,
+            },
             user: userId,
           }
           if (EffectBond.logger.isTraceEnabled()) {

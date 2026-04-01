@@ -1,9 +1,12 @@
 import { getLogger } from 'log4js'
 
-import { GameUnitOrigin, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnitOrigin, Impact, TacoUnit, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from './game-unit-resolver'
-import { ImpactDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameUnitDbObject, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import ResolverUtil from '../resolver-util'
+import { GameUnitType } from '@gwent/graphql-schema'
+import DeckUnitResolver from './deck-unit-resolver'
+import WeatherUnitResolver from './weather-unit-resolver'
 
 /**
  * A class to convert Impact database objects to their GraphQL equivalent.
@@ -58,13 +61,26 @@ export default class ImpactResolver {
       }
     }
 
+    let unit: TacoUnit | undefined
+    if (impact.unit?.type === GameUnitType.Deck) {
+      unit = await DeckUnitResolver.fromObject({
+        deckUnit: impact.unit,
+        unit: impactUnit,
+      })
+    } else if (impact.unit?.type === GameUnitType.Field) {
+      unit = await GameUnitResolver.fromObject({
+        gameUnit: impact.unit as GameUnitDbObject,
+        unit: impactUnit,
+      })
+    } else if (impact.unit?.type === GameUnitType.Weather) {
+      unit = await WeatherUnitResolver.fromObject({
+        weatherUnit: impact.unit,
+        unit: impactUnit,
+      })
+    }
+
     return {
-      unit:
-        impact.unit &&
-        (await GameUnitResolver.fromObject({
-          gameUnit: impact.unit,
-          unit: impactUnit,
-        })),
+      unit,
       user: impactUser,
       source: impact.source
         ? {

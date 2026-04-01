@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Combat, GameDbObject, GameUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, GameDbObject, UnitDbObject, WeatherUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -36,7 +36,7 @@ export default class GetWeatherUnitsForRow {
     if (combat) {
       const weathers: {
         userId: ObjectId
-        gameUnit: GameUnitDbObject
+        gameUnit: WeatherUnitDbObject
       }[] = []
 
       for (const player of game.players) {

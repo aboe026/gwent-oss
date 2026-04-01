@@ -147,6 +147,7 @@ type Deck @entity {
   user: User! @column(overrideType: "ObjectId")
 }
 
+"A Unit in a user created Deck."
 type DeckUnit @entity {
   artStyle: Int! @column
   unit: Unit! @column(overrideType: "ObjectId")
@@ -234,13 +235,23 @@ type GamePlayerUnitCounts {
   undrawn: Int!
 }
 
+"A unit on the field of battle."
 type GameUnit @entity {
   artStyle: Int! @column
   effectiveStrength: Int @column
   effects: [GameUnitEffect!] @column(overrideType: "Array<GameUnitEffectDbObject>")
-  row: Combat @column
+  row: Combat! @column
   unit: Unit! @column(overrideType: "ObjectId")
 }
+
+"A Unit weathering the battlefield."
+type WeatherUnit @entity {
+  artStyle: Int! @column
+  unit: Unit! @column(overrideType: "ObjectId")
+}
+
+"A Unit participating in a Game."
+union TacoUnit @union(discriminatorField: "type") = DeckUnit | GameUnit | WeatherUnit
 
 type GameUnitEffect @entity {
   operator: String! @column
@@ -272,7 +283,7 @@ type Leader @entity {
 
 "A unit which was impacted by another unit."
 type Impact @entity {
-  unit: GameUnit @column(overrideType: "GameUnitDbObject")
+  unit: TacoUnit @column(overrideType: "TacoUnitDbObject")
   user: User! @column(overrideType: "ObjectId")
   source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
 }
@@ -290,7 +301,7 @@ type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
   "When the Move was made."
   created: DateTime! @column
   "The Unit which was Moved."
-  unit: GameUnit! @column(overrideType: "GameUnitDbObject")
+  unit: TacoUnit! @column(overrideType: "TacoUnitDbObject")
   "Other Units the Move impacted in the Game."
   impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
   "What caused the Move to happen."
@@ -321,7 +332,7 @@ type PlayerRound @entity {
   result: RoundResult @column
   score: Int! @column
   siege: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
-  weathers: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
+  weathers: [WeatherUnit!]! @column(overrideType: "Array<WeatherUnitDbObject>")
 }
 
 type PlayerCombatRow @entity {

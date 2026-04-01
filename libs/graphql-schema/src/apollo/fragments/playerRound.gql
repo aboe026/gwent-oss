@@ -15,6 +15,6 @@ fragment PlayerRound on PlayerRound {
     ...PlayerCombatRow
   }
   weathers {
-    ...GameUnit
+    ...WeatherUnit
   }
 }

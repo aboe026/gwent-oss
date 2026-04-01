@@ -11,10 +11,12 @@ import {
   MoveUnitDbObject,
   MoveDbObject,
   MoveUnitReasonDbObject,
+  TacoUnitDbObject,
+  WeatherUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import GetBattlefieldUnit from './get-battlefield-unit'
+import GetBattlefieldUnit, { BattlefieldUnit } from './get-battlefield-unit'
 import { ImpactsByUnitId } from '../../resolver-util'
-import { MoveType } from '@gwent/graphql-schema'
+import { GameUnitType, MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from './effect-muster'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -32,7 +34,6 @@ export default class UpdateHistory {
    * @param config.deckUnit The new DeckUnit being deployed to the battlefield.
    * @param config.playerId The ID of the game player who is deploying the new unit to the battlefield.
    * @param config.logPrefix What to prepend log statements with.
-   * @param config.combat Which combat row the new unit is being deployed to on the battlefield.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
    * @param config.mardroemingGameUnit A potential GameUnit which caused the berserkers to transform.
@@ -46,13 +47,14 @@ export default class UpdateHistory {
    * @param config.targetId The potential target an effect is being applied to.
    * @param config.weathers Any potential weather units that were deployed by the new battlefield unit being played.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
+   * @param config.isWeather Whether or not the new unit is weathering the battlefield.
+   * @param config.combat The combat row the new unit is being deployed into.
    */
   static newUnitDeployed({
     game,
     deckUnit,
     playerId,
     logPrefix,
-    combat,
     decoys,
     spies,
     scorches,
@@ -66,12 +68,13 @@ export default class UpdateHistory {
     weathers,
     musteredOrigins,
     targetId,
+    isWeather,
+    combat,
   }: {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
     playerId: string
     logPrefix: string
-    combat: Combat | null | undefined
     decoys: ImpactsByUnitId
     spies: ImpactsByUnitId
     scorches: ImpactsByUnitId
@@ -85,11 +88,13 @@ export default class UpdateHistory {
     weathers: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
     targetId: string | null | undefined
+    isWeather: boolean
+    combat: Combat | null | undefined
   }) {
     const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
       game,
       unitId: deckUnit.unit,
-      userId: playerId,
+      userId: targetId || playerId,
     })
     const impacts =
       bonds[deckUnit.unit.toString()] ||
@@ -101,15 +106,15 @@ export default class UpdateHistory {
       decoys[deckUnit.unit.toString()] ||
       spies[deckUnit.unit.toString()] ||
       weathers[deckUnit.unit.toString()]
+
     const move: MoveUnitDbObject = {
       created: new Date(),
-      unit: {
-        artStyle: deckUnit.artStyle,
-        unit: deckUnit.unit,
-        effectiveStrength: battlefieldUnit?.unit.effectiveStrength,
-        effects: battlefieldUnit?.unit.effects,
-        row: combat,
-      },
+      unit: UpdateHistory.getMoveTacoUnit({
+        battlefieldUnit,
+        deckUnit,
+        isWeather,
+        combat,
+      }),
       impacts,
       reason: {
         type: MoveReasonType.Deploy,
@@ -287,6 +292,7 @@ export default class UpdateHistory {
         effectiveStrength: battlefieldUnit.unit.effectiveStrength,
         effects: battlefieldUnit.unit.effects,
         row: battlefieldUnit.row,
+        type: GameUnitType.Field,
       },
       impacts,
       source: {
@@ -313,5 +319,50 @@ export default class UpdateHistory {
     } else {
       throw new PresentableError(`Could not find player "${game.turn}" on game "${game._id}" to add move to.`)
     }
+  }
+
+  static getMoveTacoUnit({
+    deckUnit,
+    battlefieldUnit,
+    isWeather,
+    combat,
+  }: {
+    deckUnit: DeckUnitDbObject
+    battlefieldUnit: BattlefieldUnit | undefined
+    isWeather?: boolean
+    combat?: Combat | null | undefined
+  }): TacoUnitDbObject {
+    let gameUnit: TacoUnitDbObject
+    const row: Combat | null | undefined = battlefieldUnit?.row || combat
+    if (isWeather) {
+      const weatherUnit: WeatherUnitDbObject = {
+        unit: deckUnit.unit,
+        artStyle: deckUnit.artStyle,
+      }
+      gameUnit = {
+        ...weatherUnit,
+        type: GameUnitType.Weather,
+      }
+    } else if (row) {
+      const fieldUnit: GameUnitDbObject = {
+        unit: deckUnit.unit,
+        artStyle: deckUnit.artStyle,
+        effectiveStrength: battlefieldUnit?.unit.effectiveStrength,
+        effects: battlefieldUnit?.unit.effects,
+        row,
+      }
+      gameUnit = {
+        ...fieldUnit,
+        type: GameUnitType.Field,
+      }
+    } else {
+      gameUnit = {
+        unit: deckUnit.unit,
+        artStyle: deckUnit.artStyle,
+        type: GameUnitType.Deck,
+      }
+    }
+
+    return gameUnit
   }
 }

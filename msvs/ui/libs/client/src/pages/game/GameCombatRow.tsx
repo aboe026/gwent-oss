@@ -120,9 +120,10 @@ export default function GameCombatRow({
   let modifierTitle = modifier ? useFragment(UnitFragmentDoc, modifier.unit).name : `${titledCombat} combat modifier`
   let modifierClass = ''
   const modifierStyle: CSSProperties = {}
-  const validModifier = isSelf && !modifier && cardSelectedUnit?.modifier
-  const invalidModifier = (cardSelectedUnit?.modifier && modifier) || (cardSelectedUnit && !cardSelectedUnit.modifier)
-  if (!weatherSelected) {
+  const validModifier = isSelf && !modifier && cardSelectedUnit?.modifier && selectedCardInHand
+  const invalidModifier =
+    (cardSelectedUnit?.modifier && modifier && selectedCardInHand) || (cardSelectedUnit && !cardSelectedUnit.modifier)
+  if (!weatherSelected && selectedCardInHand) {
     if (isSelf) {
       if (cardSelectedUnit) {
         if (modifier) {
@@ -383,10 +384,10 @@ function GameRowUnit({
         onFullscreen={() => {
           setFullUnits({
             currentIndex: index,
-            units: sortedUnits.map((deckUnit) => {
+            units: sortedUnits.map((gameUnit) => {
               return {
                 playerName: player.user.name,
-                unitFragment: useFragment(GameUnitFragmentDoc, deckUnit),
+                unitFragment: useFragment(GameUnitFragmentDoc, gameUnit),
               }
             }),
           })

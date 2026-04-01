@@ -10,7 +10,7 @@ import {
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { EffectReasonType } from '@gwent/graphql-schema'
+import { EffectReasonType, GameUnitType } from '@gwent/graphql-schema'
 import { EFFECT_OPERATOR } from '@gwent/constants'
 import { ImpactsByUnitId } from '../../resolver-util'
 
@@ -96,7 +96,10 @@ export default class EffectMorale {
           const impactables = [newDeckUnit.unit.toString(), ...transformedUnitIds]
           if (impactables.includes(moralingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
             const impact: ImpactDbObject = {
-              unit: rowGameUnit,
+              unit: {
+                ...rowGameUnit,
+                type: GameUnitType.Field,
+              },
               user: userId,
             }
             if (EffectMorale.logger.isTraceEnabled()) {

@@ -14,13 +14,13 @@ import {
   GamePlayerFragment,
   GamePlayerFragmentDoc,
   GameStatus,
-  GameUnitFragmentDoc,
   PlayerRoundFragment,
   PlayerRoundFragmentDoc,
   RoundResult,
   useFragment,
   UnitFragmentDoc,
   UnitEffectFragmentDoc,
+  WeatherUnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, GameDeckProps, GameProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -171,7 +171,7 @@ function renderSharedInfo({
     for (const player of useFragment(GamePlayerFragmentDoc, game.players)) {
       const round = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
       if (round) {
-        for (const weather of useFragment(GameUnitFragmentDoc, round.weathers)) {
+        for (const weather of useFragment(WeatherUnitFragmentDoc, round.weathers)) {
           weathers.push({
             playerName: player.user.name,
             unitFragment: weather,

@@ -1,0 +1,11 @@
+fragment TacoUnit on TacoUnit {
+  ... on DeckUnit {
+    ...DeckUnit
+  }
+  ... on GameUnit {
+    ...GameUnit
+  }
+  ... on WeatherUnit {
+    ...WeatherUnit
+  }
+}

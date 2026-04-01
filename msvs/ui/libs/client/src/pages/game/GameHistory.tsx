@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
+import { convertTacoUnit, getUnitFromTacoUnit } from '../../util/taco-unit-util'
 import {
   DeckUnitFragment,
   EffectKey,
@@ -20,10 +21,13 @@ import {
   MoveUnitFragmentDoc,
   PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
+  TacoUnitFragmentDoc,
   UnitEffectFragment,
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
+  WeatherUnitFragment,
+  WeatherUnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getErrorMessages } from '../../util/error-util'
@@ -54,7 +58,9 @@ export default function GameHistory({
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
+  const cardSelectedUnit = cardSelected?.unitFragment
+    ? useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
+    : undefined
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
     playUnitProps.loading ||
@@ -145,7 +151,9 @@ function PlayerHistoryMove({
   const gamePlayer = game.players[playerMove.playerIndex]
   const player = useFragment(GamePlayerFragmentDoc, gamePlayer)
   const isSelf = player.user.name === self.user.name
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
+  const cardSelectedUnit = cardSelected?.unitFragment
+    ? useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
+    : undefined
   let isSelected = false
   let isOnBattlefield = false
   let textClass = `game-history-move-text ${isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'}`
@@ -160,7 +168,7 @@ function PlayerHistoryMove({
   let error = false
   let pointable = false
   let impacts: ImpactFragment[] | undefined | null
-  let gameUnit: GameUnitFragment | undefined
+  let gameUnit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined
   let cardPlayer = player
 
   if (playerMove.move.__typename === 'MoveLeader') {
@@ -174,16 +182,14 @@ function PlayerHistoryMove({
     textClass += ' game-history-move-text-wrappable'
   } else if (playerMove.move.__typename === 'MoveUnit') {
     const unitMove = useFragment(MoveUnitFragmentDoc, playerMove.move)
-    gameUnit = useFragment(GameUnitFragmentDoc, unitMove.unit)
-    const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
+    const tacoUnit = useFragment(TacoUnitFragmentDoc, unitMove.unit)
+    gameUnit = convertTacoUnit(tacoUnit)
+    const unit = getUnitFromTacoUnit(tacoUnit)
     impacts = useFragment(ImpactFragmentDoc, unitMove.impacts)
     unitMoveIndex = unitMoves.findIndex((unitMove) => {
       if (unitMove.move.__typename === 'MoveUnit') {
         const potentialUnitMove = useFragment(MoveUnitFragmentDoc, unitMove.move)
-        const potentialUnit = useFragment(
-          UnitFragmentDoc,
-          useFragment(GameUnitFragmentDoc, potentialUnitMove.unit).unit
-        )
+        const potentialUnit = getUnitFromTacoUnit(useFragment(TacoUnitFragmentDoc, potentialUnitMove.unit))
         if (potentialUnit.id === unit.id) {
           return unitMove.playerIndex === playerMove.playerIndex
         }
@@ -195,7 +201,7 @@ function PlayerHistoryMove({
     if (unitMove.target) {
       placement += ` to spy on ${unitMove.target.name} `
     }
-    placement += gameUnit.row ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
+    placement += gameUnit?.__typename === 'GameUnit' ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
     if (unitMove.reason.unit?.unit.name) {
       if (unitMove.reason.type === MoveReasonType.Transform) {
         placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
@@ -215,7 +221,7 @@ function PlayerHistoryMove({
       reason = 'transformed'
     }
     secondaryText = `${reason} ${placement}${source}`
-    image = unit.images[gameUnit.artStyle - 1]
+    image = unit.images[(gameUnit?.artStyle || 1) - 1]
     imageTitle = unit.name
 
     if (unitMove.target?.name) {
@@ -233,7 +239,7 @@ function PlayerHistoryMove({
       const closeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.close)
       const rangedRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.ranged)
       const siegeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.siege)
-      const unitFragments: (GameUnitFragment | DeckUnitFragment)[] = []
+      const unitFragments: (GameUnitFragment | DeckUnitFragment | WeatherUnitFragment)[] = []
       for (const roundUnits of [closeRow.units, rangedRow.units, siegeRow.units]) {
         if (roundUnits) {
           unitFragments.push(...useFragment(GameUnitFragmentDoc, roundUnits))
@@ -245,7 +251,7 @@ function PlayerHistoryMove({
         }
       }
       for (const weather of playerRound.weathers) {
-        unitFragments.push(useFragment(GameUnitFragmentDoc, weather))
+        unitFragments.push(useFragment(WeatherUnitFragmentDoc, weather))
       }
       for (let i = 0; i < unitFragments.length && !isOnBattlefield; i++) {
         if (useFragment(UnitFragmentDoc, unitFragments[i].unit).id === unit.id) {
@@ -268,13 +274,13 @@ function PlayerHistoryMove({
         title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
         onClick={() => {
           if (playerMove.move.__typename === 'MoveUnit') {
-            const gameUnit = useFragment(GameUnitFragmentDoc, useFragment(MoveUnitFragmentDoc, playerMove.move).unit)
-            const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
+            const gameUnit = useFragment(TacoUnitFragmentDoc, useFragment(MoveUnitFragmentDoc, playerMove.move).unit)
+            const unit = getUnitFromTacoUnit(gameUnit)
             setCardSelected(
               cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
                 ? undefined
                 : {
-                    unitFragment: gameUnit,
+                    unitFragment: convertTacoUnit(gameUnit),
                     playerName: cardPlayer.user.name,
                   }
             )
@@ -299,7 +305,7 @@ function PlayerHistoryMove({
                         const move = useFragment(MoveUnitFragmentDoc, unitMove.move)
                         units.push({
                           playerName: player.user.name,
-                          unitFragment: useFragment(GameUnitFragmentDoc, move.unit),
+                          unitFragment: convertTacoUnit(useFragment(TacoUnitFragmentDoc, move.unit)),
                         })
                       }
                     }
@@ -368,7 +374,7 @@ function MoveUnitImpact({
   setFullUnits,
 }: {
   cardSelected: UnitForPlayer | undefined
-  gameUnit: GameUnitFragment
+  gameUnit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment
   game: GameFragment
   impacts: ImpactFragment[] | null | undefined
   self: GamePlayerFragment
@@ -464,11 +470,11 @@ function renderImpacts({
       sortProperties: ['unit.unit.name', 'source.origin', 'unit.unit.id'],
     })
     for (const impact of sortedImpacts) {
-      const gameUnit = useFragment(GameUnitFragmentDoc, impact.unit)
+      const gameUnit = useFragment(TacoUnitFragmentDoc, impact.unit)
       if (gameUnit) {
         units.push({
           playerName: impact.user.name,
-          unitFragment: gameUnit,
+          unitFragment: convertTacoUnit(gameUnit),
         })
       }
     }
@@ -492,8 +498,8 @@ function renderImpacts({
             const infoClass = `move-impact-unit-info ${
               isSelf ? 'move-impact-unit-info-self' : 'move-impact-unit-info-opponent'
             }`
-            const gameUnitForImpact = useFragment(GameUnitFragmentDoc, impactedUnit.unit)
-            const unitForImpact = useFragment(UnitFragmentDoc, gameUnitForImpact?.unit)
+            const gameUnitForImpact = useFragment(TacoUnitFragmentDoc, impactedUnit.unit)
+            const unitForImpact = gameUnitForImpact ? getUnitFromTacoUnit(gameUnitForImpact) : undefined
             const description = getImpactDescription({
               effectKey,
               origin: impactedUnit.source?.origin,
@@ -535,7 +541,7 @@ function renderImpacts({
                       isSelected
                         ? undefined
                         : {
-                            unitFragment: gameUnitForImpact,
+                            unitFragment: convertTacoUnit(gameUnitForImpact),
                             playerName: impactedUnit.user.name,
                           }
                     )
@@ -545,7 +551,7 @@ function renderImpacts({
                 <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
                   {unitForImpact && gameUnitForImpact ? (
                     <img
-                      src={unitForImpact.images[gameUnitForImpact.artStyle - 1]}
+                      src={unitForImpact.images[convertTacoUnit(gameUnitForImpact).artStyle - 1]}
                       className="move-impact-unit-image"
                       title={title}
                       onClick={(event) => {
@@ -561,7 +567,7 @@ function renderImpacts({
                             units,
                           })
                           setCardSelected({
-                            unitFragment: gameUnitForImpact,
+                            unitFragment: convertTacoUnit(gameUnitForImpact),
                             playerName: impactedUnit.user.name,
                           })
                         }
@@ -604,7 +610,11 @@ interface EffectForImpact {
 /**
  * Gets the single Effect a GameUnit could potentially have on other units on the battlefield.
  */
-function getEffectForImpact({ gameUnit }: { gameUnit: GameUnitFragment }): EffectForImpact {
+function getEffectForImpact({
+  gameUnit,
+}: {
+  gameUnit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment
+}): EffectForImpact {
   let error = ''
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
   const unitEffects = useFragment(UnitEffectFragmentDoc, unit.effects)
@@ -626,7 +636,11 @@ function getEffectForImpact({ gameUnit }: { gameUnit: GameUnitFragment }): Effec
 /**
  * Whether or not a specific GameUnit is able to have an Impact on other units in the battlefield.
  */
-function hasImpactableEffect({ gameUnit }: { gameUnit: GameUnitFragment }): boolean {
+function hasImpactableEffect({
+  gameUnit,
+}: {
+  gameUnit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment
+}): boolean {
   const effectsWithImpact = [
     EffectKey.Bond,
     EffectKey.Decoy,

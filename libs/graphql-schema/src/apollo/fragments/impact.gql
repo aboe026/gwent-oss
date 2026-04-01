@@ -1,6 +1,6 @@
 fragment Impact on Impact {
   unit {
-    ...GameUnit
+    ...TacoUnit
   }
   user {
     id

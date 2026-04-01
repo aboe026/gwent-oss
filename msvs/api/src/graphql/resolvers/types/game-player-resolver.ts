@@ -6,6 +6,7 @@ import FactionResolver from './faction-resolver'
 import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import getGameUnits from '../mutations/play-unit/get-game-units'
 import { getUniqueItems } from '@gwent/utils'
+import getWeatherUnits from '../mutations/play-unit/get-weather-units'
 import LeaderResolver from './leader-resolver'
 import PlayerRoundResolver from './player-round-resolver'
 import ResolverUtil from '../resolver-util'
@@ -67,6 +68,9 @@ export default class GamePlayerResolver {
       gameUnits: getGameUnits({
         rounds,
       }),
+      weatherUnits: getWeatherUnits({
+        rounds,
+      }),
       presolvedUsers: users,
       presolvedUnits: units,
     })
@@ -125,6 +129,9 @@ export default class GamePlayerResolver {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: getGameUnits({
+        rounds,
+      }),
+      weatherUnits: getWeatherUnits({
         rounds,
       }),
       presolvedUsers: users,

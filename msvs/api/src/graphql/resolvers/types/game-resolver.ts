@@ -6,6 +6,7 @@ import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
 import getGameUnits from '../mutations/play-unit/get-game-units'
+import getWeatherUnits from '../mutations/play-unit/get-weather-units'
 import ResolverUtil from '../resolver-util'
 import Verifier from '../../../util/verifier'
 
@@ -38,6 +39,9 @@ export default class GameResolver {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: getGameUnits({
+        rounds,
+      }),
+      weatherUnits: getWeatherUnits({
         rounds,
       }),
       userIds: game.players.map((player) => player.user),
@@ -105,6 +109,9 @@ export default class GameResolver {
     const { units, users } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: getGameUnits({
+        rounds,
+      }),
+      weatherUnits: getWeatherUnits({
         rounds,
       }),
       userIds: games

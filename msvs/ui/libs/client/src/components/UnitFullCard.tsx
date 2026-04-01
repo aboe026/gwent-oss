@@ -12,6 +12,7 @@ import {
   UnitFragment,
   UnitFragmentDoc,
   useFragment,
+  WeatherUnitFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
 import getWeatherImage from '../util/get-weather-image'
@@ -83,6 +84,8 @@ export default function UnitFullCard({
     const combatDescription = `Can be placed in the ${combatTitle} combat row${
       unit.combats && unit.combats.length > 1 ? 's' : ''
     }.`
+    const artStyle = fullUnit.artStyle
+
     return (
       <WholeScreenDialog onClose={() => onClose(fullUnit)}>
         <div id={HTML_IDS.UnitFullCardContainer}>
@@ -101,7 +104,7 @@ export default function UnitFullCard({
               <div id="unitFullCardContents">
                 <img
                   id={HTML_IDS.UnitFullCardImage}
-                  src={unit.images[(fullUnit.artStyle || 1) - 1]}
+                  src={unit.images[artStyle - 1]}
                   className={unit.hero ? 'full-unit-hero' : ''}
                   onClick={() => onSelect(fullUnit)}
                 />
@@ -124,7 +127,7 @@ export default function UnitFullCard({
                       <div className={`${HTML_CLASSES.UnitFullCardInfoRow} unit-full-card-info-row-strength`}>
                         <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                           <StrengthCircle
-                            unit={useFragment(UnitFragmentDoc, fullUnit.unit)}
+                            unit={unit}
                             effectiveStrength={effectiveStrength}
                             size="50px"
                             ignoreHero={true}
@@ -214,35 +217,29 @@ export default function UnitFullCard({
                     )}
                   </div>
 
-                  {fullUnit.artStyle && unit.images.length > 1 && (
+                  {unit.images.length > 1 && (
                     <div id="unitFullCardArtSwitcher">
                       {onArtDecrement && (
                         <div
                           id={HTML_IDS.UnitFullCardArtPrevious}
-                          className={`icon-container unit-full-card-art-switcher ${
-                            fullUnit.artStyle > 1 ? 'pointable' : ''
-                          }`}
+                          className={`icon-container unit-full-card-art-switcher ${artStyle > 1 ? 'pointable' : ''}`}
                           onClick={() => onArtDecrement(fullUnit)}
                           title="Previous Art Style"
                         >
-                          {fullUnit.artStyle > 1 && (
-                            <CgChevronLeft className="unit-full-card-art-switcher-arrow" size="1.5em" />
-                          )}
+                          {artStyle > 1 && <CgChevronLeft className="unit-full-card-art-switcher-arrow" size="1.5em" />}
                         </div>
                       )}
-                      <span
-                        id={HTML_IDS.UnitFullCardArt}
-                      >{`Art style: ${fullUnit.artStyle}/${unit.images.length}`}</span>
+                      <span id={HTML_IDS.UnitFullCardArt}>{`Art style: ${artStyle}/${unit.images.length}`}</span>
                       {onArtIncrement && (
                         <div
                           id={HTML_IDS.UnitFullCardArtNext}
                           className={`icon-container unit-full-card-art-switcher ${
-                            fullUnit.artStyle < unit.images.length ? 'pointable' : ''
+                            artStyle < unit.images.length ? 'pointable' : ''
                           }`}
                           onClick={() => onArtIncrement(fullUnit)}
                           title="Next Art Style"
                         >
-                          {fullUnit.artStyle < unit.images.length && (
+                          {artStyle < unit.images.length && (
                             <CgChevronRight className="unit-full-card-art-switcher-arrow" size="1.5em" />
                           )}
                         </div>
@@ -324,14 +321,14 @@ function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<typeo
 interface UnitFullCardProps {
   effectiveStrength?: number | null
   effects?: FragmentType<typeof GameUnitEffectFragmentDoc>[] | null
-  fullUnit: DeckUnitFragment | GameUnitFragment | undefined
+  fullUnit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined
   hasNext: boolean
   hasPrevious: boolean
-  onArtDecrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
-  onArtIncrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
-  onClose: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
-  onNext: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
-  onPrevious: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
-  onSelect: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
+  onArtDecrement?: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
+  onArtIncrement?: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
+  onClose: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
+  onNext: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
+  onPrevious: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
+  onSelect: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
   userName?: string
 }

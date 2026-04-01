@@ -12,6 +12,10 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- update random-games to work with spies (ensure logic works if there is multiple opponents)
+- e2e test making sure that selecting modifier in history only highlights that modifier, and not all
+- e2e test making sure selecting modifier when different one currently selected moves highlight to new one
+
 - Restructure GameUnit
   - change GameUnit to be FieldUnit
   - make new WeatherUnit

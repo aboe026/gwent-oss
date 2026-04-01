@@ -15,7 +15,6 @@ import {
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
-import isGameUnit from '../../util/is-game-unit'
 import UnitGameCard from '../../components/UnitGameCard'
 
 /**
@@ -108,7 +107,7 @@ export default function GameRowUnit({
         }}
         title={highlightedForDecoy ? `Select to decoy ${unit.name} back into hand` : title}
         cursor={cursor}
-        effectiveStrength={isGameUnit(gameUnitFragment) ? gameUnitFragment.effectiveStrength : undefined}
+        effectiveStrength={gameUnitFragment.__typename === 'GameUnit' ? gameUnitFragment.effectiveStrength : undefined}
         selected={selectedAsFullCard || selected || highlightedForDecoy}
         dotted={!isTurn && !selected}
         onFullscreen={() => {

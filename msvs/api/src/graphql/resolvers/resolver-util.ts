@@ -9,6 +9,7 @@ import {
   ImpactDbObject,
   MoveDbObject,
   MoveUnitDbObject,
+  WeatherUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import { MoveType, RequestedFields } from '@gwent/graphql-schema'
@@ -137,7 +138,8 @@ export default class ResolverUtil {
    * @param config.moves Potential Move objects that are apart of the game.
    * @param config.impacts Potential Impact objects that are apart of the game.
    * @param config.userIds IDs of all the users on the game. If provided, will not look for users elsewhere (moves, impacts).
-   * @param config.gameUnits The units currently on the battlefield of a game.
+   * @param config.gameUnits The units currently on the field of battle of a game.
+   * @param config.weatherUnits The units currently weathering the battlefield of a game.
    * @param config.presolvedUsers All the users on the Game. If provided, will not attempt to resolve users.
    * @param config.presolvedUnits All the units on the Game. If provided, will not attempt to resolve any units.
    * @returns All the Users and Units on the game, resolved to their GraphQL types.
@@ -147,6 +149,7 @@ export default class ResolverUtil {
     impacts,
     userIds,
     gameUnits,
+    weatherUnits,
     presolvedUsers,
     presolvedUnits,
   }: {
@@ -154,6 +157,7 @@ export default class ResolverUtil {
     impacts?: ImpactDbObject[]
     userIds?: (ObjectId | string)[]
     gameUnits?: GameUnitDbObject[]
+    weatherUnits?: WeatherUnitDbObject[]
     presolvedUsers?: User[]
     presolvedUnits?: Unit[]
   }): Promise<MoveUsersAndUnits> {
@@ -176,6 +180,15 @@ export default class ResolverUtil {
     if (gameUnits && !presolvedUnits) {
       for (const gameUnit of gameUnits) {
         const unitId = gameUnit.unit.toString()
+        if (!unitIdsToResolve.includes(unitId)) {
+          unitIdsToResolve.push(unitId)
+        }
+      }
+    }
+
+    if (weatherUnits && !presolvedUnits) {
+      for (const weatherUnit of weatherUnits) {
+        const unitId = weatherUnit.unit.toString()
         if (!unitIdsToResolve.includes(unitId)) {
           unitIdsToResolve.push(unitId)
         }

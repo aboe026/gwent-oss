@@ -17,6 +17,7 @@ import { getUniqueItems } from '@gwent/utils'
 import getUnitIdsWithEffect from './get-unit-ids-with-effect'
 import { ImpactsByUnitId } from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
+import { GameUnitType } from '@gwent/graphql-schema'
 
 /**
  * A class to transform Berserker units when Mardroeme is played.
@@ -132,7 +133,10 @@ export default class EffectMardroeme {
           for (const transformedPair of transformedPairs) {
             if (newUnitImpact) {
               impacts.push({
-                unit: transformedPair.from,
+                unit: {
+                  ...transformedPair.from,
+                  type: GameUnitType.Field,
+                },
                 user: player.user,
               })
             }

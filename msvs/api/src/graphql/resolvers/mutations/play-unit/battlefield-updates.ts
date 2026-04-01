@@ -109,6 +109,7 @@ export default class BattlefieldUpdates {
     } = await EffectMuster.musterBattlefield({
       battlefieldUnits,
       effects,
+      combat,
       game,
       logPrefix,
       newDeckUnit,
@@ -185,24 +186,28 @@ export default class BattlefieldUpdates {
         player.deck.hand = player.deck.hand.filter(
           (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
         )
-        if (!weather && !spy) {
+        if (!weather && !spy && combat) {
+          const gameUnit: GameUnitDbObject = {
+            ...newDeckUnit,
+            row: combat,
+          }
           if (combat === Combat.Close) {
             if (newUnit.modifier) {
-              round.close.modifier = newDeckUnit
+              round.close.modifier = gameUnit
             } else {
-              round.close.units.push(newDeckUnit)
+              round.close.units.push(gameUnit)
             }
           } else if (combat === Combat.Ranged) {
             if (newUnit.modifier) {
-              round.ranged.modifier = newDeckUnit
+              round.ranged.modifier = gameUnit
             } else {
-              round.ranged.units.push(newDeckUnit)
+              round.ranged.units.push(gameUnit)
             }
-          } else if (combat === Combat.Siege) {
+          } else {
             if (newUnit.modifier) {
-              round.siege.modifier = newDeckUnit
+              round.siege.modifier = gameUnit
             } else {
-              round.siege.units.push(newDeckUnit)
+              round.siege.units.push(gameUnit)
             }
           }
         }

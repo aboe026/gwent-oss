@@ -121,7 +121,6 @@ export default class PlayUnitImplementation {
     setGameScores(game)
 
     UpdateHistory.newUnitDeployed({
-      combat,
       deckUnit,
       game,
       decoys,
@@ -138,7 +137,9 @@ export default class PlayUnitImplementation {
       mardroemes,
       transformedGameUnits,
       mardroemingGameUnit,
+      isWeather,
       targetId: isSpy ? targetId : undefined,
+      combat,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

@@ -5,10 +5,10 @@ import {
   GameFragment,
   GamePlayerFragment,
   GamePlayerFragmentDoc,
-  GameUnitFragmentDoc,
   PlayerRoundFragmentDoc,
   UnitFragmentDoc,
   useFragment,
+  WeatherUnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import GameCombatRow from './GameCombatRow'
@@ -61,17 +61,17 @@ export default function GameBattlefield({
   const opponentPassed = useFragment(PlayerRoundFragmentDoc, opponent.rounds[game.round - 1]).passed
   const weatherClose = useFragment(GamePlayerFragmentDoc, game.players).some((player) =>
     useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1]).weathers.some((weather) =>
-      useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, weather).unit).combats?.includes(Combat.Close)
+      useFragment(UnitFragmentDoc, useFragment(WeatherUnitFragmentDoc, weather).unit).combats?.includes(Combat.Close)
     )
   )
   const weatherRanged = useFragment(GamePlayerFragmentDoc, game.players).some((player) =>
     useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1]).weathers.some((weather) =>
-      useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, weather).unit).combats?.includes(Combat.Ranged)
+      useFragment(UnitFragmentDoc, useFragment(WeatherUnitFragmentDoc, weather).unit).combats?.includes(Combat.Ranged)
     )
   )
   const weatherSiege = useFragment(GamePlayerFragmentDoc, game.players).some((player) =>
     useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1]).weathers.some((weather) =>
-      useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, weather).unit).combats?.includes(Combat.Siege)
+      useFragment(UnitFragmentDoc, useFragment(WeatherUnitFragmentDoc, weather).unit).combats?.includes(Combat.Siege)
     )
   )
   const sharedProps = {

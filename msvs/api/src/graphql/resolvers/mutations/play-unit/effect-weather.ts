@@ -12,7 +12,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
-import { EffectReasonType } from '@gwent/graphql-schema'
+import { EffectReasonType, GameUnitType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 import { PlayerWeatherUnit } from './get-weather-units-for-row'
 
@@ -59,7 +59,10 @@ export default class EffectWeather {
           )
           for (const weather of round.weathers) {
             impacts.push({
-              unit: weather,
+              unit: {
+                ...weather,
+                type: GameUnitType.Weather,
+              },
               user: player.user,
             })
           }
@@ -163,7 +166,10 @@ export default class EffectWeather {
             weather.userId.toString() === currentPlayerId.toString()
           ) {
             const impact: ImpactDbObject = {
-              unit: rowGameUnit,
+              unit: {
+                ...rowGameUnit,
+                type: GameUnitType.Field,
+              },
               user: userId,
             }
             if (EffectWeather.logger.isTraceEnabled()) {

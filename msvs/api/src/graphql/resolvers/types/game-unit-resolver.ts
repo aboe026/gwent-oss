@@ -22,12 +22,13 @@ export default class GameUnitResolver {
       effects: await GameUnitEffectResolver.fromArray({
         gameUnitEffects: gameUnit.effects,
       }),
-      row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
+      row: gameUnit.row as Combat,
       unit:
         unit ||
         (await UnitResolver.fromId({
           id: gameUnit.unit,
         })),
+      __typename: 'GameUnit',
     }
   }
 

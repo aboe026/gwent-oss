@@ -22,6 +22,7 @@ export default class DeckUnitResolver {
         (await UnitResolver.fromId({
           id: deckUnit.unit,
         })),
+      __typename: 'DeckUnit',
     }
   }
 

@@ -10,6 +10,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
+import { GameUnitType } from '@gwent/graphql-schema'
 
 /**
  * A class to modify the battlefield if a decoy unit is played.
@@ -104,7 +105,10 @@ export default class EffectDecoy {
         const target = row.units.splice(targetIndex, 1)[0]
         player.deck.hand.push(target)
         impact = {
-          unit: target,
+          unit: {
+            ...target,
+            type: GameUnitType.Field,
+          },
           user: player.user,
         }
       }

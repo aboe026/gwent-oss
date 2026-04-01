@@ -10,7 +10,6 @@ import {
   Unit,
 } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from './deck-unit-resolver'
-import GameUnitResolver from './game-unit-resolver'
 import ImpactResolver from './impact-resolver'
 import LeaderResolver from './leader-resolver'
 import {
@@ -21,6 +20,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { MoveType } from '@gwent/graphql-schema'
 import ResolverUtil from '../resolver-util'
+import TacoUnitResolver from './taco-unit-resolver'
 
 /**
  * A class to convert Move database objects to their GraphQL equivalent.
@@ -105,8 +105,8 @@ export default class MoveResolver {
       }
       return {
         created: unitMove.created,
-        unit: await GameUnitResolver.fromObject({
-          gameUnit: unitMove.unit,
+        unit: await TacoUnitResolver.fromObject({
+          tacoUnit: unitMove.unit,
           unit: unitForMove,
         }),
         impacts: await ImpactResolver.fromArray({

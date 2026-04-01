@@ -36,11 +36,6 @@ export default function getGameUnits({
         gameUnits.push(round.siege.modifier)
       }
     }
-    if (!combat) {
-      for (const weather of round.weathers) {
-        gameUnits.push(weather)
-      }
-    }
   }
 
   return gameUnits

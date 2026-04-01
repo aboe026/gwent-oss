@@ -4,6 +4,7 @@ import {
   GameUnitFragment,
   UnitFragmentDoc,
   useFragment,
+  WeatherUnitFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
 /**
@@ -12,7 +13,9 @@ import {
  * @param deckUnit The DeckUnit or GameUnit to get the combat image for.
  * @returns The path to the image representing the combat for the DeckUnit or GameUnit.
  */
-export default function getCombatImage(deckUnit: DeckUnitFragment | GameUnitFragment): string | undefined {
+export default function getCombatImage(
+  deckUnit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment
+): string | undefined {
   const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
   if (!unit.special) {
     if (unit.combats?.length === 1) {
