@@ -1,8 +1,8 @@
-fragment GameUnit on GameUnit {
+fragment FieldUnit on FieldUnit {
   artStyle
   effectiveStrength
   effects {
-    ...GameUnitEffect
+    ...FieldUnitEffect
   }
   row
   unit {

@@ -1,17 +1,17 @@
 import { ObjectId } from 'mongodb'
 
-import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import TestUtil from '../util/test-util'
-import { DeckUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Unit, WeatherUnit } from '@gwent/graphql-schema/resolver-typings'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
+import { WeatherUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import WeatherUnitResolver from '../../src/graphql/resolvers/types/weather-unit-resolver'
 
-describe('deck-unit-resolver', () => {
+describe('weather-unit-resolver', () => {
   describe('fromObject', () => {
     it('does not call to UnitResolver if unit provided', async () => {
       const unit = TestUtil.getUnit({})
       await testResolveFromObject({
-        deckUnit: {
+        weatherUnit: {
           artStyle: 1,
           unit: new ObjectId(unit.id),
         },
@@ -21,7 +21,7 @@ describe('deck-unit-resolver', () => {
     it('calls to UnitResolver if unit not provided', async () => {
       const unitId = new ObjectId()
       await testResolveFromObject({
-        deckUnit: {
+        weatherUnit: {
           artStyle: 1,
           unit: unitId,
         },
@@ -34,22 +34,22 @@ describe('deck-unit-resolver', () => {
   describe('fromArray', () => {
     it('returns empty array if provided empty array', async () => {
       await testResolveFromArray({
-        deckUnits: [],
+        weatherUnits: [],
       })
     })
     it('calls to resolvers with unique unit ids if provided', async () => {
-      const deckUnit = TestUtil.getDbDeckUnit({})
+      const weatherUnit = TestUtil.getDbWeatherUnit({})
       await testResolveFromArray({
-        deckUnits: [deckUnit],
+        weatherUnits: [weatherUnit],
         resolvedUnits: [
           TestUtil.getUnit({
-            id: deckUnit.unit,
+            id: weatherUnit.unit,
           }),
         ],
         unitResolverCalls: [
           [
             {
-              ids: [deckUnit.unit],
+              ids: [weatherUnit.unit],
             },
           ],
         ],
@@ -59,22 +59,22 @@ describe('deck-unit-resolver', () => {
 })
 
 async function testResolveFromObject({
-  deckUnit,
+  weatherUnit,
   unit,
   unitResolverResponse,
 }: {
-  deckUnit: DeckUnitDbObject
+  weatherUnit: WeatherUnitDbObject
   unit?: Unit
   unitResolverResponse?: Unit
 }) {
   const resolvedUnit = unit || unitResolverResponse
   if (!resolvedUnit) {
-    throw Error(`No resolved unit for deckUnit "${JSON.stringify(deckUnit)}"`)
+    throw Error(`No resolved unit for weatherUnit "${JSON.stringify(weatherUnit)}"`)
   }
-  const resolvedDeckUnit: DeckUnit = {
-    artStyle: deckUnit.artStyle,
+  const resolvedWeatherUnit: WeatherUnit = {
+    artStyle: weatherUnit.artStyle,
     unit: resolvedUnit,
-    __typename: 'DeckUnit',
+    __typename: 'WeatherUnit',
   }
   const unitResolverSpy = jest.spyOn(UnitResolver, 'fromId')
   if (unitResolverResponse) {
@@ -82,11 +82,11 @@ async function testResolveFromObject({
   }
 
   await expect(
-    DeckUnitResolver.fromObject({
-      deckUnit,
+    WeatherUnitResolver.fromObject({
+      weatherUnit,
       unit,
     })
-  ).resolves.toEqual(resolvedDeckUnit)
+  ).resolves.toEqual(resolvedWeatherUnit)
 
   expect(unitResolverSpy.mock.calls).toEqual(
     unit
@@ -94,7 +94,7 @@ async function testResolveFromObject({
       : [
           [
             {
-              id: deckUnit.unit,
+              id: weatherUnit.unit,
             },
           ],
         ]
@@ -102,32 +102,32 @@ async function testResolveFromObject({
 }
 
 async function testResolveFromArray({
-  deckUnits = [],
+  weatherUnits = [],
   resolvedUnits = [],
   unitResolverCalls = [],
 }: {
-  deckUnits?: DeckUnitDbObject[]
+  weatherUnits?: WeatherUnitDbObject[]
   resolvedUnits?: Unit[]
   unitResolverCalls?: any[][]
 }) {
   const unitResolverSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(resolvedUnits)
 
   await expect(
-    DeckUnitResolver.fromArray({
-      deckUnits,
+    WeatherUnitResolver.fromArray({
+      weatherUnits,
     })
   ).resolves.toEqual(
-    deckUnits?.map((deckUnit) => {
-      const unit = resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString())
+    weatherUnits?.map((weatherUnit) => {
+      const unit = resolvedUnits.find((unit) => unit.id.toString() === weatherUnit.unit.toString())
       if (!unit) {
-        throw Error(`Could not find unit "${deckUnit.unit}" for DeckUnit "${JSON.stringify(deckUnit)}"`)
+        throw Error(`Could not find unit "${weatherUnit.unit}" for WeatherUnit "${JSON.stringify(weatherUnit)}"`)
       }
-      const resolvedDeckUnit: DeckUnit = {
-        artStyle: deckUnit.artStyle,
+      const resolvedWeatherUnit: WeatherUnit = {
+        artStyle: weatherUnit.artStyle,
         unit,
-        __typename: 'DeckUnit',
+        __typename: 'WeatherUnit',
       }
-      return resolvedDeckUnit
+      return resolvedWeatherUnit
     })
   )
 

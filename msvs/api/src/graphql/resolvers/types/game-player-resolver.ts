@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
 import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import getGameUnits from '../mutations/play-unit/get-game-units'
+import GetFieldUnits from '../util/get-field-units'
 import { getUniqueItems } from '@gwent/utils'
 import getWeatherUnits from '../mutations/play-unit/get-weather-units'
 import LeaderResolver from './leader-resolver'
@@ -65,7 +65,7 @@ export default class GamePlayerResolver {
     const rounds = player.rounds.flat()
     const { users: resolvedUsers, units: resolvedUnits } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits: getGameUnits({
+      fieldUnits: GetFieldUnits.fromRounds({
         rounds,
       }),
       weatherUnits: getWeatherUnits({
@@ -128,7 +128,7 @@ export default class GamePlayerResolver {
       .flat()
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits: getGameUnits({
+      fieldUnits: GetFieldUnits.fromRounds({
         rounds,
       }),
       weatherUnits: getWeatherUnits({

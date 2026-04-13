@@ -208,39 +208,39 @@ describe('game-player-resolver', () => {
         rounds: [
           TestUtil.getDbPlayerRound({
             close: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({})],
             }),
             ranged: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             siege: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbGameUnit({}),
+                unit: TestUtil.getDbTacoUnit({}),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbGameUnit({}),
+                unit: TestUtil.getDbTacoUnit({}),
               }),
             ],
           }),
           TestUtil.getDbPlayerRound({
             close: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             ranged: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             siege: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({})],
             }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbGameUnit({}),
+                unit: TestUtil.getDbTacoUnit({}),
               }),
             ],
           }),
@@ -250,26 +250,26 @@ describe('game-player-resolver', () => {
         rounds: [
           TestUtil.getDbPlayerRound({
             close: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             ranged: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({})],
             }),
             siege: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbGameUnit({}),
+                unit: TestUtil.getDbTacoUnit({}),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbGameUnit({}),
+                unit: TestUtil.getDbTacoUnit({}),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbGameUnit({}),
+                unit: TestUtil.getDbTacoUnit({}),
               }),
             ],
           }),
@@ -655,9 +655,13 @@ async function testResolveFromObject({
           .flat()
           .map((round) => round.moves)
           .flat(),
-        gameUnits: player.rounds
+        fieldUnits: player.rounds
           .flat()
           .map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units])
+          .flat(),
+        weatherUnits: player.rounds
+          .flat()
+          .map((round) => round.weathers)
           .flat(),
         presolvedUsers: users,
         presolvedUnits: units,
@@ -756,11 +760,17 @@ async function testResolveFromArray({
                 .flat()
                 .map((round) => round.moves)
                 .flat(),
-              gameUnits: players
+              fieldUnits: players
                 .flat()
                 .map((player) => player.rounds)
                 .flat()
                 .map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units])
+                .flat(),
+              weatherUnits: players
+                .flat()
+                .map((player) => player.rounds)
+                .flat()
+                .map((round) => round.weathers)
                 .flat(),
               presolvedUsers: users,
               presolvedUnits: units,

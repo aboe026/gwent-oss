@@ -4,8 +4,8 @@ import {
   Combat,
   DeckUnitDbObject,
   EffectDbObject,
+  FieldUnitDbObject,
   GameDbObject,
-  GameUnitDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import EffectDecoy from './effect-decoy'
@@ -117,8 +117,8 @@ export default class BattlefieldUpdates {
     const {
       impacts: mardroemeImpacts,
       transformedUnits,
-      transformedGameUnits,
-      mardroemingGameUnit,
+      transformedFieldUnits,
+      mardroemingFieldUnit,
     } = await EffectMardroeme.transformBerserkers({
       battlefieldUnits: [...battlefieldUnits, ...musteredUnits],
       effects,
@@ -148,8 +148,8 @@ export default class BattlefieldUpdates {
       mardroemes: mardroemeImpacts,
       spies: spyImpacts,
       transformedUnits,
-      transformedGameUnits,
-      mardroemingGameUnit,
+      transformedFieldUnits,
+      mardroemingFieldUnit,
       weathers: weatherImpacts,
     }
   }
@@ -187,27 +187,29 @@ export default class BattlefieldUpdates {
           (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
         )
         if (!weather && !spy && combat) {
-          const gameUnit: GameUnitDbObject = {
+          const fieldUnit: FieldUnitDbObject = {
             ...newDeckUnit,
+            effectiveStrength: undefined,
+            effects: [],
             row: combat,
           }
           if (combat === Combat.Close) {
             if (newUnit.modifier) {
-              round.close.modifier = gameUnit
+              round.close.modifier = fieldUnit
             } else {
-              round.close.units.push(gameUnit)
+              round.close.units.push(fieldUnit)
             }
           } else if (combat === Combat.Ranged) {
             if (newUnit.modifier) {
-              round.ranged.modifier = gameUnit
+              round.ranged.modifier = fieldUnit
             } else {
-              round.ranged.units.push(gameUnit)
+              round.ranged.units.push(fieldUnit)
             }
           } else {
             if (newUnit.modifier) {
-              round.siege.modifier = gameUnit
+              round.siege.modifier = fieldUnit
             } else {
-              round.siege.units.push(gameUnit)
+              round.siege.units.push(fieldUnit)
             }
           }
         }
@@ -226,7 +228,7 @@ interface ModificationImpacts {
   mardroemes: ImpactsByUnitId
   spies: ImpactsByUnitId
   transformedUnits: UnitDbObject[]
-  transformedGameUnits: GameUnitDbObject[]
-  mardroemingGameUnit: GameUnitDbObject | undefined
+  transformedFieldUnits: FieldUnitDbObject[]
+  mardroemingFieldUnit: FieldUnitDbObject | undefined
   weathers: ImpactsByUnitId
 }

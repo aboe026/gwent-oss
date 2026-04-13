@@ -4,19 +4,19 @@ import {
   Effect,
   EffectFromLeader,
   EffectFromUnit,
-  GameUnitEffect,
+  FieldUnitEffect,
   Leader,
   Unit,
 } from '@gwent/graphql-schema/resolver-typings'
 import {
   EffectFromLeaderDbObject,
   EffectFromUnitDbObject,
-  GameUnitEffectDbObject,
+  FieldUnitEffectDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
 import EffectResolver from '../../src/graphql/resolvers/types/effect-resolver'
-import GameUnitEffectResolver from '../../src/graphql/resolvers/types/game-unit-effect-resolver'
+import FieldUnitEffectResolver from '../../src/graphql/resolvers/types/field-unit-effect-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
@@ -26,7 +26,7 @@ describe('game-unit-effect-resolver', () => {
     it('throws error if invalid reason type', async () => {
       const type = 'invalid'
       await testFromObject({
-        gameUnitEffect: {
+        fieldUnitEffect: {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             type,
@@ -38,7 +38,7 @@ describe('game-unit-effect-resolver', () => {
     })
     it('calls out to resolve unit and effects if none provided and EffectFromUnit', async () => {
       await testFromObject({
-        gameUnitEffect: {
+        fieldUnitEffect: {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Unit,
@@ -51,7 +51,7 @@ describe('game-unit-effect-resolver', () => {
     })
     it('calls out to resolve leader if none provided and EffectFromLeader', async () => {
       await testFromObject({
-        gameUnitEffect: {
+        fieldUnitEffect: {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Leader,
@@ -65,7 +65,7 @@ describe('game-unit-effect-resolver', () => {
       const effectId = new ObjectId()
       const unitId = new ObjectId()
       await testFromObject({
-        gameUnitEffect: {
+        fieldUnitEffect: {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Unit,
@@ -85,7 +85,7 @@ describe('game-unit-effect-resolver', () => {
     it('does not resolve leader if provided and EffectFromLeader', async () => {
       const leaderId = new ObjectId()
       await testFromObject({
-        gameUnitEffect: {
+        fieldUnitEffect: {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Leader,
@@ -103,7 +103,7 @@ describe('game-unit-effect-resolver', () => {
     it('throws error if invalid effect reason type', async () => {
       const type = 'invalid'
       await testFromArray({
-        gameUnitEffects: [
+        fieldUnitEffects: [
           {
             operator: EFFECT_OPERATOR.Plus,
             reason: {
@@ -115,9 +115,9 @@ describe('game-unit-effect-resolver', () => {
         expected: Error(`Invalid EffectReasonType "${type}".`),
       })
     })
-    it('throws empty array if gameUnitEffects undefined', async () => {
+    it('throws empty array if fieldUnitEffects undefined', async () => {
       await testFromArray({
-        gameUnitEffects: undefined,
+        fieldUnitEffects: undefined,
         expected: [],
       })
     })
@@ -125,7 +125,7 @@ describe('game-unit-effect-resolver', () => {
       it('calls to effect and unit resolvers if single effect', async () => {
         const effect = TestUtil.getEffect({})
         const unit = TestUtil.getUnit({})
-        const gameUnitEffect = {
+        const fieldUnitEffect = {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             effect: new ObjectId(effect.id),
@@ -135,7 +135,7 @@ describe('game-unit-effect-resolver', () => {
           total: 1,
         }
         await testFromArray({
-          gameUnitEffects: [gameUnitEffect],
+          fieldUnitEffects: [fieldUnitEffect],
           effectsResponse: [effect],
           unitsResponse: [unit],
           expected: [
@@ -160,7 +160,7 @@ describe('game-unit-effect-resolver', () => {
           fromObjectCalls: [
             [
               {
-                gameUnitEffect,
+                fieldUnitEffect,
                 effect,
                 unit,
                 leader: undefined,
@@ -172,7 +172,7 @@ describe('game-unit-effect-resolver', () => {
       it('calls to effect and unit resolvers if multiple effects', async () => {
         const effect = TestUtil.getEffect({})
         const unit = TestUtil.getUnit({})
-        const gameUnitEffect1 = {
+        const fieldUnitEffect1 = {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             effect: new ObjectId(effect.id),
@@ -181,7 +181,7 @@ describe('game-unit-effect-resolver', () => {
           } as EffectFromUnitDbObject,
           total: 1,
         }
-        const gameUnitEffect2 = {
+        const fieldUnitEffect2 = {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             effect: new ObjectId(effect.id),
@@ -191,7 +191,7 @@ describe('game-unit-effect-resolver', () => {
           total: 1,
         }
         await testFromArray({
-          gameUnitEffects: [gameUnitEffect1, gameUnitEffect2],
+          fieldUnitEffects: [fieldUnitEffect1, fieldUnitEffect2],
           effectsResponse: [effect],
           unitsResponse: [unit],
           expected: [
@@ -225,7 +225,7 @@ describe('game-unit-effect-resolver', () => {
           fromObjectCalls: [
             [
               {
-                gameUnitEffect: gameUnitEffect1,
+                fieldUnitEffect: fieldUnitEffect1,
                 effect,
                 unit,
                 leader: undefined,
@@ -233,7 +233,7 @@ describe('game-unit-effect-resolver', () => {
             ],
             [
               {
-                gameUnitEffect: gameUnitEffect2,
+                fieldUnitEffect: fieldUnitEffect2,
                 effect,
                 unit,
                 leader: undefined,
@@ -246,7 +246,7 @@ describe('game-unit-effect-resolver', () => {
     describe('EffectFromLeader', () => {
       it('calls to leader resolver if single effect', async () => {
         const leader = TestUtil.getLeader({})
-        const gameUnitEffect = {
+        const fieldUnitEffect = {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             leader: new ObjectId(leader.id),
@@ -255,7 +255,7 @@ describe('game-unit-effect-resolver', () => {
           total: 1,
         }
         await testFromArray({
-          gameUnitEffects: [gameUnitEffect],
+          fieldUnitEffects: [fieldUnitEffect],
           leadersResponse: [leader],
           expected: [
             {
@@ -277,7 +277,7 @@ describe('game-unit-effect-resolver', () => {
           fromObjectCalls: [
             [
               {
-                gameUnitEffect,
+                fieldUnitEffect,
                 effect: undefined,
                 unit: undefined,
                 leader,
@@ -288,7 +288,7 @@ describe('game-unit-effect-resolver', () => {
       })
       it('calls to leader resolver if multiple effects', async () => {
         const leader = TestUtil.getLeader({})
-        const gameUnitEffect1 = {
+        const fieldUnitEffect1 = {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             leader: new ObjectId(leader.id),
@@ -296,7 +296,7 @@ describe('game-unit-effect-resolver', () => {
           } as EffectFromLeaderDbObject,
           total: 1,
         }
-        const gameUnitEffect2 = {
+        const fieldUnitEffect2 = {
           operator: EFFECT_OPERATOR.Plus,
           reason: {
             leader: new ObjectId(leader.id),
@@ -305,7 +305,7 @@ describe('game-unit-effect-resolver', () => {
           total: 1,
         }
         await testFromArray({
-          gameUnitEffects: [gameUnitEffect1, gameUnitEffect2],
+          fieldUnitEffects: [fieldUnitEffect1, fieldUnitEffect2],
           leadersResponse: [leader],
           expected: [
             {
@@ -335,7 +335,7 @@ describe('game-unit-effect-resolver', () => {
           fromObjectCalls: [
             [
               {
-                gameUnitEffect: gameUnitEffect1,
+                fieldUnitEffect: fieldUnitEffect1,
                 effect: undefined,
                 unit: undefined,
                 leader,
@@ -343,7 +343,7 @@ describe('game-unit-effect-resolver', () => {
             ],
             [
               {
-                gameUnitEffect: gameUnitEffect2,
+                fieldUnitEffect: fieldUnitEffect2,
                 effect: undefined,
                 unit: undefined,
                 leader,
@@ -357,13 +357,13 @@ describe('game-unit-effect-resolver', () => {
 })
 
 async function testFromObject({
-  gameUnitEffect,
+  fieldUnitEffect,
   unit,
   effect,
   leader,
   error,
 }: {
-  gameUnitEffect: GameUnitEffectDbObject
+  fieldUnitEffect: FieldUnitEffectDbObject
   unit?: Unit
   effect?: Effect
   leader?: Leader
@@ -372,24 +372,24 @@ async function testFromObject({
   const resolvedEffect =
     effect ||
     TestUtil.getEffect({
-      id: (gameUnitEffect.reason as EffectFromUnitDbObject).effect,
+      id: (fieldUnitEffect.reason as EffectFromUnitDbObject).effect,
     })
   const resolvedUnit =
     unit ||
     TestUtil.getUnit({
-      id: (gameUnitEffect.reason as EffectFromUnitDbObject).unit,
+      id: (fieldUnitEffect.reason as EffectFromUnitDbObject).unit,
     })
   const resolvedLeader =
     leader ||
     TestUtil.getLeader({
-      id: (gameUnitEffect.reason as EffectFromLeaderDbObject).leader,
+      id: (fieldUnitEffect.reason as EffectFromLeaderDbObject).leader,
     })
   const effectResolverSpy = jest.spyOn(EffectResolver, 'fromId').mockResolvedValue(resolvedEffect)
   const unitResolverSpy = jest.spyOn(UnitResolver, 'fromId').mockResolvedValue(resolvedUnit)
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromId').mockResolvedValue(resolvedLeader)
 
-  const promise = GameUnitEffectResolver.fromObject({
-    gameUnitEffect,
+  const promise = FieldUnitEffectResolver.fromObject({
+    fieldUnitEffect,
     effect,
     leader,
     unit,
@@ -398,9 +398,9 @@ async function testFromObject({
     await expect(promise).rejects.toThrow(error)
   } else {
     await expect(promise).resolves.toEqual({
-      operator: gameUnitEffect.operator,
+      operator: fieldUnitEffect.operator,
       reason:
-        gameUnitEffect.reason.type === EffectReasonType.Leader
+        fieldUnitEffect.reason.type === EffectReasonType.Leader
           ? {
               leader: resolvedLeader,
               __typename: 'EffectFromLeader',
@@ -410,32 +410,32 @@ async function testFromObject({
               unit: resolvedUnit,
               __typename: 'EffectFromUnit',
             },
-      total: gameUnitEffect.total,
+      total: fieldUnitEffect.total,
     })
   }
 
   expect(effectResolverSpy.mock.calls).toEqual(
-    gameUnitEffect.reason.type === EffectReasonType.Unit && !effect
-      ? [[(gameUnitEffect.reason as EffectFromUnitDbObject).effect]]
+    fieldUnitEffect.reason.type === EffectReasonType.Unit && !effect
+      ? [[(fieldUnitEffect.reason as EffectFromUnitDbObject).effect]]
       : []
   )
   expect(unitResolverSpy.mock.calls).toEqual(
-    gameUnitEffect.reason.type === EffectReasonType.Unit && !unit
+    fieldUnitEffect.reason.type === EffectReasonType.Unit && !unit
       ? [
           [
             {
-              id: (gameUnitEffect.reason as EffectFromUnitDbObject).unit,
+              id: (fieldUnitEffect.reason as EffectFromUnitDbObject).unit,
             },
           ],
         ]
       : []
   )
   expect(leaderResolverSpy.mock.calls).toEqual(
-    gameUnitEffect.reason.type === EffectReasonType.Leader && !leader
+    fieldUnitEffect.reason.type === EffectReasonType.Leader && !leader
       ? [
           [
             {
-              id: (gameUnitEffect.reason as EffectFromLeaderDbObject).leader,
+              id: (fieldUnitEffect.reason as EffectFromLeaderDbObject).leader,
             },
           ],
         ]
@@ -444,7 +444,7 @@ async function testFromObject({
 }
 
 async function testFromArray({
-  gameUnitEffects,
+  fieldUnitEffects,
   effectsResponse,
   unitsResponse,
   leadersResponse,
@@ -454,11 +454,11 @@ async function testFromArray({
   leaderCalls = [],
   fromObjectCalls = [],
 }: {
-  gameUnitEffects: GameUnitEffectDbObject[] | undefined
+  fieldUnitEffects: FieldUnitEffectDbObject[] | undefined
   effectsResponse?: Effect[]
   unitsResponse?: Unit[]
   leadersResponse?: Leader[]
-  expected?: GameUnitEffect[] | Error
+  expected?: FieldUnitEffect[] | Error
   effectCalls?: any[][]
   unitCalls?: any[][]
   leaderCalls?: any[][]
@@ -476,15 +476,15 @@ async function testFromArray({
   if (leadersResponse) {
     leaderSpy.mockResolvedValue(leadersResponse)
   }
-  const fromObjectSpy = jest.spyOn(GameUnitEffectResolver, 'fromObject')
+  const fromObjectSpy = jest.spyOn(FieldUnitEffectResolver, 'fromObject')
   if (expected && !(expected instanceof Error)) {
-    for (const gameUnitEffect of expected) {
-      fromObjectSpy.mockResolvedValueOnce(gameUnitEffect)
+    for (const fieldUnitEffect of expected) {
+      fromObjectSpy.mockResolvedValueOnce(fieldUnitEffect)
     }
   }
 
-  const promise = GameUnitEffectResolver.fromArray({
-    gameUnitEffects,
+  const promise = FieldUnitEffectResolver.fromArray({
+    fieldUnitEffects,
   })
   if (expected instanceof Error) {
     await expect(promise).rejects.toThrow(expected)

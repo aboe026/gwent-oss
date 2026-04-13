@@ -126,12 +126,15 @@ describe('effect-scorch', () => {
 
     const unitSelf1 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName2)
     if (!unitSelf1) {
-      throw Error(`Could not find self unit "${unitName1}" in hand`)
+      throw Error(`Could not find self unit "${unitName2}" in hand`)
     }
     const unitOpponent1 = gameDeckOpponent.hand.find((unit) => unit.unit.name === unitName1)
     if (!unitOpponent1) {
-      throw Error(`Could not find opponent unit "${unitName2}" in hand`)
+      throw Error(`Could not find opponent unit "${unitName1}" in hand`)
     }
+    const fieldUnitOpponent1 = TestUtil.getFieldUnit({
+      unit: unitOpponent1.unit,
+    })
 
     gameDeckOpponent.hand = gameDeckOpponent.hand.filter((handUnit) => handUnit.unit.id !== unitOpponent1.unit.id)
     const selfGamePlayer = game.players.find((player) => player.user.id === self.id) as GamePlayer
@@ -167,15 +170,11 @@ describe('effect-scorch', () => {
                 expectizePlayerRound({
                   close: {
                     score: 5,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitOpponent1.unit,
-                      }),
-                    ],
+                    units: [fieldUnitOpponent1],
                   },
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitOpponent1,
+                      unit: fieldUnitOpponent1,
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
@@ -205,7 +204,7 @@ describe('effect-scorch', () => {
           close: TestUtil.getPlayerCombatRow({}),
           moves: [
             expectizeMoveUnit({
-              unit: unitOpponent1,
+              unit: fieldUnitOpponent1,
             }),
           ],
           ranged: TestUtil.getPlayerCombatRow({}),
@@ -249,10 +248,7 @@ describe('effect-scorch', () => {
                       unit: unitSelf1,
                       impacts: [
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitOpponent1.unit,
-                            effectiveStrength: 5,
-                          }),
+                          unit: fieldUnitOpponent1,
                           user: opponent,
                         }),
                       ],
@@ -311,6 +307,9 @@ describe('effect-scorch', () => {
     if (!unitOpponent1) {
       throw Error(`Could not find opponent unit "${unitName2}" in hand`)
     }
+    const fieldUnitOpponent1 = TestUtil.getFieldUnit({
+      unit: unitOpponent1.unit,
+    })
 
     gameDeckOpponent.hand = gameDeckOpponent.hand.filter((handUnit) => handUnit.unit.id !== unitOpponent1.unit.id)
     const selfGamePlayer = game.players.find((player) => player.user.id === self.id) as GamePlayer
@@ -323,15 +322,11 @@ describe('effect-scorch', () => {
         expectizePlayerRound({
           close: {
             score: 10,
-            units: [
-              TestUtil.getGameUnit({
-                unit: unitOpponent1.unit,
-              }),
-            ],
+            units: [fieldUnitOpponent1],
           },
           moves: [
             expectizeMoveUnit({
-              unit: unitOpponent1,
+              unit: fieldUnitOpponent1,
             }),
           ],
           ranged: TestUtil.getPlayerCombatRow({}),

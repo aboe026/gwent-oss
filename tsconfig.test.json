@@ -4,5 +4,5 @@
     "types": ["jest"],
     "noEmit": true
   },
-  "include": ["**/*.test.ts", "**/*.test.tsx"]
+  "include": ["**/src/**/*.ts", "**/*.json", "**/*.test.ts", "**/*.test.tsx", "**/test/**/*.ts"]
 }

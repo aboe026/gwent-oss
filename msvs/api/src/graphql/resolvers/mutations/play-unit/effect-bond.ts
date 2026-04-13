@@ -5,8 +5,8 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectFromUnitDbObject,
-  GameUnitDbObject,
-  GameUnitEffectDbObject,
+  FieldUnitDbObject,
+  FieldUnitEffectDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -85,7 +85,7 @@ export default class EffectBond {
    * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
    * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
    * @param config.transformedUnitIds A list of any unit IDs that were transformed on the battlefield by the newDeckUnit. Used to apply potential impacts to those Vildkaarls.
-   * @param config.rowGameUnit The GameUnit under consideration to be bonded.
+   * @param config.rowFieldUnit The FieldUnit under consideration to be bonded.
    * @param config.rowUnit The Unit under consideration to be bonded.
    * @param config.units A list of all units on the battlefield.
    * @param config.userId The ID of the user whose unit is under consideration to be bonded.
@@ -99,7 +99,7 @@ export default class EffectBond {
     newDeckUnit,
     musteredUnitIds,
     transformedUnitIds,
-    rowGameUnit,
+    rowFieldUnit,
     rowUnit,
     units,
     userId,
@@ -111,7 +111,7 @@ export default class EffectBond {
     newDeckUnit: DeckUnitDbObject
     musteredUnitIds: string[]
     transformedUnitIds: string[]
-    rowGameUnit: GameUnitDbObject
+    rowFieldUnit: FieldUnitDbObject
     rowUnit: UnitDbObject
     units: UnitDbObject[]
     userId: ObjectId
@@ -123,38 +123,47 @@ export default class EffectBond {
       EffectBond.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
     }
 
-    const bondsToApply = unitIdsWithBondInRow.filter((id) => id !== rowGameUnit.unit.toString())
-    if (EffectBond.logger.isTraceEnabled()) {
-      EffectBond.logger.trace(`${logPrefix} bondsToApply: "${JSON.stringify(bondsToApply)}"`)
-    }
-    for (const unitIdWithBond of bondsToApply) {
-      const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
-      if (bondEffect && bondingUnit && rowGameUnit.effects) {
-        rowGameUnit.effectiveStrength = (rowGameUnit.effectiveStrength || 0) * 2
-        EffectBond.logger.debug(
-          `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}"`
-        )
-        const reason: EffectFromUnitDbObject = {
-          effect: bondEffect._id,
-          type: EffectReasonType.Unit,
-          unit: bondingUnit._id,
-        }
+    if (bondEffect && rowFieldUnit.effects) {
+      const bondsToApply = unitIdsWithBondInRow.filter((id) => id !== rowFieldUnit.unit.toString())
+      if (EffectBond.logger.isTraceEnabled()) {
+        EffectBond.logger.trace(`${logPrefix} bondsToApply: "${JSON.stringify(bondsToApply)}"`)
+      }
+      const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
+      for (const unitIdWithBond of bondsToApply) {
+        const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
+        if (bondingUnit) {
+          rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
+          EffectBond.logger.debug(
+            `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
+          )
+          const reason: EffectFromUnitDbObject = {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: bondingUnit._id,
+          }
 
-        const gameUnitEffect: GameUnitEffectDbObject = {
-          operator: EFFECT_OPERATOR.Double,
-          reason,
-          total: rowGameUnit.effectiveStrength,
+          const fieldUnitEffect: FieldUnitEffectDbObject = {
+            operator: EFFECT_OPERATOR.Double,
+            reason,
+            total: rowFieldUnit.effectiveStrength,
+          }
+          if (EffectBond.logger.isTraceEnabled()) {
+            EffectBond.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
+          }
+          rowFieldUnit.effects.push(fieldUnitEffect)
         }
-        if (EffectBond.logger.isTraceEnabled()) {
-          EffectBond.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)
-        }
-        rowGameUnit.effects.push(gameUnitEffect)
-
-        const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
-        if (impactables.includes(bondingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
+      }
+      // wait to set impacts so know full effectiveStrength of rowFieldUnit
+      for (const unitIdWithBond of bondsToApply) {
+        const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
+        if (
+          bondingUnit &&
+          impactables.includes(bondingUnit._id.toString()) &&
+          userId.toString() === currentPlayerId?.toString()
+        ) {
           const impact: ImpactDbObject = {
             unit: {
-              ...rowGameUnit,
+              ...rowFieldUnit,
               type: GameUnitType.Field,
             },
             user: userId,

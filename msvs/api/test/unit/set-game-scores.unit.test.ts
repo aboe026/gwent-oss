@@ -29,7 +29,7 @@ describe('set-game-scores', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -73,7 +73,7 @@ describe('set-game-scores', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -111,7 +111,7 @@ describe('set-game-scores', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -155,7 +155,7 @@ describe('set-game-scores', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -193,7 +193,7 @@ describe('set-game-scores', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -237,7 +237,7 @@ describe('set-game-scores', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -276,7 +276,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -325,7 +325,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -368,7 +368,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -417,7 +417,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -460,7 +460,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -509,7 +509,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -552,7 +552,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -565,7 +565,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
@@ -620,7 +620,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -633,7 +633,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
@@ -688,7 +688,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -701,7 +701,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
@@ -756,7 +756,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -769,7 +769,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
@@ -824,7 +824,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -837,7 +837,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
@@ -892,7 +892,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
                   ],
@@ -905,7 +905,7 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
@@ -960,10 +960,10 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
@@ -976,10 +976,10 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 3,
                     }),
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 4,
                     }),
                   ],
@@ -1034,17 +1034,17 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 1,
                     }),
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 2,
                     }),
                   ],
                 }),
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 4,
                     }),
                   ],
@@ -1057,10 +1057,10 @@ describe('set-game-scores', () => {
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 5,
                     }),
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 6,
                     }),
                   ],
@@ -1068,10 +1068,10 @@ describe('set-game-scores', () => {
                 siege: TestUtil.getDbPlayerCombatRow({
                   score: 0,
                   units: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 7,
                     }),
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       effectiveStrength: 8,
                     }),
                   ],
@@ -1132,15 +1132,15 @@ describe('set-game-scores', () => {
       expect(getUnitsScore([])).toEqual(0)
     })
     it('returns zero if single unit without effective strength', () => {
-      expect(getUnitsScore([TestUtil.getDbGameUnit({})])).toEqual(0)
+      expect(getUnitsScore([TestUtil.getDbFieldUnit({})])).toEqual(0)
     })
     it('returns zero if multiple units without effective strength', () => {
-      expect(getUnitsScore([TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})])).toEqual(0)
+      expect(getUnitsScore([TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})])).toEqual(0)
     })
     it('returns effective strength if single unit with effective strength', () => {
       expect(
         getUnitsScore([
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             effectiveStrength: 1,
           }),
         ])
@@ -1149,18 +1149,18 @@ describe('set-game-scores', () => {
     it('returns effective strength if single unit with effective strength and unit without effective strength', () => {
       expect(
         getUnitsScore([
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             effectiveStrength: 1,
           }),
-          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbFieldUnit({}),
         ])
       ).toEqual(1)
     })
     it('returns effective strength if unit without effective strength and single unit with effective strength', () => {
       expect(
         getUnitsScore([
-          TestUtil.getDbGameUnit({}),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({}),
+          TestUtil.getDbFieldUnit({
             effectiveStrength: 1,
           }),
         ])
@@ -1169,10 +1169,10 @@ describe('set-game-scores', () => {
     it('returns sum of effective strengths if multiple units with effective strength', () => {
       expect(
         getUnitsScore([
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             effectiveStrength: 1,
           }),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             effectiveStrength: 1,
           }),
         ])
@@ -1181,15 +1181,15 @@ describe('set-game-scores', () => {
     it('returns sum of effective strengths if multiple units with effective strength and multiple units without effective strength', () => {
       expect(
         getUnitsScore([
-          TestUtil.getDbGameUnit({}),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({}),
+          TestUtil.getDbFieldUnit({
             effectiveStrength: 1,
           }),
-          TestUtil.getDbGameUnit({}),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({}),
+          TestUtil.getDbFieldUnit({
             effectiveStrength: 1,
           }),
-          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbFieldUnit({}),
         ])
       ).toEqual(2)
     })

@@ -1,35 +1,35 @@
-import { GameUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { FieldUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GetStrongestNonHeroUnitIds from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-unit-ids'
 import TestUtil from '../util/test-util'
 
 describe('get-strongest-non-hero-unit-ids', () => {
   const logPrefix = 'log-prefix'
-  it('returns empty array if gameUnits empty array', () => {
+  it('returns empty array if fieldUnits empty array', () => {
     testGetStrongestNonHeroUnits({
-      gameUnits: [],
+      fieldUnits: [],
       logPrefix,
       units: [],
       expected: [],
     })
   })
-  it('throws error if unit for gameUnit not found', () => {
-    const gameUnit = TestUtil.getDbGameUnit({})
-    const message = `Could not find matching unit for game unit "${gameUnit.unit}"`
+  it('throws error if unit for fieldUnit not found', () => {
+    const fieldUnit = TestUtil.getDbFieldUnit({})
+    const message = `Could not find matching unit for FieldUnit "${fieldUnit.unit}"`
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit],
+      fieldUnits: [fieldUnit],
       logPrefix,
       units: [],
       expected: Error(`${message}.`),
       errorCalls: [[`${logPrefix} failed: ${message} in units "${JSON.stringify([])}"`]],
     })
   })
-  it('returns empty array if gameUnits has no strength', () => {
+  it('returns empty array if fieldUnits has no strength', () => {
     const unit = TestUtil.getDbUnit({})
-    const gameUnit = TestUtil.getDbGameUnit({
+    const fieldUnit = TestUtil.getDbFieldUnit({
       id: unit._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit],
+      fieldUnits: [fieldUnit],
       logPrefix,
       units: [unit],
       expected: [],
@@ -40,14 +40,14 @@ describe('get-strongest-non-hero-unit-ids', () => {
     const unit = TestUtil.getDbUnit({
       strength: 1,
     })
-    const gameUnit = TestUtil.getDbGameUnit({
+    const fieldUnit = TestUtil.getDbFieldUnit({
       id: unit._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit],
+      fieldUnits: [fieldUnit],
       logPrefix,
       units: [unit],
-      expected: [gameUnit.unit.toString()],
+      expected: [fieldUnit.unit.toString()],
       traceCalls: [
         [
           `${logPrefix} unit "${unit.name}" has higher strength "${unit.strength}" than previous "-1", setting highestStrength to it`,
@@ -60,21 +60,21 @@ describe('get-strongest-non-hero-unit-ids', () => {
     const unit = TestUtil.getDbUnit({
       strength: 1,
     })
-    const gameUnit = TestUtil.getDbGameUnit({
+    const fieldUnit = TestUtil.getDbFieldUnit({
       id: unit._id,
       effectiveStrength: 2,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit],
+      fieldUnits: [fieldUnit],
       logPrefix,
       units: [unit],
-      expected: [gameUnit.unit.toString()],
+      expected: [fieldUnit.unit.toString()],
       traceCalls: [
         [
-          `${logPrefix} unit "${unit.name}" has higher strength "${gameUnit.effectiveStrength}" than previous "-1", setting highestStrength to it`,
+          `${logPrefix} unit "${unit.name}" has higher strength "${fieldUnit.effectiveStrength}" than previous "-1", setting highestStrength to it`,
         ],
         [
-          `${logPrefix} unit "${unit.name}" matches highest strength of "${gameUnit.effectiveStrength}", adding to strongestUnitIds`,
+          `${logPrefix} unit "${unit.name}" matches highest strength of "${fieldUnit.effectiveStrength}", adding to strongestUnitIds`,
         ],
       ],
     })
@@ -86,27 +86,27 @@ describe('get-strongest-non-hero-unit-ids', () => {
     const unit2 = TestUtil.getDbUnit({
       strength: 2,
     })
-    const gameUnit1 = TestUtil.getDbGameUnit({
+    const fieldUnit1 = TestUtil.getDbFieldUnit({
       id: unit1._id,
       effectiveStrength: 3,
     })
-    const gameUnit2 = TestUtil.getDbGameUnit({
+    const fieldUnit2 = TestUtil.getDbFieldUnit({
       id: unit2._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit1, gameUnit2],
+      fieldUnits: [fieldUnit1, fieldUnit2],
       logPrefix,
       units: [unit1, unit2],
-      expected: [gameUnit1.unit.toString()],
+      expected: [fieldUnit1.unit.toString()],
       traceCalls: [
         [
-          `${logPrefix} unit "${unit1.name}" has higher strength "${gameUnit1.effectiveStrength}" than previous "-1", setting highestStrength to it`,
+          `${logPrefix} unit "${unit1.name}" has higher strength "${fieldUnit1.effectiveStrength}" than previous "-1", setting highestStrength to it`,
         ],
         [
-          `${logPrefix} unit "${unit2.name}" strength "${unit2.strength}" is not greater than highestStrength of "${gameUnit1.effectiveStrength}"`,
+          `${logPrefix} unit "${unit2.name}" strength "${unit2.strength}" is not greater than highestStrength of "${fieldUnit1.effectiveStrength}"`,
         ],
         [
-          `${logPrefix} unit "${unit1.name}" matches highest strength of "${gameUnit1.effectiveStrength}", adding to strongestUnitIds`,
+          `${logPrefix} unit "${unit1.name}" matches highest strength of "${fieldUnit1.effectiveStrength}", adding to strongestUnitIds`,
         ],
       ],
     })
@@ -118,17 +118,17 @@ describe('get-strongest-non-hero-unit-ids', () => {
     const unit2 = TestUtil.getDbUnit({
       strength: 1,
     })
-    const gameUnit1 = TestUtil.getDbGameUnit({
+    const fieldUnit1 = TestUtil.getDbFieldUnit({
       id: unit1._id,
     })
-    const gameUnit2 = TestUtil.getDbGameUnit({
+    const fieldUnit2 = TestUtil.getDbFieldUnit({
       id: unit2._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit1, gameUnit2],
+      fieldUnits: [fieldUnit1, fieldUnit2],
       logPrefix,
       units: [unit1, unit2],
-      expected: [gameUnit1.unit.toString()],
+      expected: [fieldUnit1.unit.toString()],
       traceCalls: [
         [
           `${logPrefix} unit "${unit1.name}" has higher strength "${unit1.strength}" than previous "-1", setting highestStrength to it`,
@@ -149,17 +149,17 @@ describe('get-strongest-non-hero-unit-ids', () => {
     const unit2 = TestUtil.getDbUnit({
       strength: 2,
     })
-    const gameUnit1 = TestUtil.getDbGameUnit({
+    const fieldUnit1 = TestUtil.getDbFieldUnit({
       id: unit1._id,
     })
-    const gameUnit2 = TestUtil.getDbGameUnit({
+    const fieldUnit2 = TestUtil.getDbFieldUnit({
       id: unit2._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit1, gameUnit2],
+      fieldUnits: [fieldUnit1, fieldUnit2],
       logPrefix,
       units: [unit1, unit2],
-      expected: [gameUnit2.unit.toString()],
+      expected: [fieldUnit2.unit.toString()],
       traceCalls: [
         [
           `${logPrefix} unit "${unit1.name}" has higher strength "${unit1.strength}" than previous "-1", setting highestStrength to it`,
@@ -182,17 +182,17 @@ describe('get-strongest-non-hero-unit-ids', () => {
       name: 'name-2',
       strength: 1,
     })
-    const gameUnit1 = TestUtil.getDbGameUnit({
+    const fieldUnit1 = TestUtil.getDbFieldUnit({
       id: unit1._id,
     })
-    const gameUnit2 = TestUtil.getDbGameUnit({
+    const fieldUnit2 = TestUtil.getDbFieldUnit({
       id: unit2._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit1, gameUnit2],
+      fieldUnits: [fieldUnit1, fieldUnit2],
       logPrefix,
       units: [unit1, unit2],
-      expected: [gameUnit1.unit.toString(), gameUnit2.unit.toString()],
+      expected: [fieldUnit1.unit.toString(), fieldUnit2.unit.toString()],
       traceCalls: [
         [
           `${logPrefix} unit "${unit1.name}" has higher strength "${unit1.strength}" than previous "-1", setting highestStrength to it`,
@@ -214,11 +214,11 @@ describe('get-strongest-non-hero-unit-ids', () => {
       strength: 1,
       hero: true,
     })
-    const gameUnit = TestUtil.getDbGameUnit({
+    const fieldUnit = TestUtil.getDbFieldUnit({
       id: unit._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit],
+      fieldUnits: [fieldUnit],
       logPrefix,
       units: [unit],
       expected: [],
@@ -229,28 +229,28 @@ describe('get-strongest-non-hero-unit-ids', () => {
     const unit = TestUtil.getDbUnit({
       strength: 1,
     })
-    const gameUnit = TestUtil.getDbGameUnit({
+    const fieldUnit = TestUtil.getDbFieldUnit({
       id: unit._id,
     })
     testGetStrongestNonHeroUnits({
-      gameUnits: [gameUnit],
+      fieldUnits: [fieldUnit],
       logPrefix,
       units: [unit],
-      expected: [gameUnit.unit.toString()],
+      expected: [fieldUnit.unit.toString()],
       traceEnabled: true,
       traceCalls: [
         [
           `${logPrefix} unit "${unit.name}" has higher strength "${unit.strength}" than previous "-1", setting highestStrength to it`,
         ],
         [`${logPrefix} unit "${unit.name}" matches highest strength of "${unit.strength}", adding to strongestUnitIds`],
-        [`${logPrefix} strongestUnitIds: "${JSON.stringify([gameUnit.unit.toString()])}"`],
+        [`${logPrefix} strongestUnitIds: "${JSON.stringify([fieldUnit.unit.toString()])}"`],
       ],
     })
   })
 })
 
 function testGetStrongestNonHeroUnits({
-  gameUnits,
+  fieldUnits,
   logPrefix,
   units,
   expected,
@@ -258,7 +258,7 @@ function testGetStrongestNonHeroUnits({
   traceCalls = [],
   traceEnabled,
 }: {
-  gameUnits: GameUnitDbObject[]
+  fieldUnits: FieldUnitDbObject[]
   logPrefix: string
   units: UnitDbObject[]
   expected?: string[] | Error
@@ -277,7 +277,7 @@ function testGetStrongestNonHeroUnits({
   if (expected instanceof Error) {
     expect(() =>
       GetStrongestNonHeroUnitIds.getStrongestNonHeroUnitIds({
-        gameUnits,
+        fieldUnits,
         logPrefix,
         units,
       })
@@ -285,7 +285,7 @@ function testGetStrongestNonHeroUnits({
   } else {
     expect(
       GetStrongestNonHeroUnitIds.getStrongestNonHeroUnitIds({
-        gameUnits,
+        fieldUnits,
         logPrefix,
         units,
       })

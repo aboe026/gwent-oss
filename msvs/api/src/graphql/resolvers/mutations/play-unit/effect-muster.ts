@@ -9,13 +9,13 @@ import {
   ImpactDbObject,
   GameUnitOrigin,
   UnitDbObject,
-  GameUnitDbObject,
+  FieldUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent/graphql-schema'
 import GetEffectWithKey from './get-effect-with-key'
 import { ImpactsByUnitId } from '../../resolver-util'
 import { sortObjectArray } from '@gwent/utils'
 import UnitStore from '../../../../database/stores/unit-store'
-import { GameUnitType } from '@gwent/graphql-schema'
 
 /**
  * A class to Muster units to the battlefield.
@@ -210,6 +210,8 @@ export default class EffectMuster {
             unit: {
               ...unitToMuster,
               row: combat,
+              effectiveStrength: undefined,
+              effects: [],
               type: GameUnitType.Field,
             },
             user: player.user,
@@ -257,16 +259,18 @@ export default class EffectMuster {
         }
 
         const round = player.rounds[game.round - 1]
-        const gameUnit: GameUnitDbObject = {
+        const fieldUnit: FieldUnitDbObject = {
           ...muster,
           row: combat,
+          effectiveStrength: undefined,
+          effects: [],
         }
         if (combat === Combat.Close) {
-          round.close.units.push(gameUnit)
+          round.close.units.push(fieldUnit)
         } else if (combat === Combat.Ranged) {
-          round.ranged.units.push(gameUnit)
+          round.ranged.units.push(fieldUnit)
         } else {
-          round.siege.units.push(gameUnit)
+          round.siege.units.push(fieldUnit)
         }
       }
     }

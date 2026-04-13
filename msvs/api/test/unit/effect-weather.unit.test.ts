@@ -4,9 +4,9 @@ import {
   Combat,
   DeckUnitDbObject,
   EffectDbObject,
+  FieldUnitDbObject,
+  FieldUnitEffectDbObject,
   GameDbObject,
-  GameUnitDbObject,
-  GameUnitEffectDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
@@ -114,7 +114,7 @@ describe('effect-weather', () => {
       const newUnit = TestUtil.getDbUnit({
         effects: [weatherEffect._id],
       })
-      const existingWeathers = [TestUtil.getDbGameUnit({})]
+      const existingWeathers = [TestUtil.getDbWeatherUnit({})]
       const opponentId = new ObjectId()
       testWeatherBattlefield({
         logPrefix,
@@ -144,7 +144,7 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: existingWeathers[0],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
               user: userId,
             },
           ],
@@ -161,7 +161,7 @@ describe('effect-weather', () => {
       const newUnit = TestUtil.getDbUnit({
         effects: [weatherEffect._id],
       })
-      const existingWeathers = [TestUtil.getDbGameUnit({})]
+      const existingWeathers = [TestUtil.getDbWeatherUnit({})]
       const opponentId = new ObjectId()
       testWeatherBattlefield({
         logPrefix,
@@ -191,7 +191,7 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: existingWeathers[0],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
               user: opponentId,
             },
           ],
@@ -208,7 +208,7 @@ describe('effect-weather', () => {
       const newUnit = TestUtil.getDbUnit({
         effects: [weatherEffect._id],
       })
-      const existingWeathers = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+      const existingWeathers = [TestUtil.getDbWeatherUnit({}), TestUtil.getDbWeatherUnit({})]
       const opponentId = new ObjectId()
       testWeatherBattlefield({
         logPrefix,
@@ -242,11 +242,11 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: existingWeathers[0],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
               user: userId,
             },
             {
-              unit: existingWeathers[1],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
               user: opponentId,
             },
           ],
@@ -263,7 +263,7 @@ describe('effect-weather', () => {
       const newUnit = TestUtil.getDbUnit({
         effects: [weatherEffect._id],
       })
-      const existingWeathers = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+      const existingWeathers = [TestUtil.getDbWeatherUnit({}), TestUtil.getDbWeatherUnit({})]
       const opponentId = new ObjectId()
       testWeatherBattlefield({
         logPrefix,
@@ -293,11 +293,11 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: existingWeathers[0],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
               user: userId,
             },
             {
-              unit: existingWeathers[1],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
               user: userId,
             },
           ],
@@ -314,7 +314,7 @@ describe('effect-weather', () => {
       const newUnit = TestUtil.getDbUnit({
         effects: [weatherEffect._id],
       })
-      const existingWeathers = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+      const existingWeathers = [TestUtil.getDbWeatherUnit({}), TestUtil.getDbWeatherUnit({})]
       const opponentId = new ObjectId()
       testWeatherBattlefield({
         logPrefix,
@@ -344,11 +344,11 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: existingWeathers[0],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
               user: opponentId,
             },
             {
-              unit: existingWeathers[1],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
               user: opponentId,
             },
           ],
@@ -366,10 +366,10 @@ describe('effect-weather', () => {
         effects: [weatherEffect._id],
       })
       const existingWeathers = [
-        TestUtil.getDbGameUnit({}),
-        TestUtil.getDbGameUnit({}),
-        TestUtil.getDbGameUnit({}),
-        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbWeatherUnit({}),
+        TestUtil.getDbWeatherUnit({}),
+        TestUtil.getDbWeatherUnit({}),
+        TestUtil.getDbWeatherUnit({}),
       ]
       const opponentId = new ObjectId()
       testWeatherBattlefield({
@@ -404,19 +404,19 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: existingWeathers[0],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
               user: userId,
             },
             {
-              unit: existingWeathers[1],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
               user: userId,
             },
             {
-              unit: existingWeathers[2],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[2]),
               user: opponentId,
             },
             {
-              unit: existingWeathers[3],
+              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[3]),
               user: opponentId,
             },
           ],
@@ -437,7 +437,7 @@ describe('effect-weather', () => {
         strength: 2,
         hero: true,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -445,7 +445,7 @@ describe('effect-weather', () => {
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -468,14 +468,14 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 2,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       testWeatherScores({
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect: undefined,
@@ -497,7 +497,7 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 2,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -506,7 +506,7 @@ describe('effect-weather', () => {
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -541,7 +541,7 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 2,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -549,7 +549,7 @@ describe('effect-weather', () => {
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -584,7 +584,7 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 3,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -592,7 +592,7 @@ describe('effect-weather', () => {
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -613,7 +613,10 @@ describe('effect-weather', () => {
         expected: {
           [newDeckUnit.unit.toString()]: [
             {
-              unit: rowGameUnit,
+              unit: TestUtil.convertFieldDbUnitToTacoDbUnit({
+                ...rowFieldUnit,
+                effectiveStrength: 1,
+              }),
               user: currentPlayerId,
             },
           ],
@@ -640,7 +643,7 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 0,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -648,7 +651,7 @@ describe('effect-weather', () => {
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -674,7 +677,7 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 3,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -683,7 +686,7 @@ describe('effect-weather', () => {
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -724,7 +727,7 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 3,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -733,7 +736,7 @@ describe('effect-weather', () => {
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -774,7 +777,7 @@ describe('effect-weather', () => {
       const rowUnit = TestUtil.getDbUnit({
         strength: 3,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const weatherEffect = TestUtil.getDbEffect({})
@@ -786,7 +789,7 @@ describe('effect-weather', () => {
           }),
         },
       ]
-      const gameUnitEffect = {
+      const fieldUnitEffect: FieldUnitEffectDbObject = {
         operator: EFFECT_OPERATOR.Set,
         reason: {
           effect: weatherEffect._id,
@@ -795,11 +798,16 @@ describe('effect-weather', () => {
         },
         total: 1,
       }
+      const tacoUnit = TestUtil.convertFieldDbUnitToTacoDbUnit({
+        ...rowFieldUnit,
+        effects: [fieldUnitEffect],
+        effectiveStrength: 1,
+      })
       testWeatherScores({
         logPrefix,
         currentPlayerId,
         newDeckUnit,
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         userId: currentPlayerId,
         weatherEffect,
@@ -807,12 +815,12 @@ describe('effect-weather', () => {
         expected: {
           [newDeckUnit.unit.toString()]: [
             {
-              unit: rowGameUnit,
+              unit: tacoUnit,
               user: currentPlayerId,
             },
           ],
         },
-        newEffects: [gameUnitEffect],
+        newEffects: [fieldUnitEffect],
         debugCalls: [
           [`${logPrefix} weathering unit "${rowUnit._id}" by "${newDeckUnit.unit}" for an effectiveStrength of "1".`],
         ],
@@ -820,14 +828,10 @@ describe('effect-weather', () => {
         traceCalls: [
           [`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`],
           [`${logPrefix} weathersToApply: "${JSON.stringify(weathersToApply)}"`],
-          [`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`],
+          [`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`],
           [
             `${logPrefix} impact: "${JSON.stringify({
-              unit: {
-                ...rowGameUnit,
-                effects: [gameUnitEffect],
-                effectiveStrength: 1,
-              },
+              unit: tacoUnit,
               user: currentPlayerId,
             })}"`,
           ],
@@ -877,7 +881,7 @@ function testWeatherScores({
   weatherUnits,
   weatherEffect,
   newDeckUnit,
-  rowGameUnit,
+  rowFieldUnit,
   rowUnit,
   userId,
   currentPlayerId,
@@ -891,12 +895,12 @@ function testWeatherScores({
   weatherUnits: PlayerWeatherUnit[]
   weatherEffect: EffectDbObject | undefined
   newDeckUnit: DeckUnitDbObject
-  rowGameUnit: GameUnitDbObject
+  rowFieldUnit: FieldUnitDbObject
   rowUnit: UnitDbObject
   userId: ObjectId
   currentPlayerId: ObjectId | undefined
   expected: ImpactsByUnitId
-  newEffects?: GameUnitEffectDbObject[]
+  newEffects?: FieldUnitEffectDbObject[]
   traceEnabled?: boolean
   debugCalls?: string[][]
   traceCalls?: string[][]
@@ -914,7 +918,7 @@ function testWeatherScores({
       currentPlayerId,
       logPrefix,
       newDeckUnit,
-      rowGameUnit,
+      rowFieldUnit,
       rowUnit,
       userId,
       weatherEffect,
@@ -922,7 +926,7 @@ function testWeatherScores({
     })
   ).toEqual(expected)
 
-  expect(rowGameUnit.effects).toEqual(newEffects)
+  expect(rowFieldUnit.effects).toEqual(newEffects)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

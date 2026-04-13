@@ -3,8 +3,8 @@ import { getLogger } from 'log4js'
 import {
   Combat,
   DeckUnitDbObject,
+  FieldUnitDbObject,
   GameDbObject,
-  GameUnitDbObject,
   ImpactDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { GameUnitType } from '@gwent/graphql-schema'
@@ -58,8 +58,10 @@ export default class EffectSpy {
         EffectSpy.logger.debug(
           `${logPrefix} putting spy "${newDeckUnit.unit}" in "${combat}" row of opponent "${targetId}"`
         )
-        const gameUnit: GameUnitDbObject = {
+        const gameUnit: FieldUnitDbObject = {
           ...newDeckUnit,
+          effectiveStrength: undefined,
+          effects: [],
           row: combat,
         }
         if (combat === Combat.Close) {
@@ -93,7 +95,6 @@ export default class EffectSpy {
             unit: {
               ...undrawnToMoveToHand,
               type: GameUnitType.Deck,
-              row: combat,
             },
             user: self.user,
           })

@@ -236,10 +236,10 @@ type GamePlayerUnitCounts {
 }
 
 "A unit on the field of battle."
-type GameUnit @entity {
+type FieldUnit @entity {
   artStyle: Int! @column
   effectiveStrength: Int @column
-  effects: [GameUnitEffect!] @column(overrideType: "Array<GameUnitEffectDbObject>")
+  effects: [FieldUnitEffect!] @column(overrideType: "Array<FieldUnitEffectDbObject>")
   row: Combat! @column
   unit: Unit! @column(overrideType: "ObjectId")
 }
@@ -251,9 +251,9 @@ type WeatherUnit @entity {
 }
 
 "A Unit participating in a Game."
-union TacoUnit @union(discriminatorField: "type") = DeckUnit | GameUnit | WeatherUnit
+union TacoUnit @union(discriminatorField: "type") = DeckUnit | FieldUnit | WeatherUnit
 
-type GameUnitEffect @entity {
+type FieldUnitEffect @entity {
   operator: String! @column
   reason: EffectReason! @column(overrideType: "EffectReasonDbObject")
   total: Int! @column
@@ -314,7 +314,7 @@ type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
 
 type MoveUnitReason @entity {
   type: MoveReasonType! @column
-  unit: DeckUnit @column(overrideType: "DeckUnitDbObject")
+  unit: TacoUnit @column(overrideType: "TacoUnitDbObject")
 }
 
 type GameUnitSource @entity {
@@ -337,8 +337,8 @@ type PlayerRound @entity {
 
 type PlayerCombatRow @entity {
   score: Int! @column
-  units: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
-  modifier: GameUnit @column(overrideType: "GameUnitDbObject")
+  units: [FieldUnit!]! @column(overrideType: "Array<FieldUnitDbObject>")
+  modifier: FieldUnit @column(overrideType: "FieldUnitDbObject")
 }
 
 type Redraw @entity {

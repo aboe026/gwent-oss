@@ -1,11 +1,12 @@
 import { ObjectId } from 'mongodb'
 
 import {
+  Combat,
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
-  GameUnitDbObject,
-  GameUnitEffectDbObject,
+  FieldUnitDbObject,
+  FieldUnitEffectDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -166,7 +167,7 @@ describe('effect-bond', () => {
         currentPlayerId: userId,
         userId,
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit: TestUtil.getDbGameUnit({}),
+        rowFieldUnit: TestUtil.getDbFieldUnit({}),
         rowUnit: TestUtil.getDbUnit({}),
         unitIdsWithBondInRow: [],
         units: [],
@@ -186,7 +187,7 @@ describe('effect-bond', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit._id,
         }),
-        rowGameUnit: TestUtil.getDbGameUnit({
+        rowFieldUnit: TestUtil.getDbFieldUnit({
           id: unit._id,
         }),
         rowUnit: TestUtil.getDbUnit({
@@ -201,7 +202,7 @@ describe('effect-bond', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
@@ -213,7 +214,7 @@ describe('effect-bond', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
@@ -226,7 +227,7 @@ describe('effect-bond', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
@@ -239,15 +240,15 @@ describe('effect-bond', () => {
         currentPlayerId: userId,
         userId,
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
         unitIdsWithBondInRow: [unit1._id.toString(), unit2._id.toString()],
         units: [unit1, unit2],
         expected: {},
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 8,
           effects: [
             {
@@ -270,12 +271,30 @@ describe('effect-bond', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
       const bondEffect = TestUtil.getDbEffect({
         key: EffectKey.Bond,
+      })
+      const effects: FieldUnitEffectDbObject[] = [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit1._id,
+          },
+          total: 8,
+        },
+      ]
+      const tacoUnit = TestUtil.getDbTacoUnit({
+        id: fieldUnit.unit,
+        effectiveStrength: 8,
+        effects,
+        artStyle: fieldUnit.artStyle,
+        row: fieldUnit.row as Combat,
       })
       testApplyBonds({
         logPrefix,
@@ -285,7 +304,7 @@ describe('effect-bond', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
@@ -294,25 +313,15 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: gameUnit,
+              unit: tacoUnit,
               user: userId,
             },
           ],
         },
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 8,
-          effects: [
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit1._id,
-              },
-              total: 8,
-            },
-          ],
+          effects,
         },
         debugCalls: [
           [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
@@ -323,11 +332,29 @@ describe('effect-bond', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
       })
       const bondEffect = TestUtil.getDbEffect({
         key: EffectKey.Bond,
+      })
+      const effects: FieldUnitEffectDbObject[] = [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit1._id,
+          },
+          total: 0,
+        },
+      ]
+      const tacoUnit = TestUtil.getDbTacoUnit({
+        id: fieldUnit.unit,
+        effectiveStrength: 0,
+        effects,
+        artStyle: fieldUnit.artStyle,
+        row: fieldUnit.row as Combat,
       })
       testApplyBonds({
         logPrefix,
@@ -337,7 +364,7 @@ describe('effect-bond', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
@@ -346,25 +373,15 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: gameUnit,
+              unit: tacoUnit,
               user: userId,
             },
           ],
         },
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 0,
-          effects: [
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit1._id,
-              },
-              total: 0,
-            },
-          ],
+          effects,
         },
         debugCalls: [
           [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "0"`],
@@ -375,12 +392,30 @@ describe('effect-bond', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
       const bondEffect = TestUtil.getDbEffect({
         key: EffectKey.Bond,
+      })
+      const effects: FieldUnitEffectDbObject[] = [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit1._id,
+          },
+          total: 8,
+        },
+      ]
+      const tacoUnit = TestUtil.getDbTacoUnit({
+        id: fieldUnit.unit,
+        effectiveStrength: 8,
+        effects,
+        artStyle: fieldUnit.artStyle,
+        row: fieldUnit.row as Combat,
       })
       testApplyBonds({
         logPrefix,
@@ -389,7 +424,7 @@ describe('effect-bond', () => {
         userId,
         musteredUnitIds: [unit1._id.toString()],
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
@@ -398,25 +433,15 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: gameUnit,
+              unit: tacoUnit,
               user: userId,
             },
           ],
         },
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 8,
-          effects: [
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit1._id,
-              },
-              total: 8,
-            },
-          ],
+          effects,
         },
         debugCalls: [
           [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
@@ -427,12 +452,30 @@ describe('effect-bond', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
       const bondEffect = TestUtil.getDbEffect({
         key: EffectKey.Bond,
+      })
+      const effects: FieldUnitEffectDbObject[] = [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit1._id,
+          },
+          total: 8,
+        },
+      ]
+      const tacoUnit = TestUtil.getDbTacoUnit({
+        id: fieldUnit.unit,
+        effectiveStrength: 8,
+        effects,
+        artStyle: fieldUnit.artStyle,
+        row: fieldUnit.row as Combat,
       })
       testApplyBonds({
         logPrefix,
@@ -441,7 +484,7 @@ describe('effect-bond', () => {
         userId,
         transformedUnitIds: [unit1._id.toString()],
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
@@ -450,25 +493,15 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: gameUnit,
+              unit: tacoUnit,
               user: userId,
             },
           ],
         },
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 8,
-          effects: [
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit1._id,
-              },
-              total: 8,
-            },
-          ],
+          effects,
         },
         debugCalls: [
           [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
@@ -480,12 +513,39 @@ describe('effect-bond', () => {
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
       const unit3 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
       const bondEffect = TestUtil.getDbEffect({
         key: EffectKey.Bond,
+      })
+      const effects: FieldUnitEffectDbObject[] = [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit1._id,
+          },
+          total: 8,
+        },
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit3._id,
+          },
+          total: 16,
+        },
+      ]
+      const tacoUnit = TestUtil.getDbTacoUnit({
+        id: fieldUnit.unit,
+        effectiveStrength: 16,
+        effects,
+        artStyle: fieldUnit.artStyle,
+        row: fieldUnit.row as Combat,
       })
       testApplyBonds({
         logPrefix,
@@ -495,7 +555,7 @@ describe('effect-bond', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
@@ -504,34 +564,15 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: gameUnit,
+              unit: tacoUnit,
               user: userId,
             },
           ],
         },
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 16,
-          effects: [
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit1._id,
-              },
-              total: 8,
-            },
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit3._id,
-              },
-              total: 16,
-            },
-          ],
+          effects,
         },
         debugCalls: [
           [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
@@ -544,12 +585,39 @@ describe('effect-bond', () => {
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
       const unit3 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
       const bondEffect = TestUtil.getDbEffect({
         key: EffectKey.Bond,
+      })
+      const effects: FieldUnitEffectDbObject[] = [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit1._id,
+          },
+          total: 8,
+        },
+        {
+          operator: EFFECT_OPERATOR.Double,
+          reason: {
+            effect: bondEffect._id,
+            type: EffectReasonType.Unit,
+            unit: unit3._id,
+          },
+          total: 16,
+        },
+      ]
+      const tacoUnit = TestUtil.getDbTacoUnit({
+        id: fieldUnit.unit,
+        effectiveStrength: 16,
+        effects,
+        artStyle: fieldUnit.artStyle,
+        row: fieldUnit.row as Combat,
       })
       testApplyBonds({
         logPrefix,
@@ -559,7 +627,7 @@ describe('effect-bond', () => {
         musteredUnitIds: [unit1._id.toString()],
         transformedUnitIds: [unit3._id.toString()],
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: unit2._id,
         }),
@@ -568,40 +636,21 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: gameUnit,
+              unit: tacoUnit,
               user: userId,
             },
           ],
           [unit3._id.toString()]: [
             {
-              unit: gameUnit,
+              unit: tacoUnit,
               user: userId,
             },
           ],
         },
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 16,
-          effects: [
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit1._id,
-              },
-              total: 8,
-            },
-            {
-              operator: EFFECT_OPERATOR.Double,
-              reason: {
-                effect: bondEffect._id,
-                type: EffectReasonType.Unit,
-                unit: unit3._id,
-              },
-              total: 16,
-            },
-          ],
+          effects,
         },
         debugCalls: [
           [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
@@ -613,7 +662,7 @@ describe('effect-bond', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
-      const gameUnit = TestUtil.getDbGameUnit({
+      const fieldUnit = TestUtil.getDbFieldUnit({
         id: unit2._id,
         effectiveStrength: 4,
       })
@@ -623,7 +672,7 @@ describe('effect-bond', () => {
       const rowUnit = TestUtil.getDbUnit({
         id: unit2._id,
       })
-      const gameUnitEffect: GameUnitEffectDbObject = {
+      const fieldUnitEffect: FieldUnitEffectDbObject = {
         operator: EFFECT_OPERATOR.Double,
         reason: {
           effect: bondEffect._id,
@@ -633,11 +682,12 @@ describe('effect-bond', () => {
         total: 8,
       }
       const impact: ImpactDbObject = {
-        unit: {
-          ...gameUnit,
+        unit: TestUtil.getDbTacoUnit({
+          id: fieldUnit.unit,
           effectiveStrength: 8,
-          effects: [gameUnitEffect],
-        },
+          effects: [fieldUnitEffect],
+          artStyle: fieldUnit.artStyle,
+        }),
         user: userId,
       }
       testApplyBonds({
@@ -648,17 +698,17 @@ describe('effect-bond', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
-        rowGameUnit: gameUnit,
+        rowFieldUnit: fieldUnit,
         rowUnit,
         unitIdsWithBondInRow: [unit1._id.toString(), unit2._id.toString()],
         units: [unit1, unit2],
         expected: {
           [unit1._id.toString()]: [impact],
         },
-        updatedRowGameUnit: {
-          ...deepClone(gameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(fieldUnit),
           effectiveStrength: 8,
-          effects: [gameUnitEffect],
+          effects: [fieldUnitEffect],
         },
         debugCalls: [
           [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
@@ -666,7 +716,7 @@ describe('effect-bond', () => {
         traceCalls: [
           [`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`],
           [`${logPrefix} bondsToApply: "${JSON.stringify([unit1._id])}"`],
-          [`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`],
+          [`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`],
           [`${logPrefix} impact: "${JSON.stringify(impact)}"`],
         ],
         traceEnabled: true,
@@ -722,13 +772,13 @@ function testApplyBonds({
   newDeckUnit,
   musteredUnitIds = [],
   transformedUnitIds = [],
-  rowGameUnit,
+  rowFieldUnit,
   rowUnit,
   units,
   userId,
   currentPlayerId,
   expected,
-  updatedRowGameUnit,
+  updatedRowFieldUnit,
   debugCalls = [],
   traceCalls = [],
   traceEnabled,
@@ -739,13 +789,13 @@ function testApplyBonds({
   newDeckUnit: DeckUnitDbObject
   musteredUnitIds?: string[]
   transformedUnitIds?: string[]
-  rowGameUnit: GameUnitDbObject
+  rowFieldUnit: FieldUnitDbObject
   rowUnit: UnitDbObject
   units: UnitDbObject[]
   userId: ObjectId
   currentPlayerId: ObjectId | undefined
   expected: ImpactsByUnitId
-  updatedRowGameUnit?: GameUnitDbObject
+  updatedRowFieldUnit?: FieldUnitDbObject
   debugCalls?: any[][]
   traceCalls?: any[][]
   traceEnabled?: boolean
@@ -757,7 +807,7 @@ function testApplyBonds({
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
-  const ogRowGameUnit = deepClone(rowGameUnit)
+  const ogRowFieldUnit = deepClone(rowFieldUnit)
 
   expect(
     EffectBond.applyBonds({
@@ -767,14 +817,14 @@ function testApplyBonds({
       musteredUnitIds,
       transformedUnitIds,
       newDeckUnit,
-      rowGameUnit,
+      rowFieldUnit,
       rowUnit,
       unitIdsWithBondInRow,
       units,
       userId,
     })
   ).toEqual(expected)
-  expect(rowGameUnit).toEqual(updatedRowGameUnit || ogRowGameUnit)
+  expect(rowFieldUnit).toEqual(updatedRowFieldUnit || ogRowFieldUnit)
 
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)

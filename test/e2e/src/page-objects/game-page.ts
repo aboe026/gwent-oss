@@ -280,10 +280,12 @@ export default class GamePage {
         const isDotted = await E2eHelper.hasDottedBorder(card)
         actualNames.push(`${cardName}${isSelected ? ' selected' : ''}${isDotted ? ' dotted' : ''}`)
       }
+      let highlightedUnitFound = false
       const expectedNames = names.map((name) => {
         let expectedName = name
-        if (highlightedUnit) {
+        if (highlightedUnit && !highlightedUnitFound) {
           if (expectedName === highlightedUnit.unitName) {
+            highlightedUnitFound = true
             expectedName += ' selected'
             if (highlightedUnit.dotted) {
               expectedName += ' dotted'

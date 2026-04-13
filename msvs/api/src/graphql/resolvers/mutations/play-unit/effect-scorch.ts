@@ -6,19 +6,19 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
+  FieldUnitDbObject,
   GameDbObject,
   GamePlayerDbObject,
-  GameUnitDbObject,
   ImpactDbObject,
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent/graphql-schema'
 import GetEffectWithKey from './get-effect-with-key'
-import getGameUnits from './get-game-units'
+import GetFieldUnits from '../../util/get-field-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'
 import { ImpactsByUnitId } from '../../resolver-util'
-import { GameUnitType } from '@gwent/graphql-schema'
 
 /**
  * A class to modify the battlefield if a scorching unit is played.
@@ -82,16 +82,16 @@ export default class EffectScorch {
       const scorchedPlayers = newUnit.scorchScope
         ? game.players.filter((player) => player.user.toString() !== game.turn?.toString())
         : game.players
-      const gameUnits = getGameUnits({
+      const fieldUnits = GetFieldUnits.fromRounds({
         combat: newUnit.scorchScope,
         rounds: scorchedPlayers.map((player) => player.rounds[game.round - 1]).flat(),
       })
       if (EffectScorch.logger.isTraceEnabled()) {
-        EffectScorch.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)
+        EffectScorch.logger.trace(`${logPrefix} fieldUnits: "${JSON.stringify(fieldUnits)}"`)
       }
 
       const strongestUnitIds = GetStrongestNonHeroUnitIds.getStrongestNonHeroUnitIds({
-        gameUnits,
+        fieldUnits: fieldUnits,
         logPrefix,
         units: battlefieldUnits,
       })
@@ -206,7 +206,7 @@ export default class EffectScorch {
     scorchingUnit: UnitDbObject
     strongestUnitIdsOnBattlefield: string[]
   }): ImpactDbObject[] {
-    const unitsScorched: GameUnitDbObject[] = []
+    const unitsScorched: FieldUnitDbObject[] = []
     const playerRound = player.rounds[round - 1]
     const rows = EffectScorch.getRowsToScorch({
       logPrefix,
@@ -220,7 +220,7 @@ export default class EffectScorch {
           `${logPrefix} scorchingUnit "${scorchingUnit.name}" has scorchScope of "${scorchingUnit.scorchScope}" so getting strongest units in just that row to scorch`
         )
         unitIdsToScorch = GetStrongestNonHeroUnitIds.getStrongestNonHeroUnitIds({
-          gameUnits: roundRow.units,
+          fieldUnits: roundRow.units,
           logPrefix,
           units: battlefieldUnits,
         })
@@ -239,7 +239,7 @@ export default class EffectScorch {
     if (unitsScorched.length > 0) {
       EffectScorch.logger.debug(
         `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify(
-          unitsScorched.map((gameUnit) => gameUnit.unit)
+          unitsScorched.map((fieldUnit) => fieldUnit.unit)
         )}"`
       )
       player.deck.discard.push(...unitsScorched)
@@ -355,12 +355,12 @@ export default class EffectScorch {
   }
 
   /**
-   * Remove the given units from a players row, returning those GameUnits removed.
+   * Remove the given units from a players row, returning those FieldUnits removed.
    *
    * @param config The configuration used to remove units from a player row.
    * @param config.row The player row to remove units from.
    * @param config.unitIdsToScorch The list of unit IDs to remove from the player row.
-   * @returns A list of all GameUnits removed from the player row.
+   * @returns A list of all FieldUnits removed from the player row.
    */
   private static scorchUnitsInRow({
     row,
@@ -368,15 +368,15 @@ export default class EffectScorch {
   }: {
     row: PlayerCombatRowDbObject
     unitIdsToScorch: string[]
-  }): GameUnitDbObject[] {
-    const unitsScorched: GameUnitDbObject[] = []
+  }): FieldUnitDbObject[] {
+    const unitsScorched: FieldUnitDbObject[] = []
 
     for (let i = 0; i < row.units.length; i++) {
-      const gameUnit = row.units[i]
-      if (unitIdsToScorch.includes(gameUnit.unit.toString())) {
+      const fieldUnit = row.units[i]
+      if (unitIdsToScorch.includes(fieldUnit.unit.toString())) {
         row.units.splice(i, 1)
         i = i - 1
-        unitsScorched.push(gameUnit)
+        unitsScorched.push(fieldUnit)
       }
     }
 

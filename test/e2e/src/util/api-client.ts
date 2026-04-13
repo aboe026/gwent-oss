@@ -126,10 +126,10 @@ export default class ApiClient {
     let unit: Unit | undefined = undefined
     let occurrence = 0
     for (let i = 0; i < units.length && !unit; i++) {
-      const gameUnit = units[i]
-      if (gameUnit.unit.name === name) {
+      const fieldUnit = units[i]
+      if (fieldUnit.unit.name === name) {
         if (occurrence + 1 === instance) {
-          unit = gameUnit.unit
+          unit = fieldUnit.unit
         } else {
           occurrence++
         }

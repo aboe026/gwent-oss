@@ -6,9 +6,9 @@ import createGwentClient, {
   DeckUnit,
   EffectKey,
   FactionKey,
+  FieldUnit,
   GameDeck,
   GameStatus,
-  GameUnit,
   GwentClient,
   User,
 } from '@gwent/node-client'
@@ -309,13 +309,13 @@ async function playRound({
       let modifiersInHand = 0
       const playableHand: DeckUnit[] = []
 
-      const playerBattlefieldUnits: GameUnit[] = []
+      const playerBattlefieldUnits: FieldUnit[] = []
       for (const row of [round?.close, round?.ranged, round?.siege]) {
         if (row?.units) {
           playerBattlefieldUnits.push(...row.units)
         }
       }
-      const decoyableGameUnits: GameUnit[] = playerBattlefieldUnits.filter(
+      const decoyableFieldUnits: FieldUnit[] = playerBattlefieldUnits.filter(
         (battlefieldUnit) => !battlefieldUnit.unit.hero && !battlefieldUnit.unit.special
       )
 
@@ -332,7 +332,10 @@ async function playRound({
         }
 
         // decoys
-        if (deckUnit.unit.effects?.some((effect) => effect.key === EffectKey.Decoy) && decoyableGameUnits.length <= 0) {
+        if (
+          deckUnit.unit.effects?.some((effect) => effect.key === EffectKey.Decoy) &&
+          decoyableFieldUnits.length <= 0
+        ) {
           playable = false
         }
 
@@ -355,7 +358,7 @@ async function playRound({
           items: playableHand,
         })
         let combat: Combat | undefined = undefined
-        let target: GameUnit | undefined = undefined
+        let target: FieldUnit | undefined = undefined
         if (unit.unit.modifier) {
           const combatIndex = getRandomNumber({
             min: 0,
@@ -369,7 +372,7 @@ async function playRound({
         }
         if (unit.unit.effects?.some((effect) => effect.key === EffectKey.Decoy)) {
           target = getRandomItem({
-            items: decoyableGameUnits,
+            items: decoyableFieldUnits,
           })
         }
         await log(

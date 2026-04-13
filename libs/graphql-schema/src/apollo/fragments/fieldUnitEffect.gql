@@ -1,4 +1,4 @@
-fragment GameUnitEffect on GameUnitEffect {
+fragment FieldUnitEffect on FieldUnitEffect {
   operator
   total
   reason {

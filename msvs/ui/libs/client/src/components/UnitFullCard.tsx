@@ -5,9 +5,9 @@ import {
   DeckUnitFragment,
   EffectKey,
   FactionKey,
+  FieldUnitEffectFragmentDoc,
+  FieldUnitFragment,
   FragmentType,
-  GameUnitEffectFragmentDoc,
-  GameUnitFragment,
   UnitEffectFragmentDoc,
   UnitFragment,
   UnitFragmentDoc,
@@ -297,8 +297,8 @@ function UnitEffect({
 /**
  * The Effects altering a game units base strength.
  */
-function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<typeof GameUnitEffectFragmentDoc> }) {
-  const effect = useFragment(GameUnitEffectFragmentDoc, effectFragment)
+function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<typeof FieldUnitEffectFragmentDoc> }) {
+  const effect = useFragment(FieldUnitEffectFragmentDoc, effectFragment)
   let reason = ''
   if (effect.reason.__typename === 'EffectFromUnit') {
     reason = `${effect.reason.effect.name} from ${effect.reason.unit.name}`
@@ -320,15 +320,15 @@ function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<typeo
 
 interface UnitFullCardProps {
   effectiveStrength?: number | null
-  effects?: FragmentType<typeof GameUnitEffectFragmentDoc>[] | null
-  fullUnit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined
+  effects?: FragmentType<typeof FieldUnitEffectFragmentDoc>[] | null
+  fullUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined
   hasNext: boolean
   hasPrevious: boolean
-  onArtDecrement?: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
-  onArtIncrement?: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
-  onClose: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
-  onNext: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
-  onPrevious: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
-  onSelect: (unit: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment | undefined) => void
+  onArtDecrement?: (unit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined) => void
+  onArtIncrement?: (unit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined) => void
+  onClose: (unit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined) => void
+  onNext: (unit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined) => void
+  onPrevious: (unit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined) => void
+  onSelect: (unit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined) => void
   userName?: string
 }

@@ -4,10 +4,10 @@ import { CheckAuth, retryCheckingAuth } from '../../util/error-util'
 import {
   Combat,
   EffectKey,
+  FieldUnitFragmentDoc,
   FragmentType,
   GameFragment,
   GamePlayerFragment,
-  GameUnitFragmentDoc,
   PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
   UnitEffectFragmentDoc,
@@ -116,7 +116,7 @@ export default function GameCombatRow({
     sortProperties: [['effectiveStrength', 'unit.strength'], 'unit.name', 'unit.id'],
   })
 
-  const modifier = useFragment(GameUnitFragmentDoc, playerRow.modifier)
+  const modifier = useFragment(FieldUnitFragmentDoc, playerRow.modifier)
   let modifierTitle = modifier ? useFragment(UnitFragmentDoc, modifier.unit).name : `${titledCombat} combat modifier`
   let modifierClass = ''
   const modifierStyle: CSSProperties = {}
@@ -182,7 +182,7 @@ export default function GameCombatRow({
               cursor={invalidModifier ? 'not-allowed' : undefined}
               fullUnit={fullUnit}
               fullUnitFragment={fullUnitFragment}
-              gameUnitFragment={playerRow.modifier}
+              fieldUnitFragment={playerRow.modifier}
               index={0}
               player={player}
               scrollHistoryIntoView={scrollHistoryIntoView}
@@ -254,12 +254,12 @@ export default function GameCombatRow({
             }
           }}
         >
-          {sortedUnits.map((gameUnitFragment, index) => (
+          {sortedUnits.map((fieldUnitFragment, index) => (
             <GameRowUnit
               combat={combat}
               fullUnit={fullUnit}
               fullUnitFragment={fullUnitFragment}
-              gameUnitFragment={gameUnitFragment}
+              fieldUnitFragment={fieldUnitFragment}
               cardSelected={cardSelected}
               index={index}
               player={player}
@@ -293,7 +293,7 @@ export default function GameCombatRow({
 function GameRowUnit({
   fullUnit,
   fullUnitFragment,
-  gameUnitFragment,
+  fieldUnitFragment,
   combat,
   cardSelected,
   player,
@@ -322,9 +322,9 @@ function GameRowUnit({
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  gameUnitFragment: FragmentType<typeof GameUnitFragmentDoc>
+  fieldUnitFragment: FragmentType<typeof FieldUnitFragmentDoc>
   index: number
-  sortedUnits: FragmentType<typeof GameUnitFragmentDoc>[]
+  sortedUnits: FragmentType<typeof FieldUnitFragmentDoc>[]
   style?: CSSProperties
   title?: string
   cursor?: string
@@ -333,8 +333,8 @@ function GameRowUnit({
   checkAuth?: CheckAuth
   gameId?: string
 }) {
-  const gameUnit = useFragment(GameUnitFragmentDoc, gameUnitFragment)
-  const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
+  const fieldUnit = useFragment(FieldUnitFragmentDoc, fieldUnitFragment)
+  const unit = useFragment(UnitFragmentDoc, fieldUnit.unit)
   const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const selectedAsFullCard =
     fullUnitFragment && fullUnit && fullUnit.id === unit.id && fullUnitFragment.playerName === player.user.name
@@ -361,7 +361,7 @@ function GameRowUnit({
           const newCardSelected: UnitForPlayer | undefined = selected
             ? undefined
             : {
-                unitFragment: gameUnit,
+                unitFragment: fieldUnit,
                 playerName: player.user.name,
               }
           setCardSelected(newCardSelected)
@@ -373,21 +373,21 @@ function GameRowUnit({
     >
       <UnitGameCard
         deckUnit={{
-          artStyle: gameUnit.artStyle,
-          unit: gameUnit.unit,
+          artStyle: fieldUnit.artStyle,
+          unit: fieldUnit.unit,
         }}
         title={highlightedForDecoy ? `Select to decoy ${unit.name} back into hand` : title}
         cursor={cursor}
-        effectiveStrength={gameUnit.effectiveStrength}
+        effectiveStrength={fieldUnit.effectiveStrength}
         selected={selectedAsFullCard || selected || highlightedForDecoy}
         dotted={!isTurn && !selected}
         onFullscreen={() => {
           setFullUnits({
             currentIndex: index,
-            units: sortedUnits.map((gameUnit) => {
+            units: sortedUnits.map((fieldUnit) => {
               return {
                 playerName: player.user.name,
-                unitFragment: useFragment(GameUnitFragmentDoc, gameUnit),
+                unitFragment: useFragment(FieldUnitFragmentDoc, fieldUnit),
               }
             }),
           })
@@ -395,7 +395,7 @@ function GameRowUnit({
             selected
               ? undefined
               : {
-                  unitFragment: gameUnit,
+                  unitFragment: fieldUnit,
                   playerName: player.user.name,
                 }
           )

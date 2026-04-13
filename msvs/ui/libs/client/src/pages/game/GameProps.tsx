@@ -12,7 +12,6 @@ import {
   GameDeckQuery,
   GameFragment,
   GameQuery,
-  GameUnitFragment,
   InputMaybe,
   MoveFragment,
   PlayPassMutation,
@@ -23,6 +22,7 @@ import {
   SetOrderMutation,
   ReadyMutation,
   WeatherUnitFragment,
+  FieldUnitFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
@@ -146,7 +146,7 @@ export interface PlayPassProps {
 }
 
 export interface UnitForPlayer {
-  unitFragment: DeckUnitFragment | GameUnitFragment | WeatherUnitFragment
+  unitFragment: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
   playerName: string | undefined
 }
 

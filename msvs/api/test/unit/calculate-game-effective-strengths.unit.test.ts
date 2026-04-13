@@ -32,7 +32,12 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('returns single morale impact', () => {
-      const impact = TestUtil.getDbImpact({})
+      const unitId = new ObjectId()
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -41,7 +46,7 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             morales: {
-              [impact.unit.unit.toString()]: [impact],
+              [unitId.toString()]: [impact],
             },
           },
           empty,
@@ -50,13 +55,18 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           morales: {
-            [impact.unit.unit.toString()]: [impact],
+            [unitId.toString()]: [impact],
           },
         },
       })
     })
     it('returns single bond impact', () => {
-      const impact = TestUtil.getDbImpact({})
+      const unitId = new ObjectId()
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -65,7 +75,7 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             bonds: {
-              [impact.unit.unit.toString()]: [impact],
+              [unitId.toString()]: [impact],
             },
           },
           empty,
@@ -74,13 +84,18 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           bonds: {
-            [impact.unit.unit.toString()]: [impact],
+            [unitId.toString()]: [impact],
           },
         },
       })
     })
     it('returns single horn impact', () => {
-      const impact = TestUtil.getDbImpact({})
+      const unitId = new ObjectId()
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -89,7 +104,7 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             horns: {
-              [impact.unit.unit.toString()]: [impact],
+              [unitId.toString()]: [impact],
             },
           },
           empty,
@@ -98,13 +113,18 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           horns: {
-            [impact.unit.unit.toString()]: [impact],
+            [unitId.toString()]: [impact],
           },
         },
       })
     })
     it('returns single weather impact', () => {
-      const impact = TestUtil.getDbImpact({})
+      const unitId = new ObjectId()
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -113,7 +133,7 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             weathers: {
-              [impact.unit.unit.toString()]: [impact],
+              [unitId.toString()]: [impact],
             },
           },
           empty,
@@ -122,16 +142,36 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           weathers: {
-            [impact.unit.unit.toString()]: [impact],
+            [unitId.toString()]: [impact],
           },
         },
       })
     })
     it('returns single of each impact', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
-      const impact3 = TestUtil.getDbImpact({})
-      const impact4 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const unitId3 = new ObjectId()
+      const unitId4 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
+      const impact3 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId3,
+        }),
+      })
+      const impact4 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId4,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -139,48 +179,58 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             bonds: {
-              [impact1.unit.unit.toString()]: [impact1],
+              [unitId1.toString()]: [impact1],
             },
           },
           {
             ...empty,
             horns: {
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId2.toString()]: [impact2],
             },
           },
           {
             ...empty,
             morales: {
-              [impact3.unit.unit.toString()]: [impact3],
+              [unitId3.toString()]: [impact3],
             },
           },
           {
             ...empty,
             weathers: {
-              [impact4.unit.unit.toString()]: [impact4],
+              [unitId4.toString()]: [impact4],
             },
           },
         ],
         expected: {
           ...empty,
           bonds: {
-            [impact1.unit.unit.toString()]: [impact1],
+            [unitId1.toString()]: [impact1],
           },
           horns: {
-            [impact2.unit.unit.toString()]: [impact2],
+            [unitId2.toString()]: [impact2],
           },
           morales: {
-            [impact3.unit.unit.toString()]: [impact3],
+            [unitId3.toString()]: [impact3],
           },
           weathers: {
-            [impact4.unit.unit.toString()]: [impact4],
+            [unitId4.toString()]: [impact4],
           },
         },
       })
     })
     it('returns multiple morale impacts from single row result', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -189,8 +239,8 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             morales: {
-              [impact1.unit.unit.toString()]: [impact1],
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId1.toString()]: [impact1],
+              [unitId2.toString()]: [impact2],
             },
           },
           empty,
@@ -199,15 +249,25 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           morales: {
-            [impact1.unit.unit.toString()]: [impact1],
-            [impact2.unit.unit.toString()]: [impact2],
+            [unitId1.toString()]: [impact1],
+            [unitId2.toString()]: [impact2],
           },
         },
       })
     })
     it('returns multiple bond impacts from single row result', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -216,8 +276,8 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             bonds: {
-              [impact1.unit.unit.toString()]: [impact1],
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId1.toString()]: [impact1],
+              [unitId2.toString()]: [impact2],
             },
           },
           empty,
@@ -226,16 +286,26 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           bonds: {
-            [impact1.unit.unit.toString()]: [impact1],
-            [impact2.unit.unit.toString()]: [impact2],
+            [unitId1.toString()]: [impact1],
+            [unitId2.toString()]: [impact2],
           },
           morales: {},
         },
       })
     })
     it('returns multiple horn impacts from single row result', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -244,8 +314,8 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             horns: {
-              [impact1.unit.unit.toString()]: [impact1],
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId1.toString()]: [impact1],
+              [unitId2.toString()]: [impact2],
             },
           },
           empty,
@@ -254,16 +324,26 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           horns: {
-            [impact1.unit.unit.toString()]: [impact1],
-            [impact2.unit.unit.toString()]: [impact2],
+            [unitId1.toString()]: [impact1],
+            [unitId2.toString()]: [impact2],
           },
           morales: {},
         },
       })
     })
     it('returns multiple weather impacts from single row result', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -272,8 +352,8 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             weathers: {
-              [impact1.unit.unit.toString()]: [impact1],
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId1.toString()]: [impact1],
+              [unitId2.toString()]: [impact2],
             },
           },
           empty,
@@ -282,18 +362,38 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           weathers: {
-            [impact1.unit.unit.toString()]: [impact1],
-            [impact2.unit.unit.toString()]: [impact2],
+            [unitId1.toString()]: [impact1],
+            [unitId2.toString()]: [impact2],
           },
           morales: {},
         },
       })
     })
     it('returns multiple of each impacts from single row result', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
-      const impact3 = TestUtil.getDbImpact({})
-      const impact4 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const unitId3 = new ObjectId()
+      const unitId4 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
+      const impact3 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId3,
+        }),
+      })
+      const impact4 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId4,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -302,12 +402,12 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             bonds: {
-              [impact1.unit.unit.toString()]: [impact1],
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId1.toString()]: [impact1],
+              [unitId2.toString()]: [impact2],
             },
             morales: {
-              [impact3.unit.unit.toString()]: [impact3],
-              [impact4.unit.unit.toString()]: [impact4],
+              [unitId3.toString()]: [impact3],
+              [unitId4.toString()]: [impact4],
             },
           },
           empty,
@@ -316,25 +416,65 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           bonds: {
-            [impact1.unit.unit.toString()]: [impact1],
-            [impact2.unit.unit.toString()]: [impact2],
+            [unitId1.toString()]: [impact1],
+            [unitId2.toString()]: [impact2],
           },
           morales: {
-            [impact3.unit.unit.toString()]: [impact3],
-            [impact4.unit.unit.toString()]: [impact4],
+            [unitId3.toString()]: [impact3],
+            [unitId4.toString()]: [impact4],
           },
         },
       })
     })
     it('returns multiple of each impacts from single row result', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
-      const impact3 = TestUtil.getDbImpact({})
-      const impact4 = TestUtil.getDbImpact({})
-      const impact5 = TestUtil.getDbImpact({})
-      const impact6 = TestUtil.getDbImpact({})
-      const impact7 = TestUtil.getDbImpact({})
-      const impact8 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const unitId3 = new ObjectId()
+      const unitId4 = new ObjectId()
+      const unitId5 = new ObjectId()
+      const unitId6 = new ObjectId()
+      const unitId7 = new ObjectId()
+      const unitId8 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
+      const impact3 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId3,
+        }),
+      })
+      const impact4 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId4,
+        }),
+      })
+      const impact5 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId5,
+        }),
+      })
+      const impact6 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId6,
+        }),
+      })
+      const impact7 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId7,
+        }),
+      })
+      const impact8 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId8,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -343,20 +483,20 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             bonds: {
-              [impact1.unit.unit.toString()]: [impact1],
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId1.toString()]: [impact1],
+              [unitId2.toString()]: [impact2],
             },
             morales: {
-              [impact3.unit.unit.toString()]: [impact3],
-              [impact4.unit.unit.toString()]: [impact4],
+              [unitId3.toString()]: [impact3],
+              [unitId4.toString()]: [impact4],
             },
             horns: {
-              [impact5.unit.unit.toString()]: [impact5],
-              [impact6.unit.unit.toString()]: [impact6],
+              [unitId5.toString()]: [impact5],
+              [unitId6.toString()]: [impact6],
             },
             weathers: {
-              [impact7.unit.unit.toString()]: [impact7],
-              [impact8.unit.unit.toString()]: [impact8],
+              [unitId7.toString()]: [impact7],
+              [unitId8.toString()]: [impact8],
             },
           },
           empty,
@@ -365,29 +505,49 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           bonds: {
-            [impact1.unit.unit.toString()]: [impact1],
-            [impact2.unit.unit.toString()]: [impact2],
+            [unitId1.toString()]: [impact1],
+            [unitId2.toString()]: [impact2],
           },
           morales: {
-            [impact3.unit.unit.toString()]: [impact3],
-            [impact4.unit.unit.toString()]: [impact4],
+            [unitId3.toString()]: [impact3],
+            [unitId4.toString()]: [impact4],
           },
           horns: {
-            [impact5.unit.unit.toString()]: [impact5],
-            [impact6.unit.unit.toString()]: [impact6],
+            [unitId5.toString()]: [impact5],
+            [unitId6.toString()]: [impact6],
           },
           weathers: {
-            [impact7.unit.unit.toString()]: [impact7],
-            [impact8.unit.unit.toString()]: [impact8],
+            [unitId7.toString()]: [impact7],
+            [unitId8.toString()]: [impact8],
           },
         },
       })
     })
     it('returns multiple impacts from multiple row results', () => {
-      const impact1 = TestUtil.getDbImpact({})
-      const impact2 = TestUtil.getDbImpact({})
-      const impact3 = TestUtil.getDbImpact({})
-      const impact4 = TestUtil.getDbImpact({})
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      const unitId3 = new ObjectId()
+      const unitId4 = new ObjectId()
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId1,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId2,
+        }),
+      })
+      const impact3 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId3,
+        }),
+      })
+      const impact4 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbTacoUnit({
+          id: unitId4,
+        }),
+      })
       testCalculateEffectiveStrengths({
         rowResults: [
           empty,
@@ -396,19 +556,19 @@ describe('calculate-game-effective-strengths', () => {
           {
             ...empty,
             morales: {
-              [impact1.unit.unit.toString()]: [impact1],
+              [unitId1.toString()]: [impact1],
             },
             bonds: {
-              [impact2.unit.unit.toString()]: [impact2],
+              [unitId2.toString()]: [impact2],
             },
           },
           {
             ...empty,
             morales: {
-              [impact3.unit.unit.toString()]: [impact3],
+              [unitId3.toString()]: [impact3],
             },
             bonds: {
-              [impact4.unit.unit.toString()]: [impact4],
+              [unitId4.toString()]: [impact4],
             },
           },
           empty,
@@ -416,12 +576,12 @@ describe('calculate-game-effective-strengths', () => {
         expected: {
           ...empty,
           bonds: {
-            [impact2.unit.unit.toString()]: [impact2],
-            [impact4.unit.unit.toString()]: [impact4],
+            [unitId2.toString()]: [impact2],
+            [unitId4.toString()]: [impact4],
           },
           morales: {
-            [impact1.unit.unit.toString()]: [impact1],
-            [impact3.unit.unit.toString()]: [impact3],
+            [unitId1.toString()]: [impact1],
+            [unitId3.toString()]: [impact3],
           },
         },
       })
@@ -430,7 +590,7 @@ describe('calculate-game-effective-strengths', () => {
   describe('calculateEffectiveStrengthsForRow', () => {
     it('throws error if matching unit not found', () => {
       const logPrefix = 'log-prefix'
-      const rowUnit = TestUtil.getDbGameUnit({})
+      const rowUnit = TestUtil.getDbFieldUnit({})
       const message = `Could not find Unit with ID "${rowUnit.unit}"`
       testCalculateEffectiveStrengthsForRow({
         row: {
@@ -470,7 +630,7 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('does not set effectiveStrength for unit with undefined strength', () => {
-      const rowUnit = TestUtil.getDbGameUnit({})
+      const rowUnit = TestUtil.getDbFieldUnit({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
@@ -497,7 +657,7 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('does not set effectiveStrength for unit with null strength', () => {
-      const rowUnit = TestUtil.getDbGameUnit({})
+      const rowUnit = TestUtil.getDbFieldUnit({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
@@ -525,15 +685,15 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('sets effectiveStrength for unit with strength zero', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 0,
       })
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         expected: {
@@ -546,7 +706,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 0,
               effects: [],
             },
@@ -555,15 +715,15 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('sets effectiveStrength for unit with strength non zero', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         expected: {
@@ -576,7 +736,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -585,21 +745,21 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('sets effectiveStrength for row with modifier', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 1,
       })
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1],
-          modifier: rowGameUnit2,
+          units: [rowFieldUnit1],
+          modifier: rowFieldUnit2,
         },
         units: [rowUnit1, rowUnit2],
         expected: {
@@ -612,38 +772,38 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
           ],
-          modifier: rowGameUnit2,
+          modifier: rowFieldUnit2,
         },
       })
     })
     it('adds single impact from morale for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyMoralesResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
         ],
         expected: {
           bonds: {},
           horns: {},
           morales: {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
           weathers: {},
         },
@@ -651,7 +811,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -660,26 +820,26 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from bond for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyBondsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
           horns: {},
           morales: {},
@@ -689,7 +849,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -698,26 +858,26 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from horn for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyHornsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
         ],
         expected: {
           horns: {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
           bonds: {},
           morales: {},
@@ -727,7 +887,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -736,21 +896,21 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from weather for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyWeatherResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
         ],
         expected: {
@@ -758,14 +918,14 @@ describe('calculate-game-effective-strengths', () => {
           bonds: {},
           morales: {},
           weathers: {
-            [rowGameUnit.unit.toString()]: [impact],
+            [rowFieldUnit.unit.toString()]: [impact],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -774,9 +934,9 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from every for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -786,48 +946,48 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyBondsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact1],
+            [rowFieldUnit.unit.toString()]: [impact1],
           },
         ],
         applyMoralesResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact2],
+            [rowFieldUnit.unit.toString()]: [impact2],
           },
         ],
         applyHornsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact3],
+            [rowFieldUnit.unit.toString()]: [impact3],
           },
         ],
         applyWeatherResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact4],
+            [rowFieldUnit.unit.toString()]: [impact4],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit.unit.toString()]: [impact1],
+            [rowFieldUnit.unit.toString()]: [impact1],
           },
           morales: {
-            [rowGameUnit.unit.toString()]: [impact2],
+            [rowFieldUnit.unit.toString()]: [impact2],
           },
           horns: {
-            [rowGameUnit.unit.toString()]: [impact3],
+            [rowFieldUnit.unit.toString()]: [impact3],
           },
           weathers: {
-            [rowGameUnit.unit.toString()]: [impact4],
+            [rowFieldUnit.unit.toString()]: [impact4],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -836,9 +996,9 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from morale for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -846,19 +1006,19 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyMoralesResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
         ],
         expected: {
           bonds: {},
           horns: {},
           morales: {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
           weathers: {},
         },
@@ -866,7 +1026,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -875,9 +1035,9 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from bond for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -885,17 +1045,17 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyBondsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
           horns: {},
           morales: {},
@@ -905,7 +1065,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -914,9 +1074,9 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from horn for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -924,17 +1084,17 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyHornsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
         ],
         expected: {
           horns: {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
           bonds: {},
           morales: {},
@@ -944,7 +1104,7 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -953,9 +1113,9 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from weather for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -963,12 +1123,12 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyWeatherResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
         ],
         expected: {
@@ -976,14 +1136,14 @@ describe('calculate-game-effective-strengths', () => {
           bonds: {},
           morales: {},
           weathers: {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -992,9 +1152,9 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from every for single unit', () => {
-      const rowGameUnit = TestUtil.getDbGameUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
       const rowUnit = TestUtil.getDbUnit({
-        id: rowGameUnit.unit,
+        id: rowFieldUnit.unit,
         strength: 1,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1008,48 +1168,48 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit],
+          units: [rowFieldUnit],
         },
         units: [rowUnit],
         applyBondsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
         ],
         applyMoralesResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit.unit.toString()]: [impact3, impact4],
           },
         ],
         applyHornsResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact5, impact6],
+            [rowFieldUnit.unit.toString()]: [impact5, impact6],
           },
         ],
         applyWeatherResponses: [
           {
-            [rowGameUnit.unit.toString()]: [impact7, impact8],
+            [rowFieldUnit.unit.toString()]: [impact7, impact8],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit.unit.toString()]: [impact1, impact2],
           },
           morales: {
-            [rowGameUnit.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit.unit.toString()]: [impact3, impact4],
           },
           horns: {
-            [rowGameUnit.unit.toString()]: [impact5, impact6],
+            [rowFieldUnit.unit.toString()]: [impact5, impact6],
           },
           weathers: {
-            [rowGameUnit.unit.toString()]: [impact7, impact8],
+            [rowFieldUnit.unit.toString()]: [impact7, impact8],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit),
+              ...deepClone(rowFieldUnit),
               effectiveStrength: 1,
               effects: [],
             },
@@ -1058,34 +1218,34 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from morale for one of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyMoralesResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
         ],
         expected: {
           bonds: {},
           horns: {},
           morales: {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
           weathers: {},
         },
@@ -1093,12 +1253,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1107,32 +1267,32 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from bond for one of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyBondsResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
           horns: {},
           morales: {},
@@ -1142,12 +1302,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1156,32 +1316,32 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from horn for one of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyHornsResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
         ],
         expected: {
           horns: {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
           bonds: {},
           morales: {},
@@ -1191,12 +1351,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1205,27 +1365,27 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from weather for one of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact = TestUtil.getDbImpact({})
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyWeatherResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
         ],
         expected: {
@@ -1233,19 +1393,19 @@ describe('calculate-game-effective-strengths', () => {
           bonds: {},
           morales: {},
           weathers: {
-            [rowGameUnit2.unit.toString()]: [impact],
+            [rowFieldUnit2.unit.toString()]: [impact],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1254,14 +1414,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from every for one of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1271,57 +1431,57 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyBondsResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact1],
+            [rowFieldUnit2.unit.toString()]: [impact1],
           },
         ],
         applyMoralesResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
         ],
         applyHornsResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact3],
+            [rowFieldUnit2.unit.toString()]: [impact3],
           },
         ],
         applyWeatherResponses: [
           {},
           {
-            [rowGameUnit2.unit.toString()]: [impact4],
+            [rowFieldUnit2.unit.toString()]: [impact4],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit2.unit.toString()]: [impact1],
+            [rowFieldUnit2.unit.toString()]: [impact1],
           },
           morales: {
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
           horns: {
-            [rowGameUnit2.unit.toString()]: [impact3],
+            [rowFieldUnit2.unit.toString()]: [impact3],
           },
           weathers: {
-            [rowGameUnit2.unit.toString()]: [impact4],
+            [rowFieldUnit2.unit.toString()]: [impact4],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1330,14 +1490,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from morale for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1345,23 +1505,23 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyMoralesResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit1.unit.toString()]: [impact1],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
         ],
         expected: {
           bonds: {},
           horns: {},
           morales: {
-            [rowGameUnit1.unit.toString()]: [impact1],
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
           weathers: {},
         },
@@ -1369,12 +1529,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1383,14 +1543,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from bond for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1398,21 +1558,21 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyBondsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit1.unit.toString()]: [impact1],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit1.unit.toString()]: [impact1],
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
           horns: {},
           morales: {},
@@ -1422,12 +1582,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1436,14 +1596,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from horn for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1451,21 +1611,21 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyHornsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit1.unit.toString()]: [impact1],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
         ],
         expected: {
           horns: {
-            [rowGameUnit1.unit.toString()]: [impact1],
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
           bonds: {},
           morales: {},
@@ -1475,12 +1635,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1489,14 +1649,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from weather for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1504,15 +1664,15 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyWeatherResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit1.unit.toString()]: [impact1],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
         ],
         expected: {
@@ -1520,20 +1680,20 @@ describe('calculate-game-effective-strengths', () => {
           bonds: {},
           morales: {},
           weathers: {
-            [rowGameUnit1.unit.toString()]: [impact1],
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1542,14 +1702,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds single impact from every for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1563,69 +1723,69 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyBondsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit1.unit.toString()]: [impact1],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
         ],
         applyMoralesResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact3],
+            [rowFieldUnit1.unit.toString()]: [impact3],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact4],
+            [rowFieldUnit2.unit.toString()]: [impact4],
           },
         ],
         applyHornsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact5],
+            [rowFieldUnit1.unit.toString()]: [impact5],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact6],
+            [rowFieldUnit2.unit.toString()]: [impact6],
           },
         ],
         applyWeatherResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact7],
+            [rowFieldUnit1.unit.toString()]: [impact7],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact8],
+            [rowFieldUnit2.unit.toString()]: [impact8],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit1.unit.toString()]: [impact1],
-            [rowGameUnit2.unit.toString()]: [impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1],
+            [rowFieldUnit2.unit.toString()]: [impact2],
           },
           morales: {
-            [rowGameUnit1.unit.toString()]: [impact3],
-            [rowGameUnit2.unit.toString()]: [impact4],
+            [rowFieldUnit1.unit.toString()]: [impact3],
+            [rowFieldUnit2.unit.toString()]: [impact4],
           },
           horns: {
-            [rowGameUnit1.unit.toString()]: [impact5],
-            [rowGameUnit2.unit.toString()]: [impact6],
+            [rowFieldUnit1.unit.toString()]: [impact5],
+            [rowFieldUnit2.unit.toString()]: [impact6],
           },
           weathers: {
-            [rowGameUnit1.unit.toString()]: [impact7],
-            [rowGameUnit2.unit.toString()]: [impact8],
+            [rowFieldUnit1.unit.toString()]: [impact7],
+            [rowFieldUnit2.unit.toString()]: [impact8],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1634,14 +1794,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from morale for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1651,23 +1811,23 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyMoralesResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
         ],
         expected: {
           bonds: {},
           horns: {},
           morales: {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
           weathers: {},
         },
@@ -1675,12 +1835,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1689,14 +1849,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from bond for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1706,21 +1866,21 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyBondsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
           horns: {},
           morales: {},
@@ -1730,12 +1890,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1744,14 +1904,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from horn for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1761,21 +1921,21 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyHornsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
         ],
         expected: {
           horns: {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
           bonds: {},
           morales: {},
@@ -1785,12 +1945,12 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1799,14 +1959,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from weather for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1816,15 +1976,15 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyWeatherResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
         ],
         expected: {
@@ -1832,20 +1992,20 @@ describe('calculate-game-effective-strengths', () => {
           bonds: {},
           morales: {},
           weathers: {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -1854,14 +2014,14 @@ describe('calculate-game-effective-strengths', () => {
       })
     })
     it('adds multiple impacts from every effect for each of many', () => {
-      const rowGameUnit1 = TestUtil.getDbGameUnit({})
-      const rowGameUnit2 = TestUtil.getDbGameUnit({})
+      const rowFieldUnit1 = TestUtil.getDbFieldUnit({})
+      const rowFieldUnit2 = TestUtil.getDbFieldUnit({})
       const rowUnit1 = TestUtil.getDbUnit({
-        id: rowGameUnit1.unit,
+        id: rowFieldUnit1.unit,
         strength: 1,
       })
       const rowUnit2 = TestUtil.getDbUnit({
-        id: rowGameUnit2.unit,
+        id: rowFieldUnit2.unit,
         strength: 2,
       })
       const impact1 = TestUtil.getDbImpact({})
@@ -1883,69 +2043,69 @@ describe('calculate-game-effective-strengths', () => {
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
-          units: [rowGameUnit1, rowGameUnit2],
+          units: [rowFieldUnit1, rowFieldUnit2],
         },
         units: [rowUnit1, rowUnit2],
         applyBondsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
         ],
         applyMoralesResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact5, impact6],
+            [rowFieldUnit1.unit.toString()]: [impact5, impact6],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact7, impact8],
+            [rowFieldUnit2.unit.toString()]: [impact7, impact8],
           },
         ],
         applyHornsResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact9, impact10],
+            [rowFieldUnit1.unit.toString()]: [impact9, impact10],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact11, impact12],
+            [rowFieldUnit2.unit.toString()]: [impact11, impact12],
           },
         ],
         applyWeatherResponses: [
           {
-            [rowGameUnit1.unit.toString()]: [impact13, impact14],
+            [rowFieldUnit1.unit.toString()]: [impact13, impact14],
           },
           {
-            [rowGameUnit2.unit.toString()]: [impact15, impact16],
+            [rowFieldUnit2.unit.toString()]: [impact15, impact16],
           },
         ],
         expected: {
           bonds: {
-            [rowGameUnit1.unit.toString()]: [impact1, impact2],
-            [rowGameUnit2.unit.toString()]: [impact3, impact4],
+            [rowFieldUnit1.unit.toString()]: [impact1, impact2],
+            [rowFieldUnit2.unit.toString()]: [impact3, impact4],
           },
           morales: {
-            [rowGameUnit1.unit.toString()]: [impact5, impact6],
-            [rowGameUnit2.unit.toString()]: [impact7, impact8],
+            [rowFieldUnit1.unit.toString()]: [impact5, impact6],
+            [rowFieldUnit2.unit.toString()]: [impact7, impact8],
           },
           horns: {
-            [rowGameUnit1.unit.toString()]: [impact9, impact10],
-            [rowGameUnit2.unit.toString()]: [impact11, impact12],
+            [rowFieldUnit1.unit.toString()]: [impact9, impact10],
+            [rowFieldUnit2.unit.toString()]: [impact11, impact12],
           },
           weathers: {
-            [rowGameUnit1.unit.toString()]: [impact13, impact14],
-            [rowGameUnit2.unit.toString()]: [impact15, impact16],
+            [rowFieldUnit1.unit.toString()]: [impact13, impact14],
+            [rowFieldUnit2.unit.toString()]: [impact15, impact16],
           },
         },
         modifiedRow: {
           score: 0,
           units: [
             {
-              ...deepClone(rowGameUnit1),
+              ...deepClone(rowFieldUnit1),
               effectiveStrength: 1,
               effects: [],
             },
             {
-              ...deepClone(rowGameUnit2),
+              ...deepClone(rowFieldUnit2),
               effectiveStrength: 2,
               effects: [],
             },
@@ -2011,13 +2171,13 @@ function testCalculateEffectiveStrengths({
       TestUtil.getDbPlayerRound({}),
       TestUtil.getDbPlayerRound({
         close: TestUtil.getDbPlayerCombatRow({
-          units: [TestUtil.getDbGameUnit({})],
+          units: [TestUtil.getDbFieldUnit({})],
         }),
         ranged: TestUtil.getDbPlayerCombatRow({
-          units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+          units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
         }),
         siege: TestUtil.getDbPlayerCombatRow({
-          units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+          units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
         }),
       }),
     ],
@@ -2032,29 +2192,29 @@ function testCalculateEffectiveStrengths({
           TestUtil.getDbPlayerRound({
             close: TestUtil.getDbPlayerCombatRow({
               units: [
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
               ],
             }),
             ranged: TestUtil.getDbPlayerCombatRow({
               units: [
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
               ],
             }),
             siege: TestUtil.getDbPlayerCombatRow({
               units: [
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
-                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
+                TestUtil.getDbFieldUnit({}),
               ],
             }),
           }),
@@ -2364,13 +2524,13 @@ function testCalculateEffectiveStrengthsForRow({
         })
   )
   expect(row).toEqual(modifiedRow)
-  const rowUnits = [...row.units, row.modifier].filter((rowGameUnit) => !!rowGameUnit)
+  const rowUnits = [...row.units, row.modifier].filter((rowFieldUnit) => !!rowFieldUnit)
   expect(applyMoralesSpy.mock.calls).toEqual(
     applyMoralesCalls ||
-      rowUnits.map((rowGameUnit, index) => {
+      rowUnits.map((rowFieldUnit, index) => {
         return [
           {
-            rowGameUnit,
+            rowFieldUnit,
             rowUnit: units[index],
             logPrefix,
             moraleEffect,
@@ -2386,10 +2546,10 @@ function testCalculateEffectiveStrengthsForRow({
   )
   expect(applyBondsSpy.mock.calls).toEqual(
     applyBondsCalls ||
-      rowUnits.map((rowGameUnit, index) => {
+      rowUnits.map((rowFieldUnit, index) => {
         return [
           {
-            rowGameUnit,
+            rowFieldUnit,
             rowUnit: units[index],
             logPrefix,
             bondEffect,
@@ -2406,9 +2566,9 @@ function testCalculateEffectiveStrengthsForRow({
   )
   expect(applyWeathersSpy.mock.calls).toEqual(
     applyWeatherCalls ||
-      rowUnits.map((rowGameUnit, index) => [
+      rowUnits.map((rowFieldUnit, index) => [
         {
-          rowGameUnit,
+          rowFieldUnit,
           rowUnit: units[index],
           logPrefix,
           newDeckUnit,

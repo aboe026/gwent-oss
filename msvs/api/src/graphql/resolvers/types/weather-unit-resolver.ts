@@ -37,7 +37,7 @@ export default class WeatherUnitResolver {
    *
    * @param config The configuration used to convert the array.
    * @param config.weatherUnits The array of WeatherUnit database objects to convert.
-   * @param config.units The resolved Units for the GameUnits. If not provided, will be retrieved.
+   * @param config.units The resolved Units for the WeatherUnits. If not provided, will be retrieved.
    * @returns The resolved WeatherUnit array matching the GraphQL schema definition.
    */
   static async fromArray({

@@ -240,6 +240,9 @@ describe('effect-spy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName}" in hand`)
       }
+      const fieldUnit1 = TestUtil.getFieldUnit({
+        unit: unitSelf1.unit,
+      })
       gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
       gameDeck.hand.push(gameDeck.undrawn[0])
       const spied1 = gameDeck.undrawn.splice(0, 1)
@@ -258,11 +261,7 @@ describe('effect-spy', () => {
           expectizePlayerRound({
             close: {
               score: 5,
-              units: [
-                TestUtil.getGameUnit({
-                  unit: unitSelf1.unit,
-                }),
-              ],
+              units: [fieldUnit1],
             },
             score: 5,
           }),
@@ -301,20 +300,14 @@ describe('effect-spy', () => {
                     close: TestUtil.getPlayerCombatRow({}),
                     moves: [
                       expectizeMoveUnit({
-                        unit: unitSelf1,
+                        unit: fieldUnit1,
                         impacts: [
                           TestUtil.getImpact({
-                            unit: TestUtil.getGameUnit({
-                              unit: spied1[0].unit,
-                              effectiveStrength: null,
-                            }),
+                            unit: spied1[0],
                             user: self,
                           }),
                           TestUtil.getImpact({
-                            unit: TestUtil.getGameUnit({
-                              unit: spied2[0].unit,
-                              effectiveStrength: null,
-                            }),
+                            unit: spied2[0],
                             user: self,
                           }),
                         ],
@@ -361,6 +354,9 @@ describe('effect-spy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName}" in hand`)
       }
+      const fieldUnit1 = TestUtil.getFieldUnit({
+        unit: unitSelf1.unit,
+      })
       gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
       gameDeck.hand.push(gameDeck.undrawn[0])
       const spied1 = gameDeck.undrawn.splice(0, 1)
@@ -379,11 +375,7 @@ describe('effect-spy', () => {
           expectizePlayerRound({
             close: {
               score: 5,
-              units: [
-                TestUtil.getGameUnit({
-                  unit: unitSelf1.unit,
-                }),
-              ],
+              units: [fieldUnit1],
             },
             score: 5,
           }),
@@ -423,20 +415,14 @@ describe('effect-spy', () => {
                     close: TestUtil.getPlayerCombatRow({}),
                     moves: [
                       expectizeMoveUnit({
-                        unit: unitSelf1,
+                        unit: fieldUnit1,
                         impacts: [
                           TestUtil.getImpact({
-                            unit: TestUtil.getGameUnit({
-                              unit: spied1[0].unit,
-                              effectiveStrength: null,
-                            }),
+                            unit: spied1[0],
                             user: self,
                           }),
                           TestUtil.getImpact({
-                            unit: TestUtil.getGameUnit({
-                              unit: spied2[0].unit,
-                              effectiveStrength: null,
-                            }),
+                            unit: spied2[0],
                             user: self,
                           }),
                         ],

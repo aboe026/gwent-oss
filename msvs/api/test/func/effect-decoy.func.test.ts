@@ -103,12 +103,11 @@ describe('effect-decoy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName1}" in hand`)
       }
-      const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
 
       await playUnit({
         gameId: game.id,
         unitId: unitSelf1.unit.id,
-        combat: combatUnit1,
+        combat: Combat.Close,
         userId: self.id,
       })
       gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
@@ -166,12 +165,11 @@ describe('effect-decoy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName1}" in hand`)
       }
-      const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
 
       await playUnit({
         gameId: game.id,
         unitId: unitSelf1.unit.id,
-        combat: combatUnit1,
+        combat: Combat.Close,
         userId: self.id,
       })
       gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
@@ -420,7 +418,7 @@ describe('effect-decoy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName1}" in hand`)
       }
-      const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+      const combatUnit1 = Combat.Close
 
       await playUnit({
         gameId: game.id,
@@ -484,7 +482,7 @@ describe('effect-decoy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName1}" in hand`)
       }
-      const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+      const combatUnit1 = Combat.Close
 
       await playUnit({
         gameId: game.id,
@@ -548,7 +546,7 @@ describe('effect-decoy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName1}" in hand`)
       }
-      const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+      const combatUnit1 = Combat.Close
 
       await playUnit({
         gameId: game.id,
@@ -626,12 +624,16 @@ describe('effect-decoy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName1}" in hand`)
       }
-      const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+      const fieldUnitSelf1 = TestUtil.getFieldUnit({
+        unit: unitSelf1.unit,
+        artStyle: unitSelf1.artStyle,
+        row: Combat.Close,
+      })
 
       await playUnit({
         gameId: game.id,
         unitId: unitSelf1.unit.id,
-        combat: combatUnit1,
+        combat: fieldUnitSelf1.row,
         userId: self.id,
       })
       gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
@@ -649,6 +651,11 @@ describe('effect-decoy', () => {
       if (!effectDecoy) {
         throw Error(`Could not find "${EffectKey.Decoy}" effect on "${unitName2}" unit`)
       }
+      const fieldUnitSelf2 = TestUtil.getFieldUnit({
+        unit: unitSelf2.unit,
+        artStyle: unitSelf2.artStyle,
+        row: Combat.Close,
+      })
 
       gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
       gameDeckSelf.hand.push(unitSelf1)
@@ -661,24 +668,17 @@ describe('effect-decoy', () => {
           expectizePlayerRound({
             close: {
               score: 0,
-              units: [
-                TestUtil.getGameUnit({
-                  unit: unitSelf2.unit,
-                }),
-              ],
+              units: [fieldUnitSelf2],
             },
             moves: [
               expectizeMoveUnit({
-                unit: unitSelf1,
+                unit: fieldUnitSelf1,
               }),
               expectizeMoveUnit({
-                unit: unitSelf2,
+                unit: fieldUnitSelf2,
                 impacts: [
                   TestUtil.getImpact({
-                    unit: TestUtil.getGameUnit({
-                      unit: unitSelf1.unit,
-                      effectiveStrength: 5,
-                    }),
+                    unit: fieldUnitSelf1,
                     user: self,
                   }),
                 ],
@@ -696,7 +696,7 @@ describe('effect-decoy', () => {
               playUnit(
                 game: "${game.id}"
                 unit: "${unitSelf2.unit.id}"
-                combat: ${Combat.Close}
+                combat: ${fieldUnitSelf2.row}
                 target: "${unitSelf1.unit.id}"
               ) {
                 ${getGameFragment()}
@@ -758,12 +758,16 @@ describe('effect-decoy', () => {
       if (!unitSelf1) {
         throw Error(`Could not find unit "${unitName1}" in hand`)
       }
-      const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+      const fieldUnitSelf1 = TestUtil.getFieldUnit({
+        unit: unitSelf1.unit,
+        artStyle: unitSelf1.artStyle,
+        row: Combat.Close,
+      })
 
       await playUnit({
         gameId: game.id,
         unitId: unitSelf1.unit.id,
-        combat: combatUnit1,
+        combat: fieldUnitSelf1.row,
         userId: self.id,
       })
       gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
@@ -781,6 +785,11 @@ describe('effect-decoy', () => {
       if (!effectDecoy) {
         throw Error(`Could not find "${EffectKey.Decoy}" effect on "${unitName2}" unit`)
       }
+      const fieldUnitSelf2 = TestUtil.getFieldUnit({
+        unit: unitSelf2.unit,
+        artStyle: unitSelf2.artStyle,
+        row: Combat.Close,
+      })
 
       gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
       gameDeckSelf.hand.push(unitSelf1)
@@ -793,24 +802,17 @@ describe('effect-decoy', () => {
           expectizePlayerRound({
             close: {
               score: 0,
-              units: [
-                TestUtil.getGameUnit({
-                  unit: unitSelf2.unit,
-                }),
-              ],
+              units: [fieldUnitSelf2],
             },
             moves: [
               expectizeMoveUnit({
-                unit: unitSelf1,
+                unit: fieldUnitSelf1,
               }),
               expectizeMoveUnit({
-                unit: unitSelf2,
+                unit: fieldUnitSelf2,
                 impacts: [
                   TestUtil.getImpact({
-                    unit: TestUtil.getGameUnit({
-                      unit: unitSelf1.unit,
-                      effectiveStrength: 5,
-                    }),
+                    unit: fieldUnitSelf1,
                     user: self,
                   }),
                 ],

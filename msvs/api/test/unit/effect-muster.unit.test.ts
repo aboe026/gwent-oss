@@ -17,6 +17,7 @@ import MusterBattlefield, {
 } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
+import { GameUnitType } from '@gwent/graphql-schema'
 
 describe('effect-muster', () => {
   describe('musterBattlefield', () => {
@@ -43,18 +44,20 @@ describe('effect-muster', () => {
         effects: [musterEffect._id],
       })
       const musterableUnit = TestUtil.getDbUnit({})
+      const combat = Combat.Close
       const message = `Cannot muster unit "${musterableUnit._id}" without combat`
       await testMusterBattlefield({
         logPrefix,
         game,
         battlefieldUnits: [newUnit],
         newDeckUnit,
+        combat,
         musterEffect,
         musterableUnits: [musterableUnit],
         getMusterImpactResponses: [
           {
             impact: {
-              unit: TestUtil.getDbGameUnit({
+              unit: TestUtil.getDbTacoUnit({
                 id: musterableUnit._id,
               }),
               user: new ObjectId(),
@@ -76,6 +79,7 @@ describe('effect-muster', () => {
           [
             {
               game,
+              combat,
               logPrefix,
               potentialMuster: musterableUnit,
             },
@@ -96,14 +100,16 @@ describe('effect-muster', () => {
         combats: [Combat.Close],
       })
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbGameUnit({}),
+        unit: TestUtil.getDbTacoUnit({}),
       })
+      const combat = Combat.Close
       const message = `Could not find unit "${impact.unit?.unit}" from muster impact`
       await testMusterBattlefield({
         logPrefix,
         game,
         battlefieldUnits: [newUnit],
         newDeckUnit,
+        combat,
         musterEffect,
         musterableUnits: [musterableUnit],
         getMusterImpactResponses: [
@@ -126,6 +132,7 @@ describe('effect-muster', () => {
           [
             {
               game,
+              combat,
               logPrefix,
               potentialMuster: musterableUnit,
             },
@@ -148,12 +155,14 @@ describe('effect-muster', () => {
       const impact = {
         user: new ObjectId(),
       }
+      const combat = Combat.Close
       const message = `Impact for muster does not have unit: "${JSON.stringify(impact)}"`
       await testMusterBattlefield({
         logPrefix,
         game,
         battlefieldUnits: [newUnit],
         newDeckUnit,
+        combat,
         musterEffect,
         musterableUnits: [musterableUnit],
         getMusterImpactResponses: [
@@ -176,6 +185,7 @@ describe('effect-muster', () => {
           [
             {
               game,
+              combat,
               logPrefix,
               potentialMuster: musterableUnit,
             },
@@ -242,6 +252,34 @@ describe('effect-muster', () => {
         },
       })
     })
+    it('returns empty values if no combat specified', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const musterEffect = TestUtil.getDbEffect({})
+      const newUnit = TestUtil.getDbUnit({
+        id: newDeckUnit.unit,
+        effects: [musterEffect._id],
+      })
+      const musterableUnit = TestUtil.getDbUnit({})
+      await testMusterBattlefield({
+        logPrefix,
+        game,
+        battlefieldUnits: [newUnit],
+        newDeckUnit,
+        musterEffect,
+        musterableUnits: [musterableUnit],
+        getMusterImpactResponses: [
+          {
+            impact: undefined,
+            origin: undefined,
+          },
+        ],
+        expected: {
+          impacts: {},
+          musteredUnits: [],
+          musteredOrigins: {},
+        },
+      })
+    })
     describe('close', () => {
       const combat = Combat.Close
       it('returns empty values if getMusterImpact returns empty values', async () => {
@@ -259,6 +297,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -285,6 +324,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -304,7 +344,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit._id,
           }),
         })
@@ -313,6 +353,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -343,6 +384,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -373,7 +415,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit._id,
           }),
         })
@@ -382,6 +424,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -412,6 +455,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -441,7 +485,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit1._id,
           }),
           source: {
@@ -452,7 +496,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit2._id,
           }),
           source: {
@@ -464,6 +508,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit1, musterableUnit2],
           getMusterImpactResponses: [
@@ -499,6 +544,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit1,
               },
@@ -506,6 +552,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit2,
               },
@@ -550,6 +597,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -576,6 +624,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -595,7 +644,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit._id,
           }),
         })
@@ -604,6 +653,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -634,6 +684,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -664,7 +715,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit._id,
           }),
         })
@@ -673,6 +724,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -703,6 +755,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -732,7 +785,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit1._id,
           }),
           source: {
@@ -743,7 +796,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit2._id,
           }),
           source: {
@@ -755,6 +808,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit1, musterableUnit2],
           getMusterImpactResponses: [
@@ -790,6 +844,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit1,
               },
@@ -797,6 +852,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit2,
               },
@@ -841,6 +897,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -867,6 +924,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -886,7 +944,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit._id,
           }),
         })
@@ -895,6 +953,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -925,6 +984,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -955,7 +1015,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit._id,
           }),
         })
@@ -964,6 +1024,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit],
           getMusterImpactResponses: [
@@ -994,6 +1055,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit,
               },
@@ -1023,7 +1085,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit1._id,
           }),
           source: {
@@ -1034,7 +1096,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbGameUnit({
+          unit: TestUtil.getDbTacoUnit({
             id: musterableUnit2._id,
           }),
           source: {
@@ -1046,6 +1108,7 @@ describe('effect-muster', () => {
           game,
           battlefieldUnits: [newUnit],
           newDeckUnit,
+          combat,
           musterEffect,
           musterableUnits: [musterableUnit1, musterableUnit2],
           getMusterImpactResponses: [
@@ -1081,6 +1144,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit1,
               },
@@ -1088,6 +1152,7 @@ describe('effect-muster', () => {
             [
               {
                 game,
+                combat,
                 logPrefix,
                 potentialMuster: musterableUnit2,
               },
@@ -1125,11 +1190,13 @@ describe('effect-muster', () => {
       const musterableUnit = TestUtil.getDbUnit({
         combats: [Combat.Close],
       })
+      const combat = Combat.Close
       await testMusterBattlefield({
         logPrefix,
         game,
         battlefieldUnits: [newUnit],
         newDeckUnit,
+        combat,
         musterEffect,
         musterableUnits: [musterableUnit],
         getMusterImpactResponses: [
@@ -1156,6 +1223,7 @@ describe('effect-muster', () => {
           [
             {
               game,
+              combat,
               logPrefix,
               potentialMuster: musterableUnit,
             },
@@ -1174,6 +1242,7 @@ describe('effect-muster', () => {
   })
   describe('getMusterImpact', () => {
     const logPrefix = 'log-prefix'
+    const combat = Combat.Close
     it('throws error if potential muster found in both hand and undrawn', () => {
       const potentialMuster = TestUtil.getDbUnit({})
       const player = TestUtil.getDbGamePlayer({
@@ -1196,6 +1265,7 @@ describe('effect-muster', () => {
           players: [player],
           turn: player.user,
         }),
+        combat,
         potentialMuster,
         logPrefix,
         expected: Error(`${message}.`),
@@ -1212,6 +1282,7 @@ describe('effect-muster', () => {
           players: [player],
           turn: player.user,
         }),
+        combat,
         potentialMuster,
         logPrefix,
         expected: {
@@ -1240,11 +1311,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Undrawn,
@@ -1272,11 +1349,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Hand,
@@ -1307,11 +1390,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Undrawn,
@@ -1339,11 +1428,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Hand,
@@ -1374,11 +1469,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Undrawn,
@@ -1406,11 +1507,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Hand,
@@ -1443,11 +1550,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Undrawn,
@@ -1475,11 +1588,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Hand,
@@ -1510,11 +1629,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Undrawn,
@@ -1542,11 +1667,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Hand,
@@ -1577,11 +1708,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Undrawn,
@@ -1609,11 +1746,17 @@ describe('effect-muster', () => {
               round,
               turn: player.user,
             }),
+            combat,
             potentialMuster,
             logPrefix,
             expected: {
               impact: {
-                unit: deckUnit,
+                unit: TestUtil.getDbTacoUnit({
+                  id: deckUnit.unit,
+                  artStyle: deckUnit.artStyle,
+                  row: combat,
+                  type: GameUnitType.Field,
+                }),
                 user: player.user,
                 source: {
                   origin: GameUnitOrigin.Hand,
@@ -1643,11 +1786,17 @@ describe('effect-muster', () => {
           round: 1,
           turn: player.user,
         }),
+        combat,
         potentialMuster,
         logPrefix,
         expected: {
           impact: {
-            unit: deckUnit,
+            unit: TestUtil.getDbTacoUnit({
+              id: deckUnit.unit,
+              artStyle: deckUnit.artStyle,
+              row: combat,
+              type: GameUnitType.Field,
+            }),
             user: player.user,
             source: {
               origin: GameUnitOrigin.Undrawn,
@@ -1703,7 +1852,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[0],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -1748,7 +1903,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[0],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -1796,7 +1957,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[0],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -1841,7 +2008,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[0],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -1889,7 +2062,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[0],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -1934,7 +2113,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[0],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -1986,7 +2171,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[1],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2032,7 +2223,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[1],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2081,7 +2278,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[1],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2127,7 +2330,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[1],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2176,7 +2385,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[1],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2222,7 +2437,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[1],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2275,7 +2496,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[2],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2322,7 +2549,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[2],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2372,7 +2605,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[2],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2419,7 +2658,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[2],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2469,7 +2714,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[2],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2516,7 +2767,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[0].rounds[2],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2570,7 +2827,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[0],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2615,7 +2878,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[0],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2663,7 +2932,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[0],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2708,7 +2983,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[0],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2756,7 +3037,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[0],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2801,7 +3088,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[0],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2853,7 +3146,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[1],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2899,7 +3198,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[1],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2948,7 +3253,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[1],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -2994,7 +3305,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[1],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3043,7 +3360,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[1],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3089,7 +3412,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[1],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3142,7 +3471,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[2],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3189,7 +3524,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[2],
                         close: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3239,7 +3580,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[2],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3286,7 +3633,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[2],
                         ranged: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3336,7 +3689,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[2],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3383,7 +3742,13 @@ describe('effect-muster', () => {
                       {
                         ...ogGame.players[1].rounds[2],
                         siege: TestUtil.getDbPlayerCombatRow({
-                          units: [muster],
+                          units: [
+                            TestUtil.getDbFieldUnit({
+                              artStyle: muster.artStyle,
+                              id: muster.unit,
+                              row: combat,
+                            }),
+                          ],
                         }),
                       },
                     ],
@@ -3403,6 +3768,7 @@ async function testMusterBattlefield({
   logPrefix,
   game,
   newDeckUnit,
+  combat,
   musterEffect,
   musterableUnits = [],
   getMusterImpactResponses = [],
@@ -3420,6 +3786,7 @@ async function testMusterBattlefield({
   logPrefix: string
   game: GameDbObject
   newDeckUnit: DeckUnitDbObject
+  combat?: Combat
   musterEffect?: EffectDbObject
   musterableUnits?: UnitDbObject[]
   getMusterImpactResponses?: MusterForPlayer[]
@@ -3455,6 +3822,7 @@ async function testMusterBattlefield({
 
   const promise = MusterBattlefield.musterBattlefield({
     battlefieldUnits,
+    combat,
     effects,
     game,
     logPrefix,
@@ -3489,6 +3857,7 @@ async function testMusterBattlefield({
 
 function testgetMusterImpact({
   game,
+  combat,
   logPrefix,
   potentialMuster,
   expected,
@@ -3498,6 +3867,7 @@ function testgetMusterImpact({
   traceEnabled,
 }: {
   game: GameDbObject
+  combat: Combat
   logPrefix: string
   potentialMuster: UnitDbObject
   expected: MusterForPlayer | Error
@@ -3520,6 +3890,7 @@ function testgetMusterImpact({
     expect(() =>
       MusterBattlefield['getMusterImpact']({
         game,
+        combat,
         logPrefix,
         potentialMuster,
       })
@@ -3528,6 +3899,7 @@ function testgetMusterImpact({
     expect(
       MusterBattlefield['getMusterImpact']({
         game,
+        combat,
         logPrefix,
         potentialMuster,
       })

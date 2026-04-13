@@ -206,7 +206,7 @@ describe('effect-decoy', () => {
       })
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: TestUtil.getDbTacoUnit({}),
         user: player.user,
       }
       testDecoyFromBattlefield({
@@ -255,7 +255,7 @@ describe('effect-decoy', () => {
       })
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: TestUtil.getDbTacoUnit({}),
         user: player.user,
       }
       testDecoyFromBattlefield({
@@ -304,7 +304,7 @@ describe('effect-decoy', () => {
       })
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbGameUnit({}),
+        unit: TestUtil.getDbTacoUnit({}),
         user: player.user,
       }
       testDecoyFromBattlefield({
@@ -354,7 +354,7 @@ describe('effect-decoy', () => {
     })
     it('returns impact if target in row', () => {
       const userId = new ObjectId()
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       testDecoyFromRow({
         player: TestUtil.getDbGamePlayer({
           user: userId,
@@ -365,7 +365,7 @@ describe('effect-decoy', () => {
         },
         targetId: target.unit.toString(),
         expected: {
-          unit: target,
+          unit: TestUtil.convertFieldDbUnitToTacoDbUnit(target),
           user: userId,
         },
       })

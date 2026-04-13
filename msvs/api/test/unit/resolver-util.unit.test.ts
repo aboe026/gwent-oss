@@ -2,13 +2,14 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
+  FieldUnitDbObject,
   GameDbObject,
   GameStatus,
-  GameUnitDbObject,
   GameUnitOrigin,
   ImpactDbObject,
   MoveDbObject,
   MoveReasonType,
+  WeatherUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import { MoveType } from '@gwent/graphql-schema'
@@ -267,6 +268,7 @@ describe('resolver-util', () => {
       TestUtil.getDbUnit({}),
       TestUtil.getDbUnit({}),
       TestUtil.getDbUnit({}),
+      TestUtil.getDbUnit({}),
     ]
     const users = [
       TestUtil.getDbUser({}),
@@ -279,13 +281,13 @@ describe('resolver-util', () => {
     const moves = [
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbGameUnit({
-          id: units[1]._id,
+        unit: TestUtil.getDbTacoUnit({
+          id: units[2]._id,
         }),
         reason: {
           type: MoveReasonType.Deploy,
           unit: TestUtil.getDbDeckUnit({
-            id: units[2]._id,
+            id: units[3]._id,
           }),
         },
         source: {
@@ -294,8 +296,8 @@ describe('resolver-util', () => {
         },
         impacts: [
           {
-            unit: TestUtil.getDbGameUnit({
-              id: units[3]._id,
+            unit: TestUtil.getDbTacoUnit({
+              id: units[4]._id,
             }),
             user: users[1]._id,
             source: {
@@ -304,8 +306,8 @@ describe('resolver-util', () => {
             },
           },
           {
-            unit: TestUtil.getDbGameUnit({
-              id: units[4]._id,
+            unit: TestUtil.getDbTacoUnit({
+              id: units[5]._id,
             }),
             user: users[3]._id,
           },
@@ -313,13 +315,13 @@ describe('resolver-util', () => {
       }),
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbGameUnit({
-          id: units[1]._id,
+        unit: TestUtil.getDbTacoUnit({
+          id: units[2]._id,
         }),
         reason: {
           type: MoveReasonType.Deploy,
           unit: TestUtil.getDbDeckUnit({
-            id: units[2]._id,
+            id: units[3]._id,
           }),
         },
         source: {
@@ -328,8 +330,8 @@ describe('resolver-util', () => {
         },
         impacts: [
           {
-            unit: TestUtil.getDbGameUnit({
-              id: units[3]._id,
+            unit: TestUtil.getDbTacoUnit({
+              id: units[4]._id,
             }),
             user: users[1]._id,
             source: {
@@ -338,8 +340,8 @@ describe('resolver-util', () => {
             },
           },
           {
-            unit: TestUtil.getDbGameUnit({
-              id: units[4]._id,
+            unit: TestUtil.getDbTacoUnit({
+              id: units[5]._id,
             }),
             user: users[3]._id,
           },
@@ -347,15 +349,15 @@ describe('resolver-util', () => {
       }),
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbGameUnit({
-          id: units[0]._id,
+        unit: TestUtil.getDbTacoUnit({
+          id: units[1]._id,
         }),
         target: users[5]._id,
       }),
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbGameUnit({
-          id: units[0]._id,
+        unit: TestUtil.getDbTacoUnit({
+          id: units[1]._id,
         }),
         target: users[5]._id,
       }),
@@ -393,7 +395,7 @@ describe('resolver-util', () => {
         presolvedUsers,
         impacts: [
           {
-            unit: TestUtil.getDbGameUnit({
+            unit: TestUtil.getDbTacoUnit({
               id: new ObjectId(),
             }),
             user: new ObjectId(),
@@ -456,12 +458,20 @@ describe('resolver-util', () => {
       )
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
       await testresolveUsersAndUnits({
-        gameUnits: [
-          TestUtil.getDbGameUnit({
+        fieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
           }),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
+          }),
+        ],
+        weatherUnits: [
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
+          }),
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
           }),
         ],
         moves,
@@ -491,12 +501,20 @@ describe('resolver-util', () => {
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
       await testresolveUsersAndUnits({
         userIds: [users[4]._id, users[4]._id],
-        gameUnits: [
-          TestUtil.getDbGameUnit({
+        fieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
           }),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
+          }),
+        ],
+        weatherUnits: [
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
+          }),
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
           }),
         ],
         moves,
@@ -526,12 +544,20 @@ describe('resolver-util', () => {
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
       await testresolveUsersAndUnits({
         presolvedUnits: resolvedUnits,
-        gameUnits: [
-          TestUtil.getDbGameUnit({
+        fieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
           }),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
+          }),
+        ],
+        weatherUnits: [
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
+          }),
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
           }),
         ],
         moves,
@@ -554,12 +580,20 @@ describe('resolver-util', () => {
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
       await testresolveUsersAndUnits({
         presolvedUsers: resolvedUsers,
-        gameUnits: [
-          TestUtil.getDbGameUnit({
+        fieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
           }),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             id: units[0]._id,
+          }),
+        ],
+        weatherUnits: [
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
+          }),
+          TestUtil.getDbWeatherUnit({
+            id: units[1]._id,
           }),
         ],
         moves,
@@ -716,7 +750,8 @@ async function testresolveUsersAndUnits({
   moves,
   impacts,
   userIds,
-  gameUnits,
+  fieldUnits,
+  weatherUnits,
   presolvedUsers,
   presolvedUnits,
   resolvedUnits,
@@ -728,7 +763,8 @@ async function testresolveUsersAndUnits({
   moves?: MoveDbObject[]
   impacts?: ImpactDbObject[]
   userIds?: (ObjectId | string)[]
-  gameUnits?: GameUnitDbObject[]
+  fieldUnits?: FieldUnitDbObject[]
+  weatherUnits?: WeatherUnitDbObject[]
   presolvedUsers?: User[]
   presolvedUnits?: Unit[]
   resolvedUsers?: User[]
@@ -748,7 +784,8 @@ async function testresolveUsersAndUnits({
 
   await expect(
     ResolverUtil.resolveUsersAndUnits({
-      gameUnits,
+      fieldUnits,
+      weatherUnits,
       impacts,
       moves,
       presolvedUnits,

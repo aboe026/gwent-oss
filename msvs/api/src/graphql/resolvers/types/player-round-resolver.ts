@@ -1,5 +1,5 @@
 import CombatRowResolver from './combat-row-resolver'
-import getGameUnits from '../mutations/play-unit/get-game-units'
+import GetFieldUnits from '../util/get-field-units'
 import getWeatherUnits from '../mutations/play-unit/get-weather-units'
 import MoveResolver from './move-resolver'
 import { PlayerRound, RoundResult, Unit, User } from '@gwent/graphql-schema/resolver-typings'
@@ -31,7 +31,7 @@ export default class PlayerRoundResolver {
   }): Promise<PlayerRound> {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: round.moves,
-      gameUnits: getGameUnits({
+      fieldUnits: GetFieldUnits.fromRounds({
         rounds: [round],
       }),
       weatherUnits: getWeatherUnits({
@@ -93,7 +93,7 @@ export default class PlayerRoundResolver {
 
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits: getGameUnits({
+      fieldUnits: GetFieldUnits.fromRounds({
         rounds,
       }),
       weatherUnits: getWeatherUnits({

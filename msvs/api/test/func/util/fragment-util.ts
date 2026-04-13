@@ -160,6 +160,29 @@ export function getDeckUnitFragment(): string {
   `
 }
 
+export function getWeatherUnitFragment(): string {
+  return `
+    artStyle
+    unit {
+      ${getUnitFragment()}
+    }
+  `
+}
+
+export function getTacoUnitFragment(): string {
+  return `
+    ... on FieldUnit {
+      ${getFieldUnitFragment()}
+    }
+    ... on DeckUnit {
+      ${getDeckUnitFragment()}
+    }
+    ... on WeatherUnit {
+      ${getWeatherUnitFragment()}
+    }
+  `
+}
+
 export function getMoveFragment() {
   return `
     ... on MoveLeader {
@@ -174,7 +197,7 @@ export function getMoveFragment() {
     ... on MoveUnit {
       created
       unit {
-        ${getDeckUnitFragment()}
+        ${getTacoUnitFragment()}
       }
       impacts {
         ${getImpactFragment()}
@@ -182,7 +205,7 @@ export function getMoveFragment() {
       reason {
         type
         unit {
-          ${getDeckUnitFragment()}
+          ${getTacoUnitFragment()}
         }
       }
       source {
@@ -204,7 +227,7 @@ export function getSourceFragment(): string {
 export function getImpactFragment(): string {
   return `
     unit {
-      ${getGameUnitFragment()}
+      ${getTacoUnitFragment()}
     }
     user {
       ${getUserFragment()}
@@ -247,7 +270,7 @@ export function getGamePlayerFragment(): string {
         ${getPlayerCombatRowFragment()}
       }
       weathers {
-        ${getGameUnitFragment()}
+        ${getWeatherUnitFragment()}
       }
     }
     user {
@@ -306,7 +329,7 @@ export function getGameDeckFragment(): string {
   `
 }
 
-export function getGameUnitFragment() {
+export function getFieldUnitFragment() {
   return `
     artStyle
     effectiveStrength
@@ -340,7 +363,7 @@ export function getPlayerCombatRowFragment() {
   return `
     score
     units {
-      ${getGameUnitFragment()}
+      ${getFieldUnitFragment()}
     }
   `
 }

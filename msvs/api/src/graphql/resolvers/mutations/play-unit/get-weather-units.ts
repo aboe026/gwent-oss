@@ -11,9 +11,7 @@ export default function getWeatherUnits({ rounds }: { rounds: PlayerRoundDbObjec
   const weatherUnits: WeatherUnitDbObject[] = []
 
   for (const round of rounds) {
-    if (round.weathers) {
-      weatherUnits.push(...round.weathers)
-    }
+    weatherUnits.push(...round.weathers)
   }
 
   return weatherUnits

@@ -9,6 +9,9 @@ import {
   DeckUnitFragment,
   DeckUnitFragmentDoc,
   EffectKey,
+  FieldUnitEffectFragmentDoc,
+  FieldUnitFragment,
+  FieldUnitFragmentDoc,
   FragmentType,
   GameDeckDocument,
   GameDeckFragmentDoc,
@@ -21,9 +24,6 @@ import {
   GamesDocument,
   GamesQuery,
   GameStatus,
-  GameUnitEffectFragmentDoc,
-  GameUnitFragment,
-  GameUnitFragmentDoc,
   MoveFragmentDoc,
   MoveUnitFragmentDoc,
   PlayerCombatRowFragmentDoc,
@@ -275,17 +275,17 @@ export default function GamePage() {
                     PlayerRoundFragmentDoc,
                     previousPlayer.rounds[previousGame.round - 1]
                   )
-                  const previousBattlefieldUnits: GameUnitFragment[] = [
+                  const previousBattlefieldUnits: FieldUnitFragment[] = [
                     ...useFragment(
-                      GameUnitFragmentDoc,
+                      FieldUnitFragmentDoc,
                       useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.close).units
                     ),
                     ...useFragment(
-                      GameUnitFragmentDoc,
+                      FieldUnitFragmentDoc,
                       useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.ranged).units
                     ),
                     ...useFragment(
-                      GameUnitFragmentDoc,
+                      FieldUnitFragmentDoc,
                       useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
                     ),
                   ]
@@ -520,7 +520,7 @@ function ExistingGame({
           const moveUnit = useFragment(MoveUnitFragmentDoc, move)
           const gameUnit = useFragment(TacoUnitFragmentDoc, moveUnit.unit)
           const unit = getUnitFromTacoUnit(gameUnit)
-          if (unit.id === unitSelected.id) {
+          if (unit && unit.id === unitSelected.id) {
             moveIndex = i
           }
         }
@@ -559,8 +559,8 @@ function ExistingGame({
     battlefieldTitle = 'Weather can only be applied using the Weather section to the left'
   }
   let effectiveStrength: number | null | undefined = undefined
-  let effects: FragmentType<typeof GameUnitEffectFragmentDoc>[] | null | undefined = undefined
-  if (fullGameUnit?.__typename === 'GameUnit') {
+  let effects: FragmentType<typeof FieldUnitEffectFragmentDoc>[] | null | undefined = undefined
+  if (fullGameUnit?.__typename === 'FieldUnit') {
     effectiveStrength = fullGameUnit.effectiveStrength
     effects = fullGameUnit.effects
   }

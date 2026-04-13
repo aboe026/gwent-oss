@@ -5,8 +5,8 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectFromUnitDbObject,
-  GameUnitDbObject,
-  GameUnitEffectDbObject,
+  FieldUnitDbObject,
+  FieldUnitEffectDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -28,7 +28,7 @@ export default class EffectMorale {
    * @param config.unitIdsWithMoraleInRow A list of IDs of units which contain the Morale effect ability in the battlefield row under consideration.
    * @param config.moraleEffect The Effect database document for the Morale effect.
    * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
-   * @param config.rowGameUnit The GameUnit under consideration to be moraled.
+   * @param config.rowFieldUnit The FieldUnit under consideration to be moraled.
    * @param config.rowUnit The Unit under consideration to be moraled.
    * @param config.units A list of all units on the battlefield.
    * @param config.userId The ID of the user whose unit is under consideration to be moraled.
@@ -41,7 +41,7 @@ export default class EffectMorale {
     unitIdsWithMoraleInRow,
     moraleEffect,
     newDeckUnit,
-    rowGameUnit,
+    rowFieldUnit,
     rowUnit,
     units,
     userId,
@@ -52,7 +52,7 @@ export default class EffectMorale {
     unitIdsWithMoraleInRow: string[]
     moraleEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
-    rowGameUnit: GameUnitDbObject
+    rowFieldUnit: FieldUnitDbObject
     rowUnit: UnitDbObject
     units: UnitDbObject[]
     userId: ObjectId
@@ -66,16 +66,16 @@ export default class EffectMorale {
     }
 
     if (!rowUnit.hero) {
-      const moralesToApply = unitIdsWithMoraleInRow.filter((id) => id !== rowGameUnit.unit.toString())
+      const moralesToApply = unitIdsWithMoraleInRow.filter((id) => id !== rowFieldUnit.unit.toString())
       if (EffectMorale.logger.isTraceEnabled()) {
         EffectMorale.logger.trace(`${logPrefix} moralesToApply: "${JSON.stringify(moralesToApply)}"`)
       }
       for (const unitIdWithMorale of moralesToApply) {
         const moralingUnit = units.find((unit) => unit._id.toString() === unitIdWithMorale)
-        if (moraleEffect && moralingUnit && rowGameUnit.effects) {
-          rowGameUnit.effectiveStrength = (rowGameUnit.effectiveStrength || 0) + 1
+        if (moraleEffect && moralingUnit && rowFieldUnit.effects) {
+          rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) + 1
           EffectMorale.logger.debug(
-            `${logPrefix} adding morale boost to "${rowUnit._id}" from "${moralingUnit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}"`
+            `${logPrefix} adding morale boost to "${rowUnit._id}" from "${moralingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
           )
           const reason: EffectFromUnitDbObject = {
             effect: moraleEffect._id,
@@ -83,21 +83,21 @@ export default class EffectMorale {
             unit: moralingUnit._id,
           }
 
-          const gameUnitEffect: GameUnitEffectDbObject = {
+          const fieldUnitEffect: FieldUnitEffectDbObject = {
             operator: EFFECT_OPERATOR.Plus,
             reason,
-            total: rowGameUnit.effectiveStrength,
+            total: rowFieldUnit.effectiveStrength,
           }
           if (EffectMorale.logger.isTraceEnabled()) {
-            EffectMorale.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)
+            EffectMorale.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
           }
-          rowGameUnit.effects.push(gameUnitEffect)
+          rowFieldUnit.effects.push(fieldUnitEffect)
 
           const impactables = [newDeckUnit.unit.toString(), ...transformedUnitIds]
           if (impactables.includes(moralingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
             const impact: ImpactDbObject = {
               unit: {
-                ...rowGameUnit,
+                ...rowFieldUnit,
                 type: GameUnitType.Field,
               },
               user: userId,

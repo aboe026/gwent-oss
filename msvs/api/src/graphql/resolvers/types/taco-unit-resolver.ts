@@ -1,6 +1,6 @@
 import DeckUnitResolver from './deck-unit-resolver'
-import { GameUnitDbObject, TacoUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import GameUnitResolver from './game-unit-resolver'
+import { FieldUnitDbObject, TacoUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import FieldUnitResolver from './field-unit-resolver'
 import { GameUnitType } from '@gwent/graphql-schema'
 import { TacoUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
 import UnitResolver from './unit-resolver'
@@ -25,8 +25,8 @@ export default class TacoUnitResolver {
         unit,
       })
     } else if (tacoUnit.type === GameUnitType.Field) {
-      return GameUnitResolver.fromObject({
-        gameUnit: tacoUnit as GameUnitDbObject,
+      return FieldUnitResolver.fromObject({
+        fieldUnit: tacoUnit as FieldUnitDbObject,
         unit,
       })
     }

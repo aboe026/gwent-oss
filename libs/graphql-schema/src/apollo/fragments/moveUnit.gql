@@ -9,9 +9,7 @@ fragment MoveUnit on MoveUnit {
   reason {
     type
     unit {
-      unit {
-        name
-      }
+      ...MoveUnitReasonUnit
     }
   }
   source {

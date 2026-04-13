@@ -120,10 +120,10 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
                   faction: faction.key,
                   leader: leaderId,
                   name,
-                  units: selectedUnits.map((gameUnit) => {
+                  units: selectedUnits.map((deckUnit) => {
                     return {
-                      id: useFragment(UnitFragmentDoc, gameUnit.unit).id,
-                      artStyle: gameUnit.artStyle,
+                      id: useFragment(UnitFragmentDoc, deckUnit.unit).id,
+                      artStyle: deckUnit.artStyle,
                     }
                   }),
                 },

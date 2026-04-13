@@ -2,10 +2,10 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
+  FieldUnitDbObject,
   GameDbObject,
   GamePlayerDbObject,
   GameStatus,
-  GameUnitDbObject,
   ImpactDbObject,
   MoveDbObject,
   MoveUnitDbObject,
@@ -138,7 +138,7 @@ export default class ResolverUtil {
    * @param config.moves Potential Move objects that are apart of the game.
    * @param config.impacts Potential Impact objects that are apart of the game.
    * @param config.userIds IDs of all the users on the game. If provided, will not look for users elsewhere (moves, impacts).
-   * @param config.gameUnits The units currently on the field of battle of a game.
+   * @param config.fieldUnits The units currently on the field of battle of a game.
    * @param config.weatherUnits The units currently weathering the battlefield of a game.
    * @param config.presolvedUsers All the users on the Game. If provided, will not attempt to resolve users.
    * @param config.presolvedUnits All the units on the Game. If provided, will not attempt to resolve any units.
@@ -148,7 +148,7 @@ export default class ResolverUtil {
     moves,
     impacts,
     userIds,
-    gameUnits,
+    fieldUnits,
     weatherUnits,
     presolvedUsers,
     presolvedUnits,
@@ -156,7 +156,7 @@ export default class ResolverUtil {
     moves?: MoveDbObject[]
     impacts?: ImpactDbObject[]
     userIds?: (ObjectId | string)[]
-    gameUnits?: GameUnitDbObject[]
+    fieldUnits?: FieldUnitDbObject[]
     weatherUnits?: WeatherUnitDbObject[]
     presolvedUsers?: User[]
     presolvedUnits?: Unit[]
@@ -177,9 +177,9 @@ export default class ResolverUtil {
       }
     }
 
-    if (gameUnits && !presolvedUnits) {
-      for (const gameUnit of gameUnits) {
-        const unitId = gameUnit.unit.toString()
+    if (fieldUnits && !presolvedUnits) {
+      for (const fieldUnit of fieldUnits) {
+        const unitId = fieldUnit.unit.toString()
         if (!unitIdsToResolve.includes(unitId)) {
           unitIdsToResolve.push(unitId)
         }

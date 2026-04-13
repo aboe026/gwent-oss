@@ -12,7 +12,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import EffectStore from '../../../../database/stores/effect-store'
-import GetBattlefieldUnit from './get-battlefield-unit'
+import GetFieldUnits from '../../util/get-field-units'
 import getRoundUnits from './get-round-units'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions from '../../../permissions'
@@ -157,13 +157,13 @@ export default class PlayUnitValidation {
         label: 'Target ID',
       })
 
-      const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
+      const fieldUnit = GetFieldUnits.getFieldUnit({
         game,
         unitId: targetId,
         userId,
       })
 
-      if (!battlefieldUnit) {
+      if (!fieldUnit) {
         const message = `Target "${targetId}" does not exist on the battlefield for player "${userId}".`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
@@ -189,12 +189,12 @@ export default class PlayUnitValidation {
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
-      if (combat && battlefieldUnit.row !== combat) {
-        const message = `Invalid combat "${combat}": Target "${targetId}" is in row "${battlefieldUnit.row}".`
+      if (combat && fieldUnit.row !== combat) {
+        const message = `Invalid combat "${combat}": Target "${targetId}" is in row "${fieldUnit.row}".`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
-      combat = battlefieldUnit.row
+      combat = fieldUnit.row as Combat
     }
 
     if (isSpy) {

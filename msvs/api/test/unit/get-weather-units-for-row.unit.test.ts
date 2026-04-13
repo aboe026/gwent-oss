@@ -27,7 +27,7 @@ describe('GetWeatherUnitsForRow', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   weathers: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: badId,
                     }),
                   ],
@@ -66,7 +66,7 @@ describe('GetWeatherUnitsForRow', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   weathers: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: unit._id,
                     }),
                   ],
@@ -95,7 +95,7 @@ describe('GetWeatherUnitsForRow', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   weathers: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: unit._id,
                     }),
                   ],
@@ -124,7 +124,7 @@ describe('GetWeatherUnitsForRow', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   weathers: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: unit._id,
                     }),
                   ],
@@ -161,10 +161,10 @@ describe('GetWeatherUnitsForRow', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   weathers: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: unit1._id,
                     }),
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: unit2._id,
                     }),
                   ],
@@ -205,10 +205,10 @@ describe('GetWeatherUnitsForRow', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   weathers: [
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: unit1._id,
                     }),
-                    TestUtil.getDbGameUnit({
+                    TestUtil.getDbFieldUnit({
                       id: unit2._id,
                     }),
                   ],
