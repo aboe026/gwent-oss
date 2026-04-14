@@ -12,16 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- e2e test making sure that selecting modifier in history only highlights that modifier, and not all
-- e2e test making sure selecting modifier when different one currently selected moves highlight to new one
-
-- Restructure GameUnit
-  - change GameUnit to be FieldUnit
-  - make new WeatherUnit
-  - have union GameUnit = DeckUnit | FieldUnit | WeatherUnit
-  - have GameUnit require Combat/row
-  - have "type" field in database for GameUnit so can know which kind it is in Impact resolver (no way to determine by context there)
-  - could remove "spy" field on impact db docs (and target check in game-resolver), and just rely on if type === DeckUnit and not the user
 - no spaces in username?
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat

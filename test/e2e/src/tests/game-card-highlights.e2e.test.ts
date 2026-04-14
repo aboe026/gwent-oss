@@ -610,3 +610,67 @@ test('Fullscreening spying history units highlights them', async (t) => {
     },
   })
 })
+
+test('Selecting modifier in history only highlights that modifier and not others', async (t) => {
+  const unitName = "Commander's Horn"
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName, unitName],
+    },
+  })
+  await gameManager.deploy({
+    unitName,
+    modifier: true,
+    horning: [],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName,
+    combat: Combat.Ranged,
+    modifier: true,
+    eligibleCombats: [Combat.Ranged, Combat.Siege],
+    horning: [],
+  })
+  await GamePage.selectHistoryUnit({
+    playerName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+    row: Combat.Ranged,
+    unitName,
+  })
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      unitName,
+      row: Combat.Ranged,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Ranged,
+      unitName,
+    },
+  })
+  await GamePage.selectBattlefieldCard({
+    unitName,
+    self: true,
+    row: Combat.Close,
+    modifier: true,
+  })
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      unitName,
+      row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Close,
+      unitName,
+    },
+  })
+})
