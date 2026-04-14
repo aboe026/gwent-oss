@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.0 - 2026-04-14
+
+### Fixed
+
+- Refactor GameUnit schema ([#57](https://github.com/aboe026/gwent/pull/57)) (Adam Boe)
+
 ## 0.21.1 - 2026-03-24
 
 ### Fixed
