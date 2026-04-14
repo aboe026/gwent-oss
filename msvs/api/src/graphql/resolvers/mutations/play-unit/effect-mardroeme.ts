@@ -103,13 +103,13 @@ export default class EffectMardroeme {
 
       if (mardroemeUnitIds.length > 0 && berserkerUnitIds.length > 0 && combat) {
         mardroemingFieldUnit = EffectMardroeme.getMardroemingFieldUnit({
-          fieldUnits: fieldUnits,
+          fieldUnits,
           mardroemeUnitIds,
         })
         const berserkers = playerRowBattlefieldUnits.filter((unit) => berserkerUnitIds.includes(unit._id.toString()))
         const existingVildkaarlIds = EffectMardroeme.getExistingVildkaarlIds({
           battlefieldUnits,
-          fieldUnits: fieldUnits,
+          fieldUnits,
         })
         const vildkaarls = await EffectMardroeme.getVildkaarlsForTransformation({
           berserkers,
@@ -155,8 +155,8 @@ export default class EffectMardroeme {
             }
           : {},
       transformedUnits,
-      transformedFieldUnits: transformedFieldUnits,
-      mardroemingFieldUnit: mardroemingFieldUnit,
+      transformedFieldUnits,
+      mardroemingFieldUnit,
     }
   }
 

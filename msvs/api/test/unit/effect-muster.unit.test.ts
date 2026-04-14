@@ -10,6 +10,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
+import { GameUnitType } from '@gwent/graphql-schema'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import MusterBattlefield, {
   MusterForPlayer,
@@ -17,7 +18,6 @@ import MusterBattlefield, {
 } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
-import { GameUnitType } from '@gwent/graphql-schema'
 
 describe('effect-muster', () => {
   describe('musterBattlefield', () => {

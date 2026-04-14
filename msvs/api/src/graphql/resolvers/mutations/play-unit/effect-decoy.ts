@@ -8,9 +8,9 @@ import {
   ImpactDbObject,
   PlayerCombatRowDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
-import { GameUnitType } from '@gwent/graphql-schema'
 
 /**
  * A class to modify the battlefield if a decoy unit is played.

@@ -62,7 +62,7 @@ export default class GameUnitResolver {
     for (const gameUnit of gameUnits) {
       resolvedGameUnits.push(
         await GameUnitResolver.fromObject({
-          gameUnit: gameUnit,
+          gameUnit,
           unit: resolvedUnits.find((unit) => unit.id.toString() === gameUnit.unit.toString()),
         })
       )

@@ -12,6 +12,7 @@ import {
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
+import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
 import {
   GameUnitOrigin,
   MoveDbObject,
@@ -20,7 +21,6 @@ import {
   MoveReasonType,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
 import ImpactResolver from '../../src/graphql/resolvers/types/impact-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'

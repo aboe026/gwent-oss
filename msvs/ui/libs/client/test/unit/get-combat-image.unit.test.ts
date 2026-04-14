@@ -1,12 +1,12 @@
 import {
-  UnitFragmentDoc,
   Combat,
+  DeckUnitFragment,
   Faction,
+  FieldUnitFragment,
   FragmentType,
   Unit,
+  UnitFragmentDoc,
   WeatherUnitFragment,
-  FieldUnitFragment,
-  DeckUnitFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../../src/util/get-combat-image'
 

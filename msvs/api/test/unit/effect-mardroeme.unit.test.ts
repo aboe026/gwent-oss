@@ -1228,7 +1228,7 @@ describe('effect-mardroeme', () => {
     it('throws error if mardroeming game unit not found', () => {
       const fieldUnits: FieldUnitDbObject[] = []
       testGetmardroemingFieldUnit({
-        fieldUnits: fieldUnits,
+        fieldUnits,
         mardroemeUnitIds: [],
         expected: Error(`Could not find mardroeming game unit in "${JSON.stringify(fieldUnits)}"`),
       })

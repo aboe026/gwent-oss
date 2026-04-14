@@ -91,7 +91,7 @@ export default class EffectScorch {
       }
 
       const strongestUnitIds = GetStrongestNonHeroUnitIds.getStrongestNonHeroUnitIds({
-        fieldUnits: fieldUnits,
+        fieldUnits,
         logPrefix,
         units: battlefieldUnits,
       })
