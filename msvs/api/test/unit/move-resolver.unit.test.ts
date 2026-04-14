@@ -98,7 +98,7 @@ describe('move-resolver', () => {
         })
         const move: MoveUnitDbObject = {
           created: new Date(),
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             artStyle: fieldUnit.artStyle,
             effectiveStrength: fieldUnit.effectiveStrength,
             id: new ObjectId(fieldUnit.unit.id),
@@ -123,7 +123,7 @@ describe('move-resolver', () => {
         const deckUnit = TestUtil.getDbDeckUnit({})
         const move: MoveUnitDbObject = {
           created: new Date(),
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             artStyle: fieldUnit.artStyle,
             effectiveStrength: fieldUnit.effectiveStrength,
             id: new ObjectId(fieldUnit.unit.id),
@@ -131,7 +131,7 @@ describe('move-resolver', () => {
           type: MoveType.Unit,
           reason: {
             type: MoveReasonType.Deploy,
-            unit: TestUtil.convertDeckDbUnitToTacoDbUnit(deckUnit),
+            unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
           source: {
             origin: GameUnitOrigin.Hand,
@@ -154,7 +154,7 @@ describe('move-resolver', () => {
         const userId = new ObjectId()
         const move: MoveUnitDbObject = {
           created: new Date(),
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             artStyle: fieldUnit.artStyle,
             effectiveStrength: fieldUnit.effectiveStrength,
             id: new ObjectId(fieldUnit.unit.id),
@@ -185,7 +185,7 @@ describe('move-resolver', () => {
         const userId = new ObjectId()
         const move: MoveUnitDbObject = {
           created: new Date(),
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             artStyle: fieldUnit.artStyle,
             effectiveStrength: fieldUnit.effectiveStrength,
             id: new ObjectId(fieldUnit.unit.id),
@@ -215,7 +215,7 @@ describe('move-resolver', () => {
         })
         const move: MoveUnitDbObject = {
           created: new Date(),
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             artStyle: fieldUnit.artStyle,
             effectiveStrength: fieldUnit.effectiveStrength,
             id: new ObjectId(fieldUnit.unit.id),
@@ -268,7 +268,7 @@ describe('move-resolver', () => {
         const targetUser = TestUtil.getUser({})
         const move: MoveUnitDbObject = {
           created: new Date(),
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             artStyle: fieldUnit.artStyle,
             effectiveStrength: fieldUnit.effectiveStrength,
             id: new ObjectId(fieldUnit.unit.id),
@@ -276,7 +276,7 @@ describe('move-resolver', () => {
           type: MoveType.Unit,
           reason: {
             type: MoveReasonType.Deploy,
-            unit: TestUtil.convertDeckDbUnitToTacoDbUnit(deckUnit),
+            unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
           source: {
             origin: GameUnitOrigin.Hand,
@@ -328,7 +328,7 @@ describe('move-resolver', () => {
         const targetUser = TestUtil.getUser({})
         const move: MoveUnitDbObject = {
           created: new Date(),
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             artStyle: fieldUnit.artStyle,
             effectiveStrength: fieldUnit.effectiveStrength,
             id: new ObjectId(fieldUnit.unit.id),
@@ -336,7 +336,7 @@ describe('move-resolver', () => {
           type: MoveType.Unit,
           reason: {
             type: MoveReasonType.Deploy,
-            unit: TestUtil.convertDeckDbUnitToTacoDbUnit(deckUnit),
+            unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
           source: {
             origin: GameUnitOrigin.Hand,
@@ -381,10 +381,10 @@ describe('move-resolver', () => {
       const leaderId = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -393,10 +393,10 @@ describe('move-resolver', () => {
       })
       const unitMove2 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -405,7 +405,7 @@ describe('move-resolver', () => {
       })
       const unitMove3 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
         },
@@ -487,10 +487,10 @@ describe('move-resolver', () => {
       const leaderId = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -499,10 +499,10 @@ describe('move-resolver', () => {
       })
       const unitMove2 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -511,7 +511,7 @@ describe('move-resolver', () => {
       })
       const unitMove3 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
         },
@@ -607,10 +607,10 @@ describe('move-resolver', () => {
       const leaderId = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -619,10 +619,10 @@ describe('move-resolver', () => {
       })
       const unitMove2 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -631,7 +631,7 @@ describe('move-resolver', () => {
       })
       const unitMove3 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
         },

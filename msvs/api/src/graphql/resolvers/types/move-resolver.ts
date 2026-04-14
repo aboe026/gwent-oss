@@ -1,15 +1,16 @@
 import { getLogger } from 'log4js'
 
-import ImpactResolver from './impact-resolver'
 import {
+  GameUnit,
   Leader,
   Move,
   MoveReasonType,
   GameUnitOrigin,
   User,
   Unit,
-  TacoUnit,
 } from '@gwent/graphql-schema/resolver-typings'
+import GameUnitResolver from './game-unit-resolver'
+import ImpactResolver from './impact-resolver'
 import LeaderResolver from './leader-resolver'
 import {
   MoveDbObject,
@@ -19,7 +20,6 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { MoveType } from '@gwent/graphql-schema'
 import ResolverUtil from '../resolver-util'
-import TacoUnitResolver from './taco-unit-resolver'
 
 /**
  * A class to convert Move database objects to their GraphQL equivalent.
@@ -77,14 +77,14 @@ export default class MoveResolver {
       if (!unitForMove) {
         throw Error(`Could not find move unit "${unitMove.unit.unit}"`)
       }
-      let resolvedReasonTacoUnit: TacoUnit | undefined = undefined
+      let resolvedReasonGameUnit: GameUnit | undefined = undefined
       if (unitMove.reason.unit) {
         const reasonUnit = resolvedUnits.find((unit) => unit.id === unitMove.reason.unit?.unit.toString())
         if (!reasonUnit) {
           throw Error(`Could not find reason unit "${unitMove.reason.unit?.unit}"`)
         }
-        resolvedReasonTacoUnit = await TacoUnitResolver.fromObject({
-          tacoUnit: unitMove.reason.unit,
+        resolvedReasonGameUnit = await GameUnitResolver.fromObject({
+          gameUnit: unitMove.reason.unit,
           unit: reasonUnit,
         })
       }
@@ -104,8 +104,8 @@ export default class MoveResolver {
       }
       return {
         created: unitMove.created,
-        unit: await TacoUnitResolver.fromObject({
-          tacoUnit: unitMove.unit,
+        unit: await GameUnitResolver.fromObject({
+          gameUnit: unitMove.unit,
           unit: unitForMove,
         }),
         impacts: await ImpactResolver.fromArray({
@@ -115,7 +115,7 @@ export default class MoveResolver {
         }),
         reason: {
           type: unitMove.reason.type as MoveReasonType,
-          unit: resolvedReasonTacoUnit,
+          unit: resolvedReasonGameUnit,
         },
         source: {
           origin: unitMove.source.origin as GameUnitOrigin,

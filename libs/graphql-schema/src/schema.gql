@@ -251,7 +251,7 @@ type WeatherUnit @entity {
 }
 
 "A Unit participating in a Game."
-union TacoUnit @union(discriminatorField: "type") = DeckUnit | FieldUnit | WeatherUnit
+union GameUnit @union(discriminatorField: "type") = DeckUnit | FieldUnit | WeatherUnit
 
 type FieldUnitEffect @entity {
   operator: String! @column
@@ -283,7 +283,7 @@ type Leader @entity {
 
 "A unit which was impacted by another unit."
 type Impact @entity {
-  unit: TacoUnit @column(overrideType: "TacoUnitDbObject")
+  unit: GameUnit @column(overrideType: "GameUnitDbObject")
   user: User! @column(overrideType: "ObjectId")
   source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
 }
@@ -301,7 +301,7 @@ type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
   "When the Move was made."
   created: DateTime! @column
   "The Unit which was Moved."
-  unit: TacoUnit! @column(overrideType: "TacoUnitDbObject")
+  unit: GameUnit! @column(overrideType: "GameUnitDbObject")
   "Other Units the Move impacted in the Game."
   impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
   "What caused the Move to happen."
@@ -314,7 +314,7 @@ type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
 
 type MoveUnitReason @entity {
   type: MoveReasonType! @column
-  unit: TacoUnit @column(overrideType: "TacoUnitDbObject")
+  unit: GameUnit @column(overrideType: "GameUnitDbObject")
 }
 
 type GameUnitSource @entity {

@@ -26,7 +26,7 @@ import {
   PlayerCombatRow,
   PlayerRound,
   Redraw,
-  TacoUnit,
+  GameUnit,
   Unit,
   UnitStats,
   User,
@@ -57,7 +57,7 @@ import {
   PlayerRoundDbObject,
   RedrawDbObject,
   RoundResult,
-  TacoUnitDbObject,
+  GameUnitDbObject,
   UnitDbObject,
   UserDbObject,
   WeatherUnitDbObject,
@@ -219,7 +219,7 @@ export default class TestUtil {
     }
   }
 
-  static getDbTacoUnit({
+  static getDbGameUnit({
     artStyle = 1,
     id,
     effectiveStrength,
@@ -233,7 +233,7 @@ export default class TestUtil {
     effects?: FieldUnitEffectDbObject[]
     row?: Combat
     type?: GameUnitType
-  }): TacoUnitDbObject {
+  }): GameUnitDbObject {
     if (type === GameUnitType.Deck) {
       return {
         ...TestUtil.getDbDeckUnit({
@@ -264,18 +264,18 @@ export default class TestUtil {
     }
   }
 
-  static getTacoUnitFromDbTacoUnit({ tacoUnit, unit }: { tacoUnit: TacoUnitDbObject; unit: Unit }): TacoUnit {
-    if (tacoUnit.type === GameUnitType.Deck) {
+  static getGameUnitFromDbGameUnit({ gameUnit, unit }: { gameUnit: GameUnitDbObject; unit: Unit }): GameUnit {
+    if (gameUnit.type === GameUnitType.Deck) {
       return TestUtil.getDeckUnit({
-        id: tacoUnit.unit,
-        artStyle: tacoUnit.artStyle,
+        id: gameUnit.unit,
+        artStyle: gameUnit.artStyle,
         unit,
       })
-    } else if (tacoUnit.type === GameUnitType.Field) {
-      const fieldUnit = tacoUnit as FieldUnitDbObject
+    } else if (gameUnit.type === GameUnitType.Field) {
+      const fieldUnit = gameUnit as FieldUnitDbObject
       return TestUtil.getFieldUnit({
         unit,
-        artStyle: tacoUnit.artStyle,
+        artStyle: gameUnit.artStyle,
         row: fieldUnit.row as Combat,
         effectiveStrength: fieldUnit.effectiveStrength,
         effects: [],
@@ -283,26 +283,26 @@ export default class TestUtil {
     } else {
       return TestUtil.getWeatherUnit({
         unit,
-        artStyle: tacoUnit.artStyle,
+        artStyle: gameUnit.artStyle,
       })
     }
   }
 
-  static convertDeckDbUnitToTacoDbUnit(deckUnit: DeckUnitDbObject): TacoUnitDbObject {
+  static convertDeckDbUnitToGameDbUnit(deckUnit: DeckUnitDbObject): GameUnitDbObject {
     return {
       ...deckUnit,
       type: GameUnitType.Deck,
     }
   }
 
-  static convertFieldDbUnitToTacoDbUnit(fieldUnit: FieldUnitDbObject): TacoUnitDbObject {
+  static convertFieldDbUnitToGameDbUnit(fieldUnit: FieldUnitDbObject): GameUnitDbObject {
     return {
       ...fieldUnit,
       type: GameUnitType.Field,
     }
   }
 
-  static convertWeatherDbUnitToTacoDbUnit(weatherUnit: WeatherUnitDbObject): TacoUnitDbObject {
+  static convertWeatherDbUnitToGameDbUnit(weatherUnit: WeatherUnitDbObject): GameUnitDbObject {
     return {
       ...weatherUnit,
       type: GameUnitType.Weather,
@@ -854,7 +854,7 @@ export default class TestUtil {
     source = {
       origin: GameUnitOrigin.Hand,
     },
-    unit = TestUtil.getDbTacoUnit({}),
+    unit = TestUtil.getDbGameUnit({}),
     leaderId = new ObjectId(),
     impacts,
     target,
@@ -862,7 +862,7 @@ export default class TestUtil {
     type: MoveType
     reason?: MoveUnitReasonDbObject
     source?: GameUnitSourceDbObject
-    unit?: TacoUnitDbObject
+    unit?: GameUnitDbObject
     leaderId?: ObjectId
     impacts?: ImpactDbObject[]
     target?: ObjectId
@@ -1162,7 +1162,7 @@ export default class TestUtil {
     user = new ObjectId(),
     source,
   }: {
-    unit?: TacoUnitDbObject | null
+    unit?: GameUnitDbObject | null
     user?: ObjectId
     source?: GameUnitSourceDbObject
   }): ImpactDbObject {
@@ -1170,7 +1170,7 @@ export default class TestUtil {
       unit: unit
         ? unit
         : unit === undefined
-          ? TestUtil.getDbTacoUnit({
+          ? TestUtil.getDbGameUnit({
               type: GameUnitType.Field,
             })
           : undefined,
@@ -1184,7 +1184,7 @@ export default class TestUtil {
     user,
     source = null,
   }: {
-    unit: TacoUnit
+    unit: GameUnit
     user: User
     source?: GameUnitSource | null
   }): Impact {

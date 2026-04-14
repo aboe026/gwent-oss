@@ -289,7 +289,7 @@ describe('effect-bond', () => {
           total: 8,
         },
       ]
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: fieldUnit.unit,
         effectiveStrength: 8,
         effects,
@@ -313,7 +313,7 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
@@ -349,7 +349,7 @@ describe('effect-bond', () => {
           total: 0,
         },
       ]
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: fieldUnit.unit,
         effectiveStrength: 0,
         effects,
@@ -373,7 +373,7 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
@@ -410,7 +410,7 @@ describe('effect-bond', () => {
           total: 8,
         },
       ]
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: fieldUnit.unit,
         effectiveStrength: 8,
         effects,
@@ -433,7 +433,7 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
@@ -470,7 +470,7 @@ describe('effect-bond', () => {
           total: 8,
         },
       ]
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: fieldUnit.unit,
         effectiveStrength: 8,
         effects,
@@ -493,7 +493,7 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
@@ -540,7 +540,7 @@ describe('effect-bond', () => {
           total: 16,
         },
       ]
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: fieldUnit.unit,
         effectiveStrength: 16,
         effects,
@@ -564,7 +564,7 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
@@ -612,7 +612,7 @@ describe('effect-bond', () => {
           total: 16,
         },
       ]
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: fieldUnit.unit,
         effectiveStrength: 16,
         effects,
@@ -636,13 +636,13 @@ describe('effect-bond', () => {
         expected: {
           [unit1._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
           [unit3._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
@@ -682,7 +682,7 @@ describe('effect-bond', () => {
         total: 8,
       }
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           effectiveStrength: 8,
           effects: [fieldUnitEffect],

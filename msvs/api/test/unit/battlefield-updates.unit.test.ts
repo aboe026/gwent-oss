@@ -33,7 +33,7 @@ describe('battlefield-updates', () => {
       const unitId = new ObjectId()
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: unitId,
           }),
           user: new ObjectId(),
@@ -61,13 +61,13 @@ describe('battlefield-updates', () => {
       const unitId2 = new ObjectId()
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: unitId1,
           }),
           user: new ObjectId(),
         },
         {
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: unitId2,
           }),
           user: new ObjectId(),
@@ -97,7 +97,7 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -113,11 +113,11 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -134,7 +134,7 @@ describe('battlefield-updates', () => {
       const unitId = new ObjectId()
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -165,13 +165,13 @@ describe('battlefield-updates', () => {
       const unitId2 = new ObjectId()
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: unitId1,
           }),
           user: new ObjectId(),
         },
         {
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: unitId2,
           }),
           user: new ObjectId(),
@@ -208,7 +208,7 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -225,7 +225,7 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -242,11 +242,11 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -263,7 +263,7 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -280,7 +280,7 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]
@@ -298,7 +298,7 @@ describe('battlefield-updates', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           user: new ObjectId(),
         },
       ]

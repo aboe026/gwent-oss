@@ -144,7 +144,7 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[0]),
               user: userId,
             },
           ],
@@ -191,7 +191,7 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[0]),
               user: opponentId,
             },
           ],
@@ -242,11 +242,11 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[0]),
               user: userId,
             },
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[1]),
               user: opponentId,
             },
           ],
@@ -293,11 +293,11 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[0]),
               user: userId,
             },
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[1]),
               user: userId,
             },
           ],
@@ -344,11 +344,11 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[0]),
               user: opponentId,
             },
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[1]),
               user: opponentId,
             },
           ],
@@ -404,19 +404,19 @@ describe('effect-weather', () => {
         expected: {
           [newUnit._id.toString()]: [
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[0]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[0]),
               user: userId,
             },
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[1]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[1]),
               user: userId,
             },
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[2]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[2]),
               user: opponentId,
             },
             {
-              unit: TestUtil.convertWeatherDbUnitToTacoDbUnit(existingWeathers[3]),
+              unit: TestUtil.convertWeatherDbUnitToGameDbUnit(existingWeathers[3]),
               user: opponentId,
             },
           ],
@@ -613,7 +613,7 @@ describe('effect-weather', () => {
         expected: {
           [newDeckUnit.unit.toString()]: [
             {
-              unit: TestUtil.convertFieldDbUnitToTacoDbUnit({
+              unit: TestUtil.convertFieldDbUnitToGameDbUnit({
                 ...rowFieldUnit,
                 effectiveStrength: 1,
               }),
@@ -798,7 +798,7 @@ describe('effect-weather', () => {
         },
         total: 1,
       }
-      const tacoUnit = TestUtil.convertFieldDbUnitToTacoDbUnit({
+      const gameUnit = TestUtil.convertFieldDbUnitToGameDbUnit({
         ...rowFieldUnit,
         effects: [fieldUnitEffect],
         effectiveStrength: 1,
@@ -815,7 +815,7 @@ describe('effect-weather', () => {
         expected: {
           [newDeckUnit.unit.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: currentPlayerId,
             },
           ],
@@ -831,7 +831,7 @@ describe('effect-weather', () => {
           [`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`],
           [
             `${logPrefix} impact: "${JSON.stringify({
-              unit: tacoUnit,
+              unit: gameUnit,
               user: currentPlayerId,
             })}"`,
           ],

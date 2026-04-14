@@ -214,7 +214,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn.artStyle,
                     id: undrawn.unit,
                     type: GameUnitType.Deck,
@@ -304,7 +304,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn1.artStyle,
                     id: undrawn1.unit,
                     type: GameUnitType.Deck,
@@ -312,7 +312,7 @@ describe('effect-spy', () => {
                   user: self.user,
                 },
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn2.artStyle,
                     id: undrawn2.unit,
                     type: GameUnitType.Deck,
@@ -411,7 +411,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn3.artStyle,
                     id: undrawn3.unit,
                     type: GameUnitType.Deck,
@@ -419,7 +419,7 @@ describe('effect-spy', () => {
                   user: self.user,
                 },
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn1.artStyle,
                     id: undrawn1.unit,
                     type: GameUnitType.Deck,
@@ -581,7 +581,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn.artStyle,
                     id: undrawn.unit,
                     type: GameUnitType.Deck,
@@ -671,7 +671,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn1.artStyle,
                     id: undrawn1.unit,
                     type: GameUnitType.Deck,
@@ -679,7 +679,7 @@ describe('effect-spy', () => {
                   user: self.user,
                 },
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn2.artStyle,
                     id: undrawn2.unit,
                     type: GameUnitType.Deck,
@@ -778,7 +778,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn3.artStyle,
                     id: undrawn3.unit,
                     type: GameUnitType.Deck,
@@ -786,7 +786,7 @@ describe('effect-spy', () => {
                   user: self.user,
                 },
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn1.artStyle,
                     id: undrawn1.unit,
                     type: GameUnitType.Deck,
@@ -948,7 +948,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn.artStyle,
                     id: undrawn.unit,
                     type: GameUnitType.Deck,
@@ -1038,7 +1038,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn1.artStyle,
                     id: undrawn1.unit,
                     type: GameUnitType.Deck,
@@ -1046,7 +1046,7 @@ describe('effect-spy', () => {
                   user: self.user,
                 },
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn2.artStyle,
                     id: undrawn2.unit,
                     type: GameUnitType.Deck,
@@ -1145,7 +1145,7 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn3.artStyle,
                     id: undrawn3.unit,
                     type: GameUnitType.Deck,
@@ -1153,7 +1153,7 @@ describe('effect-spy', () => {
                   user: self.user,
                 },
                 {
-                  unit: TestUtil.getDbTacoUnit({
+                  unit: TestUtil.getDbGameUnit({
                     artStyle: undrawn1.artStyle,
                     id: undrawn1.unit,
                     type: GameUnitType.Deck,

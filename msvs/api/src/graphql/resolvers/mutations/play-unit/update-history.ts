@@ -10,7 +10,7 @@ import {
   MoveUnitDbObject,
   MoveDbObject,
   MoveUnitReasonDbObject,
-  TacoUnitDbObject,
+  GameUnitDbObject,
   WeatherUnitDbObject,
   FieldUnitDbObject,
   ImpactDbObject,
@@ -111,7 +111,7 @@ export default class UpdateHistory {
       game,
       impacts,
     })
-    const tacoUnit = UpdateHistory.getMoveTacoUnit({
+    const gameUnit = UpdateHistory.getMoveGameUnit({
       fieldUnit,
       deckUnit,
       isWeather,
@@ -120,7 +120,7 @@ export default class UpdateHistory {
 
     const move: MoveUnitDbObject = {
       created: new Date(),
-      unit: tacoUnit,
+      unit: gameUnit,
       impacts: updatedImpacts,
       reason: {
         type: MoveReasonType.Deploy,
@@ -140,12 +140,12 @@ export default class UpdateHistory {
 
     if (transformedFieldUnits) {
       for (const transformedFieldUnit of transformedFieldUnits) {
-        const mardroemeTacoUnit: TacoUnitDbObject = mardroemingFieldUnit
+        const mardroemeGameUnit: GameUnitDbObject = mardroemingFieldUnit
           ? {
               ...mardroemingFieldUnit,
               type: GameUnitType.Field,
             }
-          : tacoUnit
+          : gameUnit
         UpdateHistory.newUnitIndirect({
           bonds,
           created: move.created,
@@ -162,7 +162,7 @@ export default class UpdateHistory {
           playerId,
           reason: {
             type: MoveReasonType.Transform,
-            unit: mardroemeTacoUnit,
+            unit: mardroemeGameUnit,
           },
           scorches,
           unitId: transformedFieldUnit.unit,
@@ -204,7 +204,7 @@ export default class UpdateHistory {
           playerId,
           reason: {
             type: MoveReasonType.Muster,
-            unit: tacoUnit,
+            unit: gameUnit,
           },
           scorches,
           unitId: muster.unit.unit,
@@ -325,16 +325,16 @@ export default class UpdateHistory {
   }
 
   /**
-   * Get the TacoUnit database object for a Move.
+   * Get the GameUnit database object for a Move.
    *
-   * @param config The configuration used to determine the TacoUnit for the Move.
+   * @param config The configuration used to determine the GameUnit for the Move.
    * @param config.deckUnit The DeckUnit which made the Move.
    * @param config.fieldUnit The potential FieldUnit the DeckUnit became upon Movement.
    * @param config.isWeather Whether or not the Move was to Weather the battlefield.
    * @param config.combat The potential Combat row the Move was for.
-   * @returns The TacoUnit database object for the Move.
+   * @returns The GameUnit database object for the Move.
    */
-  static getMoveTacoUnit({
+  static getMoveGameUnit({
     deckUnit,
     fieldUnit,
     isWeather,
@@ -344,15 +344,15 @@ export default class UpdateHistory {
     fieldUnit: FieldUnitDbObject | undefined
     isWeather?: boolean
     combat?: Combat | null | undefined
-  }): TacoUnitDbObject {
-    let tacoUnit: TacoUnitDbObject
+  }): GameUnitDbObject {
+    let gameUnit: GameUnitDbObject
     const row: Combat | null | undefined = fieldUnit?.row ? (fieldUnit.row as Combat) : combat
     if (isWeather) {
       const weatherUnit: WeatherUnitDbObject = {
         unit: deckUnit.unit,
         artStyle: deckUnit.artStyle,
       }
-      tacoUnit = {
+      gameUnit = {
         ...weatherUnit,
         type: GameUnitType.Weather,
       }
@@ -364,19 +364,19 @@ export default class UpdateHistory {
         effectiveStrength: fieldUnit?.effectiveStrength,
         effects: fieldUnit?.effects,
       }
-      tacoUnit = {
+      gameUnit = {
         ...resolvedFieldUnit,
         type: GameUnitType.Field,
       }
     } else {
-      tacoUnit = {
+      gameUnit = {
         unit: deckUnit.unit,
         artStyle: deckUnit.artStyle,
         type: GameUnitType.Deck,
       }
     }
 
-    return tacoUnit
+    return gameUnit
   }
 
   /**
@@ -403,7 +403,7 @@ export default class UpdateHistory {
             userId: impact.user,
           })
           if (impactBattlefieldUnit) {
-            const newImpactUnit: TacoUnitDbObject = {
+            const newImpactUnit: GameUnitDbObject = {
               ...impactBattlefieldUnit,
               type: GameUnitType.Field,
             }

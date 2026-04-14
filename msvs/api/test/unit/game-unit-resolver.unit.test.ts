@@ -1,14 +1,14 @@
-import { Combat, TacoUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { DeckUnit, FieldUnit, TacoUnit, Unit, WeatherUnit } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnit, FieldUnit, GameUnit, Unit, WeatherUnit } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
 import { GameUnitType } from '@gwent/graphql-schema'
-import TacoUnitResolver from '../../src/graphql/resolvers/types/taco-unit-resolver'
+import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 import WeatherUnitResolver from '../../src/graphql/resolvers/types/weather-unit-resolver'
 
-describe('taco-unit-resolver', () => {
+describe('game-unit-resolver', () => {
   describe('fromObject', () => {
     it('returns DeckUnit if type is Deck', async () => {
       const unit = TestUtil.getUnit({})
@@ -16,7 +16,7 @@ describe('taco-unit-resolver', () => {
         id: unit.id,
       })
       await testFromObject({
-        tacoUnit: TestUtil.getDbTacoUnit({
+        gameUnit: TestUtil.getDbGameUnit({
           ...deckUnit,
           type: GameUnitType.Deck,
         }),
@@ -33,7 +33,7 @@ describe('taco-unit-resolver', () => {
         id: unit.id,
       })
       await testFromObject({
-        tacoUnit: TestUtil.getDbTacoUnit({
+        gameUnit: TestUtil.getDbGameUnit({
           ...fieldUnit,
           row: fieldUnit.row as Combat,
           type: GameUnitType.Field,
@@ -51,7 +51,7 @@ describe('taco-unit-resolver', () => {
         id: unit.id,
       })
       await testFromObject({
-        tacoUnit: TestUtil.getDbTacoUnit({
+        gameUnit: TestUtil.getDbGameUnit({
           ...weatherUnit,
           type: GameUnitType.Weather,
         }),
@@ -66,39 +66,39 @@ describe('taco-unit-resolver', () => {
   describe('fromArray', () => {
     it('returns empty array if provided one', async () => {
       await testFromArray({
-        tacoUnits: [],
+        gameUnits: [],
       })
     })
-    it('returns single resolved TacoUnit without presolved unit', async () => {
+    it('returns single resolved gameUnit without presolved unit', async () => {
       await testFromArray({
-        tacoUnits: [TestUtil.getDbTacoUnit({})],
+        gameUnits: [TestUtil.getDbGameUnit({})],
       })
     })
-    it('returns single resolved TacoUnit with presolved unit', async () => {
+    it('returns single resolved gameUnit with presolved unit', async () => {
       const unit = TestUtil.getUnit({})
       await testFromArray({
-        tacoUnits: [
-          TestUtil.getDbTacoUnit({
+        gameUnits: [
+          TestUtil.getDbGameUnit({
             id: unit.id,
           }),
         ],
         units: [unit],
       })
     })
-    it('returns multiple resolved TacoUnits without presolved unit', async () => {
+    it('returns multiple resolved gameUnits without presolved unit', async () => {
       await testFromArray({
-        tacoUnits: [TestUtil.getDbTacoUnit({}), TestUtil.getDbTacoUnit({})],
+        gameUnits: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
       })
     })
-    it('returns multiple resolved TacoUnits with presolved unit', async () => {
+    it('returns multiple resolved gameUnits with presolved unit', async () => {
       const unit1 = TestUtil.getUnit({})
       const unit2 = TestUtil.getUnit({})
       await testFromArray({
-        tacoUnits: [
-          TestUtil.getDbTacoUnit({
+        gameUnits: [
+          TestUtil.getDbGameUnit({
             id: unit1.id,
           }),
-          TestUtil.getDbTacoUnit({
+          TestUtil.getDbGameUnit({
             id: unit2.id,
           }),
         ],
@@ -109,13 +109,13 @@ describe('taco-unit-resolver', () => {
 })
 
 async function testFromObject({
-  tacoUnit,
+  gameUnit,
   unit,
   deckUnit,
   fieldUnit,
   weatherUnit,
 }: {
-  tacoUnit: TacoUnitDbObject
+  gameUnit: GameUnitDbObject
   unit?: Unit
   deckUnit?: DeckUnit
   fieldUnit?: FieldUnit
@@ -135,8 +135,8 @@ async function testFromObject({
   }
 
   await expect(
-    TacoUnitResolver.fromObject({
-      tacoUnit,
+    GameUnitResolver.fromObject({
+      gameUnit,
       unit,
     })
   ).resolves.toEqual(deckUnit || fieldUnit || weatherUnit)
@@ -146,7 +146,7 @@ async function testFromObject({
       ? [
           [
             {
-              deckUnit: tacoUnit,
+              deckUnit: gameUnit,
               unit,
             },
           ],
@@ -158,7 +158,7 @@ async function testFromObject({
       ? [
           [
             {
-              fieldUnit: tacoUnit,
+              fieldUnit: gameUnit,
               unit,
             },
           ],
@@ -170,7 +170,7 @@ async function testFromObject({
       ? [
           [
             {
-              weatherUnit: tacoUnit,
+              weatherUnit: gameUnit,
               unit,
             },
           ],
@@ -179,50 +179,50 @@ async function testFromObject({
   )
 }
 
-async function testFromArray({ tacoUnits, units }: { tacoUnits: TacoUnitDbObject[]; units?: Unit[] }) {
+async function testFromArray({ gameUnits, units }: { gameUnits: GameUnitDbObject[]; units?: Unit[] }) {
   const resolvedUnits: Unit[] =
     units ||
-    tacoUnits.map((tacoUnit) => {
+    gameUnits.map((gameUnit) => {
       return TestUtil.getUnit({
-        id: tacoUnit.unit,
+        id: gameUnit.unit,
       })
     })
-  const resolvedTacoUnits: TacoUnit[] = []
+  const resolvedGameUnits: GameUnit[] = []
   const unitResolverSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(resolvedUnits)
-  const tacoUnitResolverSpy = jest.spyOn(TacoUnitResolver, 'fromObject')
-  const tacoUnitResolverCalls: any[][] = []
-  for (let i = 0; i < tacoUnits.length; i++) {
-    const resolvedTacoUnit = TestUtil.getTacoUnitFromDbTacoUnit({
-      tacoUnit: tacoUnits[i],
+  const gameUnitResolverSpy = jest.spyOn(GameUnitResolver, 'fromObject')
+  const gameUnitResolverCalls: any[][] = []
+  for (let i = 0; i < gameUnits.length; i++) {
+    const resolvedGameUnit = TestUtil.getGameUnitFromDbGameUnit({
+      gameUnit: gameUnits[i],
       unit: resolvedUnits[i],
     })
-    tacoUnitResolverSpy.mockResolvedValueOnce(resolvedTacoUnit)
-    resolvedTacoUnits.push(resolvedTacoUnit)
-    tacoUnitResolverCalls.push([
+    gameUnitResolverSpy.mockResolvedValueOnce(resolvedGameUnit)
+    resolvedGameUnits.push(resolvedGameUnit)
+    gameUnitResolverCalls.push([
       {
-        tacoUnit: tacoUnits[i],
+        gameUnit: gameUnits[i],
         unit: resolvedUnits[i],
       },
     ])
   }
 
   await expect(
-    TacoUnitResolver.fromArray({
-      tacoUnits,
+    GameUnitResolver.fromArray({
+      gameUnits,
       units,
     })
-  ).resolves.toEqual(resolvedTacoUnits)
+  ).resolves.toEqual(resolvedGameUnits)
 
   expect(unitResolverSpy.mock.calls).toEqual(
-    tacoUnits.length === 0 || units
+    gameUnits.length === 0 || units
       ? []
       : [
           [
             {
-              ids: tacoUnits.map((tacoUnit) => tacoUnit.unit),
+              ids: gameUnits.map((gameUnit) => gameUnit.unit),
             },
           ],
         ]
   )
-  expect(tacoUnitResolverSpy.mock.calls).toEqual(tacoUnitResolverCalls)
+  expect(gameUnitResolverSpy.mock.calls).toEqual(gameUnitResolverCalls)
 }

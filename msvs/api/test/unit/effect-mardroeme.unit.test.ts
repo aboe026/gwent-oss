@@ -388,7 +388,7 @@ describe('effect-mardroeme', () => {
         const to = TestUtil.getDbFieldUnit({
           id: unit._id,
         })
-        const tacoUnit = TestUtil.getDbTacoUnit({
+        const gameUnit = TestUtil.getDbGameUnit({
           id: from.unit,
           artStyle: from.artStyle,
           row: from.row as Combat,
@@ -436,7 +436,7 @@ describe('effect-mardroeme', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: tacoUnit,
+                  unit: gameUnit,
                   user: player.user,
                 },
               ],
@@ -468,12 +468,12 @@ describe('effect-mardroeme', () => {
         const to2 = TestUtil.getDbFieldUnit({
           id: unit2._id,
         })
-        const tacoUnit1 = TestUtil.getDbTacoUnit({
+        const gameUnit1 = TestUtil.getDbGameUnit({
           id: from1.unit,
           artStyle: from1.artStyle,
           row: from1.row as Combat,
         })
-        const tacoUnit2 = TestUtil.getDbTacoUnit({
+        const gameUnit2 = TestUtil.getDbGameUnit({
           id: from2.unit,
           artStyle: from2.artStyle,
           row: from2.row as Combat,
@@ -526,11 +526,11 @@ describe('effect-mardroeme', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: tacoUnit1,
+                  unit: gameUnit1,
                   user: player.user,
                 },
                 {
-                  unit: tacoUnit2,
+                  unit: gameUnit2,
                   user: player.user,
                 },
               ],
@@ -696,7 +696,7 @@ describe('effect-mardroeme', () => {
         const to = TestUtil.getDbFieldUnit({
           id: unit._id,
         })
-        const tacoUnit = TestUtil.getDbTacoUnit({
+        const gameUnit = TestUtil.getDbGameUnit({
           id: from.unit,
           artStyle: from.artStyle,
           row: from.row as Combat,
@@ -744,7 +744,7 @@ describe('effect-mardroeme', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: tacoUnit,
+                  unit: gameUnit,
                   user: player.user,
                 },
               ],
@@ -776,12 +776,12 @@ describe('effect-mardroeme', () => {
         const to2 = TestUtil.getDbFieldUnit({
           id: unit2._id,
         })
-        const tacoUnit1 = TestUtil.getDbTacoUnit({
+        const gameUnit1 = TestUtil.getDbGameUnit({
           id: from1.unit,
           artStyle: from1.artStyle,
           row: from1.row as Combat,
         })
-        const tacoUnit2 = TestUtil.getDbTacoUnit({
+        const gameUnit2 = TestUtil.getDbGameUnit({
           id: from2.unit,
           artStyle: from2.artStyle,
           row: from2.row as Combat,
@@ -834,11 +834,11 @@ describe('effect-mardroeme', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: tacoUnit1,
+                  unit: gameUnit1,
                   user: player.user,
                 },
                 {
-                  unit: tacoUnit2,
+                  unit: gameUnit2,
                   user: player.user,
                 },
               ],
@@ -1004,7 +1004,7 @@ describe('effect-mardroeme', () => {
         const to = TestUtil.getDbFieldUnit({
           id: unit._id,
         })
-        const tacoUnit = TestUtil.getDbTacoUnit({
+        const gameUnit = TestUtil.getDbGameUnit({
           id: from.unit,
           artStyle: from.artStyle,
           row: from.row as Combat,
@@ -1052,7 +1052,7 @@ describe('effect-mardroeme', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: tacoUnit,
+                  unit: gameUnit,
                   user: player.user,
                 },
               ],
@@ -1084,12 +1084,12 @@ describe('effect-mardroeme', () => {
         const to2 = TestUtil.getDbFieldUnit({
           id: unit2._id,
         })
-        const tacoUnit1 = TestUtil.getDbTacoUnit({
+        const gameUnit1 = TestUtil.getDbGameUnit({
           id: from1.unit,
           artStyle: from1.artStyle,
           row: from1.row as Combat,
         })
-        const tacoUnit2 = TestUtil.getDbTacoUnit({
+        const gameUnit2 = TestUtil.getDbGameUnit({
           id: from2.unit,
           artStyle: from2.artStyle,
           row: from2.row as Combat,
@@ -1142,11 +1142,11 @@ describe('effect-mardroeme', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: tacoUnit1,
+                  unit: gameUnit1,
                   user: player.user,
                 },
                 {
-                  unit: tacoUnit2,
+                  unit: gameUnit2,
                   user: player.user,
                 },
               ],

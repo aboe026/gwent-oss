@@ -219,11 +219,11 @@ describe('game-player-resolver', () => {
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbTacoUnit({}),
+                unit: TestUtil.getDbGameUnit({}),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbTacoUnit({}),
+                unit: TestUtil.getDbGameUnit({}),
               }),
             ],
           }),
@@ -240,7 +240,7 @@ describe('game-player-resolver', () => {
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbTacoUnit({}),
+                unit: TestUtil.getDbGameUnit({}),
               }),
             ],
           }),
@@ -261,15 +261,15 @@ describe('game-player-resolver', () => {
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbTacoUnit({}),
+                unit: TestUtil.getDbGameUnit({}),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbTacoUnit({}),
+                unit: TestUtil.getDbGameUnit({}),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.getDbTacoUnit({}),
+                unit: TestUtil.getDbGameUnit({}),
               }),
             ],
           }),

@@ -229,7 +229,7 @@ describe('effect-scorch', () => {
         scorchPlayerResponses: [
           [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
           ],
@@ -270,11 +270,11 @@ describe('effect-scorch', () => {
         scorchPlayerResponses: [
           [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
           ],
@@ -315,13 +315,13 @@ describe('effect-scorch', () => {
         scorchPlayerResponses: [
           [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
           ],
           [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
           ],
@@ -361,21 +361,21 @@ describe('effect-scorch', () => {
         scorchPlayerResponses: [
           [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
           ],
           [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: self.user,
             },
           ],
@@ -506,7 +506,7 @@ describe('effect-scorch', () => {
           turn: player.user,
           impacts: [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: new ObjectId(),
             },
           ],
@@ -529,7 +529,7 @@ describe('effect-scorch', () => {
           turn: new ObjectId(),
           impacts: [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: new ObjectId(),
             },
           ],
@@ -554,7 +554,7 @@ describe('effect-scorch', () => {
           turn: new ObjectId(),
           impacts: [
             {
-              unit: TestUtil.getDbTacoUnit({}),
+              unit: TestUtil.getDbGameUnit({}),
               user: new ObjectId(),
             },
           ],
@@ -706,7 +706,7 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch),
             user: origPlayer.user,
           },
         ],
@@ -748,7 +748,7 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch),
             user: origPlayer.user,
           },
         ],
@@ -790,7 +790,7 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch),
             user: origPlayer.user,
           },
         ],
@@ -836,11 +836,11 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch1),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch1),
             user: origPlayer.user,
           },
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch2),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch2),
             user: origPlayer.user,
           },
         ],
@@ -891,11 +891,11 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch1),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch1),
             user: origPlayer.user,
           },
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch2),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch2),
             user: origPlayer.user,
           },
         ],
@@ -946,11 +946,11 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch1),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch1),
             user: origPlayer.user,
           },
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch2),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch2),
             user: origPlayer.user,
           },
         ],
@@ -1011,15 +1011,15 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch1),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch1),
             user: origPlayer.user,
           },
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch2),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch2),
             user: origPlayer.user,
           },
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch3),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch3),
             user: origPlayer.user,
           },
         ],
@@ -1067,7 +1067,7 @@ describe('effect-scorch', () => {
         },
         expected: [
           {
-            unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnitToScorch),
+            unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnitToScorch),
             user: origPlayer.user,
           },
         ],

@@ -34,7 +34,7 @@ describe('calculate-game-effective-strengths', () => {
     it('returns single morale impact', () => {
       const unitId = new ObjectId()
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId,
         }),
       })
@@ -63,7 +63,7 @@ describe('calculate-game-effective-strengths', () => {
     it('returns single bond impact', () => {
       const unitId = new ObjectId()
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId,
         }),
       })
@@ -92,7 +92,7 @@ describe('calculate-game-effective-strengths', () => {
     it('returns single horn impact', () => {
       const unitId = new ObjectId()
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId,
         }),
       })
@@ -121,7 +121,7 @@ describe('calculate-game-effective-strengths', () => {
     it('returns single weather impact', () => {
       const unitId = new ObjectId()
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId,
         }),
       })
@@ -153,22 +153,22 @@ describe('calculate-game-effective-strengths', () => {
       const unitId3 = new ObjectId()
       const unitId4 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
       const impact3 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId3,
         }),
       })
       const impact4 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId4,
         }),
       })
@@ -222,12 +222,12 @@ describe('calculate-game-effective-strengths', () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
@@ -259,12 +259,12 @@ describe('calculate-game-effective-strengths', () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
@@ -297,12 +297,12 @@ describe('calculate-game-effective-strengths', () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
@@ -335,12 +335,12 @@ describe('calculate-game-effective-strengths', () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
@@ -375,22 +375,22 @@ describe('calculate-game-effective-strengths', () => {
       const unitId3 = new ObjectId()
       const unitId4 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
       const impact3 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId3,
         }),
       })
       const impact4 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId4,
         }),
       })
@@ -436,42 +436,42 @@ describe('calculate-game-effective-strengths', () => {
       const unitId7 = new ObjectId()
       const unitId8 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
       const impact3 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId3,
         }),
       })
       const impact4 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId4,
         }),
       })
       const impact5 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId5,
         }),
       })
       const impact6 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId6,
         }),
       })
       const impact7 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId7,
         }),
       })
       const impact8 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId8,
         }),
       })
@@ -529,22 +529,22 @@ describe('calculate-game-effective-strengths', () => {
       const unitId3 = new ObjectId()
       const unitId4 = new ObjectId()
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId1,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId2,
         }),
       })
       const impact3 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId3,
         }),
       })
       const impact4 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: unitId4,
         }),
       })

@@ -57,7 +57,7 @@ describe('effect-muster', () => {
         getMusterImpactResponses: [
           {
             impact: {
-              unit: TestUtil.getDbTacoUnit({
+              unit: TestUtil.getDbGameUnit({
                 id: musterableUnit._id,
               }),
               user: new ObjectId(),
@@ -100,7 +100,7 @@ describe('effect-muster', () => {
         combats: [Combat.Close],
       })
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
       })
       const combat = Combat.Close
       const message = `Could not find unit "${impact.unit?.unit}" from muster impact`
@@ -344,7 +344,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit._id,
           }),
         })
@@ -415,7 +415,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit._id,
           }),
         })
@@ -485,7 +485,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit1._id,
           }),
           source: {
@@ -496,7 +496,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit2._id,
           }),
           source: {
@@ -644,7 +644,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit._id,
           }),
         })
@@ -715,7 +715,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit._id,
           }),
         })
@@ -785,7 +785,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit1._id,
           }),
           source: {
@@ -796,7 +796,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit2._id,
           }),
           source: {
@@ -944,7 +944,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit._id,
           }),
         })
@@ -1015,7 +1015,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit._id,
           }),
         })
@@ -1085,7 +1085,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit1._id,
           }),
           source: {
@@ -1096,7 +1096,7 @@ describe('effect-muster', () => {
           combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
-          unit: TestUtil.getDbTacoUnit({
+          unit: TestUtil.getDbGameUnit({
             id: musterableUnit2._id,
           }),
           source: {
@@ -1316,7 +1316,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1354,7 +1354,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1395,7 +1395,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1433,7 +1433,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1474,7 +1474,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1512,7 +1512,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1555,7 +1555,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1593,7 +1593,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1634,7 +1634,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1672,7 +1672,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1713,7 +1713,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1751,7 +1751,7 @@ describe('effect-muster', () => {
             logPrefix,
             expected: {
               impact: {
-                unit: TestUtil.getDbTacoUnit({
+                unit: TestUtil.getDbGameUnit({
                   id: deckUnit.unit,
                   artStyle: deckUnit.artStyle,
                   row: combat,
@@ -1791,7 +1791,7 @@ describe('effect-muster', () => {
         logPrefix,
         expected: {
           impact: {
-            unit: TestUtil.getDbTacoUnit({
+            unit: TestUtil.getDbGameUnit({
               id: deckUnit.unit,
               artStyle: deckUnit.artStyle,
               row: combat,

@@ -1,4 +1,4 @@
-fragment MoveUnitReasonUnit on TacoUnit {
+fragment MoveUnitReasonUnit on GameUnit {
   ... on DeckUnit {
     unit {
       name

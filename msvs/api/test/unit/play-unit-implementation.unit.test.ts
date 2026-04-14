@@ -116,7 +116,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -147,7 +147,7 @@ describe('play-unit-implementation', () => {
     })
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -179,7 +179,7 @@ describe('play-unit-implementation', () => {
     })
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -212,7 +212,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -240,7 +240,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -268,7 +268,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -296,7 +296,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -327,7 +327,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -358,7 +358,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]
@@ -388,7 +388,7 @@ describe('play-unit-implementation', () => {
     const fieldUnit = TestUtil.getDbFieldUnit({})
     const impacts: ImpactDbObject[] = [
       {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
         user: new ObjectId(),
       },
     ]

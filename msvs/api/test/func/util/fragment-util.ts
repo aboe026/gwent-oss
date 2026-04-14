@@ -169,7 +169,7 @@ export function getWeatherUnitFragment(): string {
   `
 }
 
-export function getTacoUnitFragment(): string {
+export function getGameUnitFragment(): string {
   return `
     ... on FieldUnit {
       ${getFieldUnitFragment()}
@@ -197,7 +197,7 @@ export function getMoveFragment() {
     ... on MoveUnit {
       created
       unit {
-        ${getTacoUnitFragment()}
+        ${getGameUnitFragment()}
       }
       impacts {
         ${getImpactFragment()}
@@ -205,7 +205,7 @@ export function getMoveFragment() {
       reason {
         type
         unit {
-          ${getTacoUnitFragment()}
+          ${getGameUnitFragment()}
         }
       }
       source {
@@ -227,7 +227,7 @@ export function getSourceFragment(): string {
 export function getImpactFragment(): string {
   return `
     unit {
-      ${getTacoUnitFragment()}
+      ${getGameUnitFragment()}
     }
     user {
       ${getUserFragment()}

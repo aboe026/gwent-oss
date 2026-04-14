@@ -5,12 +5,12 @@ import {
   DeckUnitDbObject,
   FieldUnitDbObject,
   GameDbObject,
+  GameUnitDbObject,
   GameUnitOrigin,
   ImpactDbObject,
   MoveReasonType,
   MoveUnitDbObject,
   MoveUnitReasonDbObject,
-  TacoUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import { EffectReasonType, GameUnitType, MoveType } from '@gwent/graphql-schema'
@@ -61,7 +61,7 @@ describe('update-history', () => {
       const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(musteredUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit),
         user: new ObjectId(),
       }
       const musters = {
@@ -98,7 +98,7 @@ describe('update-history', () => {
     it('calls addMoveToCurrentPlayer once with scorch impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       testNewUnitDeployed({
@@ -113,7 +113,7 @@ describe('update-history', () => {
     it('calls addMoveToCurrentPlayer once with morale impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       testNewUnitDeployed({
@@ -128,7 +128,7 @@ describe('update-history', () => {
     it('calls addMoveToCurrentPlayer once with bond impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       testNewUnitDeployed({
@@ -143,7 +143,7 @@ describe('update-history', () => {
     it('calls addMoveToCurrentPlayer once with horn impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       testNewUnitDeployed({
@@ -158,7 +158,7 @@ describe('update-history', () => {
     it('calls addMoveToCurrentPlayer once with decoy impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       testNewUnitDeployed({
@@ -173,7 +173,7 @@ describe('update-history', () => {
     it('calls addMoveToCurrentPlayer once with spy impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       testNewUnitDeployed({
@@ -189,7 +189,7 @@ describe('update-history', () => {
     it('calls addMoveToCurrentPlayer once with weather impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       testNewUnitDeployed({
@@ -205,7 +205,7 @@ describe('update-history', () => {
       const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(musteredUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit),
         user: new ObjectId(),
       }
       const musters = {
@@ -225,11 +225,11 @@ describe('update-history', () => {
       const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact1: ImpactDbObject = {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(musteredUnit),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit),
         user: new ObjectId(),
       }
       const impact2: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const musters = {
@@ -254,11 +254,11 @@ describe('update-history', () => {
       const musteredUnit2 = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact1: ImpactDbObject = {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(musteredUnit1),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit1),
         user: new ObjectId(),
       }
       const impact2: ImpactDbObject = {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(musteredUnit2),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit2),
         user: new ObjectId(),
       }
       const musters = {
@@ -279,7 +279,7 @@ describe('update-history', () => {
       const mardroeming = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(mardroeming),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(mardroeming),
         user: new ObjectId(),
       }
       const mardroemes = {
@@ -301,7 +301,7 @@ describe('update-history', () => {
       const mardroeming = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: TestUtil.convertFieldDbUnitToTacoDbUnit(mardroeming),
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(mardroeming),
         user: new ObjectId(),
       }
       const mardroemes = {
@@ -355,7 +355,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit.artStyle,
           effectiveStrength: fieldUnit.effectiveStrength,
           id: fieldUnit.unit,
@@ -380,7 +380,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -392,7 +392,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -419,7 +419,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -431,7 +431,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -458,7 +458,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -470,7 +470,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -497,7 +497,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -509,7 +509,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -536,7 +536,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -548,7 +548,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -575,7 +575,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -587,7 +587,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -614,7 +614,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -626,7 +626,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -653,7 +653,7 @@ describe('update-history', () => {
         row: combat,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const move: MoveUnitDbObject = {
@@ -665,7 +665,7 @@ describe('update-history', () => {
           origin: GameUnitOrigin.Hand,
         },
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           row: combat,
         }),
@@ -718,7 +718,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -762,7 +762,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -798,7 +798,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -837,7 +837,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -897,7 +897,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -934,7 +934,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -974,7 +974,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1035,7 +1035,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1071,7 +1071,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1110,7 +1110,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1170,7 +1170,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1207,7 +1207,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1247,7 +1247,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbTacoUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1282,10 +1282,10 @@ describe('update-history', () => {
       })
     })
   })
-  describe('getMoveTacoUnit', () => {
+  describe('getMoveTestUtil.getDbGameUnit', () => {
     it('returns Deck type if not weather or row', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
-      testGetMoveTacoUnit({
+      testGetMoveGameUnit({
         deckUnit,
         expected: {
           ...deckUnit,
@@ -1295,7 +1295,7 @@ describe('update-history', () => {
     })
     it('returns Weather type if isWeather true', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
-      testGetMoveTacoUnit({
+      testGetMoveGameUnit({
         deckUnit,
         isWeather: true,
         expected: {
@@ -1307,7 +1307,7 @@ describe('update-history', () => {
     it('returns Field type if combat provided', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const combat = Combat.Close
-      testGetMoveTacoUnit({
+      testGetMoveGameUnit({
         deckUnit,
         combat,
         expected: {
@@ -1336,7 +1336,7 @@ describe('update-history', () => {
           },
         ],
       })
-      testGetMoveTacoUnit({
+      testGetMoveGameUnit({
         deckUnit,
         fieldUnit,
         expected: {
@@ -1374,7 +1374,7 @@ describe('update-history', () => {
     it('does not change impact if not Field type', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: deckUnit.unit,
           type: GameUnitType.Deck,
         }),
@@ -1387,7 +1387,7 @@ describe('update-history', () => {
     it('does not change impact if Field type but not on battlefield', () => {
       const fieldUnit = TestUtil.getDbFieldUnit({})
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           type: GameUnitType.Field,
         }),
@@ -1407,7 +1407,7 @@ describe('update-history', () => {
     it('changes single impact if Field type and on battlefield', () => {
       const fieldUnit = TestUtil.getDbFieldUnit({})
       const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           type: GameUnitType.Field,
         }),
@@ -1438,7 +1438,7 @@ describe('update-history', () => {
         unit: null,
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit.unit,
           type: GameUnitType.Field,
         }),
@@ -1472,13 +1472,13 @@ describe('update-history', () => {
       const fieldUnit1 = TestUtil.getDbFieldUnit({})
       const fieldUnit2 = TestUtil.getDbFieldUnit({})
       const impact1 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit1.unit,
           type: GameUnitType.Field,
         }),
       })
       const impact2 = TestUtil.getDbImpact({
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: fieldUnit2.unit,
           type: GameUnitType.Field,
         }),
@@ -1569,7 +1569,7 @@ function testNewUnitDeployed({
   const updateImpactFieldUnitsSpy = jest.spyOn(UpdateHistory, 'updateImpactFieldUnits').mockReturnValue(updatedImpacts)
   const date = new Date()
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => date)
-  const tacoUnit = TestUtil.getDbTacoUnit({
+  const gameUnit = TestUtil.getDbGameUnit({
     artStyle: deckUnit.artStyle,
     id: deckUnit.unit,
     effectiveStrength: fieldUnit.effectiveStrength,
@@ -1577,10 +1577,10 @@ function testNewUnitDeployed({
     row: combat ? combat : (fieldUnit.row as Combat),
     type: combat ? GameUnitType.Field : GameUnitType.Deck,
   })
-  const getMoveTacoUnitSpy = jest.spyOn(UpdateHistory, 'getMoveTacoUnit').mockReturnValue(tacoUnit)
+  const getMoveGameUnitSpy = jest.spyOn(UpdateHistory, 'getMoveGameUnit').mockReturnValue(gameUnit)
   const move: MoveUnitDbObject = {
     created: date,
-    unit: tacoUnit,
+    unit: gameUnit,
     impacts: updatedImpacts,
     reason: {
       type: MoveReasonType.Deploy,
@@ -1617,7 +1617,7 @@ function testNewUnitDeployed({
             playerId,
             reason: {
               type: MoveReasonType.Muster,
-              unit: tacoUnit,
+              unit: gameUnit,
             },
             scorches,
             unitId: muster.unit.unit,
@@ -1650,7 +1650,7 @@ function testNewUnitDeployed({
                   ...mardroemingFieldUnit,
                   type: GameUnitType.Field,
                 }
-              : tacoUnit,
+              : gameUnit,
           },
           scorches,
           unitId: transformedFieldUnit.unit,
@@ -1732,7 +1732,7 @@ function testNewUnitDeployed({
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
-  expect(getMoveTacoUnitSpy.mock.calls).toEqual([
+  expect(getMoveGameUnitSpy.mock.calls).toEqual([
     [
       {
         fieldUnit,
@@ -1872,7 +1872,7 @@ function testNewUnitIndirect({
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 
-function testGetMoveTacoUnit({
+function testGetMoveGameUnit({
   deckUnit,
   fieldUnit,
   isWeather,
@@ -1883,10 +1883,10 @@ function testGetMoveTacoUnit({
   fieldUnit?: FieldUnitDbObject | undefined
   isWeather?: boolean
   combat?: Combat | null | undefined
-  expected: TacoUnitDbObject
+  expected: GameUnitDbObject
 }) {
   expect(
-    UpdateHistory.getMoveTacoUnit({
+    UpdateHistory.getMoveGameUnit({
       deckUnit,
       fieldUnit,
       combat,

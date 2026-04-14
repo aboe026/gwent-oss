@@ -34,7 +34,7 @@ import {
   RedrawDocument,
   SetDeckDocument,
   SetOrderDocument,
-  TacoUnitFragmentDoc,
+  GameUnitFragmentDoc,
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
@@ -78,7 +78,7 @@ import {
   NOT_AUTHORIZED_MESSAGE,
   ROUTES,
 } from '@gwent/constants'
-import { getUnitFromTacoUnit } from '../../util/taco-unit-util'
+import { getUnitFromGameUnit } from '../../util/game-unit-util'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import NewGame from './NewGame'
 import { sortObjectArray } from '@gwent/utils'
@@ -518,8 +518,8 @@ function ExistingGame({
         const move = useFragment(MoveFragmentDoc, round.moves[i])
         if (move.__typename === 'MoveUnit') {
           const moveUnit = useFragment(MoveUnitFragmentDoc, move)
-          const gameUnit = useFragment(TacoUnitFragmentDoc, moveUnit.unit)
-          const unit = getUnitFromTacoUnit(gameUnit)
+          const gameUnit = useFragment(GameUnitFragmentDoc, moveUnit.unit)
+          const unit = getUnitFromGameUnit(gameUnit)
           if (unit && unit.id === unitSelected.id) {
             moveIndex = i
           }

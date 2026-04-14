@@ -281,12 +281,12 @@ describe('resolver-util', () => {
     const moves = [
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: units[2]._id,
         }),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.getDbDeckUnit({
+          unit: TestUtil.getDbGameUnit({
             id: units[3]._id,
           }),
         },
@@ -296,7 +296,7 @@ describe('resolver-util', () => {
         },
         impacts: [
           {
-            unit: TestUtil.getDbTacoUnit({
+            unit: TestUtil.getDbGameUnit({
               id: units[4]._id,
             }),
             user: users[1]._id,
@@ -306,7 +306,7 @@ describe('resolver-util', () => {
             },
           },
           {
-            unit: TestUtil.getDbTacoUnit({
+            unit: TestUtil.getDbGameUnit({
               id: units[5]._id,
             }),
             user: users[3]._id,
@@ -315,12 +315,12 @@ describe('resolver-util', () => {
       }),
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: units[2]._id,
         }),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: TestUtil.getDbDeckUnit({
+          unit: TestUtil.getDbGameUnit({
             id: units[3]._id,
           }),
         },
@@ -330,7 +330,7 @@ describe('resolver-util', () => {
         },
         impacts: [
           {
-            unit: TestUtil.getDbTacoUnit({
+            unit: TestUtil.getDbGameUnit({
               id: units[4]._id,
             }),
             user: users[1]._id,
@@ -340,7 +340,7 @@ describe('resolver-util', () => {
             },
           },
           {
-            unit: TestUtil.getDbTacoUnit({
+            unit: TestUtil.getDbGameUnit({
               id: units[5]._id,
             }),
             user: users[3]._id,
@@ -349,14 +349,14 @@ describe('resolver-util', () => {
       }),
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: units[1]._id,
         }),
         target: users[5]._id,
       }),
       TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           id: units[1]._id,
         }),
         target: users[5]._id,
@@ -395,7 +395,7 @@ describe('resolver-util', () => {
         presolvedUsers,
         impacts: [
           {
-            unit: TestUtil.getDbTacoUnit({
+            unit: TestUtil.getDbGameUnit({
               id: new ObjectId(),
             }),
             user: new ObjectId(),

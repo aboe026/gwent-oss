@@ -207,11 +207,11 @@ describe('player-round-resolver', () => {
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
                 reason: {
                   type: MoveReasonType.Deploy,
                   unit: fieldUnits[0],
@@ -235,14 +235,14 @@ describe('player-round-resolver', () => {
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[3]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[3]),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[4]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[4]),
                 reason: {
                   type: MoveReasonType.Deploy,
-                  unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[3]),
+                  unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[3]),
                 },
               }),
             ],
@@ -283,11 +283,11 @@ describe('player-round-resolver', () => {
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[0]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[1]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
                 reason: {
                   type: MoveReasonType.Deploy,
                   unit: fieldUnits[0],
@@ -311,11 +311,11 @@ describe('player-round-resolver', () => {
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[3]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[3]),
               }),
               TestUtil.getDbMove({
                 type: MoveType.Unit,
-                unit: TestUtil.convertFieldDbUnitToTacoDbUnit(fieldUnits[4]),
+                unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[4]),
                 reason: {
                   type: MoveReasonType.Deploy,
                   unit: fieldUnits[3],

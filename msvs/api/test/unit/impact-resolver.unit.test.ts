@@ -1,17 +1,17 @@
 import { ObjectId } from 'mongodb'
 
+import { GameUnit, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameUnitOrigin, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
-import { Impact, TacoUnit, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import ImpactResolver from '../../src/graphql/resolvers/types/impact-resolver'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
-import TacoUnitResolver from '../../src/graphql/resolvers/types/taco-unit-resolver'
 import TestUtil from '../util/test-util'
 
 describe('impact-resolver', () => {
   describe('fromObject', () => {
     it('throws error if impact unit not found', async () => {
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const message = `Could not find impact unit "${impact.unit?.unit}"`
@@ -23,7 +23,7 @@ describe('impact-resolver', () => {
     })
     it('throws error if impact user not found', async () => {
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
       }
       const message = `Could not find impact user "${impact.user}"`
@@ -40,7 +40,7 @@ describe('impact-resolver', () => {
     })
     it('throws error if source user not found', async () => {
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({}),
+        unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
         source: {
           origin: GameUnitOrigin.Hand,
@@ -89,7 +89,7 @@ describe('impact-resolver', () => {
         unit,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit.artStyle,
           effectiveStrength: fieldUnit.effectiveStrength,
           id: fieldUnit.unit.id,
@@ -104,7 +104,7 @@ describe('impact-resolver', () => {
         impact,
         resolvedUsers: [impactUser],
         resolvedUnits: [unit],
-        resolvedTacoUnit: fieldUnit,
+        resolvedGameUnit: fieldUnit,
         expected: {
           unit: fieldUnit,
           user: impactUser,
@@ -136,7 +136,7 @@ describe('impact-resolver', () => {
         unit,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit.artStyle,
           effectiveStrength: fieldUnit.effectiveStrength,
           id: fieldUnit.unit.id,
@@ -151,7 +151,7 @@ describe('impact-resolver', () => {
         impact,
         users: [impactUser],
         units: [unit],
-        resolvedTacoUnit: fieldUnit,
+        resolvedGameUnit: fieldUnit,
         expected: {
           unit: fieldUnit,
           user: impactUser,
@@ -167,7 +167,7 @@ describe('impact-resolver', () => {
       })
       const origin = GameUnitOrigin.Hand
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit.artStyle,
           effectiveStrength: fieldUnit.effectiveStrength,
           id: fieldUnit.unit.id,
@@ -183,7 +183,7 @@ describe('impact-resolver', () => {
         impact,
         resolvedUsers: [impactUser, sourceUser],
         resolvedUnits: [unit],
-        resolvedTacoUnit: fieldUnit,
+        resolvedGameUnit: fieldUnit,
         expected: {
           unit: fieldUnit,
           user: impactUser,
@@ -212,7 +212,7 @@ describe('impact-resolver', () => {
         unit,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit.artStyle,
           effectiveStrength: fieldUnit.effectiveStrength,
           id: fieldUnit.unit.id,
@@ -236,7 +236,7 @@ describe('impact-resolver', () => {
         unit: unit1,
       })
       const impact1: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit1.artStyle,
           effectiveStrength: fieldUnit1.effectiveStrength,
           id: fieldUnit1.unit.id,
@@ -249,7 +249,7 @@ describe('impact-resolver', () => {
         unit: unit2,
       })
       const impact2: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit2.artStyle,
           effectiveStrength: fieldUnit2.effectiveStrength,
           id: fieldUnit2.unit.id,
@@ -276,7 +276,7 @@ describe('impact-resolver', () => {
         unit,
       })
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: fieldUnit.artStyle,
           effectiveStrength: fieldUnit.effectiveStrength,
           id: fieldUnit.unit.id,
@@ -304,7 +304,7 @@ async function testFromObject({
   units,
   resolvedUsers = [],
   resolvedUnits = [],
-  resolvedTacoUnit,
+  resolvedGameUnit,
   expected,
   errorCalls = [],
 }: {
@@ -313,7 +313,7 @@ async function testFromObject({
   units?: Unit[]
   resolvedUsers?: User[]
   resolvedUnits?: Unit[]
-  resolvedTacoUnit?: TacoUnit
+  resolvedGameUnit?: GameUnit
   expected?: Impact | Error
   errorCalls?: string[][]
 }) {
@@ -321,9 +321,9 @@ async function testFromObject({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
-  const tacoUnitResolverSpy = jest.spyOn(TacoUnitResolver, 'fromObject')
-  if (resolvedTacoUnit) {
-    tacoUnitResolverSpy.mockResolvedValue(resolvedTacoUnit)
+  const gameUnitResolverSpy = jest.spyOn(GameUnitResolver, 'fromObject')
+  if (resolvedGameUnit) {
+    gameUnitResolverSpy.mockResolvedValue(resolvedGameUnit)
   }
   const errorSpy = jest.fn().mockImplementation()
   ImpactResolver['logger'] = {
@@ -350,13 +350,13 @@ async function testFromObject({
       },
     ],
   ])
-  expect(tacoUnitResolverSpy.mock.calls).toEqual(
+  expect(gameUnitResolverSpy.mock.calls).toEqual(
     expected instanceof Error || !impact.unit
       ? []
       : [
           [
             {
-              tacoUnit: impact.unit,
+              gameUnit: impact.unit,
               unit: (units || resolvedUnits)[0],
             },
           ],
@@ -396,8 +396,8 @@ async function testFromArray({
         }),
       }
       if (impact.unit) {
-        resolvedImpact.unit = TestUtil.getTacoUnitFromDbTacoUnit({
-          tacoUnit: impact.unit,
+        resolvedImpact.unit = TestUtil.getGameUnitFromDbGameUnit({
+          gameUnit: impact.unit,
           unit: (units || resolvedUnits)[i],
         })
       }

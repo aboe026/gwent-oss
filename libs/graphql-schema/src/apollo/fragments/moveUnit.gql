@@ -1,7 +1,7 @@
 fragment MoveUnit on MoveUnit {
   created
   unit {
-    ...TacoUnit
+    ...GameUnit
   }
   impacts {
     ...Impact

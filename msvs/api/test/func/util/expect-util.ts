@@ -20,7 +20,7 @@ import {
   PlayerCombatRow,
   PlayerRound,
   RoundResult,
-  TacoUnit,
+  GameUnit,
   Unit,
   UnitStats,
   User,
@@ -589,7 +589,7 @@ export function expectizeMoveUnit({
     user: null,
   },
 }: {
-  unit: TacoUnit
+  unit: GameUnit
   reason?: MoveUnitReason
   impacts?: Impact[]
   source?: GameUnitSource

@@ -350,7 +350,7 @@ describe('effect-morale', () => {
         expected: {
           [moralingUnit._id.toString()]: [
             {
-              unit: TestUtil.getDbTacoUnit({
+              unit: TestUtil.getDbGameUnit({
                 artStyle: rowFieldUnit.artStyle,
                 id: rowFieldUnit.unit,
                 effectiveStrength: 1,
@@ -409,7 +409,7 @@ describe('effect-morale', () => {
         expected: {
           [moralingUnit._id.toString()]: [
             {
-              unit: TestUtil.getDbTacoUnit({
+              unit: TestUtil.getDbGameUnit({
                 artStyle: rowFieldUnit.artStyle,
                 id: rowFieldUnit.unit,
                 effectiveStrength: 1,
@@ -479,7 +479,7 @@ describe('effect-morale', () => {
         expected: {
           [moralingUnit2._id.toString()]: [
             {
-              unit: TestUtil.getDbTacoUnit({
+              unit: TestUtil.getDbGameUnit({
                 artStyle: rowFieldUnit.artStyle,
                 id: rowFieldUnit.unit,
                 effectiveStrength: 2,
@@ -534,7 +534,7 @@ describe('effect-morale', () => {
         expected: {
           [moralingUnit2._id.toString()]: [
             {
-              unit: TestUtil.convertFieldDbUnitToTacoDbUnit({
+              unit: TestUtil.convertFieldDbUnitToGameDbUnit({
                 ...rowFieldUnit,
                 effectiveStrength: 2,
               }),
@@ -543,7 +543,7 @@ describe('effect-morale', () => {
           ],
           [moralingUnit3._id.toString()]: [
             {
-              unit: TestUtil.convertFieldDbUnitToTacoDbUnit({
+              unit: TestUtil.convertFieldDbUnitToGameDbUnit({
                 ...rowFieldUnit,
                 effectiveStrength: 3,
               }),
@@ -626,7 +626,7 @@ describe('effect-morale', () => {
         effects: [effect],
       }
       const impact: ImpactDbObject = {
-        unit: TestUtil.getDbTacoUnit({
+        unit: TestUtil.getDbGameUnit({
           artStyle: rowFieldUnit.artStyle,
           id: rowFieldUnit.unit,
           effectiveStrength: 5,

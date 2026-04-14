@@ -233,7 +233,7 @@ describe('effect-horn', () => {
           },
         },
       ]
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: rowFieldUnit.unit,
         effectiveStrength: 6,
         effects,
@@ -255,7 +255,7 @@ describe('effect-horn', () => {
         expected: {
           [horningUnit._id.toString()]: [
             {
-              unit: tacoUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
@@ -297,7 +297,7 @@ describe('effect-horn', () => {
         effectiveStrength: 6,
         effects: [fieldUnitEffect],
       }
-      const tacoUnit = TestUtil.getDbTacoUnit({
+      const gameUnit = TestUtil.getDbGameUnit({
         id: updatedRowFieldUnit.unit,
         effectiveStrength: 6,
         effects: [fieldUnitEffect],
@@ -305,7 +305,7 @@ describe('effect-horn', () => {
         row: updatedRowFieldUnit.row as Combat,
       })
       const impact: ImpactDbObject = {
-        unit: tacoUnit,
+        unit: gameUnit,
         user: userId,
       }
       testApplyHorn({
