@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Combat, GameDbObject, GameUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, GameDbObject, UnitDbObject, WeatherUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -36,7 +36,7 @@ export default class GetWeatherUnitsForRow {
     if (combat) {
       const weathers: {
         userId: ObjectId
-        gameUnit: GameUnitDbObject
+        weatherUnit: WeatherUnitDbObject
       }[] = []
 
       for (const player of game.players) {
@@ -45,16 +45,16 @@ export default class GetWeatherUnitsForRow {
           for (const weather of round.weathers) {
             weathers.push({
               userId: player.user,
-              gameUnit: weather,
+              weatherUnit: weather,
             })
           }
         }
       }
 
       for (const weather of weathers) {
-        const matchingUnit = units.find((unit) => unit._id.toString() === weather.gameUnit.unit.toString())
+        const matchingUnit = units.find((unit) => unit._id.toString() === weather.weatherUnit.unit.toString())
         if (!matchingUnit) {
-          const message = `Could not find weather Unit with ID "${weather.gameUnit.unit}"`
+          const message = `Could not find weather Unit with ID "${weather.weatherUnit.unit}"`
           GetWeatherUnitsForRow.logger.error(`${logPrefix} failed: ${message}`)
           throw new PresentableError(`${message}.`)
         }

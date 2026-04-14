@@ -280,10 +280,12 @@ export default class GamePage {
         const isDotted = await E2eHelper.hasDottedBorder(card)
         actualNames.push(`${cardName}${isSelected ? ' selected' : ''}${isDotted ? ' dotted' : ''}`)
       }
+      let highlightedUnitFound = false
       const expectedNames = names.map((name) => {
         let expectedName = name
-        if (highlightedUnit) {
+        if (highlightedUnit && !highlightedUnitFound) {
           if (expectedName === highlightedUnit.unitName) {
+            highlightedUnitFound = true
             expectedName += ' selected'
             if (highlightedUnit.dotted) {
               expectedName += ' dotted'
@@ -1211,8 +1213,8 @@ export default class GamePage {
           await t
             .expect(
               nonCombatRow.selector
-                .find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`)
-                .hasClass(HTML_CLASSES.ItemHighlighted)
+                .find(`.${HTML_CLASSES.GameCombatRowModifierContainer}`)
+                .hasClass(HTML_CLASSES.GameCombatRowModifierAvailable)
             )
             .notOk(`Modifier for row "${nonCombatRow.combat}" is not highlighted`)
         }
@@ -1416,12 +1418,14 @@ export default class GamePage {
     unitName,
     row,
     self,
+    modifier,
     decoying,
     instance = 1,
   }: {
     unitName: string
     row: Combat
     self: boolean
+    modifier?: boolean
     decoying?: boolean
     instance?: number
   }) {
@@ -1443,7 +1447,9 @@ export default class GamePage {
         rowSelector = GamePage.elements.CombatRowSiegeOpponent
       }
     }
-    const rowCards = rowSelector.find(`.${HTML_CLASSES.GameCombatRowCards}`).child()
+    const rowCards = rowSelector
+      .find(`.${modifier ? HTML_CLASSES.GameCombatRowModifierContainer : HTML_CLASSES.GameCombatRowCards}`)
+      .child()
     const rowCardsCount = await rowCards.count
     let matchingCard: Selector | undefined
     let namedInstance = 1
@@ -1489,11 +1495,22 @@ export default class GamePage {
     return matchingCard
   }
 
-  static async selectBattlefieldCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
+  static async selectBattlefieldCard({
+    unitName,
+    row,
+    self,
+    modifier,
+  }: {
+    unitName: string
+    row: Combat
+    self: boolean
+    modifier?: boolean
+  }) {
     const card = await this.getBattlefieldCard({
       unitName,
       row,
       self,
+      modifier,
     })
     await t.click(card)
   }

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { Combat, DeckUnitDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectSpy, { PotentialSpies } from '../../src/graphql/resolvers/mutations/play-unit/effect-spy'
+import { GameUnitType } from '@gwent/graphql-schema'
 import TestUtil from '../util/test-util'
 import * as utils from '@gwent/utils'
 
@@ -161,7 +162,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     close: {
                       ...updatedGame.players[1].rounds[0].close,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -207,7 +214,11 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn.artStyle,
+                    id: undrawn.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -231,7 +242,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     close: {
                       ...updatedGame.players[1].rounds[0].close,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -287,11 +304,19 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn1,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn1.artStyle,
+                    id: undrawn1.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
                 {
-                  unit: undrawn2,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn2.artStyle,
+                    id: undrawn2.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -315,7 +340,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     close: {
                       ...updatedGame.players[1].rounds[0].close,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -380,11 +411,19 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn3,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn3.artStyle,
+                    id: undrawn3.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
                 {
-                  unit: undrawn1,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn1.artStyle,
+                    id: undrawn1.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -408,7 +447,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     close: {
                       ...updatedGame.players[1].rounds[0].close,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -484,7 +529,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     ranged: {
                       ...updatedGame.players[1].rounds[0].ranged,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -530,7 +581,11 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn.artStyle,
+                    id: undrawn.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -554,7 +609,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     ranged: {
                       ...updatedGame.players[1].rounds[0].ranged,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -610,11 +671,19 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn1,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn1.artStyle,
+                    id: undrawn1.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
                 {
-                  unit: undrawn2,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn2.artStyle,
+                    id: undrawn2.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -638,7 +707,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     ranged: {
                       ...updatedGame.players[1].rounds[0].ranged,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -703,11 +778,19 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn3,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn3.artStyle,
+                    id: undrawn3.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
                 {
-                  unit: undrawn1,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn1.artStyle,
+                    id: undrawn1.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -731,7 +814,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     ranged: {
                       ...updatedGame.players[1].rounds[0].ranged,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -807,7 +896,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     siege: {
                       ...updatedGame.players[1].rounds[0].siege,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -853,7 +948,11 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn.artStyle,
+                    id: undrawn.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -877,7 +976,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     siege: {
                       ...updatedGame.players[1].rounds[0].siege,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -933,11 +1038,19 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn1,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn1.artStyle,
+                    id: undrawn1.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
                 {
-                  unit: undrawn2,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn2.artStyle,
+                    id: undrawn2.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -961,7 +1074,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     siege: {
                       ...updatedGame.players[1].rounds[0].siege,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],
@@ -1026,11 +1145,19 @@ describe('effect-spy', () => {
             impacts: {
               [newDeckUnit.unit.toString()]: [
                 {
-                  unit: undrawn3,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn3.artStyle,
+                    id: undrawn3.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
                 {
-                  unit: undrawn1,
+                  unit: TestUtil.getDbGameUnit({
+                    artStyle: undrawn1.artStyle,
+                    id: undrawn1.unit,
+                    type: GameUnitType.Deck,
+                  }),
                   user: self.user,
                 },
               ],
@@ -1054,7 +1181,13 @@ describe('effect-spy', () => {
                     ...updatedGame.players[1].rounds[0],
                     siege: {
                       ...updatedGame.players[1].rounds[0].siege,
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     },
                   },
                 ],

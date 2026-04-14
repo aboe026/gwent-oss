@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import {
   DeckUnit,
+  FieldUnit,
   Impact,
   Leader,
   Move,
@@ -11,8 +12,8 @@ import {
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
+import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
 import {
-  GameUnit,
   GameUnitOrigin,
   MoveDbObject,
   MoveLeaderDbObject,
@@ -20,7 +21,6 @@ import {
   MoveReasonType,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import ImpactResolver from '../../src/graphql/resolvers/types/impact-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
@@ -93,16 +93,15 @@ describe('move-resolver', () => {
     })
     describe('unit', () => {
       it('throws error if unit for move not found', async () => {
-        const gameUnit = TestUtil.getGameUnit({
+        const fieldUnit = TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({}),
         })
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
-            artStyle: gameUnit.artStyle,
-            effectiveStrength: gameUnit.effectiveStrength,
-            effects: [],
-            id: new ObjectId(gameUnit.unit.id),
+            artStyle: fieldUnit.artStyle,
+            effectiveStrength: fieldUnit.effectiveStrength,
+            id: new ObjectId(fieldUnit.unit.id),
           }),
           type: MoveType.Unit,
           reason: {
@@ -114,26 +113,25 @@ describe('move-resolver', () => {
         }
         await testFromObject({
           move,
-          error: Error(`Could not find move unit "${gameUnit.unit.id}"`),
+          error: Error(`Could not find move unit "${fieldUnit.unit.id}"`),
         })
       })
       it('throws error if unit for reason not found', async () => {
-        const gameUnit = TestUtil.getGameUnit({
+        const fieldUnit = TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({}),
         })
         const deckUnit = TestUtil.getDbDeckUnit({})
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
-            artStyle: gameUnit.artStyle,
-            effectiveStrength: gameUnit.effectiveStrength,
-            effects: [],
-            id: new ObjectId(gameUnit.unit.id),
+            artStyle: fieldUnit.artStyle,
+            effectiveStrength: fieldUnit.effectiveStrength,
+            id: new ObjectId(fieldUnit.unit.id),
           }),
           type: MoveType.Unit,
           reason: {
             type: MoveReasonType.Deploy,
-            unit: deckUnit,
+            unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
           source: {
             origin: GameUnitOrigin.Hand,
@@ -143,24 +141,23 @@ describe('move-resolver', () => {
           move,
           resolvedUnits: [
             TestUtil.getUnit({
-              id: gameUnit.unit.id,
+              id: fieldUnit.unit.id,
             }),
           ],
           error: Error(`Could not find reason unit "${deckUnit.unit}"`),
         })
       })
       it('throws error if source user not found', async () => {
-        const gameUnit = TestUtil.getGameUnit({
+        const fieldUnit = TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({}),
         })
         const userId = new ObjectId()
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
-            artStyle: gameUnit.artStyle,
-            effectiveStrength: gameUnit.effectiveStrength,
-            effects: [],
-            id: new ObjectId(gameUnit.unit.id),
+            artStyle: fieldUnit.artStyle,
+            effectiveStrength: fieldUnit.effectiveStrength,
+            id: new ObjectId(fieldUnit.unit.id),
           }),
           type: MoveType.Unit,
           reason: {
@@ -175,24 +172,23 @@ describe('move-resolver', () => {
           move,
           resolvedUnits: [
             TestUtil.getUnit({
-              id: gameUnit.unit.id,
+              id: fieldUnit.unit.id,
             }),
           ],
           error: Error(`Could not find source user "${userId}"`),
         })
       })
       it('throws error if target user not found', async () => {
-        const gameUnit = TestUtil.getGameUnit({
+        const fieldUnit = TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({}),
         })
         const userId = new ObjectId()
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
-            artStyle: gameUnit.artStyle,
-            effectiveStrength: gameUnit.effectiveStrength,
-            effects: [],
-            id: new ObjectId(gameUnit.unit.id),
+            artStyle: fieldUnit.artStyle,
+            effectiveStrength: fieldUnit.effectiveStrength,
+            id: new ObjectId(fieldUnit.unit.id),
           }),
           type: MoveType.Unit,
           reason: {
@@ -207,23 +203,22 @@ describe('move-resolver', () => {
           move,
           resolvedUnits: [
             TestUtil.getUnit({
-              id: gameUnit.unit.id,
+              id: fieldUnit.unit.id,
             }),
           ],
           error: Error(`Could not find target user "${userId}"`),
         })
       })
       it('resolves with no reason or source', async () => {
-        const gameUnit = TestUtil.getGameUnit({
+        const fieldUnit = TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({}),
         })
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
-            artStyle: gameUnit.artStyle,
-            effectiveStrength: gameUnit.effectiveStrength,
-            effects: [],
-            id: new ObjectId(gameUnit.unit.id),
+            artStyle: fieldUnit.artStyle,
+            effectiveStrength: fieldUnit.effectiveStrength,
+            id: new ObjectId(fieldUnit.unit.id),
           }),
           type: MoveType.Unit,
           reason: {
@@ -237,13 +232,13 @@ describe('move-resolver', () => {
           move,
           resolvedUnits: [
             TestUtil.getUnit({
-              id: gameUnit.unit.id,
+              id: fieldUnit.unit.id,
             }),
           ],
-          gameUnitFromObjectResponse: gameUnit,
+          fieldUnitFromObjectResponse: fieldUnit,
           expected: {
             created: move.created,
-            unit: gameUnit,
+            unit: fieldUnit,
             impacts: [],
             reason: {
               type: MoveReasonType.Deploy,
@@ -258,7 +253,7 @@ describe('move-resolver', () => {
         })
       })
       it('resolves with reason source and target without prefetches', async () => {
-        const gameUnit = TestUtil.getGameUnit({
+        const fieldUnit = TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({}),
         })
         const deckUnit = TestUtil.getDbDeckUnit({})
@@ -274,15 +269,14 @@ describe('move-resolver', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
-            artStyle: gameUnit.artStyle,
-            effectiveStrength: gameUnit.effectiveStrength,
-            effects: [],
-            id: new ObjectId(gameUnit.unit.id),
+            artStyle: fieldUnit.artStyle,
+            effectiveStrength: fieldUnit.effectiveStrength,
+            id: new ObjectId(fieldUnit.unit.id),
           }),
           type: MoveType.Unit,
           reason: {
             type: MoveReasonType.Deploy,
-            unit: deckUnit,
+            unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
           source: {
             origin: GameUnitOrigin.Hand,
@@ -294,16 +288,16 @@ describe('move-resolver', () => {
           move,
           resolvedUnits: [
             TestUtil.getUnit({
-              id: gameUnit.unit.id,
+              id: fieldUnit.unit.id,
             }),
             reasonUnit,
           ],
           resolvedUsers: [sourceUser, targetUser],
-          gameUnitFromObjectResponse: gameUnit,
+          fieldUnitFromObjectResponse: fieldUnit,
           deckUnitFromObjectResponse: resolvedReasonUnit,
           expected: {
             created: move.created,
-            unit: gameUnit,
+            unit: fieldUnit,
             impacts: [],
             reason: {
               type: MoveReasonType.Deploy,
@@ -319,7 +313,7 @@ describe('move-resolver', () => {
         })
       })
       it('resolves with reason source and target with prefetches', async () => {
-        const gameUnit = TestUtil.getGameUnit({
+        const fieldUnit = TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({}),
         })
         const deckUnit = TestUtil.getDbDeckUnit({})
@@ -335,15 +329,14 @@ describe('move-resolver', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           unit: TestUtil.getDbGameUnit({
-            artStyle: gameUnit.artStyle,
-            effectiveStrength: gameUnit.effectiveStrength,
-            effects: [],
-            id: new ObjectId(gameUnit.unit.id),
+            artStyle: fieldUnit.artStyle,
+            effectiveStrength: fieldUnit.effectiveStrength,
+            id: new ObjectId(fieldUnit.unit.id),
           }),
           type: MoveType.Unit,
           reason: {
             type: MoveReasonType.Deploy,
-            unit: deckUnit,
+            unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
           source: {
             origin: GameUnitOrigin.Hand,
@@ -355,16 +348,16 @@ describe('move-resolver', () => {
           move,
           units: [
             TestUtil.getUnit({
-              id: gameUnit.unit.id,
+              id: fieldUnit.unit.id,
             }),
             reasonUnit,
           ],
           users: [sourceUser, targetUser],
-          gameUnitFromObjectResponse: gameUnit,
+          fieldUnitFromObjectResponse: fieldUnit,
           deckUnitFromObjectResponse: resolvedReasonUnit,
           expected: {
             created: move.created,
-            unit: gameUnit,
+            unit: fieldUnit,
             impacts: [],
             reason: {
               type: MoveReasonType.Deploy,
@@ -383,15 +376,15 @@ describe('move-resolver', () => {
   })
   describe('fromArray', () => {
     it('throws error if leader not found', async () => {
-      const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+      const fieldUnits = [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})]
       const userId = new ObjectId()
       const leaderId = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -400,10 +393,10 @@ describe('move-resolver', () => {
       })
       const unitMove2 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -412,7 +405,7 @@ describe('move-resolver', () => {
       })
       const unitMove3 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
         },
@@ -430,10 +423,10 @@ describe('move-resolver', () => {
       })
       const resolvedUnits = [
         TestUtil.getUnit({
-          id: gameUnits[0].unit,
+          id: fieldUnits[0].unit,
         }),
         TestUtil.getUnit({
-          id: gameUnits[1].unit,
+          id: fieldUnits[1].unit,
         }),
       ]
       const resolvedUsers = [
@@ -489,15 +482,15 @@ describe('move-resolver', () => {
       })
     })
     it('returns moves without optional inputs', async () => {
-      const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+      const fieldUnits = [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})]
       const userId = new ObjectId()
       const leaderId = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -506,10 +499,10 @@ describe('move-resolver', () => {
       })
       const unitMove2 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -518,7 +511,7 @@ describe('move-resolver', () => {
       })
       const unitMove3 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
         },
@@ -536,10 +529,10 @@ describe('move-resolver', () => {
       })
       const resolvedUnits = [
         TestUtil.getUnit({
-          id: gameUnits[0].unit,
+          id: fieldUnits[0].unit,
         }),
         TestUtil.getUnit({
-          id: gameUnits[1].unit,
+          id: fieldUnits[1].unit,
         }),
       ]
       const resolvedUsers = [
@@ -609,15 +602,15 @@ describe('move-resolver', () => {
       })
     })
     it('returns moves with optional inputs', async () => {
-      const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+      const fieldUnits = [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})]
       const userId = new ObjectId()
       const leaderId = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -626,10 +619,10 @@ describe('move-resolver', () => {
       })
       const unitMove2 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
         },
         source: {
           origin: GameUnitOrigin.Hand,
@@ -638,7 +631,7 @@ describe('move-resolver', () => {
       })
       const unitMove3 = TestUtil.getDbMove({
         type: MoveType.Unit,
-        unit: gameUnits[0],
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
         reason: {
           type: MoveReasonType.Deploy,
         },
@@ -656,10 +649,10 @@ describe('move-resolver', () => {
       })
       const resolvedUnits = [
         TestUtil.getUnit({
-          id: gameUnits[0].unit,
+          id: fieldUnits[0].unit,
         }),
         TestUtil.getUnit({
-          id: gameUnits[1].unit,
+          id: fieldUnits[1].unit,
         }),
       ]
       const resolvedUsers = [
@@ -739,7 +732,7 @@ async function testFromObject({
   resolvedUnits = [],
   resolvedUsers = [],
   leaderFromIdResponse,
-  gameUnitFromObjectResponse,
+  fieldUnitFromObjectResponse,
   impactFromArrayResponse = [],
   deckUnitFromObjectResponse,
   error,
@@ -752,7 +745,7 @@ async function testFromObject({
   resolvedUnits?: Unit[]
   resolvedUsers?: User[]
   leaderFromIdResponse?: Leader
-  gameUnitFromObjectResponse?: GameUnit
+  fieldUnitFromObjectResponse?: FieldUnit
   impactFromArrayResponse?: Impact[]
   deckUnitFromObjectResponse?: DeckUnit
   error?: Error
@@ -762,9 +755,9 @@ async function testFromObject({
   if (leaderFromIdResponse) {
     leaderFromIdSpy.mockResolvedValue(leaderFromIdResponse)
   }
-  const gameUnitFromObjectSpy = jest.spyOn(GameUnitResolver, 'fromObject')
-  if (gameUnitFromObjectResponse) {
-    gameUnitFromObjectSpy.mockResolvedValue(gameUnitFromObjectResponse)
+  const fieldUnitFromObjectSpy = jest.spyOn(FieldUnitResolver, 'fromObject')
+  if (fieldUnitFromObjectResponse) {
+    fieldUnitFromObjectSpy.mockResolvedValue(fieldUnitFromObjectResponse)
   }
   const impactFromArraySpy = jest.spyOn(ImpactResolver, 'fromArray').mockResolvedValue(impactFromArrayResponse)
   const deckUnitFromObjectSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
@@ -812,12 +805,12 @@ async function testFromObject({
         ]
       : []
   )
-  expect(gameUnitFromObjectSpy.mock.calls).toEqual(
-    gameUnitFromObjectResponse
+  expect(fieldUnitFromObjectSpy.mock.calls).toEqual(
+    fieldUnitFromObjectResponse
       ? [
           [
             {
-              gameUnit: (move as MoveUnitDbObject).unit,
+              fieldUnit: (move as MoveUnitDbObject).unit,
               unit: (units || resolvedUnits)[0],
             },
           ],
@@ -825,7 +818,7 @@ async function testFromObject({
       : []
   )
   expect(impactFromArraySpy.mock.calls).toEqual(
-    gameUnitFromObjectResponse
+    fieldUnitFromObjectResponse
       ? [
           [
             {
@@ -884,7 +877,7 @@ async function testFromArray({
   for (const move of moves) {
     const resolvedMove: Move = {
       created: move.created,
-      unit: TestUtil.getGameUnit({
+      unit: TestUtil.getFieldUnit({
         unit: TestUtil.getUnit({}),
       }),
       reason: {

@@ -1,0 +1,17 @@
+fragment MoveUnitReasonUnit on GameUnit {
+  ... on DeckUnit {
+    unit {
+      name
+    }
+  }
+  ... on FieldUnit {
+    unit {
+      name
+    }
+  }
+  ... on WeatherUnit {
+    unit {
+      name
+    }
+  }
+}

@@ -5,7 +5,8 @@ import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
+import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
+import getWeatherUnits from '../../src/graphql/resolvers/mutations/play-unit/get-weather-units'
 import { MoveType } from '@gwent/graphql-schema'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -21,14 +22,15 @@ describe('game-resolver', () => {
         rounds: [
           TestUtil.getDbPlayerRound({
             close: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({})],
             }),
             ranged: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             siege: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
+            weathers: [TestUtil.getDbWeatherUnit({})],
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -42,14 +44,15 @@ describe('game-resolver', () => {
           }),
           TestUtil.getDbPlayerRound({
             close: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             ranged: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             siege: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({})],
             }),
+            weathers: [TestUtil.getDbWeatherUnit({}), TestUtil.getDbWeatherUnit({})],
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -63,14 +66,15 @@ describe('game-resolver', () => {
         rounds: [
           TestUtil.getDbPlayerRound({
             close: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
             ranged: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({})],
             }),
             siege: TestUtil.getDbPlayerCombatRow({
-              units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
             }),
+            weathers: [TestUtil.getDbWeatherUnit({}), TestUtil.getDbWeatherUnit({}), TestUtil.getDbWeatherUnit({})],
             moves: [
               TestUtil.getDbMove({
                 type: MoveType.Unit,
@@ -240,7 +244,7 @@ describe('game-resolver', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   close: TestUtil.getDbPlayerCombatRow({
-                    modifier: TestUtil.getDbGameUnit({}),
+                    modifier: TestUtil.getDbFieldUnit({}),
                   }),
                 }),
               ],
@@ -278,7 +282,7 @@ describe('game-resolver', () => {
               ...player,
               rounds: [
                 TestUtil.getDbPlayerRound({
-                  weathers: [TestUtil.getDbGameUnit({})],
+                  weathers: [TestUtil.getDbFieldUnit({})],
                 }),
               ],
             }
@@ -415,7 +419,7 @@ describe('game-resolver', () => {
                 games[0].players[1].rounds[0].moves[1],
                 games[0].players[1].rounds[0].moves[2],
               ],
-              gameUnits: [
+              fieldUnits: [
                 games[0].players[0].rounds[0].close.units[0],
                 games[0].players[0].rounds[0].ranged.units[0],
                 games[0].players[0].rounds[0].ranged.units[1],
@@ -435,6 +439,14 @@ describe('game-resolver', () => {
                 games[0].players[1].rounds[0].siege.units[0],
                 games[0].players[1].rounds[0].siege.units[1],
               ],
+              weatherUnits: [
+                games[0].players[0].rounds[0].weathers[0],
+                games[0].players[0].rounds[1].weathers[0],
+                games[0].players[0].rounds[1].weathers[1],
+                games[0].players[1].rounds[0].weathers[0],
+                games[0].players[1].rounds[0].weathers[1],
+                games[0].players[1].rounds[0].weathers[2],
+              ],
               userIds: [games[0].players[0].user, games[0].players[1].user],
             },
           ],
@@ -450,14 +462,19 @@ describe('game-resolver', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   close: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
                   }),
                   ranged: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({})],
                   }),
                   siege: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
                   }),
+                  weathers: [
+                    TestUtil.getDbWeatherUnit({}),
+                    TestUtil.getDbWeatherUnit({}),
+                    TestUtil.getDbWeatherUnit({}),
+                  ],
                   moves: [
                     TestUtil.getDbMove({
                       type: MoveType.Unit,
@@ -479,14 +496,15 @@ describe('game-resolver', () => {
               rounds: [
                 TestUtil.getDbPlayerRound({
                   close: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({})],
                   }),
                   ranged: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
                   }),
                   siege: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
                   }),
+                  weathers: [TestUtil.getDbWeatherUnit({}), TestUtil.getDbWeatherUnit({})],
                   moves: [
                     TestUtil.getDbMove({
                       type: MoveType.Unit,
@@ -500,14 +518,15 @@ describe('game-resolver', () => {
                 }),
                 TestUtil.getDbPlayerRound({
                   close: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
                   }),
                   ranged: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})],
                   }),
                   siege: TestUtil.getDbPlayerCombatRow({
-                    units: [TestUtil.getDbGameUnit({})],
+                    units: [TestUtil.getDbFieldUnit({})],
                   }),
+                  weathers: [TestUtil.getDbWeatherUnit({})],
                   moves: [
                     TestUtil.getDbMove({
                       type: MoveType.Unit,
@@ -539,7 +558,7 @@ describe('game-resolver', () => {
                 games[1].players[1].rounds[0].moves[1],
                 games[1].players[1].rounds[1].moves[0],
               ],
-              gameUnits: [
+              fieldUnits: [
                 games[0].players[0].rounds[0].close.units[0],
                 games[0].players[0].rounds[0].ranged.units[0],
                 games[0].players[0].rounds[0].ranged.units[1],
@@ -577,6 +596,20 @@ describe('game-resolver', () => {
                 games[1].players[1].rounds[1].ranged.units[2],
                 games[1].players[1].rounds[1].siege.units[0],
               ],
+              weatherUnits: [
+                games[0].players[0].rounds[0].weathers[0],
+                games[0].players[0].rounds[1].weathers[0],
+                games[0].players[0].rounds[1].weathers[1],
+                games[0].players[1].rounds[0].weathers[0],
+                games[0].players[1].rounds[0].weathers[1],
+                games[0].players[1].rounds[0].weathers[2],
+                games[1].players[0].rounds[0].weathers[0],
+                games[1].players[0].rounds[0].weathers[1],
+                games[1].players[0].rounds[0].weathers[2],
+                games[1].players[1].rounds[0].weathers[0],
+                games[1].players[1].rounds[0].weathers[1],
+                games[1].players[1].rounds[1].weathers[0],
+              ],
               userIds: [
                 games[0].players[0].user,
                 games[0].players[1].user,
@@ -608,7 +641,7 @@ describe('game-resolver', () => {
   describe('maskSpiedHandUnits', () => {
     it('does not mask single impact unit of self', () => {
       const self = TestUtil.getUser({})
-      const impactUnit = TestUtil.getGameUnit({
+      const impactUnit = TestUtil.getFieldUnit({
         unit: TestUtil.getUnit({}),
       })
       const game = TestUtil.getGame({
@@ -619,7 +652,7 @@ describe('game-resolver', () => {
               TestUtil.getPlayerRound({
                 moves: [
                   TestUtil.getMoveUnit({
-                    unit: TestUtil.getGameUnit({
+                    unit: TestUtil.getFieldUnit({
                       unit: TestUtil.getUnit({}),
                     }),
                     target: TestUtil.getUser({}),
@@ -667,7 +700,7 @@ describe('game-resolver', () => {
     })
     it('does not mask impact unit of self surrounded by other moves', () => {
       const self = TestUtil.getUser({})
-      const impactUnit = TestUtil.getGameUnit({
+      const impactUnit = TestUtil.getFieldUnit({
         unit: TestUtil.getUnit({}),
       })
       const game = TestUtil.getGame({
@@ -678,12 +711,12 @@ describe('game-resolver', () => {
               TestUtil.getPlayerRound({
                 moves: [
                   TestUtil.getMoveUnit({
-                    unit: TestUtil.getGameUnit({
+                    unit: TestUtil.getFieldUnit({
                       unit: TestUtil.getUnit({}),
                     }),
                   }),
                   TestUtil.getMoveUnit({
-                    unit: TestUtil.getGameUnit({
+                    unit: TestUtil.getFieldUnit({
                       unit: TestUtil.getUnit({}),
                     }),
                     target: TestUtil.getUser({}),
@@ -742,14 +775,14 @@ describe('game-resolver', () => {
               TestUtil.getPlayerRound({
                 moves: [
                   TestUtil.getMoveUnit({
-                    unit: TestUtil.getGameUnit({
+                    unit: TestUtil.getFieldUnit({
                       unit: TestUtil.getUnit({}),
                     }),
                     target: TestUtil.getUser({}),
                     impacts: [
                       TestUtil.getImpact({
                         user: TestUtil.getUser({}),
-                        unit: TestUtil.getGameUnit({
+                        unit: TestUtil.getFieldUnit({
                           unit: TestUtil.getUnit({}),
                         }),
                       }),
@@ -800,19 +833,19 @@ describe('game-resolver', () => {
               TestUtil.getPlayerRound({
                 moves: [
                   TestUtil.getMoveUnit({
-                    unit: TestUtil.getGameUnit({
+                    unit: TestUtil.getFieldUnit({
                       unit: TestUtil.getUnit({}),
                     }),
                   }),
                   TestUtil.getMoveUnit({
-                    unit: TestUtil.getGameUnit({
+                    unit: TestUtil.getFieldUnit({
                       unit: TestUtil.getUnit({}),
                     }),
                     target: TestUtil.getUser({}),
                     impacts: [
                       TestUtil.getImpact({
                         user: TestUtil.getUser({}),
-                        unit: TestUtil.getGameUnit({
+                        unit: TestUtil.getFieldUnit({
                           unit: TestUtil.getUnit({}),
                         }),
                       }),
@@ -900,7 +933,10 @@ async function testFromObject({
           .flat()
           .map((round) => round.moves)
           .flat(),
-        gameUnits: getGameUnits({
+        fieldUnits: GetFieldUnits.fromRounds({
+          rounds: game.players.map((player) => player.rounds).flat(),
+        }),
+        weatherUnits: getWeatherUnits({
           rounds: game.players.map((player) => player.rounds).flat(),
         }),
         userIds: game.players.map((player) => player.user),

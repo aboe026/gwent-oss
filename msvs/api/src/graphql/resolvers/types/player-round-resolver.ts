@@ -1,10 +1,11 @@
 import CombatRowResolver from './combat-row-resolver'
-import GameUnitResolver from './game-unit-resolver'
-import getGameUnits from '../mutations/play-unit/get-game-units'
+import GetFieldUnits from '../util/get-field-units'
+import getWeatherUnits from '../mutations/play-unit/get-weather-units'
 import MoveResolver from './move-resolver'
 import { PlayerRound, RoundResult, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
 import ResolverUtil from '../resolver-util'
+import WeatherUnitResolver from './weather-unit-resolver'
 
 /**
  * A class to convert PlayerRound database objects to their GraphQL equivalent.
@@ -30,7 +31,10 @@ export default class PlayerRoundResolver {
   }): Promise<PlayerRound> {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: round.moves,
-      gameUnits: getGameUnits({
+      fieldUnits: GetFieldUnits.fromRounds({
+        rounds: [round],
+      }),
+      weatherUnits: getWeatherUnits({
         rounds: [round],
       }),
       presolvedUnits: units,
@@ -58,8 +62,8 @@ export default class PlayerRoundResolver {
         users: resolvedUsers,
       }),
       passed: round.passed,
-      weathers: await GameUnitResolver.fromArray({
-        gameUnits: round.weathers,
+      weathers: await WeatherUnitResolver.fromArray({
+        weatherUnits: round.weathers,
         units: resolvedUnits,
       }),
     }
@@ -89,7 +93,10 @@ export default class PlayerRoundResolver {
 
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits: getGameUnits({
+      fieldUnits: GetFieldUnits.fromRounds({
+        rounds,
+      }),
+      weatherUnits: getWeatherUnits({
         rounds,
       }),
       presolvedUsers: users,

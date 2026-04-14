@@ -1,6 +1,6 @@
 import CombatRowResolver from '../../src/graphql/resolvers/types/combat-row-resolver'
-import { GameUnit } from '@gwent/graphql-schema/resolver-typings'
-import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
+import { FieldUnit } from '@gwent/graphql-schema/resolver-typings'
+import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
 import { PlayerCombatRowDbObject, Unit } from '@gwent/graphql-schema/database-typings'
 import TestUtil from '../util/test-util'
 
@@ -10,21 +10,21 @@ describe('combat-row-resolver', () => {
       await testFromObject({
         row: {
           score: 0,
-          units: [TestUtil.getDbGameUnit({})],
+          units: [TestUtil.getDbFieldUnit({})],
         },
         units: [],
       })
     })
     it('resolves row that does have modifier without presolved units', async () => {
-      const modifier = TestUtil.getDbGameUnit({})
+      const modifier = TestUtil.getDbFieldUnit({})
       await testFromObject({
         row: {
           score: 0,
-          units: [TestUtil.getDbGameUnit({})],
+          units: [TestUtil.getDbFieldUnit({})],
           modifier,
         },
         units: [],
-        gameUnitFromObjectResponse: TestUtil.getGameUnit({
+        fieldUnitFromObjectResponse: TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({
             id: modifier.unit,
           }),
@@ -32,18 +32,18 @@ describe('combat-row-resolver', () => {
       })
     })
     it('resolves row that does have modifier with presolved units', async () => {
-      const modifier = TestUtil.getDbGameUnit({})
+      const modifier = TestUtil.getDbFieldUnit({})
       const unit = TestUtil.getUnit({
         id: modifier.unit,
       })
       await testFromObject({
         row: {
           score: 0,
-          units: [TestUtil.getDbGameUnit({})],
+          units: [TestUtil.getDbFieldUnit({})],
           modifier,
         },
         units: [unit],
-        gameUnitFromObjectResponse: TestUtil.getGameUnit({
+        fieldUnitFromObjectResponse: TestUtil.getFieldUnit({
           unit: TestUtil.getUnit({
             id: modifier.unit,
           }),
@@ -57,23 +57,23 @@ describe('combat-row-resolver', () => {
 async function testFromObject({
   row,
   units,
-  gameUnitFromObjectResponse,
+  fieldUnitFromObjectResponse: fieldUnitFromObjectResponse,
   fromObjectPresolvedUnit,
 }: {
   row: PlayerCombatRowDbObject
   units: Unit[]
-  gameUnitFromObjectResponse?: GameUnit
+  fieldUnitFromObjectResponse?: FieldUnit
   fromObjectPresolvedUnit?: Unit
 }) {
-  const gameUnits = [
-    TestUtil.getGameUnit({
+  const fieldUnits = [
+    TestUtil.getFieldUnit({
       unit: TestUtil.getUnit({}),
     }),
   ]
-  const gameUnitFromArraySpy = jest.spyOn(GameUnitResolver, 'fromArray').mockResolvedValue(gameUnits)
-  const gameUnitFromObjectSpy = jest.spyOn(GameUnitResolver, 'fromObject')
-  if (gameUnitFromObjectResponse) {
-    gameUnitFromObjectSpy.mockResolvedValue(gameUnitFromObjectResponse)
+  const fieldUnitFromArraySpy = jest.spyOn(FieldUnitResolver, 'fromArray').mockResolvedValue(fieldUnits)
+  const fieldUnitFromObjectSpy = jest.spyOn(FieldUnitResolver, 'fromObject')
+  if (fieldUnitFromObjectResponse) {
+    fieldUnitFromObjectSpy.mockResolvedValue(fieldUnitFromObjectResponse)
   }
 
   await expect(
@@ -83,24 +83,24 @@ async function testFromObject({
     })
   ).resolves.toEqual({
     score: row.score,
-    units: gameUnits,
-    modifier: row.modifier ? gameUnitFromObjectResponse : undefined,
+    units: fieldUnits,
+    modifier: row.modifier ? fieldUnitFromObjectResponse : undefined,
   })
 
-  expect(gameUnitFromArraySpy.mock.calls).toEqual([
+  expect(fieldUnitFromArraySpy.mock.calls).toEqual([
     [
       {
-        gameUnits: row.units,
+        fieldUnits: row.units,
         units,
       },
     ],
   ])
-  expect(gameUnitFromObjectSpy.mock.calls).toEqual(
+  expect(fieldUnitFromObjectSpy.mock.calls).toEqual(
     row.modifier
       ? [
           [
             {
-              gameUnit: row.modifier,
+              fieldUnit: row.modifier,
               unit: fromObjectPresolvedUnit,
             },
           ],

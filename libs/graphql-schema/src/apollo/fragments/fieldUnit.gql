@@ -1,0 +1,11 @@
+fragment FieldUnit on FieldUnit {
+  artStyle
+  effectiveStrength
+  effects {
+    ...FieldUnitEffect
+  }
+  row
+  unit {
+    ...Unit
+  }
+}

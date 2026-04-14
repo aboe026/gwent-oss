@@ -8,6 +8,7 @@ import {
   ImpactDbObject,
   PlayerCombatRowDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -104,7 +105,10 @@ export default class EffectDecoy {
         const target = row.units.splice(targetIndex, 1)[0]
         player.deck.hand.push(target)
         impact = {
-          unit: target,
+          unit: {
+            ...target,
+            type: GameUnitType.Field,
+          },
           user: player.user,
         }
       }

@@ -41,7 +41,6 @@ import {
 import getEnumFromString from '../util/get-faction-key-from-string'
 import { getErrorMessages, retryCheckingAuth } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import isGameUnit from '../util/is-game-unit'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
@@ -99,7 +98,7 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   if (
     faction &&
     ValidateDeck.fromDeckUnitFragments({
-      deckUnits: selectedUnits,
+      deckUnits: selectedUnits.map((selectedUnit) => selectedUnit as DeckUnitFragment),
       faction: faction.key,
     }).length === 0
   ) {
@@ -122,9 +121,8 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
                   leader: leaderId,
                   name,
                   units: selectedUnits.map((deckUnit) => {
-                    const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
                     return {
-                      id: unit.id,
+                      id: useFragment(UnitFragmentDoc, deckUnit.unit).id,
                       artStyle: deckUnit.artStyle,
                     }
                   }),
@@ -700,10 +698,13 @@ function renderUnits({
           const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
           return unit.faction.key === FactionKey.Neutral
         }),
-        ...(factionUnitsData.units || []).map((unit) => ({
-          artStyle: 1,
-          unit,
-        })),
+        ...(factionUnitsData.units || []).map(
+          (unit): DeckUnitFragment => ({
+            artStyle: 1,
+            unit,
+            __typename: 'DeckUnit',
+          })
+        ),
       ])
     }
   }, [factionUnitsData, setDeckUnits])
@@ -842,16 +843,13 @@ function renderUnits({
         hasNext={nextUnit !== undefined}
         hasPrevious={previousUnit !== undefined}
         onSelect={(fullUnitSelected) => {
-          if (fullUnitSelected && !isGameUnit(fullUnitSelected)) {
+          if (fullUnitSelected && fullUnitSelected.__typename === 'DeckUnit') {
+            const unitSelected = useFragment(UnitFragmentDoc, fullUnitSelected.unit)
             setSelectedUnits((previous) => {
               const previousUnitIds = previous.map((deckUnit) => useFragment(UnitFragmentDoc, deckUnit.unit).id)
-              const currentUnitId = useFragment(UnitFragmentDoc, fullUnitSelected.unit).id
+              const currentUnitId = unitSelected.id
               return previousUnitIds.includes(currentUnitId)
-                ? previous.filter(
-                    (deckUnit) =>
-                      useFragment(UnitFragmentDoc, deckUnit.unit).id !==
-                      useFragment(UnitFragmentDoc, fullUnitSelected.unit).id
-                  )
+                ? previous.filter((deckUnit) => useFragment(UnitFragmentDoc, deckUnit.unit).id !== currentUnitId)
                 : [...previous, fullUnitSelected]
             })
           }
@@ -867,15 +865,19 @@ function renderUnits({
         onNext={() => nextUnit && setFullUnit(nextUnit)}
         onClose={() => setFullUnit(undefined)}
         onArtDecrement={() => {
-          const unit = useFragment(UnitFragmentDoc, fullUnit?.unit)
-          if (!disabled && fullUnit && unit && unit.images.length > 0 && fullUnit.artStyle && fullUnit.artStyle > 1) {
-            changeArtStyle(-1)
+          if (fullUnit) {
+            const unit = useFragment(UnitFragmentDoc, fullUnit.unit)
+            if (!disabled && fullUnit && unit && unit.images.length > 0 && fullUnit.artStyle > 1) {
+              changeArtStyle(-1)
+            }
           }
         }}
         onArtIncrement={() => {
-          const unit = useFragment(UnitFragmentDoc, fullUnit?.unit)
-          if (!disabled && fullUnit && unit && unit.images.length > 0 && fullUnit.artStyle < unit.images.length) {
-            changeArtStyle(1)
+          if (fullUnit) {
+            const unit = useFragment(UnitFragmentDoc, fullUnit.unit)
+            if (!disabled && fullUnit && unit && unit.images.length > 0 && fullUnit.artStyle < unit.images.length) {
+              changeArtStyle(1)
+            }
           }
         }}
       />

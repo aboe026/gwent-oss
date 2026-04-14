@@ -9,6 +9,10 @@ import {
   DeckUnitFragment,
   DeckUnitFragmentDoc,
   EffectKey,
+  FieldUnitEffectFragmentDoc,
+  FieldUnitFragment,
+  FieldUnitFragmentDoc,
+  FragmentType,
   GameDeckDocument,
   GameDeckFragmentDoc,
   GameDeckQuery,
@@ -20,8 +24,6 @@ import {
   GamesDocument,
   GamesQuery,
   GameStatus,
-  GameUnitFragment,
-  GameUnitFragmentDoc,
   MoveFragmentDoc,
   MoveUnitFragmentDoc,
   PlayerCombatRowFragmentDoc,
@@ -32,6 +34,7 @@ import {
   RedrawDocument,
   SetDeckDocument,
   SetOrderDocument,
+  GameUnitFragmentDoc,
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
@@ -75,7 +78,7 @@ import {
   NOT_AUTHORIZED_MESSAGE,
   ROUTES,
 } from '@gwent/constants'
-import isGameUnit from '../../util/is-game-unit'
+import { getUnitFromGameUnit } from '../../util/game-unit-util'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import NewGame from './NewGame'
 import { sortObjectArray } from '@gwent/utils'
@@ -198,7 +201,7 @@ export default function GamePage() {
     // does not update underlying "game" query type (GameDeck) since they do not match
     update(cache, { data }) {
       const from = cardSelected?.unitFragment
-      if (data?.redraw && user && from && !isGameUnit(from)) {
+      if (data?.redraw && user && from && from.__typename === 'DeckUnit') {
         cache.updateQuery<GameDeckQuery>(
           {
             query: GameDeckDocument,
@@ -272,17 +275,17 @@ export default function GamePage() {
                     PlayerRoundFragmentDoc,
                     previousPlayer.rounds[previousGame.round - 1]
                   )
-                  const previousBattlefieldUnits: GameUnitFragment[] = [
+                  const previousBattlefieldUnits: FieldUnitFragment[] = [
                     ...useFragment(
-                      GameUnitFragmentDoc,
+                      FieldUnitFragmentDoc,
                       useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.close).units
                     ),
                     ...useFragment(
-                      GameUnitFragmentDoc,
+                      FieldUnitFragmentDoc,
                       useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.ranged).units
                     ),
                     ...useFragment(
-                      GameUnitFragmentDoc,
+                      FieldUnitFragmentDoc,
                       useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
                     ),
                   ]
@@ -516,8 +519,8 @@ function ExistingGame({
         if (move.__typename === 'MoveUnit') {
           const moveUnit = useFragment(MoveUnitFragmentDoc, move)
           const gameUnit = useFragment(GameUnitFragmentDoc, moveUnit.unit)
-          const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
-          if (unit.id === unitSelected.id) {
+          const unit = getUnitFromGameUnit(gameUnit)
+          if (unit && unit.id === unitSelected.id) {
             moveIndex = i
           }
         }
@@ -555,6 +558,12 @@ function ExistingGame({
     battlefieldStyle.cursor = 'not-allowed'
     battlefieldTitle = 'Weather can only be applied using the Weather section to the left'
   }
+  let effectiveStrength: number | null | undefined = undefined
+  let effects: FragmentType<typeof FieldUnitEffectFragmentDoc>[] | null | undefined = undefined
+  if (fullGameUnit?.__typename === 'FieldUnit') {
+    effectiveStrength = fullGameUnit.effectiveStrength
+    effects = fullGameUnit.effects
+  }
 
   return gameProps.loading || gameDeckProps.loading ? (
     <Centered>
@@ -590,10 +599,8 @@ function ExistingGame({
     <div id={HTML_IDS.GameContainer}>
       <UnitFullCard
         fullUnit={fullGameUnit}
-        effectiveStrength={
-          fullGameUnit && 'effectiveStrength' in fullGameUnit ? fullGameUnit?.effectiveStrength : undefined
-        }
-        effects={fullGameUnit && 'effectiveStrength' in fullGameUnit ? fullGameUnit.effects : undefined}
+        effectiveStrength={effectiveStrength}
+        effects={effects}
         userName={game.status === GameStatus.Playing ? fullUnitUserName : undefined}
         hasNext={!!fullUnits && fullUnits.currentIndex < fullUnits.units.length - 1}
         hasPrevious={!!fullUnits && fullUnits.currentIndex > 0}

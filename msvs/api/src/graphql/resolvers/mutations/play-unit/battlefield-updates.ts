@@ -4,8 +4,8 @@ import {
   Combat,
   DeckUnitDbObject,
   EffectDbObject,
+  FieldUnitDbObject,
   GameDbObject,
-  GameUnitDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import EffectDecoy from './effect-decoy'
@@ -109,6 +109,7 @@ export default class BattlefieldUpdates {
     } = await EffectMuster.musterBattlefield({
       battlefieldUnits,
       effects,
+      combat,
       game,
       logPrefix,
       newDeckUnit,
@@ -116,8 +117,8 @@ export default class BattlefieldUpdates {
     const {
       impacts: mardroemeImpacts,
       transformedUnits,
-      transformedGameUnits,
-      mardroemingGameUnit,
+      transformedFieldUnits,
+      mardroemingFieldUnit,
     } = await EffectMardroeme.transformBerserkers({
       battlefieldUnits: [...battlefieldUnits, ...musteredUnits],
       effects,
@@ -147,8 +148,8 @@ export default class BattlefieldUpdates {
       mardroemes: mardroemeImpacts,
       spies: spyImpacts,
       transformedUnits,
-      transformedGameUnits,
-      mardroemingGameUnit,
+      transformedFieldUnits,
+      mardroemingFieldUnit,
       weathers: weatherImpacts,
     }
   }
@@ -185,24 +186,30 @@ export default class BattlefieldUpdates {
         player.deck.hand = player.deck.hand.filter(
           (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
         )
-        if (!weather && !spy) {
+        if (!weather && !spy && combat) {
+          const fieldUnit: FieldUnitDbObject = {
+            ...newDeckUnit,
+            effectiveStrength: undefined,
+            effects: [],
+            row: combat,
+          }
           if (combat === Combat.Close) {
             if (newUnit.modifier) {
-              round.close.modifier = newDeckUnit
+              round.close.modifier = fieldUnit
             } else {
-              round.close.units.push(newDeckUnit)
+              round.close.units.push(fieldUnit)
             }
           } else if (combat === Combat.Ranged) {
             if (newUnit.modifier) {
-              round.ranged.modifier = newDeckUnit
+              round.ranged.modifier = fieldUnit
             } else {
-              round.ranged.units.push(newDeckUnit)
+              round.ranged.units.push(fieldUnit)
             }
-          } else if (combat === Combat.Siege) {
+          } else {
             if (newUnit.modifier) {
-              round.siege.modifier = newDeckUnit
+              round.siege.modifier = fieldUnit
             } else {
-              round.siege.units.push(newDeckUnit)
+              round.siege.units.push(fieldUnit)
             }
           }
         }
@@ -221,7 +228,7 @@ interface ModificationImpacts {
   mardroemes: ImpactsByUnitId
   spies: ImpactsByUnitId
   transformedUnits: UnitDbObject[]
-  transformedGameUnits: GameUnitDbObject[]
-  mardroemingGameUnit: GameUnitDbObject | undefined
+  transformedFieldUnits: FieldUnitDbObject[]
+  mardroemingFieldUnit: FieldUnitDbObject | undefined
   weathers: ImpactsByUnitId
 }

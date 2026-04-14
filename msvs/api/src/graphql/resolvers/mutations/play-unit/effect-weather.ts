@@ -5,14 +5,14 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectFromUnitDbObject,
+  FieldUnitDbObject,
+  FieldUnitEffectDbObject,
   GameDbObject,
-  GameUnitDbObject,
-  GameUnitEffectDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
-import { EffectReasonType } from '@gwent/graphql-schema'
+import { EffectReasonType, GameUnitType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 import { PlayerWeatherUnit } from './get-weather-units-for-row'
 
@@ -59,7 +59,10 @@ export default class EffectWeather {
           )
           for (const weather of round.weathers) {
             impacts.push({
-              unit: weather,
+              unit: {
+                ...weather,
+                type: GameUnitType.Weather,
+              },
               user: player.user,
             })
           }
@@ -82,7 +85,7 @@ export default class EffectWeather {
    * @param config.weatherUnits A list of Units for the weathers effecting the row the unit under consideration is apart of.
    * @param config.weatherEffect The Effect database document for the Weather effect.
    * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
-   * @param config.rowGameUnit The GameUnit under consideration to be weathered.
+   * @param config.rowFieldUnit The FieldUnit under consideration to be weathered.
    * @param config.rowUnit The Unit under consideration to be weathered.
    * @param config.userId The ID of the user whose unit is under consideration to be weathered.
    * @param config.currentPlayerId The ID of the user who played the newDeckUnit.
@@ -93,7 +96,7 @@ export default class EffectWeather {
     weatherUnits,
     weatherEffect,
     newDeckUnit,
-    rowGameUnit,
+    rowFieldUnit,
     rowUnit,
     userId,
     currentPlayerId,
@@ -102,7 +105,7 @@ export default class EffectWeather {
     weatherUnits: PlayerWeatherUnit[]
     weatherEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
-    rowGameUnit: GameUnitDbObject
+    rowFieldUnit: FieldUnitDbObject
     rowUnit: UnitDbObject
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
@@ -115,7 +118,7 @@ export default class EffectWeather {
 
     if (!rowUnit.hero && rowUnit.strength && rowUnit.strength > 1) {
       const weathersToApply = weatherUnits
-        .filter((weather) => weather.unit._id.toString() !== rowGameUnit.unit.toString())
+        .filter((weather) => weather.unit._id.toString() !== rowFieldUnit.unit.toString())
         // put current turn player's weathers in the "back"
         // to prevent incorrectly showing a weather impact
         // which happened in a previous turn
@@ -134,11 +137,11 @@ export default class EffectWeather {
       let weathered = false
       for (let i = 0; i < weathersToApply.length && !weathered; i++) {
         const weather = weathersToApply[i]
-        if (weatherEffect && weather && rowGameUnit.effects) {
+        if (weatherEffect && weather && rowFieldUnit.effects) {
           weathered = true
-          rowGameUnit.effectiveStrength = 1
+          rowFieldUnit.effectiveStrength = 1
           EffectWeather.logger.debug(
-            `${logPrefix} weathering unit "${rowUnit._id}" by "${weather.unit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}".`
+            `${logPrefix} weathering unit "${rowUnit._id}" by "${weather.unit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}".`
           )
           const reason: EffectFromUnitDbObject = {
             effect: weatherEffect._id,
@@ -146,15 +149,15 @@ export default class EffectWeather {
             unit: weather.unit._id,
           }
 
-          const gameUnitEffect: GameUnitEffectDbObject = {
+          const fieldUnitEffect: FieldUnitEffectDbObject = {
             operator: EFFECT_OPERATOR.Set,
             reason,
-            total: rowGameUnit.effectiveStrength,
+            total: rowFieldUnit.effectiveStrength,
           }
           if (EffectWeather.logger.isTraceEnabled()) {
-            EffectWeather.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)
+            EffectWeather.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
           }
-          rowGameUnit.effects.push(gameUnitEffect)
+          rowFieldUnit.effects.push(fieldUnitEffect)
 
           const impactables = [newDeckUnit.unit.toString()]
           if (
@@ -163,7 +166,10 @@ export default class EffectWeather {
             weather.userId.toString() === currentPlayerId.toString()
           ) {
             const impact: ImpactDbObject = {
-              unit: rowGameUnit,
+              unit: {
+                ...rowFieldUnit,
+                type: GameUnitType.Field,
+              },
               user: userId,
             }
             if (EffectWeather.logger.isTraceEnabled()) {

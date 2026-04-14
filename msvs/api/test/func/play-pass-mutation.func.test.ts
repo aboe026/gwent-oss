@@ -426,7 +426,10 @@ describe('play-pass-mutation', () => {
                     expectizePlayerRound({
                       moves: [
                         expectizeMoveUnit({
-                          unit: deckUnitSelf,
+                          unit: TestUtil.getFieldUnit({
+                            unit: deckUnitSelf.unit,
+                            row: deckUnitCombat,
+                          }),
                         }),
                         expectizeMovePass(),
                       ],
@@ -495,7 +498,10 @@ describe('play-pass-mutation', () => {
             expectizePlayerRound({
               moves: [
                 expectizeMoveUnit({
-                  unit: deckUnit,
+                  unit: TestUtil.getFieldUnit({
+                    unit: deckUnit.unit,
+                    row: deckUnitCombat,
+                  }),
                 }),
                 expectizeMovePass(),
               ],

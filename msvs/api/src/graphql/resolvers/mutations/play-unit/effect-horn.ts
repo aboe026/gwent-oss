@@ -5,13 +5,13 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectFromUnitDbObject,
-  GameUnitDbObject,
-  GameUnitEffectDbObject,
+  FieldUnitDbObject,
+  FieldUnitEffectDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
-import { EffectReasonType } from '@gwent/graphql-schema'
+import { EffectReasonType, GameUnitType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 
 /**
@@ -28,7 +28,7 @@ export default class EffectHorn {
    * @param config.unitIdsWithHornInRow A list of IDs of units which contain the Horn effect ability in the battlefield row under consideration.
    * @param config.hornEffect The Effect database document for the Horn effect.
    * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
-   * @param config.rowGameUnit The GameUnit under consideration to be horned.
+   * @param config.rowFieldUnit The FieldUnit under consideration to be horned.
    * @param config.rowUnit The Unit under consideration to be horned.
    * @param config.units A list of all units on the battlefield.
    * @param config.userId The ID of the user whose unit is under consideration to be horned.
@@ -40,7 +40,7 @@ export default class EffectHorn {
     unitIdsWithHornInRow,
     hornEffect,
     newDeckUnit,
-    rowGameUnit,
+    rowFieldUnit,
     rowUnit,
     units,
     userId,
@@ -50,7 +50,7 @@ export default class EffectHorn {
     unitIdsWithHornInRow: string[]
     hornEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
-    rowGameUnit: GameUnitDbObject
+    rowFieldUnit: FieldUnitDbObject
     rowUnit: UnitDbObject
     units: UnitDbObject[]
     userId: ObjectId
@@ -63,18 +63,18 @@ export default class EffectHorn {
     }
 
     if (!rowUnit.hero) {
-      const hornsToApply = unitIdsWithHornInRow.filter((id) => id !== rowGameUnit.unit.toString())
+      const hornsToApply = unitIdsWithHornInRow.filter((id) => id !== rowFieldUnit.unit.toString())
       if (EffectHorn.logger.isTraceEnabled()) {
         EffectHorn.logger.trace(`${logPrefix} hornsToApply: "${JSON.stringify(hornsToApply)}"`)
       }
       let horned = false
       for (let i = 0; i < hornsToApply.length && !horned; i++) {
         const horningUnit = units.find((unit) => unit._id.toString() === hornsToApply[i])
-        if (hornEffect && horningUnit && rowGameUnit.effects) {
+        if (hornEffect && horningUnit && rowFieldUnit.effects) {
           horned = true
-          rowGameUnit.effectiveStrength = (rowGameUnit.effectiveStrength || 0) * 2
+          rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
           EffectHorn.logger.debug(
-            `${logPrefix} adding horn boost to "${rowUnit._id}" from "${horningUnit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}"`
+            `${logPrefix} adding horn boost to "${rowUnit._id}" from "${horningUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
           )
           const reason: EffectFromUnitDbObject = {
             effect: hornEffect._id,
@@ -82,20 +82,23 @@ export default class EffectHorn {
             unit: horningUnit._id,
           }
 
-          const gameUnitEffect: GameUnitEffectDbObject = {
+          const fieldUnitEffect: FieldUnitEffectDbObject = {
             operator: EFFECT_OPERATOR.Double,
             reason,
-            total: rowGameUnit.effectiveStrength,
+            total: rowFieldUnit.effectiveStrength,
           }
           if (EffectHorn.logger.isTraceEnabled()) {
-            EffectHorn.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)
+            EffectHorn.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
           }
-          rowGameUnit.effects.push(gameUnitEffect)
+          rowFieldUnit.effects.push(fieldUnitEffect)
 
           const impactables = [newDeckUnit.unit.toString()]
           if (impactables.includes(horningUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
             const impact: ImpactDbObject = {
-              unit: rowGameUnit,
+              unit: {
+                ...rowFieldUnit,
+                type: GameUnitType.Field,
+              },
               user: userId,
             }
             if (EffectHorn.logger.isTraceEnabled()) {

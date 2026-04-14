@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
 import {
-  DeckUnit,
+  GameUnit,
   Leader,
   Move,
   MoveReasonType,
@@ -9,7 +9,6 @@ import {
   User,
   Unit,
 } from '@gwent/graphql-schema/resolver-typings'
-import DeckUnitResolver from './deck-unit-resolver'
 import GameUnitResolver from './game-unit-resolver'
 import ImpactResolver from './impact-resolver'
 import LeaderResolver from './leader-resolver'
@@ -78,14 +77,14 @@ export default class MoveResolver {
       if (!unitForMove) {
         throw Error(`Could not find move unit "${unitMove.unit.unit}"`)
       }
-      let resolvedReasonDeckUnit: DeckUnit | undefined = undefined
+      let resolvedReasonGameUnit: GameUnit | undefined = undefined
       if (unitMove.reason.unit) {
         const reasonUnit = resolvedUnits.find((unit) => unit.id === unitMove.reason.unit?.unit.toString())
         if (!reasonUnit) {
           throw Error(`Could not find reason unit "${unitMove.reason.unit?.unit}"`)
         }
-        resolvedReasonDeckUnit = await DeckUnitResolver.fromObject({
-          deckUnit: unitMove.reason.unit,
+        resolvedReasonGameUnit = await GameUnitResolver.fromObject({
+          gameUnit: unitMove.reason.unit,
           unit: reasonUnit,
         })
       }
@@ -116,7 +115,7 @@ export default class MoveResolver {
         }),
         reason: {
           type: unitMove.reason.type as MoveReasonType,
-          unit: resolvedReasonDeckUnit,
+          unit: resolvedReasonGameUnit,
         },
         source: {
           origin: unitMove.source.origin as GameUnitOrigin,

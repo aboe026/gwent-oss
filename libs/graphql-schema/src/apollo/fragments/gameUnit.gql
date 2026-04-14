@@ -1,11 +1,11 @@
 fragment GameUnit on GameUnit {
-  artStyle
-  effectiveStrength
-  effects {
-    ...GameUnitEffect
+  ... on DeckUnit {
+    ...DeckUnit
   }
-  row
-  unit {
-    ...Unit
+  ... on FieldUnit {
+    ...FieldUnit
+  }
+  ... on WeatherUnit {
+    ...WeatherUnit
   }
 }

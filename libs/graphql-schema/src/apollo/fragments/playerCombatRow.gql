@@ -1,9 +1,9 @@
 fragment PlayerCombatRow on PlayerCombatRow {
   score
   units {
-    ...GameUnit
+    ...FieldUnit
   }
   modifier {
-    ...GameUnit
+    ...FieldUnit
   }
 }

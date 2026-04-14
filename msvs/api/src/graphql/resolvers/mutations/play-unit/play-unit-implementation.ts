@@ -70,8 +70,8 @@ export default class PlayUnitImplementation {
     const {
       mardroemes,
       transformedUnits,
-      transformedGameUnits,
-      mardroemingGameUnit,
+      transformedFieldUnits,
+      mardroemingFieldUnit,
       musters,
       musteredUnits,
       musteredOrigins,
@@ -121,7 +121,6 @@ export default class PlayUnitImplementation {
     setGameScores(game)
 
     UpdateHistory.newUnitDeployed({
-      combat,
       deckUnit,
       game,
       decoys,
@@ -136,9 +135,11 @@ export default class PlayUnitImplementation {
       morales,
       weathers: Object.keys(weatherBattlefieldImpacts).length > 0 ? weatherBattlefieldImpacts : weatherScoreImpacts,
       mardroemes,
-      transformedGameUnits,
-      mardroemingGameUnit,
+      transformedFieldUnits,
+      mardroemingFieldUnit,
+      isWeather,
       targetId: isSpy ? targetId : undefined,
+      combat,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

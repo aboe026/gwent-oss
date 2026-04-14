@@ -147,6 +147,7 @@ type Deck @entity {
   user: User! @column(overrideType: "ObjectId")
 }
 
+"A Unit in a user created Deck."
 type DeckUnit @entity {
   artStyle: Int! @column
   unit: Unit! @column(overrideType: "ObjectId")
@@ -234,15 +235,25 @@ type GamePlayerUnitCounts {
   undrawn: Int!
 }
 
-type GameUnit @entity {
+"A unit on the field of battle."
+type FieldUnit @entity {
   artStyle: Int! @column
   effectiveStrength: Int @column
-  effects: [GameUnitEffect!] @column(overrideType: "Array<GameUnitEffectDbObject>")
-  row: Combat @column
+  effects: [FieldUnitEffect!] @column(overrideType: "Array<FieldUnitEffectDbObject>")
+  row: Combat! @column
   unit: Unit! @column(overrideType: "ObjectId")
 }
 
-type GameUnitEffect @entity {
+"A Unit weathering the battlefield."
+type WeatherUnit @entity {
+  artStyle: Int! @column
+  unit: Unit! @column(overrideType: "ObjectId")
+}
+
+"A Unit participating in a Game."
+union GameUnit @union(discriminatorField: "type") = DeckUnit | FieldUnit | WeatherUnit
+
+type FieldUnitEffect @entity {
   operator: String! @column
   reason: EffectReason! @column(overrideType: "EffectReasonDbObject")
   total: Int! @column
@@ -303,7 +314,7 @@ type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
 
 type MoveUnitReason @entity {
   type: MoveReasonType! @column
-  unit: DeckUnit @column(overrideType: "DeckUnitDbObject")
+  unit: GameUnit @column(overrideType: "GameUnitDbObject")
 }
 
 type GameUnitSource @entity {
@@ -321,13 +332,13 @@ type PlayerRound @entity {
   result: RoundResult @column
   score: Int! @column
   siege: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
-  weathers: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
+  weathers: [WeatherUnit!]! @column(overrideType: "Array<WeatherUnitDbObject>")
 }
 
 type PlayerCombatRow @entity {
   score: Int! @column
-  units: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
-  modifier: GameUnit @column(overrideType: "GameUnitDbObject")
+  units: [FieldUnit!]! @column(overrideType: "Array<FieldUnitDbObject>")
+  modifier: FieldUnit @column(overrideType: "FieldUnitDbObject")
 }
 
 type Redraw @entity {

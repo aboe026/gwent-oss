@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb'
 
+import { DeckUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
 import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import TestUtil from '../util/test-util'
-import { Unit } from '@gwent/graphql-schema/resolver-typings'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 
 describe('deck-unit-resolver', () => {
@@ -67,6 +67,15 @@ async function testResolveFromObject({
   unit?: Unit
   unitResolverResponse?: Unit
 }) {
+  const resolvedUnit = unit || unitResolverResponse
+  if (!resolvedUnit) {
+    throw Error(`No resolved unit for deckUnit "${JSON.stringify(deckUnit)}"`)
+  }
+  const resolvedDeckUnit: DeckUnit = {
+    artStyle: deckUnit.artStyle,
+    unit: resolvedUnit,
+    __typename: 'DeckUnit',
+  }
   const unitResolverSpy = jest.spyOn(UnitResolver, 'fromId')
   if (unitResolverResponse) {
     unitResolverSpy.mockResolvedValue(unitResolverResponse)
@@ -77,10 +86,7 @@ async function testResolveFromObject({
       deckUnit,
       unit,
     })
-  ).resolves.toEqual({
-    artStyle: deckUnit.artStyle,
-    unit: unit || unitResolverResponse,
-  })
+  ).resolves.toEqual(resolvedDeckUnit)
 
   expect(unitResolverSpy.mock.calls).toEqual(
     unit
@@ -112,10 +118,16 @@ async function testResolveFromArray({
     })
   ).resolves.toEqual(
     deckUnits?.map((deckUnit) => {
-      return {
-        artStyle: deckUnit.artStyle,
-        unit: resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString()),
+      const unit = resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString())
+      if (!unit) {
+        throw Error(`Could not find unit "${deckUnit.unit}" for DeckUnit "${JSON.stringify(deckUnit)}"`)
       }
+      const resolvedDeckUnit: DeckUnit = {
+        artStyle: deckUnit.artStyle,
+        unit,
+        __typename: 'DeckUnit',
+      }
+      return resolvedDeckUnit
     })
   )
 

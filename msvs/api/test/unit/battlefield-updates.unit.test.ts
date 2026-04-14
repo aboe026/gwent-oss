@@ -4,8 +4,8 @@ import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import {
   DeckUnitDbObject,
+  FieldUnitDbObject,
   GameDbObject,
-  GameUnitDbObject,
   GameUnitOrigin,
   ImpactDbObject,
   UnitDbObject,
@@ -149,12 +149,12 @@ describe('battlefield-updates', () => {
             id: unitId,
           }),
         ],
-        mardroemeTransformedGameUnits: [
-          TestUtil.getDbGameUnit({
+        mardroemeTransformedFieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: unitId,
           }),
         ],
-        mardroemingGameUnit: TestUtil.getDbGameUnit({
+        mardroemingFieldUnit: TestUtil.getDbFieldUnit({
           id: newDeckUnit.unit,
         }),
       })
@@ -191,15 +191,15 @@ describe('battlefield-updates', () => {
             id: unitId2,
           }),
         ],
-        mardroemeTransformedGameUnits: [
-          TestUtil.getDbGameUnit({
+        mardroemeTransformedFieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: unitId1,
           }),
-          TestUtil.getDbGameUnit({
+          TestUtil.getDbFieldUnit({
             id: unitId2,
           }),
         ],
-        mardroemingGameUnit: TestUtil.getDbGameUnit({
+        mardroemingFieldUnit: TestUtil.getDbFieldUnit({
           id: newDeckUnit.unit,
         }),
       })
@@ -442,7 +442,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -496,7 +502,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -549,7 +559,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -603,7 +619,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -636,7 +656,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -688,7 +708,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -740,7 +760,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -767,7 +787,14 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
-                      units: [origGame.players[0].rounds[0].close.units[0], newDeckUnit],
+                      units: [
+                        origGame.players[0].rounds[0].close.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -801,7 +828,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -829,7 +856,11 @@ describe('battlefield-updates', () => {
                     ...origGame.players[0].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].close.units[0]],
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -864,7 +895,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -889,7 +920,14 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
-                      units: [origGame.players[1].rounds[0].close.units[0], newDeckUnit],
+                      units: [
+                        origGame.players[1].rounds[0].close.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -925,7 +963,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -951,7 +989,11 @@ describe('battlefield-updates', () => {
                     ...origGame.players[1].rounds[0],
                     close: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].close.units[0]],
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -1095,7 +1137,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[1],
                     close: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -1150,7 +1198,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[1],
                     close: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -1204,7 +1256,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[1],
                     close: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -1259,7 +1317,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[1],
                     close: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -1405,7 +1467,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -1459,7 +1527,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -1512,7 +1584,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -1566,7 +1644,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -1599,7 +1681,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -1651,7 +1733,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -1703,7 +1785,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -1730,7 +1812,14 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      units: [origGame.players[0].rounds[0].ranged.units[0], newDeckUnit],
+                      units: [
+                        origGame.players[0].rounds[0].ranged.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -1764,7 +1853,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -1792,7 +1881,11 @@ describe('battlefield-updates', () => {
                     ...origGame.players[0].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].ranged.units[0]],
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -1824,7 +1917,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -1852,7 +1945,14 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      units: [origGame.players[1].rounds[0].ranged.units[0], newDeckUnit],
+                      units: [
+                        origGame.players[1].rounds[0].ranged.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -1885,7 +1985,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 ranged: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -1914,7 +2014,11 @@ describe('battlefield-updates', () => {
                     ...origGame.players[1].rounds[0],
                     ranged: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].ranged.units[0]],
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -2058,7 +2162,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[1],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -2113,7 +2223,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[1],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -2167,7 +2281,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[1],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -2222,7 +2342,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[1],
                     ranged: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -2368,7 +2492,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -2422,7 +2552,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -2475,7 +2609,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -2529,7 +2669,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -2562,7 +2706,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -2614,7 +2758,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -2666,7 +2810,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -2693,7 +2837,14 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      units: [origGame.players[0].rounds[0].siege.units[0], newDeckUnit],
+                      units: [
+                        origGame.players[0].rounds[0].siege.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -2727,7 +2878,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -2755,7 +2906,11 @@ describe('battlefield-updates', () => {
                     ...origGame.players[0].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[0].rounds[0].siege.units[0]],
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -2787,7 +2942,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -2815,7 +2970,14 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      units: [origGame.players[1].rounds[0].siege.units[0], newDeckUnit],
+                      units: [
+                        origGame.players[1].rounds[0].siege.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -2848,7 +3010,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 siege: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -2877,7 +3039,11 @@ describe('battlefield-updates', () => {
                     ...origGame.players[1].rounds[0],
                     siege: TestUtil.getDbPlayerCombatRow({
                       units: [origGame.players[1].rounds[0].siege.units[0]],
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -3021,7 +3187,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[1],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -3076,7 +3248,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[0].rounds[1],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -3130,7 +3306,13 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[1],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      units: [newDeckUnit],
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
                     }),
                   },
                 ],
@@ -3185,7 +3367,11 @@ describe('battlefield-updates', () => {
                   {
                     ...origGame.players[1].rounds[1],
                     siege: TestUtil.getDbPlayerCombatRow({
-                      modifier: newDeckUnit,
+                      modifier: TestUtil.getDbFieldUnit({
+                        artStyle: newDeckUnit.artStyle,
+                        id: newDeckUnit.unit,
+                        row: combat,
+                      }),
                     }),
                   },
                 ],
@@ -3402,7 +3588,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -3454,7 +3640,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -3506,7 +3692,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -3561,7 +3747,7 @@ describe('battlefield-updates', () => {
             rounds: [
               TestUtil.getDbPlayerRound({
                 close: TestUtil.getDbPlayerCombatRow({
-                  units: [TestUtil.getDbGameUnit({})],
+                  units: [TestUtil.getDbFieldUnit({})],
                 }),
               }),
             ],
@@ -3793,9 +3979,9 @@ async function testModifyBattlefieldWithNewUnit({
   musteredOrigins = {},
   scorchImpacts = {},
   mardroemeImpacts = {},
-  mardroemeTransformedGameUnits = [],
+  mardroemeTransformedFieldUnits = [],
   mardroemeTransformedUnits = [],
-  mardroemingGameUnit,
+  mardroemingFieldUnit,
   decoyImpacts = {},
   deckUnitAddedToHand,
   weatherImpacts = {},
@@ -3813,8 +3999,8 @@ async function testModifyBattlefieldWithNewUnit({
   scorchImpacts?: ImpactsByUnitId
   mardroemeImpacts?: ImpactsByUnitId
   mardroemeTransformedUnits?: UnitDbObject[]
-  mardroemeTransformedGameUnits?: GameUnitDbObject[]
-  mardroemingGameUnit?: GameUnitDbObject
+  mardroemeTransformedFieldUnits?: FieldUnitDbObject[]
+  mardroemingFieldUnit?: FieldUnitDbObject
   decoyImpacts?: ImpactsByUnitId
   deckUnitAddedToHand?: DeckUnitDbObject
   weatherImpacts?: ImpactsByUnitId
@@ -3828,12 +4014,12 @@ async function testModifyBattlefieldWithNewUnit({
   const game = TestUtil.getDbGame({})
   const logPrefix = 'log-prefix'
 
-  const addNewUnitToBattlefieldSpy = jest.spyOn(BattlefieldUpdates, 'addNewUnitToBattlefield').mockReturnValue()
   const weatherBattlefieldSpy = jest.spyOn(EffectWeather, 'weatherBattlefield').mockReturnValue(weatherImpacts)
   const spyBattlefieldSpy = jest.spyOn(EffectSpy, 'spyBattlefield').mockReturnValue({
     deckUnitsAddedToHand: spiedUnitsAddedToHand,
     impacts: spyImpacts,
   })
+  const addNewUnitToBattlefieldSpy = jest.spyOn(BattlefieldUpdates, 'addNewUnitToBattlefield').mockReturnValue()
   const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockReturnValue(scorchImpacts)
   const musterBattlefieldSpy = jest.spyOn(MusterBattlefield, 'musterBattlefield').mockResolvedValue({
     impacts: musterImpacts,
@@ -3843,8 +4029,8 @@ async function testModifyBattlefieldWithNewUnit({
   const transformBerserkersSpy = jest.spyOn(EffectMardroeme, 'transformBerserkers').mockResolvedValue({
     impacts: mardroemeImpacts,
     transformedUnits: mardroemeTransformedUnits,
-    transformedGameUnits: mardroemeTransformedGameUnits,
-    mardroemingGameUnit: mardroemingGameUnit,
+    transformedFieldUnits: mardroemeTransformedFieldUnits,
+    mardroemingFieldUnit: mardroemingFieldUnit,
   })
   const decoyFromBattlefieldSpy = jest.spyOn(EffectDecoy, 'decoyFromBattlefield').mockReturnValue({
     impacts: decoyImpacts,
@@ -3880,8 +4066,8 @@ async function testModifyBattlefieldWithNewUnit({
     mardroemes: mardroemeImpacts,
     spies: spyImpacts,
     transformedUnits: mardroemeTransformedUnits,
-    transformedGameUnits: mardroemeTransformedGameUnits,
-    mardroemingGameUnit: mardroemingGameUnit,
+    transformedFieldUnits: mardroemeTransformedFieldUnits,
+    mardroemingFieldUnit: mardroemingFieldUnit,
     decoys: decoyImpacts,
     deckUnitsAddedToHand: expectedDeckUnitsAddedToHand,
     weathers: weatherImpacts,
@@ -3926,6 +4112,7 @@ async function testModifyBattlefieldWithNewUnit({
     [
       {
         battlefieldUnits,
+        combat,
         effects,
         game,
         logPrefix,

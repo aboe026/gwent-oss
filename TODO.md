@@ -12,13 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- Restructure GameUnit
-  - change GameUnit to be FieldUnit
-  - make new WeatherUnit
-  - have union GameUnit = DeckUnit | FieldUnit | WeatherUnit
-  - have GameUnit require Combat/row
-  - have "type" field in database for GameUnit so can know which kind it is in Impact resolver (no way to determine by context there)
-  - could remove "spy" field on impact db docs (and target check in game-resolver), and just rely on if type === DeckUnit and not the user
 - no spaces in username?
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
@@ -112,6 +105,7 @@ Existing problems in the codebase that need to be fixed.
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
 - swap NginX for Caddy?
+- add "title" attribute to DB upgrades to preserve in history
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB

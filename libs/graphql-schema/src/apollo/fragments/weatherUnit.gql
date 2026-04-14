@@ -1,0 +1,6 @@
+fragment WeatherUnit on WeatherUnit {
+  artStyle
+  unit {
+    ...Unit
+  }
+}

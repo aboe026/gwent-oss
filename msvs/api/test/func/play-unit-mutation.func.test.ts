@@ -498,6 +498,11 @@ describe('play-unit-mutation', () => {
         if (!singleCombatDeckUnit) {
           throw Error(`Could not find unit "${unitName}" in hand`)
         }
+        const fieldUnit = TestUtil.getFieldUnit({
+          unit: singleCombatDeckUnit.unit,
+          artStyle: singleCombatDeckUnit.artStyle,
+          row: Combat.Close,
+        })
 
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -532,15 +537,11 @@ describe('play-unit-mutation', () => {
                     expectizePlayerRound({
                       close: {
                         score: singleCombatDeckUnit.unit.strength || 0,
-                        units: [
-                          TestUtil.getGameUnit({
-                            unit: singleCombatDeckUnit.unit,
-                          }),
-                        ],
+                        units: [fieldUnit],
                       },
                       moves: [
                         expectizeMoveUnit({
-                          unit: singleCombatDeckUnit,
+                          unit: fieldUnit,
                         }),
                       ],
                       ranged: TestUtil.getPlayerCombatRow({}),
@@ -576,6 +577,11 @@ describe('play-unit-mutation', () => {
           throw Error(`Could not find unit "${unitName}" in hand`)
         }
         const combat = Combat.Close
+        const fieldUnit = TestUtil.getFieldUnit({
+          unit: singleCombatDeckUnit.unit,
+          artStyle: singleCombatDeckUnit.artStyle,
+          row: combat,
+        })
 
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -611,15 +617,11 @@ describe('play-unit-mutation', () => {
                     expectizePlayerRound({
                       close: {
                         score: singleCombatDeckUnit.unit.strength || 0,
-                        units: [
-                          TestUtil.getGameUnit({
-                            unit: singleCombatDeckUnit.unit,
-                          }),
-                        ],
+                        units: [fieldUnit],
                       },
                       moves: [
                         expectizeMoveUnit({
-                          unit: singleCombatDeckUnit,
+                          unit: fieldUnit,
                         }),
                       ],
                       ranged: TestUtil.getPlayerCombatRow({}),
@@ -655,6 +657,11 @@ describe('play-unit-mutation', () => {
           throw Error(`Could not find unit "${unitName}" in hand`)
         }
         const combat = Combat.Close
+        const fieldUnit = TestUtil.getFieldUnit({
+          unit: multiCombatDeckUnit.unit,
+          artStyle: multiCombatDeckUnit.artStyle,
+          row: combat,
+        })
 
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== multiCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -690,15 +697,11 @@ describe('play-unit-mutation', () => {
                     expectizePlayerRound({
                       close: {
                         score: multiCombatDeckUnit.unit.strength || 0,
-                        units: [
-                          TestUtil.getGameUnit({
-                            unit: multiCombatDeckUnit.unit,
-                          }),
-                        ],
+                        units: [fieldUnit],
                       },
                       moves: [
                         expectizeMoveUnit({
-                          unit: multiCombatDeckUnit,
+                          unit: fieldUnit,
                         }),
                       ],
                       ranged: TestUtil.getPlayerCombatRow({}),

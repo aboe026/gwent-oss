@@ -5,16 +5,19 @@ import {
   Combat,
   DeckUnitDbObject,
   GameDbObject,
-  GameUnitDbObject,
   MoveReasonType,
   GameUnitOrigin,
   MoveUnitDbObject,
   MoveDbObject,
   MoveUnitReasonDbObject,
+  GameUnitDbObject,
+  WeatherUnitDbObject,
+  FieldUnitDbObject,
+  ImpactDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import GetBattlefieldUnit from './get-battlefield-unit'
+import { GameUnitType, MoveType } from '@gwent/graphql-schema'
+import GetFieldUnits from '../../util/get-field-units'
 import { ImpactsByUnitId } from '../../resolver-util'
-import { MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from './effect-muster'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -32,11 +35,10 @@ export default class UpdateHistory {
    * @param config.deckUnit The new DeckUnit being deployed to the battlefield.
    * @param config.playerId The ID of the game player who is deploying the new unit to the battlefield.
    * @param config.logPrefix What to prepend log statements with.
-   * @param config.combat Which combat row the new unit is being deployed to on the battlefield.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
-   * @param config.mardroemingGameUnit A potential GameUnit which caused the berserkers to transform.
-   * @param config.transformedGameUnits Any potential new vilkcaarls.
+   * @param config.mardroemingFieldUnit A potential FieldUnit which caused the berserkers to transform.
+   * @param config.transformedFieldUnits Any potential new vilkcaarls.
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
@@ -46,19 +48,20 @@ export default class UpdateHistory {
    * @param config.targetId The potential target an effect is being applied to.
    * @param config.weathers Any potential weather units that were deployed by the new battlefield unit being played.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
+   * @param config.isWeather Whether or not the new unit is weathering the battlefield.
+   * @param config.combat The combat row the new unit is being deployed into.
    */
   static newUnitDeployed({
     game,
     deckUnit,
     playerId,
     logPrefix,
-    combat,
     decoys,
     spies,
     scorches,
     mardroemes,
-    mardroemingGameUnit,
-    transformedGameUnits,
+    mardroemingFieldUnit,
+    transformedFieldUnits,
     musters,
     bonds,
     horns,
@@ -66,18 +69,19 @@ export default class UpdateHistory {
     weathers,
     musteredOrigins,
     targetId,
+    isWeather,
+    combat,
   }: {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
     playerId: string
     logPrefix: string
-    combat: Combat | null | undefined
     decoys: ImpactsByUnitId
     spies: ImpactsByUnitId
     scorches: ImpactsByUnitId
     mardroemes: ImpactsByUnitId
-    transformedGameUnits?: GameUnitDbObject[]
-    mardroemingGameUnit?: GameUnitDbObject
+    transformedFieldUnits?: FieldUnitDbObject[]
+    mardroemingFieldUnit?: FieldUnitDbObject
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId
     horns: ImpactsByUnitId
@@ -85,13 +89,15 @@ export default class UpdateHistory {
     weathers: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
     targetId: string | null | undefined
+    isWeather: boolean
+    combat: Combat | null | undefined
   }) {
-    const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
+    const fieldUnit = GetFieldUnits.getFieldUnit({
       game,
       unitId: deckUnit.unit,
-      userId: playerId,
+      userId: targetId || playerId,
     })
-    const impacts =
+    const impacts: ImpactDbObject[] | undefined =
       bonds[deckUnit.unit.toString()] ||
       horns[deckUnit.unit.toString()] ||
       mardroemes[deckUnit.unit.toString()] ||
@@ -101,16 +107,21 @@ export default class UpdateHistory {
       decoys[deckUnit.unit.toString()] ||
       spies[deckUnit.unit.toString()] ||
       weathers[deckUnit.unit.toString()]
+    const updatedImpacts = UpdateHistory.updateImpactFieldUnits({
+      game,
+      impacts,
+    })
+    const gameUnit = UpdateHistory.getMoveGameUnit({
+      fieldUnit,
+      deckUnit,
+      isWeather,
+      combat,
+    })
+
     const move: MoveUnitDbObject = {
       created: new Date(),
-      unit: {
-        artStyle: deckUnit.artStyle,
-        unit: deckUnit.unit,
-        effectiveStrength: battlefieldUnit?.unit.effectiveStrength,
-        effects: battlefieldUnit?.unit.effects,
-        row: combat,
-      },
-      impacts,
+      unit: gameUnit,
+      impacts: updatedImpacts,
       reason: {
         type: MoveReasonType.Deploy,
       },
@@ -127,8 +138,14 @@ export default class UpdateHistory {
       move,
     })
 
-    if (transformedGameUnits) {
-      for (const transformedGameUnit of transformedGameUnits) {
+    if (transformedFieldUnits) {
+      for (const transformedFieldUnit of transformedFieldUnits) {
+        const mardroemeGameUnit: GameUnitDbObject = mardroemingFieldUnit
+          ? {
+              ...mardroemingFieldUnit,
+              type: GameUnitType.Field,
+            }
+          : gameUnit
         UpdateHistory.newUnitIndirect({
           bonds,
           created: move.created,
@@ -145,15 +162,10 @@ export default class UpdateHistory {
           playerId,
           reason: {
             type: MoveReasonType.Transform,
-            unit: mardroemingGameUnit
-              ? {
-                  artStyle: mardroemingGameUnit.artStyle,
-                  unit: mardroemingGameUnit.unit,
-                }
-              : deckUnit,
+            unit: mardroemeGameUnit,
           },
           scorches,
-          unitId: transformedGameUnit.unit,
+          unitId: transformedFieldUnit.unit,
         })
       }
     }
@@ -192,7 +204,7 @@ export default class UpdateHistory {
           playerId,
           reason: {
             type: MoveReasonType.Muster,
-            unit: deckUnit,
+            unit: gameUnit,
           },
           scorches,
           unitId: muster.unit.unit,
@@ -257,12 +269,12 @@ export default class UpdateHistory {
     weathers: ImpactsByUnitId
     reason: MoveUnitReasonDbObject
   }) {
-    const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
+    const fieldUnit = GetFieldUnits.getFieldUnit({
       game,
       unitId,
       userId: playerId,
     })
-    if (!battlefieldUnit) {
+    if (!fieldUnit) {
       const message = `Could not find indirect unit "${unitId}" on battlefield`
       UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
       throw Error(`${message}.`)
@@ -282,11 +294,8 @@ export default class UpdateHistory {
       reason,
       type: MoveType.Unit,
       unit: {
-        artStyle: battlefieldUnit.unit.artStyle,
-        unit: battlefieldUnit.unit.unit,
-        effectiveStrength: battlefieldUnit.unit.effectiveStrength,
-        effects: battlefieldUnit.unit.effects,
-        row: battlefieldUnit.row,
+        ...fieldUnit,
+        type: GameUnitType.Field,
       },
       impacts,
       source: {
@@ -312,6 +321,97 @@ export default class UpdateHistory {
       player.rounds[game.round - 1].moves.push(move)
     } else {
       throw new PresentableError(`Could not find player "${game.turn}" on game "${game._id}" to add move to.`)
+    }
+  }
+
+  /**
+   * Get the GameUnit database object for a Move.
+   *
+   * @param config The configuration used to determine the GameUnit for the Move.
+   * @param config.deckUnit The DeckUnit which made the Move.
+   * @param config.fieldUnit The potential FieldUnit the DeckUnit became upon Movement.
+   * @param config.isWeather Whether or not the Move was to Weather the battlefield.
+   * @param config.combat The potential Combat row the Move was for.
+   * @returns The GameUnit database object for the Move.
+   */
+  static getMoveGameUnit({
+    deckUnit,
+    fieldUnit,
+    isWeather,
+    combat,
+  }: {
+    deckUnit: DeckUnitDbObject
+    fieldUnit: FieldUnitDbObject | undefined
+    isWeather?: boolean
+    combat?: Combat | null | undefined
+  }): GameUnitDbObject {
+    let gameUnit: GameUnitDbObject
+    const row: Combat | null | undefined = fieldUnit?.row ? (fieldUnit.row as Combat) : combat
+    if (isWeather) {
+      const weatherUnit: WeatherUnitDbObject = {
+        unit: deckUnit.unit,
+        artStyle: deckUnit.artStyle,
+      }
+      gameUnit = {
+        ...weatherUnit,
+        type: GameUnitType.Weather,
+      }
+    } else if (row) {
+      const resolvedFieldUnit: FieldUnitDbObject = {
+        artStyle: deckUnit.artStyle,
+        row,
+        unit: deckUnit.unit,
+        effectiveStrength: fieldUnit?.effectiveStrength,
+        effects: fieldUnit?.effects,
+      }
+      gameUnit = {
+        ...resolvedFieldUnit,
+        type: GameUnitType.Field,
+      }
+    } else {
+      gameUnit = {
+        unit: deckUnit.unit,
+        artStyle: deckUnit.artStyle,
+        type: GameUnitType.Deck,
+      }
+    }
+
+    return gameUnit
+  }
+
+  /**
+   * Returns the Impacts with their FieldUnits updated to accurately reflect their current state in the game.
+   *
+   * @param config The configuration used to update the Impacts with their FieldUnits.
+   * @param config.game The Game the impacts are apart of.
+   * @param config.impacts The Impacts whose FieldUnits should be updated.
+   * @returns The Impact objects with updated FieldUnits.
+   */
+  static updateImpactFieldUnits({
+    game,
+    impacts,
+  }: {
+    game: GameDbObject
+    impacts: ImpactDbObject[] | undefined
+  }): ImpactDbObject[] | undefined {
+    if (impacts) {
+      return impacts.map((impact) => {
+        if (impact.unit && impact.unit.type === GameUnitType.Field) {
+          const impactBattlefieldUnit = GetFieldUnits.getFieldUnit({
+            game,
+            unitId: impact.unit?.unit,
+            userId: impact.user,
+          })
+          if (impactBattlefieldUnit) {
+            const newImpactUnit: GameUnitDbObject = {
+              ...impactBattlefieldUnit,
+              type: GameUnitType.Field,
+            }
+            impact.unit = newImpactUnit
+          }
+        }
+        return impact
+      })
     }
   }
 }

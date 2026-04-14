@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import {
   Combat,
   DeckUnitDbObject,
+  FieldUnitDbObject,
   GameDbObject,
   GameUnitDbObject,
   GameUnitOrigin,
@@ -12,11 +13,9 @@ import {
   MoveUnitReasonDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
-import GetBattlefieldUnit, {
-  BattlefieldUnit,
-} from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
+import { EffectReasonType, GameUnitType, MoveType } from '@gwent/graphql-schema'
+import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
-import { MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import TestUtil from '../util/test-util'
 import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
@@ -59,19 +58,16 @@ describe('update-history', () => {
       })
     })
     it('throws error if mustered unit does not have origin', () => {
-      const musteredUnit: BattlefieldUnit = {
-        row: Combat.Close,
-        unit: TestUtil.getDbGameUnit({}),
-      }
+      const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: musteredUnit.unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit),
         user: new ObjectId(),
       }
       const musters = {
         [deckUnit.unit.toString()]: [impact],
       }
-      const message = `Could not find origin for mustered unit "${musteredUnit.unit.unit}"`
+      const message = `Could not find origin for mustered unit "${musteredUnit.unit}"`
       testNewUnitDeployed({
         deckUnit,
         musters,
@@ -206,13 +202,10 @@ describe('update-history', () => {
       })
     })
     it('calls to addMoveToCurrentPlayer for single valid muster without own impact', () => {
-      const musteredUnit: BattlefieldUnit = {
-        row: Combat.Close,
-        unit: TestUtil.getDbGameUnit({}),
-      }
+      const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: musteredUnit.unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit),
         user: new ObjectId(),
       }
       const musters = {
@@ -223,19 +216,16 @@ describe('update-history', () => {
         deckUnit,
         musters,
         musteredOrigins: {
-          [musteredUnit.unit.unit.toString()]: GameUnitOrigin.Hand,
+          [musteredUnit.unit.toString()]: GameUnitOrigin.Hand,
         },
         expectedImpacts: [impact],
       })
     })
     it('calls to addMoveToCurrentPlayer for single valid muster with own impact', () => {
-      const musteredUnit: BattlefieldUnit = {
-        row: Combat.Close,
-        unit: TestUtil.getDbGameUnit({}),
-      }
+      const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact1: ImpactDbObject = {
-        unit: musteredUnit.unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit),
         user: new ObjectId(),
       }
       const impact2: ImpactDbObject = {
@@ -246,13 +236,13 @@ describe('update-history', () => {
         [deckUnit.unit.toString()]: [impact1],
       }
       const bonds = {
-        [musteredUnit.unit.unit.toString()]: [impact2],
+        [musteredUnit.unit.toString()]: [impact2],
       }
       testNewUnitDeployed({
         deckUnit,
         musters,
         musteredOrigins: {
-          [musteredUnit.unit.unit.toString()]: GameUnitOrigin.Hand,
+          [musteredUnit.unit.toString()]: GameUnitOrigin.Hand,
         },
         bonds,
         expectedImpacts: [impact1],
@@ -260,21 +250,15 @@ describe('update-history', () => {
       })
     })
     it('calls to addMoveToCurrentPlayer for multiple valid musters', () => {
-      const musteredUnit1: BattlefieldUnit = {
-        row: Combat.Close,
-        unit: TestUtil.getDbGameUnit({}),
-      }
-      const musteredUnit2: BattlefieldUnit = {
-        row: Combat.Close,
-        unit: TestUtil.getDbGameUnit({}),
-      }
+      const musteredUnit1 = TestUtil.getDbFieldUnit({})
+      const musteredUnit2 = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact1: ImpactDbObject = {
-        unit: musteredUnit1.unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit1),
         user: new ObjectId(),
       }
       const impact2: ImpactDbObject = {
-        unit: musteredUnit2.unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(musteredUnit2),
         user: new ObjectId(),
       }
       const musters = {
@@ -284,21 +268,18 @@ describe('update-history', () => {
         deckUnit,
         musters,
         musteredOrigins: {
-          [musteredUnit2.unit.unit.toString()]: GameUnitOrigin.Undrawn,
-          [musteredUnit1.unit.unit.toString()]: GameUnitOrigin.Hand,
+          [musteredUnit2.unit.toString()]: GameUnitOrigin.Undrawn,
+          [musteredUnit1.unit.toString()]: GameUnitOrigin.Hand,
         },
         logPrefix,
         expectedImpacts: [impact1, impact2],
       })
     })
-    it('calls to addMoveToCurrentPlayer for single mardroeme without mardroemingGameUnit', () => {
-      const mardroeming: BattlefieldUnit = {
-        row: Combat.Close,
-        unit: TestUtil.getDbGameUnit({}),
-      }
+    it('calls to addMoveToCurrentPlayer for single mardroeme without mardroemingFieldUnit', () => {
+      const mardroeming = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: mardroeming.unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(mardroeming),
         user: new ObjectId(),
       }
       const mardroemes = {
@@ -308,22 +289,19 @@ describe('update-history', () => {
         logPrefix,
         deckUnit,
         mardroemes,
-        transformedGameUnits: [
-          TestUtil.getDbGameUnit({
+        transformedFieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: impact.unit?.unit,
           }),
         ],
         expectedImpacts: [impact],
       })
     })
-    it('calls to addMoveToCurrentPlayer for single mardroeme with mardroemingGameUnit', () => {
-      const mardroeming: BattlefieldUnit = {
-        row: Combat.Close,
-        unit: TestUtil.getDbGameUnit({}),
-      }
+    it('calls to addMoveToCurrentPlayer for single mardroeme with mardroemingFieldUnit', () => {
+      const mardroeming = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
-        unit: mardroeming.unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(mardroeming),
         user: new ObjectId(),
       }
       const mardroemes = {
@@ -333,9 +311,9 @@ describe('update-history', () => {
         logPrefix,
         deckUnit,
         mardroemes,
-        mardroemingGameUnit: mardroeming.unit,
-        transformedGameUnits: [
-          TestUtil.getDbGameUnit({
+        mardroemingFieldUnit: mardroeming,
+        transformedFieldUnits: [
+          TestUtil.getDbFieldUnit({
             id: impact.unit?.unit,
           }),
         ],
@@ -358,13 +336,16 @@ describe('update-history', () => {
         reason: {
           type: MoveReasonType.Muster,
         },
-        getBattlefieldUnitResponse: undefined,
+        getFieldUnitResponse: undefined,
         error: Error(`${message}.`),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('calls to addMoveToCurrentPlayer without impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const move: MoveUnitDbObject = {
         created: new Date(),
         reason: {
@@ -375,7 +356,10 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
-          row: combat,
+          artStyle: fieldUnit.artStyle,
+          effectiveStrength: fieldUnit.effectiveStrength,
+          id: fieldUnit.unit,
+          row: fieldUnit.row as Combat,
         }),
       }
       testNewUnitIndirect({
@@ -386,15 +370,15 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         move,
       })
     })
     it('calls to addMoveToCurrentPlayer with scorch impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -409,6 +393,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -421,10 +406,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         scorches: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -433,6 +415,9 @@ describe('update-history', () => {
     })
     it('calls to addMoveToCurrentPlayer with mardroeme impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -447,6 +432,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -459,10 +445,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         mardroemes: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -471,6 +454,9 @@ describe('update-history', () => {
     })
     it('calls to addMoveToCurrentPlayer with muster impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -485,6 +471,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -497,10 +484,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         musters: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -509,6 +493,9 @@ describe('update-history', () => {
     })
     it('calls to addMoveToCurrentPlayer with bond impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -523,6 +510,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -535,10 +523,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         bonds: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -547,6 +532,9 @@ describe('update-history', () => {
     })
     it('calls to addMoveToCurrentPlayer with horn impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -561,6 +549,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -573,10 +562,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         horns: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -585,6 +571,9 @@ describe('update-history', () => {
     })
     it('calls to addMoveToCurrentPlayer with decoy impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -599,6 +588,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -611,10 +601,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         decoys: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -623,6 +610,9 @@ describe('update-history', () => {
     })
     it('calls to addMoveToCurrentPlayer with weather impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -637,6 +627,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -649,10 +640,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         weathers: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -661,6 +649,9 @@ describe('update-history', () => {
     })
     it('calls to addMoveToCurrentPlayer with morale impact', () => {
       const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
         user: new ObjectId(),
@@ -675,6 +666,7 @@ describe('update-history', () => {
         },
         type: MoveType.Unit,
         unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
           row: combat,
         }),
         impacts: [impact],
@@ -687,10 +679,7 @@ describe('update-history', () => {
         origin: move.source.origin as GameUnitOrigin,
         playerId: new ObjectId().toString(),
         reason: move.reason,
-        getBattlefieldUnitResponse: {
-          row: combat,
-          unit: move.unit,
-        },
+        getFieldUnitResponse: fieldUnit,
         morales: {
           [move.unit.unit.toString()]: [impact],
         },
@@ -729,7 +718,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -773,7 +762,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -809,7 +798,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -848,7 +837,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -908,7 +897,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -945,7 +934,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -985,7 +974,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1046,7 +1035,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1082,7 +1071,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1121,7 +1110,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1181,7 +1170,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1218,7 +1207,7 @@ describe('update-history', () => {
         const oldMove: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1258,7 +1247,7 @@ describe('update-history', () => {
         const move: MoveUnitDbObject = {
           created: new Date(),
           type: MoveType.Unit,
-          unit: TestUtil.getDbDeckUnit({}),
+          unit: TestUtil.getDbGameUnit({}),
           reason: {
             type: MoveReasonType.Deploy,
           },
@@ -1293,11 +1282,245 @@ describe('update-history', () => {
       })
     })
   })
+  describe('getMoveTestUtil.getDbGameUnit', () => {
+    it('returns Deck type if not weather or row', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      testGetMoveGameUnit({
+        deckUnit,
+        expected: {
+          ...deckUnit,
+          type: GameUnitType.Deck,
+        },
+      })
+    })
+    it('returns Weather type if isWeather true', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      testGetMoveGameUnit({
+        deckUnit,
+        isWeather: true,
+        expected: {
+          ...deckUnit,
+          type: GameUnitType.Weather,
+        },
+      })
+    })
+    it('returns Field type if combat provided', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const combat = Combat.Close
+      testGetMoveGameUnit({
+        deckUnit,
+        combat,
+        expected: {
+          ...deckUnit,
+          row: combat,
+          effectiveStrength: undefined,
+          effects: undefined,
+          type: GameUnitType.Field,
+        },
+      })
+    })
+    it('returns Field type if combat on FieldUnit', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        effectiveStrength: 2,
+        effects: [
+          {
+            operator: '+1',
+            reason: {
+              effect: new ObjectId(),
+              leader: new ObjectId(),
+              type: EffectReasonType.Leader,
+              unit: new ObjectId(),
+            },
+            total: 3,
+          },
+        ],
+      })
+      testGetMoveGameUnit({
+        deckUnit,
+        fieldUnit,
+        expected: {
+          ...deckUnit,
+          row: fieldUnit.row,
+          effectiveStrength: fieldUnit.effectiveStrength,
+          effects: fieldUnit.effects,
+          type: GameUnitType.Field,
+        },
+      })
+    })
+  })
+  describe('updateImpactFieldUnits', () => {
+    it('returns undefined if impacts undefined', () => {
+      testUpdateImpactFieldUnits({
+        impacts: undefined,
+        expected: undefined,
+      })
+    })
+    it('returns empty array if impacts empty array', () => {
+      testUpdateImpactFieldUnits({
+        impacts: [],
+        expected: [],
+      })
+    })
+    it('does not change impact if no unit', () => {
+      const impact = TestUtil.getDbImpact({
+        unit: null,
+      })
+      testUpdateImpactFieldUnits({
+        impacts: [deepClone(impact)],
+        expected: [impact],
+      })
+    })
+    it('does not change impact if not Field type', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({
+          id: deckUnit.unit,
+          type: GameUnitType.Deck,
+        }),
+      })
+      testUpdateImpactFieldUnits({
+        impacts: [deepClone(impact)],
+        expected: [impact],
+      })
+    })
+    it('does not change impact if Field type but not on battlefield', () => {
+      const fieldUnit = TestUtil.getDbFieldUnit({})
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
+          type: GameUnitType.Field,
+        }),
+      })
+      testUpdateImpactFieldUnits({
+        impacts: [deepClone(impact)],
+        getFieldUnitResponses: [undefined],
+        expected: [impact],
+        getFieldUnitCalls: [
+          {
+            unitId: fieldUnit.unit,
+            userId: impact.user,
+          },
+        ],
+      })
+    })
+    it('changes single impact if Field type and on battlefield', () => {
+      const fieldUnit = TestUtil.getDbFieldUnit({})
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
+          type: GameUnitType.Field,
+        }),
+      })
+      testUpdateImpactFieldUnits({
+        impacts: [deepClone(impact)],
+        getFieldUnitResponses: [fieldUnit],
+        expected: [
+          {
+            ...impact,
+            unit: {
+              ...fieldUnit,
+              type: GameUnitType.Field,
+            },
+          },
+        ],
+        getFieldUnitCalls: [
+          {
+            unitId: fieldUnit.unit,
+            userId: impact.user,
+          },
+        ],
+      })
+    })
+    it('changes single impact out of multiple if Field type and on battlefield', () => {
+      const fieldUnit = TestUtil.getDbFieldUnit({})
+      const impact1 = TestUtil.getDbImpact({
+        unit: null,
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
+          type: GameUnitType.Field,
+        }),
+      })
+      const impact3 = TestUtil.getDbImpact({
+        unit: null,
+      })
+      testUpdateImpactFieldUnits({
+        impacts: [deepClone(impact1), deepClone(impact2), deepClone(impact3)],
+        getFieldUnitResponses: [fieldUnit],
+        expected: [
+          impact1,
+          {
+            ...impact2,
+            unit: {
+              ...fieldUnit,
+              type: GameUnitType.Field,
+            },
+          },
+          impact3,
+        ],
+        getFieldUnitCalls: [
+          {
+            unitId: fieldUnit.unit,
+            userId: impact2.user,
+          },
+        ],
+      })
+    })
+    it('changes multiple impacts if Field type and on battlefield', () => {
+      const fieldUnit1 = TestUtil.getDbFieldUnit({})
+      const fieldUnit2 = TestUtil.getDbFieldUnit({})
+      const impact1 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({
+          id: fieldUnit1.unit,
+          type: GameUnitType.Field,
+        }),
+      })
+      const impact2 = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({
+          id: fieldUnit2.unit,
+          type: GameUnitType.Field,
+        }),
+      })
+      testUpdateImpactFieldUnits({
+        impacts: [deepClone(impact1), deepClone(impact2)],
+        getFieldUnitResponses: [fieldUnit1, fieldUnit2],
+        expected: [
+          {
+            ...impact1,
+            unit: {
+              ...fieldUnit1,
+              type: GameUnitType.Field,
+            },
+          },
+          {
+            ...impact2,
+            unit: {
+              ...fieldUnit2,
+              type: GameUnitType.Field,
+            },
+          },
+        ],
+        getFieldUnitCalls: [
+          {
+            unitId: fieldUnit1.unit,
+            userId: impact1.user,
+          },
+          {
+            unitId: fieldUnit2.unit,
+            userId: impact2.user,
+          },
+        ],
+      })
+    })
+  })
 })
 
 function testNewUnitDeployed({
   deckUnit = TestUtil.getDbDeckUnit({}),
   combat = Combat.Close,
+  isWeather = false,
   scorches = {},
   musters = {},
   morales = {},
@@ -1308,16 +1531,17 @@ function testNewUnitDeployed({
   weathers = {},
   spies = {},
   musteredOrigins,
-  transformedGameUnits,
-  mardroemingGameUnit,
+  transformedFieldUnits,
+  mardroemingFieldUnit,
   targetId,
   logPrefix,
   error,
-  expectedImpacts: expectedImpacts,
+  expectedImpacts,
   errorCalls = [],
 }: {
   deckUnit?: DeckUnitDbObject
   combat?: Combat | null | undefined
+  isWeather?: boolean
   scorches?: ImpactsByUnitId
   musters?: ImpactsByUnitId
   morales?: ImpactsByUnitId
@@ -1328,8 +1552,8 @@ function testNewUnitDeployed({
   weathers?: ImpactsByUnitId
   spies?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
-  transformedGameUnits?: GameUnitDbObject[]
-  mardroemingGameUnit?: GameUnitDbObject
+  transformedFieldUnits?: FieldUnitDbObject[]
+  mardroemingFieldUnit?: FieldUnitDbObject
   targetId?: string
   logPrefix: string
   error?: Error
@@ -1338,22 +1562,26 @@ function testNewUnitDeployed({
 }) {
   const playerId = new ObjectId().toString()
   const game = TestUtil.getDbGame({})
-  const battlefieldUnit: BattlefieldUnit = {
-    row: Combat.Close,
-    unit: TestUtil.getDbGameUnit({}),
-  }
+  const fieldUnit: FieldUnitDbObject = TestUtil.getDbFieldUnit({
+    row: combat || Combat.Close,
+  })
+  const updatedImpacts = [TestUtil.getDbImpact({})]
+  const updateImpactFieldUnitsSpy = jest.spyOn(UpdateHistory, 'updateImpactFieldUnits').mockReturnValue(updatedImpacts)
   const date = new Date()
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => date)
+  const gameUnit = TestUtil.getDbGameUnit({
+    artStyle: deckUnit.artStyle,
+    id: deckUnit.unit,
+    effectiveStrength: fieldUnit.effectiveStrength,
+    effects: fieldUnit.effects,
+    row: combat ? combat : (fieldUnit.row as Combat),
+    type: combat ? GameUnitType.Field : GameUnitType.Deck,
+  })
+  const getMoveGameUnitSpy = jest.spyOn(UpdateHistory, 'getMoveGameUnit').mockReturnValue(gameUnit)
   const move: MoveUnitDbObject = {
     created: date,
-    unit: {
-      artStyle: deckUnit.artStyle,
-      unit: deckUnit.unit,
-      effectiveStrength: battlefieldUnit.unit.effectiveStrength,
-      effects: battlefieldUnit.unit.effects,
-      row: combat,
-    },
-    impacts: expectedImpacts,
+    unit: gameUnit,
+    impacts: updatedImpacts,
     reason: {
       type: MoveReasonType.Deploy,
     },
@@ -1366,9 +1594,7 @@ function testNewUnitDeployed({
     move.target = new ObjectId(targetId)
   }
   const addMoveToCurrentPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToCurrentPlayer').mockImplementation()
-  const getBattlefieldUnitSpy = jest
-    .spyOn(GetBattlefieldUnit, 'getBattlefieldUnit')
-    .mockReturnValueOnce(battlefieldUnit)
+  const getFieldUnitDbObjectSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit').mockReturnValueOnce(fieldUnit)
   const newUnitIndirectSpy = jest.spyOn(UpdateHistory as any, 'newUnitIndirect').mockImplementation()
   const newUnitIndirectCalls: any[][] = []
   if (musters[deckUnit.unit.toString()]) {
@@ -1391,7 +1617,7 @@ function testNewUnitDeployed({
             playerId,
             reason: {
               type: MoveReasonType.Muster,
-              unit: deckUnit,
+              unit: gameUnit,
             },
             scorches,
             unitId: muster.unit.unit,
@@ -1400,8 +1626,8 @@ function testNewUnitDeployed({
       }
     }
   }
-  if (transformedGameUnits) {
-    for (const transformedGameUnit of transformedGameUnits) {
+  if (transformedFieldUnits) {
+    for (const transformedFieldUnit of transformedFieldUnits) {
       newUnitIndirectCalls.push([
         {
           bonds,
@@ -1419,15 +1645,15 @@ function testNewUnitDeployed({
           playerId,
           reason: {
             type: MoveReasonType.Transform,
-            unit: mardroemingGameUnit
+            unit: mardroemingFieldUnit
               ? {
-                  artStyle: mardroemingGameUnit.artStyle,
-                  unit: mardroemingGameUnit.unit,
+                  ...mardroemingFieldUnit,
+                  type: GameUnitType.Field,
                 }
-              : deckUnit,
+              : gameUnit,
           },
           scorches,
-          unitId: transformedGameUnit.unit,
+          unitId: transformedFieldUnit.unit,
         },
       ])
     }
@@ -1456,9 +1682,10 @@ function testNewUnitDeployed({
         horns,
         mardroemes,
         spies,
-        transformedGameUnits,
-        mardroemingGameUnit,
+        transformedFieldUnits,
+        mardroemingFieldUnit,
         targetId,
+        isWeather,
       })
     ).toThrow(error)
   } else {
@@ -1479,20 +1706,39 @@ function testNewUnitDeployed({
         horns,
         mardroemes,
         spies,
-        transformedGameUnits,
-        mardroemingGameUnit,
+        transformedFieldUnits,
+        mardroemingFieldUnit,
         targetId,
+        isWeather,
       })
     ).toEqual(undefined)
   }
 
-  expect(dateSpy.mock.calls).toEqual([[]])
-  expect(getBattlefieldUnitSpy.mock.calls).toEqual([
+  expect(updateImpactFieldUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        game,
+        impacts: expectedImpacts,
+      },
+    ],
+  ])
+  expect(getFieldUnitDbObjectSpy.mock.calls).toEqual([
     [
       {
         game,
         unitId: deckUnit.unit,
-        userId: playerId,
+        userId: targetId || playerId,
+      },
+    ],
+  ])
+  expect(dateSpy.mock.calls).toEqual([[]])
+  expect(getMoveGameUnitSpy.mock.calls).toEqual([
+    [
+      {
+        fieldUnit,
+        deckUnit,
+        isWeather,
+        combat,
       },
     ],
   ])
@@ -1525,7 +1771,7 @@ function testNewUnitIndirect({
   weathers = {},
   spies = {},
   reason,
-  getBattlefieldUnitResponse,
+  getFieldUnitResponse,
   move,
   error,
   errorCalls = [],
@@ -1546,14 +1792,12 @@ function testNewUnitIndirect({
   weathers?: ImpactsByUnitId
   spies?: ImpactsByUnitId
   reason: MoveUnitReasonDbObject
-  getBattlefieldUnitResponse: BattlefieldUnit | undefined
+  getFieldUnitResponse: FieldUnitDbObject | undefined
   move?: MoveUnitDbObject
   error?: Error
   errorCalls?: string[][]
 }) {
-  const getBattlefieldUnitSpy = jest
-    .spyOn(GetBattlefieldUnit, 'getBattlefieldUnit')
-    .mockReturnValue(getBattlefieldUnitResponse)
+  const getFieldUnitDbObjectSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit').mockReturnValue(getFieldUnitResponse)
   const addMoveToCurrentPlayerSpy = jest.spyOn(UpdateHistory as any, 'addMoveToCurrentPlayer').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   UpdateHistory['logger'] = {
@@ -1604,7 +1848,7 @@ function testNewUnitIndirect({
     ).toEqual(undefined)
   }
 
-  expect(getBattlefieldUnitSpy.mock.calls).toEqual([
+  expect(getFieldUnitDbObjectSpy.mock.calls).toEqual([
     [
       {
         game,
@@ -1626,4 +1870,67 @@ function testNewUnitIndirect({
         ]
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+function testGetMoveGameUnit({
+  deckUnit,
+  fieldUnit,
+  isWeather,
+  combat,
+  expected,
+}: {
+  deckUnit: DeckUnitDbObject
+  fieldUnit?: FieldUnitDbObject | undefined
+  isWeather?: boolean
+  combat?: Combat | null | undefined
+  expected: GameUnitDbObject
+}) {
+  expect(
+    UpdateHistory.getMoveGameUnit({
+      deckUnit,
+      fieldUnit,
+      combat,
+      isWeather,
+    })
+  ).toEqual(expected)
+}
+
+function testUpdateImpactFieldUnits({
+  impacts,
+  getFieldUnitResponses,
+  expected,
+  getFieldUnitCalls = [],
+}: {
+  impacts: ImpactDbObject[] | undefined
+  getFieldUnitResponses?: (FieldUnitDbObject | undefined)[]
+  expected: ImpactDbObject[] | undefined
+  getFieldUnitCalls?: any[]
+}) {
+  const game = TestUtil.getDbGame({})
+  const getFieldUnitSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit')
+  if (getFieldUnitResponses) {
+    for (const getFieldUnitResponse of getFieldUnitResponses) {
+      getFieldUnitSpy.mockReturnValueOnce(getFieldUnitResponse)
+    }
+  }
+
+  expect(
+    UpdateHistory.updateImpactFieldUnits({
+      game,
+      impacts,
+    })
+  ).toEqual(expected)
+
+  expect(getFieldUnitSpy.mock.calls).toEqual(
+    getFieldUnitCalls
+      ? getFieldUnitCalls.map((getFieldUnitCall) => {
+          return [
+            {
+              ...getFieldUnitCall,
+              game,
+            },
+          ]
+        })
+      : getFieldUnitCalls
+  )
 }

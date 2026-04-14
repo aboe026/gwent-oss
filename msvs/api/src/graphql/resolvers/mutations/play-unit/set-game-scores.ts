@@ -1,4 +1,4 @@
-import { GameDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { FieldUnitDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
  * Sets the scores for the current round and each combat row in it for the game.
@@ -23,7 +23,7 @@ export default function setGameScores(game: GameDbObject) {
  * @param units The units to calculate the collective score of.
  * @returns The score of all units given.
  */
-export function getUnitsScore(units: GameUnitDbObject[]): number {
+export function getUnitsScore(units: FieldUnitDbObject[]): number {
   let score = 0
   for (const unit of units) {
     score += unit.effectiveStrength || 0

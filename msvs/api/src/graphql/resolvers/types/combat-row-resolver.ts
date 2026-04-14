@@ -1,4 +1,4 @@
-import GameUnitResolver from './game-unit-resolver'
+import FieldUnitResolver from './field-unit-resolver'
 import { PlayerCombatRow, Unit } from '@gwent/graphql-schema/resolver-typings'
 import { PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
 
@@ -17,13 +17,13 @@ export default class CombatRowResolver {
   static async fromObject({ row, units }: { row: PlayerCombatRowDbObject; units: Unit[] }): Promise<PlayerCombatRow> {
     return {
       score: row.score,
-      units: await GameUnitResolver.fromArray({
-        gameUnits: row.units,
+      units: await FieldUnitResolver.fromArray({
+        fieldUnits: row.units,
         units,
       }),
       modifier: row.modifier
-        ? await GameUnitResolver.fromObject({
-            gameUnit: row.modifier,
+        ? await FieldUnitResolver.fromObject({
+            fieldUnit: row.modifier,
             unit: units.find((unit) => unit.id === row.modifier?.unit.toString()),
           })
         : undefined,

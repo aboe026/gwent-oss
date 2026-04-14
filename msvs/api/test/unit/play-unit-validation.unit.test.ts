@@ -6,14 +6,13 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
+  FieldUnitDbObject,
   GameStatus,
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import EffectStore from '../../src/database/stores/effect-store'
-import GetBattlefieldUnit, {
-  BattlefieldUnit,
-} from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
+import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import PlayUnitValidation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-validation'
@@ -251,7 +250,7 @@ describe('play-unit-validation', () => {
         combats: [combat],
         modifier: true,
       })
-      const existingModifier = TestUtil.getDbGameUnit({})
+      const existingModifier = TestUtil.getDbFieldUnit({})
       const game = TestUtil.getDbGame({
         round: 1,
         players: [
@@ -293,7 +292,7 @@ describe('play-unit-validation', () => {
         combats: [combat],
         modifier: true,
       })
-      const existingModifier = TestUtil.getDbGameUnit({})
+      const existingModifier = TestUtil.getDbFieldUnit({})
       const game = TestUtil.getDbGame({
         round: 1,
         players: [
@@ -335,7 +334,7 @@ describe('play-unit-validation', () => {
         combats: [combat],
         modifier: true,
       })
-      const existingModifier = TestUtil.getDbGameUnit({})
+      const existingModifier = TestUtil.getDbFieldUnit({})
       const game = TestUtil.getDbGame({
         round: 1,
         players: [
@@ -464,7 +463,7 @@ describe('play-unit-validation', () => {
         id: deckUnit.unit,
         effects: effects.map((effect) => effect._id),
       })
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
       const message = `Target "${target.unit}" does not exist on the battlefield for player "${user._id}".`
       await testPlayUnitValidation({
@@ -505,7 +504,7 @@ describe('play-unit-validation', () => {
         id: deckUnit.unit,
         effects: effects.map((effect) => effect._id),
       })
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
       const message = `Could not find Unit for target "${target.unit}".`
       await testPlayUnitValidation({
@@ -521,10 +520,7 @@ describe('play-unit-validation', () => {
         effects,
         expectedDeckUnit: deckUnit,
         verifyMongoIdResponses: [undefined, undefined],
-        getBattlefieldUnitResponse: {
-          row: Combat.Close,
-          unit: target,
-        },
+        getFieldUnitResponse: target,
         roundUnits: [],
         isDecoy: true,
         expectedError: Error(message),
@@ -551,7 +547,7 @@ describe('play-unit-validation', () => {
         id: deckUnit.unit,
         effects: effects.map((effect) => effect._id),
       })
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       const targetUnit = TestUtil.getDbUnit({
         id: target.unit,
         hero: true,
@@ -571,10 +567,7 @@ describe('play-unit-validation', () => {
         effects,
         expectedDeckUnit: deckUnit,
         verifyMongoIdResponses: [undefined, undefined],
-        getBattlefieldUnitResponse: {
-          row: Combat.Close,
-          unit: target,
-        },
+        getFieldUnitResponse: target,
         roundUnits: [targetUnit],
         isDecoy: true,
         expectedError: Error(message),
@@ -601,7 +594,7 @@ describe('play-unit-validation', () => {
         id: deckUnit.unit,
         effects: effects.map((effect) => effect._id),
       })
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       const targetUnit = TestUtil.getDbUnit({
         id: target.unit,
         special: true,
@@ -621,10 +614,7 @@ describe('play-unit-validation', () => {
         effects,
         expectedDeckUnit: deckUnit,
         verifyMongoIdResponses: [undefined, undefined],
-        getBattlefieldUnitResponse: {
-          row: Combat.Close,
-          unit: target,
-        },
+        getFieldUnitResponse: target,
         roundUnits: [targetUnit],
         isDecoy: true,
         expectedError: Error(message),
@@ -651,7 +641,7 @@ describe('play-unit-validation', () => {
         id: deckUnit.unit,
         effects: effects.map((effect) => effect._id),
       })
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       const targetUnit = TestUtil.getDbUnit({
         id: target.unit,
         combats: [Combat.Close],
@@ -672,10 +662,7 @@ describe('play-unit-validation', () => {
         effects,
         expectedDeckUnit: deckUnit,
         verifyMongoIdResponses: [undefined, undefined],
-        getBattlefieldUnitResponse: {
-          row: Combat.Close,
-          unit: target,
-        },
+        getFieldUnitResponse: target,
         roundUnits: [targetUnit],
         isDecoy: true,
         expectedError: Error(message),
@@ -948,7 +935,7 @@ describe('play-unit-validation', () => {
         id: deckUnit.unit,
         effects: effects.map((effect) => effect._id),
       })
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       const targetUnit = TestUtil.getDbUnit({
         id: target.unit,
       })
@@ -965,10 +952,7 @@ describe('play-unit-validation', () => {
         verifyMongoIdResponses: [undefined, undefined],
         units: [unit],
         roundUnits: [targetUnit],
-        getBattlefieldUnitResponse: {
-          row: Combat.Close,
-          unit: target,
-        },
+        getFieldUnitResponse: target,
         logPrefix,
         expectedDeckUnit: deckUnit,
         expectedCombat: Combat.Close,
@@ -1133,7 +1117,7 @@ async function testPlayUnitValidation({
   combat,
   logPrefix,
   verifyMongoIdResponses = [undefined],
-  getBattlefieldUnitResponse,
+  getFieldUnitResponse,
   expectedError,
   expectedCombat,
   expectedDeckUnit,
@@ -1156,7 +1140,7 @@ async function testPlayUnitValidation({
   combat?: Combat
   logPrefix?: string
   verifyMongoIdResponses?: (Error | undefined)[]
-  getBattlefieldUnitResponse?: BattlefieldUnit | undefined
+  getFieldUnitResponse?: FieldUnitDbObject | undefined
   expectedError?: Error
   expectedCombat?: Combat
   expectedDeckUnit?: DeckUnitDbObject
@@ -1223,9 +1207,7 @@ async function testPlayUnitValidation({
   if (effects) {
     effectsGetSpy.mockResolvedValue(effects)
   }
-  const getBattlefieldUnitSpy = jest
-    .spyOn(GetBattlefieldUnit, 'getBattlefieldUnit')
-    .mockReturnValue(getBattlefieldUnitResponse)
+  const getFieldUnitSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit').mockReturnValue(getFieldUnitResponse)
   const roundUnitsGetSpy = jest.spyOn(getRoundUnits, 'default')
   if (roundUnits) {
     roundUnitsGetSpy.mockResolvedValue(roundUnits)
@@ -1350,7 +1332,7 @@ async function testPlayUnitValidation({
         ]
       : []
   )
-  expect(getBattlefieldUnitSpy.mock.calls).toEqual(
+  expect(getFieldUnitSpy.mock.calls).toEqual(
     !(isAuthenticatedResponse instanceof Error) &&
       verifyMongoIdResponses &&
       verifyMongoIdResponses.length === 2 &&

@@ -354,7 +354,7 @@ describe('effect-decoy', () => {
     })
     it('returns impact if target in row', () => {
       const userId = new ObjectId()
-      const target = TestUtil.getDbGameUnit({})
+      const target = TestUtil.getDbFieldUnit({})
       testDecoyFromRow({
         player: TestUtil.getDbGamePlayer({
           user: userId,
@@ -365,7 +365,7 @@ describe('effect-decoy', () => {
         },
         targetId: target.unit.toString(),
         expected: {
-          unit: target,
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(target),
           user: userId,
         },
       })

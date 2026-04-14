@@ -4,24 +4,25 @@ import type { useMutation } from '@apollo/client/react'
 
 import {
   AddGameMutation,
-  Exact,
-  SetDeckMutation,
-  RedrawMutation,
-  GameDeckQuery,
-  ReadyMutation,
-  Scalars,
-  GameQuery,
-  SetOrderMutation,
-  InputMaybe,
   Combat,
-  FragmentType,
-  PlayUnitMutation,
-  PlayPassMutation,
   DeckUnitFragment,
-  GameUnitFragment,
-  GameFragment,
-  MoveFragment,
+  Exact,
+  FragmentType,
   GameDeckFragmentDoc,
+  GameDeckQuery,
+  GameFragment,
+  GameQuery,
+  InputMaybe,
+  MoveFragment,
+  PlayPassMutation,
+  PlayUnitMutation,
+  RedrawMutation,
+  Scalars,
+  SetDeckMutation,
+  SetOrderMutation,
+  ReadyMutation,
+  WeatherUnitFragment,
+  FieldUnitFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
@@ -145,7 +146,7 @@ export interface PlayPassProps {
 }
 
 export interface UnitForPlayer {
-  unitFragment: DeckUnitFragment | GameUnitFragment
+  unitFragment: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
   playerName: string | undefined
 }
 

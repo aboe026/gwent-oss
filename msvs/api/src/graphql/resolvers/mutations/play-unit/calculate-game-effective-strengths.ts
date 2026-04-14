@@ -16,6 +16,7 @@ import EffectHorn from './effect-horn'
 import EffectMorale from './effect-morale'
 import EffectWeather from './effect-weather'
 import GetEffectWithKey from './get-effect-with-key'
+import GetFieldUnits from '../../util/get-field-units'
 import getUnitIdsWithEffect from './get-unit-ids-with-effect'
 import GetWeatherUnitsForRow, { PlayerWeatherUnit } from './get-weather-units-for-row'
 import { ImpactsByUnitId } from '../../resolver-util'
@@ -222,11 +223,10 @@ export default class CalculateGameEffectiveStrengths {
     const horns: ImpactsByUnitId = {}
 
     const rowDbUnits: UnitDbObject[] = []
-    const rowUnits = [...row.units]
-    if (row.modifier) {
-      rowUnits.push(row.modifier)
-    }
-    for (const rowUnit of rowUnits) {
+    const rowFieldUnits = GetFieldUnits.fromRow({
+      row,
+    })
+    for (const rowUnit of rowFieldUnits) {
       const matchingUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
       if (matchingUnit) {
         rowDbUnits.push(matchingUnit)
@@ -246,8 +246,8 @@ export default class CalculateGameEffectiveStrengths {
       units: rowDbUnits,
     })
 
-    for (const rowGameUnit of rowUnits) {
-      const rowUnit = units.find((unit) => unit._id.toString() === rowGameUnit.unit.toString())
+    for (const rowFieldUnit of rowFieldUnits) {
+      const rowUnit = units.find((unit) => unit._id.toString() === rowFieldUnit.unit.toString())
       if (rowUnit && rowUnit.strength !== undefined && rowUnit.strength !== null) {
         const bondIdsInRow = EffectBond.getUnitsWithBond({
           bondEffect,
@@ -255,15 +255,15 @@ export default class CalculateGameEffectiveStrengths {
           units: rowDbUnits,
           unitName: rowUnit.name,
         })
-        rowGameUnit.effectiveStrength = rowUnit.strength
-        rowGameUnit.effects = []
+        rowFieldUnit.effectiveStrength = rowUnit.strength
+        rowFieldUnit.effects = []
 
         addListsToMap({
           baseMap: weathers,
           newLists: EffectWeather.weatherScores({
             logPrefix,
             newDeckUnit,
-            rowGameUnit,
+            rowFieldUnit,
             rowUnit,
             weatherUnits,
             userId,
@@ -280,7 +280,7 @@ export default class CalculateGameEffectiveStrengths {
             newDeckUnit,
             musteredUnitIds,
             transformedUnitIds,
-            rowGameUnit,
+            rowFieldUnit,
             rowUnit,
             units,
             userId,
@@ -295,7 +295,7 @@ export default class CalculateGameEffectiveStrengths {
             moraleEffect,
             unitIdsWithMoraleInRow: moraleIdsInRow,
             newDeckUnit,
-            rowGameUnit,
+            rowFieldUnit,
             rowUnit,
             units,
             userId,
@@ -311,7 +311,7 @@ export default class CalculateGameEffectiveStrengths {
             hornEffect,
             unitIdsWithHornInRow: hornIdsInRow,
             newDeckUnit,
-            rowGameUnit,
+            rowFieldUnit,
             rowUnit,
             units,
             userId,

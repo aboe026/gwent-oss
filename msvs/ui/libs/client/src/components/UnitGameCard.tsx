@@ -4,10 +4,11 @@ import { MouseEvent } from 'react'
 import {
   DeckUnitFragment,
   EffectKey,
-  GameUnitFragment,
+  FieldUnitFragment,
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
+  WeatherUnitFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
 import { HTML_CLASSES } from '@gwent/constants'
@@ -98,13 +99,16 @@ export default function UnitGameCard({
 
 interface UnitGameCardProps {
   cursor?: string
-  deckUnit: DeckUnitFragment | GameUnitFragment
+  deckUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
   effectiveStrength?: number | null
   dotted?: boolean
   dottedTitle?: string
   iconSize?: string
-  onFullscreen: (deckUnit: DeckUnitFragment | GameUnitFragment) => void
-  onClick?: (args: { deckUnit: DeckUnitFragment | GameUnitFragment; event: MouseEvent<HTMLDivElement> }) => void
+  onFullscreen: (deckUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment) => void
+  onClick?: (args: {
+    deckUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
+    event: MouseEvent<HTMLDivElement>
+  }) => void
   selected?: boolean
   title?: string
 }

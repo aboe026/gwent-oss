@@ -9,7 +9,9 @@ import {
   ImpactDbObject,
   GameUnitOrigin,
   UnitDbObject,
+  FieldUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent/graphql-schema'
 import GetEffectWithKey from './get-effect-with-key'
 import { ImpactsByUnitId } from '../../resolver-util'
 import { sortObjectArray } from '@gwent/utils'
@@ -26,6 +28,7 @@ export default class EffectMuster {
    *
    * @param config The configuration used to potentially muster new Units.
    * @param config.battlefieldUnits All the existing Units on the battlefield.
+   * @param config.combat The combat row the new unit is being played on.
    * @param config.effects The Effect database documents for any potential effect involved in the Game.
    * @param config.game The Game to potentially muster the Units into.
    * @param config.logPrefix What to prepend log statements with.
@@ -34,12 +37,14 @@ export default class EffectMuster {
    */
   static async musterBattlefield({
     battlefieldUnits,
+    combat,
     effects,
     game,
     logPrefix,
     newDeckUnit,
   }: {
     battlefieldUnits: UnitDbObject[]
+    combat?: Combat | null
     effects: EffectDbObject[]
     game: GameDbObject
     logPrefix: string
@@ -77,7 +82,7 @@ export default class EffectMuster {
       EffectMuster.logger.trace(`${logPrefix} hasMusterEffect: "${hasMusterEffect}"`)
     }
 
-    if (hasMusterEffect) {
+    if (hasMusterEffect && combat) {
       EffectMuster.logger.debug(`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`)
 
       const musterableUnits = await UnitStore.get({
@@ -94,6 +99,7 @@ export default class EffectMuster {
         const { impact, origin } = EffectMuster.getMusterImpact({
           game,
           logPrefix,
+          combat,
           potentialMuster: musterableUnit,
         })
         if (impact && origin) {
@@ -154,16 +160,19 @@ export default class EffectMuster {
    *
    * @param config The configuration used to potentially muster the unit.
    * @param config.game The game containing the player to potentially muster the unit for.
+   * @param config.combat The combat row the new units are being mustered into.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.potentialMuster The Unit to potentially muster for the game player.
    * @returns The Impact and Origin of the muster if eligible.
    */
   private static getMusterImpact({
     game,
+    combat,
     logPrefix,
     potentialMuster,
   }: {
     game: GameDbObject
+    combat: Combat
     logPrefix: string
     potentialMuster: UnitDbObject
   }): MusterForPlayer {
@@ -198,7 +207,13 @@ export default class EffectMuster {
           }
 
           impact = {
-            unit: unitToMuster,
+            unit: {
+              ...unitToMuster,
+              row: combat,
+              effectiveStrength: undefined,
+              effects: [],
+              type: GameUnitType.Field,
+            },
             user: player.user,
             source: {
               origin,
@@ -244,12 +259,18 @@ export default class EffectMuster {
         }
 
         const round = player.rounds[game.round - 1]
+        const fieldUnit: FieldUnitDbObject = {
+          ...muster,
+          row: combat,
+          effectiveStrength: undefined,
+          effects: [],
+        }
         if (combat === Combat.Close) {
-          round.close.units.push(muster)
+          round.close.units.push(fieldUnit)
         } else if (combat === Combat.Ranged) {
-          round.ranged.units.push(muster)
+          round.ranged.units.push(fieldUnit)
         } else {
-          round.siege.units.push(muster)
+          round.siege.units.push(fieldUnit)
         }
       }
     }

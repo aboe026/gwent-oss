@@ -19,7 +19,6 @@ import {
   Game,
   GamePlayer,
   GameStatus,
-  PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
@@ -100,6 +99,11 @@ describe('effect-morale', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
+    const fieldUnitSelf1 = TestUtil.getFieldUnit({
+      unit: unitSelf1.unit,
+      artStyle: unitSelf1.artStyle,
+      row: Combat.Ranged,
+    })
 
     gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
     const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -135,16 +139,12 @@ describe('effect-morale', () => {
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: fieldUnitSelf1,
                     }),
                   ],
                   ranged: {
                     score: unitSelf1.unit.strength || 0,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitSelf1.unit,
-                      }),
-                    ],
+                    units: [fieldUnitSelf1],
                   },
                   siege: TestUtil.getPlayerCombatRow({}),
                   score: unitSelf1.unit.strength || 0,
@@ -192,7 +192,12 @@ describe('effect-morale', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
-    const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+    const combatUnit1 = Combat.Ranged
+    const fieldUnitSelf1 = TestUtil.getFieldUnit({
+      unit: unitSelf1.unit,
+      artStyle: unitSelf1.artStyle,
+      row: combatUnit1,
+    })
     const effectMorale = unitSelf1.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
     if (!effectMorale) {
       throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName1}" unit`)
@@ -209,7 +214,12 @@ describe('effect-morale', () => {
     if (!unitOpponent1) {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
-    const combatUnitOpponent = unitOpponent1.unit.combats ? unitOpponent1.unit.combats[0] : Combat.Close
+    const combatUnitOpponent = Combat.Close
+    const fieldUnitOpponent1 = TestUtil.getFieldUnit({
+      unit: unitOpponent1.unit,
+      artStyle: unitOpponent1.artStyle,
+      row: combatUnitOpponent,
+    })
     await playUnit({
       gameId: game.id,
       unitId: unitOpponent1.unit.id,
@@ -222,15 +232,23 @@ describe('effect-morale', () => {
     if (!unitSelf2) {
       throw Error(`Could not find unit "${unitName3}" in hand`)
     }
-
-    const expectedCombatRowOpponent: PlayerCombatRow = {
-      score: unitOpponent1.unit.strength || 0,
-      units: [
-        TestUtil.getGameUnit({
-          unit: unitOpponent1.unit,
-        }),
+    const combatUnit2 = Combat.Ranged
+    const fieldUnitSelf2 = TestUtil.getFieldUnit({
+      unit: unitSelf2.unit,
+      effectiveStrength: 3,
+      row: combatUnit2,
+      effects: [
+        {
+          operator: EFFECT_OPERATOR.Plus,
+          total: 3,
+          reason: {
+            effect: effectMorale,
+            unit: unitSelf1.unit,
+          },
+        },
       ],
-    }
+    })
+
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
     const expectedGamePlayer = expectizeGamePlayer({
       user: opponent,
@@ -239,14 +257,17 @@ describe('effect-morale', () => {
       ready: true,
       rounds: [
         expectizePlayerRound({
-          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          close: {
+            score: unitOpponent1.unit.strength || 0,
+            units: [fieldUnitOpponent1],
+          },
           moves: [
             expectizeMoveUnit({
-              unit: unitOpponent1,
+              unit: fieldUnitOpponent1,
             }),
           ],
-          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
-          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          ranged: TestUtil.getPlayerCombatRow({}),
+          siege: TestUtil.getPlayerCombatRow({}),
           score: unitOpponent1.unit.strength || 0,
         }),
       ],
@@ -256,13 +277,13 @@ describe('effect-morale', () => {
       graphql({
         schema,
         source: `mutation {
-            playUnit(
-              game: "${game.id}"
-              unit: "${unitSelf2.unit.id}"
-            ) {
-              ${getGameFragment()}
-            }
-          }`,
+          playUnit(
+            game: "${game.id}"
+            unit: "${unitSelf2.unit.id}"
+          ) {
+            ${getGameFragment()}
+          }
+        }`,
         contextValue: {
           session: {
             user: TestUtil.getDbUserFromUser(self),
@@ -284,33 +305,15 @@ describe('effect-morale', () => {
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: fieldUnitSelf1,
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf2,
+                      unit: fieldUnitSelf2,
                     }),
                   ],
                   ranged: {
                     score: 13,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitSelf1.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf2.unit,
-                        effectiveStrength: 3,
-                        effects: [
-                          {
-                            operator: EFFECT_OPERATOR.Plus,
-                            total: 3,
-                            reason: {
-                              effect: effectMorale,
-                              unit: unitSelf1.unit,
-                            },
-                          },
-                        ],
-                      }),
-                    ],
+                    units: [fieldUnitSelf1, fieldUnitSelf2],
                   },
                   siege: TestUtil.getPlayerCombatRow({}),
                   score: 13,
@@ -358,7 +361,8 @@ describe('effect-morale', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
-    const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+    const combatUnit1 = Combat.Ranged
+
     await playUnit({
       gameId: game.id,
       unitId: unitSelf1.unit.id,
@@ -371,7 +375,11 @@ describe('effect-morale', () => {
     if (!unitOpponent1) {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
-    const combatUnitOpponent = unitOpponent1.unit.combats ? unitOpponent1.unit.combats[0] : Combat.Close
+    const combatUnitOpponent = Combat.Close
+    const fieldUnitOpponent1 = TestUtil.getFieldUnit({
+      unit: unitOpponent1.unit,
+      row: combatUnitOpponent,
+    })
     await playUnit({
       gameId: game.id,
       unitId: unitOpponent1.unit.id,
@@ -384,19 +392,32 @@ describe('effect-morale', () => {
     if (!unitSelf2) {
       throw Error(`Could not find unit "${unitName3}" in hand`)
     }
+    const combatUnit2 = Combat.Ranged
     const effectMorale = unitSelf2.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
     if (!effectMorale) {
       throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName3}" unit`)
     }
 
-    const expectedCombatRowOpponent: PlayerCombatRow = {
-      score: unitOpponent1.unit.strength || 0,
-      units: [
-        TestUtil.getGameUnit({
-          unit: unitOpponent1.unit,
-        }),
+    const fieldUnitSelf1 = TestUtil.getFieldUnit({
+      unit: unitSelf1.unit,
+      effectiveStrength: 3,
+      effects: [
+        {
+          operator: EFFECT_OPERATOR.Plus,
+          reason: {
+            effect: effectMorale,
+            unit: unitSelf2.unit,
+          },
+          total: 3,
+        },
       ],
-    }
+      row: combatUnit1,
+    })
+    const fieldUnitSelf2 = TestUtil.getFieldUnit({
+      unit: unitSelf2.unit,
+      row: combatUnit2,
+    })
+
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
     const expectedGamePlayer = expectizeGamePlayer({
       user: opponent,
@@ -405,14 +426,17 @@ describe('effect-morale', () => {
       ready: true,
       rounds: [
         expectizePlayerRound({
-          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          close: {
+            score: unitOpponent1.unit.strength || 0,
+            units: [fieldUnitOpponent1],
+          },
           moves: [
             expectizeMoveUnit({
-              unit: unitOpponent1,
+              unit: fieldUnitOpponent1,
             }),
           ],
-          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
-          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          ranged: TestUtil.getPlayerCombatRow({}),
+          siege: TestUtil.getPlayerCombatRow({}),
           score: unitOpponent1.unit.strength || 0,
         }),
       ],
@@ -422,13 +446,13 @@ describe('effect-morale', () => {
       graphql({
         schema,
         source: `mutation {
-            playUnit(
-              game: "${game.id}"
-              unit: "${unitSelf2.unit.id}"
-            ) {
-              ${getGameFragment()}
-            }
-          }`,
+          playUnit(
+            game: "${game.id}"
+            unit: "${unitSelf2.unit.id}"
+          ) {
+            ${getGameFragment()}
+          }
+        }`,
         contextValue: {
           session: {
             user: TestUtil.getDbUserFromUser(self),
@@ -450,26 +474,17 @@ describe('effect-morale', () => {
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: TestUtil.getFieldUnit({
+                        unit: unitSelf1.unit,
+                        effectiveStrength: 2,
+                        row: combatUnit1,
+                      }),
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf2,
+                      unit: fieldUnitSelf2,
                       impacts: [
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf1.unit,
-                            effectiveStrength: 3,
-                            effects: [
-                              {
-                                operator: EFFECT_OPERATOR.Plus,
-                                reason: {
-                                  effect: effectMorale,
-                                  unit: unitSelf2.unit,
-                                },
-                                total: 3,
-                              },
-                            ],
-                          }),
+                          unit: fieldUnitSelf1,
                           user: self,
                         }),
                       ],
@@ -477,25 +492,7 @@ describe('effect-morale', () => {
                   ],
                   ranged: {
                     score: 13,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitSelf1.unit,
-                        effectiveStrength: 3,
-                        effects: [
-                          {
-                            operator: EFFECT_OPERATOR.Plus,
-                            total: 3,
-                            reason: {
-                              effect: effectMorale,
-                              unit: unitSelf2.unit,
-                            },
-                          },
-                        ],
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf2.unit,
-                      }),
-                    ],
+                    units: [fieldUnitSelf1, fieldUnitSelf2],
                   },
                   siege: TestUtil.getPlayerCombatRow({}),
                   score: 13,
@@ -543,7 +540,11 @@ describe('effect-morale', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
-    const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+    const combatUnit1 = Combat.Ranged
+    const fieldUnitSelf1 = TestUtil.getFieldUnit({
+      unit: unitSelf1.unit,
+      row: combatUnit1,
+    })
     await playUnit({
       gameId: game.id,
       unitId: unitSelf1.unit.id,
@@ -556,7 +557,7 @@ describe('effect-morale', () => {
     if (!unitOpponent1) {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
-    const combatUnitOpponent = unitOpponent1.unit.combats ? unitOpponent1.unit.combats[0] : Combat.Close
+    const combatUnitOpponent = Combat.Close
     await playUnit({
       gameId: game.id,
       unitId: unitOpponent1.unit.id,
@@ -569,19 +570,20 @@ describe('effect-morale', () => {
     if (!unitSelf2) {
       throw Error(`Could not find unit "${unitName3}" in hand`)
     }
+    const combatUnit2 = Combat.Ranged
+    const fieldUnitSelf2 = TestUtil.getFieldUnit({
+      unit: unitSelf2.unit,
+      row: combatUnit2,
+    })
     const effectMorale = unitSelf2.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
     if (!effectMorale) {
       throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName3}" unit`)
     }
 
-    const expectedCombatRowOpponent: PlayerCombatRow = {
-      score: unitOpponent1.unit.strength || 0,
-      units: [
-        TestUtil.getGameUnit({
-          unit: unitOpponent1.unit,
-        }),
-      ],
-    }
+    const fieldUnitOpponent1 = TestUtil.getFieldUnit({
+      unit: unitOpponent1.unit,
+      row: combatUnitOpponent,
+    })
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
     const expectedGamePlayer = expectizeGamePlayer({
       user: opponent,
@@ -590,14 +592,17 @@ describe('effect-morale', () => {
       ready: true,
       rounds: [
         expectizePlayerRound({
-          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          close: {
+            score: unitOpponent1.unit.strength || 0,
+            units: [fieldUnitOpponent1],
+          },
           moves: [
             expectizeMoveUnit({
-              unit: unitOpponent1,
+              unit: fieldUnitOpponent1,
             }),
           ],
-          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
-          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          ranged: TestUtil.getPlayerCombatRow({}),
+          siege: TestUtil.getPlayerCombatRow({}),
           score: unitOpponent1.unit.strength || 0,
         }),
       ],
@@ -607,13 +612,13 @@ describe('effect-morale', () => {
       graphql({
         schema,
         source: `mutation {
-            playUnit(
-              game: "${game.id}"
-              unit: "${unitSelf2.unit.id}"
-            ) {
-              ${getGameFragment()}
-            }
-          }`,
+          playUnit(
+            game: "${game.id}"
+            unit: "${unitSelf2.unit.id}"
+          ) {
+            ${getGameFragment()}
+          }
+        }`,
         contextValue: {
           session: {
             user: TestUtil.getDbUserFromUser(self),
@@ -635,22 +640,15 @@ describe('effect-morale', () => {
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: fieldUnitSelf1,
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf2,
+                      unit: fieldUnitSelf2,
                     }),
                   ],
                   ranged: {
                     score: 20,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitSelf1.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf2.unit,
-                      }),
-                    ],
+                    units: [fieldUnitSelf1, fieldUnitSelf2],
                   },
                   siege: TestUtil.getPlayerCombatRow({}),
                   score: 20,

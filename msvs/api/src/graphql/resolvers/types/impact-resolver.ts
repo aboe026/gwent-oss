@@ -59,12 +59,12 @@ export default class ImpactResolver {
     }
 
     return {
-      unit:
-        impact.unit &&
-        (await GameUnitResolver.fromObject({
-          gameUnit: impact.unit,
-          unit: impactUnit,
-        })),
+      unit: impact.unit
+        ? await GameUnitResolver.fromObject({
+            gameUnit: impact.unit,
+            unit: impactUnit,
+          })
+        : undefined,
       user: impactUser,
       source: impact.source
         ? {

@@ -5,17 +5,17 @@ import {
   Combat,
   DeckUnitFragment,
   EffectKey,
+  FieldUnitFragment,
+  FieldUnitFragmentDoc,
   FragmentType,
   GamePlayerFragment,
-  GameUnitFragment,
-  GameUnitFragmentDoc,
   UnitEffectFragmentDoc,
   UnitFragment,
   UnitFragmentDoc,
   useFragment,
+  WeatherUnitFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
-import isGameUnit from '../../util/is-game-unit'
 import UnitGameCard from '../../components/UnitGameCard'
 
 /**
@@ -53,9 +53,9 @@ export default function GameRowUnit({
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  gameUnitFragment: GameUnitFragment | DeckUnitFragment
+  gameUnitFragment: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
   index: number
-  sortedUnits: FragmentType<typeof GameUnitFragmentDoc>[]
+  sortedUnits: FragmentType<typeof FieldUnitFragmentDoc>[]
   style?: CSSProperties
   title?: string
   cursor?: string
@@ -108,7 +108,7 @@ export default function GameRowUnit({
         }}
         title={highlightedForDecoy ? `Select to decoy ${unit.name} back into hand` : title}
         cursor={cursor}
-        effectiveStrength={isGameUnit(gameUnitFragment) ? gameUnitFragment.effectiveStrength : undefined}
+        effectiveStrength={gameUnitFragment.__typename === 'FieldUnit' ? gameUnitFragment.effectiveStrength : undefined}
         selected={selectedAsFullCard || selected || highlightedForDecoy}
         dotted={!isTurn && !selected}
         onFullscreen={() => {
@@ -117,7 +117,7 @@ export default function GameRowUnit({
             units: sortedUnits.map((deckUnit) => {
               return {
                 playerName: player.user.name,
-                unitFragment: useFragment(GameUnitFragmentDoc, deckUnit),
+                unitFragment: useFragment(FieldUnitFragmentDoc, deckUnit),
               }
             }),
           })

@@ -1,7 +1,10 @@
-import { Combat, GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import GameUnitEffectResolver from './game-unit-effect-resolver'
+import DeckUnitResolver from './deck-unit-resolver'
+import { FieldUnitDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import FieldUnitResolver from './field-unit-resolver'
+import { GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnitType } from '@gwent/graphql-schema'
 import UnitResolver from './unit-resolver'
+import WeatherUnitResolver from './weather-unit-resolver'
 
 /**
  * A class to convert GameUnit database objects to their GraphQL equivalent.
@@ -16,27 +19,29 @@ export default class GameUnitResolver {
    * @returns The resolved GameUnit object matching its GraphQL schema definition.
    */
   static async fromObject({ gameUnit, unit }: { gameUnit: GameUnitDbObject; unit?: Unit }): Promise<GameUnit> {
-    return {
-      artStyle: gameUnit.artStyle,
-      effectiveStrength: gameUnit.effectiveStrength,
-      effects: await GameUnitEffectResolver.fromArray({
-        gameUnitEffects: gameUnit.effects,
-      }),
-      row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
-      unit:
-        unit ||
-        (await UnitResolver.fromId({
-          id: gameUnit.unit,
-        })),
+    if (gameUnit.type === GameUnitType.Deck) {
+      return DeckUnitResolver.fromObject({
+        deckUnit: gameUnit,
+        unit,
+      })
+    } else if (gameUnit.type === GameUnitType.Field) {
+      return FieldUnitResolver.fromObject({
+        fieldUnit: gameUnit as FieldUnitDbObject,
+        unit,
+      })
     }
+    return WeatherUnitResolver.fromObject({
+      weatherUnit: gameUnit,
+      unit,
+    })
   }
 
   /**
    * Converts an array of GameUnit database objects to an array of GameUnit GraphQL objects.
    *
-   * @param config The configuration used to resolve the array of GameUnits.
+   * @param config The configuration used to resolve the array of GameUnit.
    * @param config.gameUnits The database objects to resolve to their GraphQL types.
-   * @param config.units The resolved Units for the GameUnits. If not provided, will be retrieved.
+   * @param config.units The resolved Units for the GameUnit. If not provided, will be retrieved.
    * @returns The resolved GameUnit array matching the GraphQL schema definition.
    */
   static async fromArray({ gameUnits, units }: { gameUnits: GameUnitDbObject[]; units?: Unit[] }): Promise<GameUnit[]> {

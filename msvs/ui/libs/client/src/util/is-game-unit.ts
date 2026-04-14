@@ -1,15 +1,19 @@
-import { DeckUnitFragment, GameUnitFragment } from '@gwent/graphql-schema/apollo-typings'
+import {
+  DeckUnitFragment,
+  FieldUnitFragment,
+  GameUnitFragment,
+  WeatherUnitFragment,
+} from '@gwent/graphql-schema/apollo-typings'
 
 /**
- * Whether an object is a GameUnitFragment or a DeckUnitFragment.
+ * Whether an object is a GameUnitFragment or not.
  *
  * @param unit The unit to check whether or not it is a GameUnitFragment.
- * @returns True if the unit is a GameUnitFragment, false if it is a DeckUnitFragment.
+ * @returns True if the unit is a GameUnitFragment, false if it is not.
  */
-export default function isGameUnit(unit: DeckUnitFragment | GameUnitFragment | undefined): unit is GameUnitFragment {
-  const gameUnit = unit as GameUnitFragment
-  return (
-    gameUnit &&
-    (gameUnit.effectiveStrength !== undefined || gameUnit.effects !== undefined || gameUnit.row !== undefined)
-  )
+export default function isGameUnit(
+  unit: GameUnitFragment | DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined
+): unit is GameUnitFragment {
+  const maskedUnit = unit as DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined
+  return !!(maskedUnit && maskedUnit.unit)
 }

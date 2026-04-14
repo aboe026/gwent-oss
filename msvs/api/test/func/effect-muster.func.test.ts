@@ -94,6 +94,9 @@ describe('effect-muster', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName}" in hand`)
     }
+    const fieldUnitSelf1 = TestUtil.getFieldUnit({
+      unit: unitSelf1.unit,
+    })
     gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
 
     const unitSelf2 = sortObjectArray({
@@ -103,6 +106,9 @@ describe('effect-muster', () => {
     if (!unitSelf2) {
       throw Error(`Could not find second unit "${unitName}" in hand`)
     }
+    const fieldUnitSelf2 = TestUtil.getFieldUnit({
+      unit: unitSelf2.unit,
+    })
     gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
 
     const unitSelf3 = sortObjectArray({
@@ -112,6 +118,9 @@ describe('effect-muster', () => {
     if (!unitSelf3) {
       throw Error(`Could not find unit "${unitName}" in undrawn`)
     }
+    const fieldUnitSelf3 = TestUtil.getFieldUnit({
+      unit: unitSelf3.unit,
+    })
     gameDeck.undrawn = gameDeck.undrawn.filter((undrawnUnit) => undrawnUnit.unit.id !== unitSelf3.unit.id)
 
     const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -147,35 +156,19 @@ describe('effect-muster', () => {
                 expectizePlayerRound({
                   close: {
                     score: 3,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitSelf1.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf2.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf3.unit,
-                      }),
-                    ],
+                    units: [fieldUnitSelf1, fieldUnitSelf2, fieldUnitSelf3],
                   },
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: fieldUnitSelf1,
                       impacts: [
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf2.unit,
-                            effectiveStrength: 1,
-                          }),
+                          unit: fieldUnitSelf2,
                           user: self,
                           source: TestUtil.getSource({}),
                         }),
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf3.unit,
-                            effectiveStrength: 1,
-                          }),
+                          unit: fieldUnitSelf3,
                           user: self,
                           source: TestUtil.getSource({
                             origin: GameUnitOrigin.Undrawn,
@@ -184,17 +177,17 @@ describe('effect-muster', () => {
                       ],
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf2,
+                      unit: fieldUnitSelf2,
                       reason: {
                         type: MoveReasonType.Muster,
-                        unit: unitSelf1,
+                        unit: fieldUnitSelf1,
                       },
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf3,
+                      unit: fieldUnitSelf3,
                       reason: {
                         type: MoveReasonType.Muster,
-                        unit: unitSelf1,
+                        unit: fieldUnitSelf1,
                       },
                       source: TestUtil.getSource({
                         origin: GameUnitOrigin.Undrawn,
@@ -243,6 +236,9 @@ describe('effect-muster', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
+    const fieldUnitSelf1 = TestUtil.getFieldUnit({
+      unit: unitSelf1.unit,
+    })
     gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
 
     const unitSelf2 = sortObjectArray({
@@ -252,6 +248,9 @@ describe('effect-muster', () => {
     if (!unitSelf2) {
       throw Error(`Could not find second unit "${unitName2}" in hand`)
     }
+    const fieldUnitSelf2 = TestUtil.getFieldUnit({
+      unit: unitSelf2.unit,
+    })
     gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
 
     const unitSelf3 = sortObjectArray({
@@ -261,6 +260,9 @@ describe('effect-muster', () => {
     if (!unitSelf3) {
       throw Error(`Could not find unit "${unitName3}" in hand`)
     }
+    const fieldUnitSelf3 = TestUtil.getFieldUnit({
+      unit: unitSelf3.unit,
+    })
     gameDeck.hand = gameDeck.hand.filter((undrawnUnit) => undrawnUnit.unit.id !== unitSelf3.unit.id)
 
     const unitSelf4 = sortObjectArray({
@@ -270,6 +272,9 @@ describe('effect-muster', () => {
     if (!unitSelf4) {
       throw Error(`Could not find unit "${unitName4}" in undrawn`)
     }
+    const fieldUnitSelf4 = TestUtil.getFieldUnit({
+      unit: unitSelf4.unit,
+    })
     gameDeck.undrawn = gameDeck.undrawn.filter((undrawnUnit) => undrawnUnit.unit.id !== unitSelf4.unit.id)
 
     const unitSelf5 = sortObjectArray({
@@ -279,6 +284,9 @@ describe('effect-muster', () => {
     if (!unitSelf5) {
       throw Error(`Could not find unit "${unitName5}" in undrawn`)
     }
+    const fieldUnitSelf5 = TestUtil.getFieldUnit({
+      unit: unitSelf5.unit,
+    })
     gameDeck.undrawn = gameDeck.undrawn.filter((undrawnUnit) => undrawnUnit.unit.id !== unitSelf5.unit.id)
 
     const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -313,59 +321,31 @@ describe('effect-muster', () => {
                 expectizePlayerRound({
                   close: {
                     score: 21,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitSelf1.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf2.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf3.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf4.unit,
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf5.unit,
-                      }),
-                    ],
+                    units: [fieldUnitSelf1, fieldUnitSelf2, fieldUnitSelf3, fieldUnitSelf4, fieldUnitSelf5],
                   },
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: fieldUnitSelf1,
                       impacts: [
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf2.unit,
-                            effectiveStrength: 4,
-                          }),
+                          unit: fieldUnitSelf2,
                           user: self,
                           source: TestUtil.getSource({}),
                         }),
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf3.unit,
-                            effectiveStrength: 4,
-                          }),
+                          unit: fieldUnitSelf3,
                           user: self,
                           source: TestUtil.getSource({}),
                         }),
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf4.unit,
-                            effectiveStrength: 4,
-                          }),
+                          unit: fieldUnitSelf4,
                           user: self,
                           source: TestUtil.getSource({
                             origin: GameUnitOrigin.Undrawn,
                           }),
                         }),
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf5.unit,
-                            effectiveStrength: 5,
-                          }),
+                          unit: fieldUnitSelf5,
                           user: self,
                           source: TestUtil.getSource({
                             origin: GameUnitOrigin.Undrawn,
@@ -374,34 +354,34 @@ describe('effect-muster', () => {
                       ],
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf2,
+                      unit: fieldUnitSelf2,
                       reason: {
                         type: MoveReasonType.Muster,
-                        unit: unitSelf1,
+                        unit: fieldUnitSelf1,
                       },
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf3,
+                      unit: fieldUnitSelf3,
                       reason: {
                         type: MoveReasonType.Muster,
-                        unit: unitSelf1,
+                        unit: fieldUnitSelf1,
                       },
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf4,
+                      unit: fieldUnitSelf4,
                       reason: {
                         type: MoveReasonType.Muster,
-                        unit: unitSelf1,
+                        unit: fieldUnitSelf1,
                       },
                       source: TestUtil.getSource({
                         origin: GameUnitOrigin.Undrawn,
                       }),
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf5,
+                      unit: fieldUnitSelf5,
                       reason: {
                         type: MoveReasonType.Muster,
-                        unit: unitSelf1,
+                        unit: fieldUnitSelf1,
                       },
                       source: TestUtil.getSource({
                         origin: GameUnitOrigin.Undrawn,

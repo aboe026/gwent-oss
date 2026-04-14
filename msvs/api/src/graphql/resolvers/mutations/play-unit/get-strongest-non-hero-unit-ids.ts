@@ -1,27 +1,28 @@
-import { GameUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { getLogger } from 'log4js'
 
+import { FieldUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+
 /**
- * A class for retrieving the strongest non-hero Unit ids in a given list of GameUnits.
+ * A class for retrieving the strongest non-hero Unit ids in a given list of FieldUnit.
  */
 export default class GetStrongestNonHeroUnitIds {
   private static logger = getLogger('GetStrongestNonHeroUnitIds')
 
   /**
-   * Retrieves the strongest non-hero units from a list of GameUnit database documents.
+   * Retrieves the strongest non-hero units from a list of FieldUnit database documents.
    *
    * @param config The configuration used to get the strongest non-hero units.
-   * @param config.gameUnits The list of GameUnit databases documents to get the strongest non-hero units from.
+   * @param config.fieldUnits The list of FieldUnit databases documents to get the strongest non-hero units from.
    * @param config.logPrefix What to prepend to log output statements.
-   * @param config.units The list of Unit database objects matching the GameUnit database objects to determine their strength.
+   * @param config.units The list of Unit database objects matching the FieldUnit database objects to determine their strength.
    * @returns A list of the strongest units which are not heros.
    */
   static getStrongestNonHeroUnitIds({
-    gameUnits,
+    fieldUnits,
     logPrefix,
     units,
   }: {
-    gameUnits: GameUnitDbObject[]
+    fieldUnits: FieldUnitDbObject[]
     logPrefix: string
     units: UnitDbObject[]
   }): string[] {
@@ -29,18 +30,18 @@ export default class GetStrongestNonHeroUnitIds {
     const idToUnitMap: {
       [id: string]: UnitDbObject
     } = {}
-    for (const gameUnit of gameUnits) {
-      const unit = units.find((unit) => unit._id.toString() === gameUnit.unit.toString())
+    for (const fieldUnit of fieldUnits) {
+      const unit = units.find((unit) => unit._id.toString() === fieldUnit.unit.toString())
       if (!unit) {
-        const message = `Could not find matching unit for game unit "${gameUnit.unit}"`
+        const message = `Could not find matching unit for FieldUnit "${fieldUnit.unit}"`
         GetStrongestNonHeroUnitIds.logger.error(`${logPrefix} failed: ${message} in units "${JSON.stringify(units)}"`)
         throw Error(`${message}.`)
       }
-      idToUnitMap[gameUnit.unit.toString()] = unit
+      idToUnitMap[fieldUnit.unit.toString()] = unit
       const strength =
-        gameUnit.effectiveStrength === undefined || gameUnit.effectiveStrength === null
+        fieldUnit.effectiveStrength === undefined || fieldUnit.effectiveStrength === null
           ? unit.strength
-          : gameUnit.effectiveStrength
+          : fieldUnit.effectiveStrength
       if (strength === undefined || strength === null) {
         GetStrongestNonHeroUnitIds.logger.trace(
           `${logPrefix} unit "${unit.name}" does not have strength, not considering for highestStrength`
@@ -63,17 +64,17 @@ export default class GetStrongestNonHeroUnitIds {
 
     const strongestUnitIds: string[] = []
     if (highestStrength > -1) {
-      for (const gameUnit of gameUnits) {
-        const unit = idToUnitMap[gameUnit.unit.toString()]
+      for (const fieldUnit of fieldUnits) {
+        const unit = idToUnitMap[fieldUnit.unit.toString()]
         const strength =
-          gameUnit.effectiveStrength === undefined || gameUnit.effectiveStrength === null
+          fieldUnit.effectiveStrength === undefined || fieldUnit.effectiveStrength === null
             ? unit.strength
-            : gameUnit.effectiveStrength
+            : fieldUnit.effectiveStrength
         if (strength && strength === highestStrength) {
           GetStrongestNonHeroUnitIds.logger.trace(
             `${logPrefix} unit "${unit.name}" matches highest strength of "${highestStrength}", adding to strongestUnitIds`
           )
-          strongestUnitIds.push(gameUnit.unit.toString())
+          strongestUnitIds.push(fieldUnit.unit.toString())
         }
       }
     }

@@ -19,7 +19,6 @@ import {
   Game,
   GamePlayer,
   GameStatus,
-  PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import { EFFECT_OPERATOR } from '@gwent/constants'
@@ -135,14 +134,16 @@ describe('effect-bond', () => {
                   close: {
                     score: unitSelf1.unit.strength || 0,
                     units: [
-                      TestUtil.getGameUnit({
+                      TestUtil.getFieldUnit({
                         unit: unitSelf1.unit,
                       }),
                     ],
                   },
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: TestUtil.getFieldUnit({
+                        unit: unitSelf1.unit,
+                      }),
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
@@ -192,7 +193,7 @@ describe('effect-bond', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
-    const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+    const combatUnit1 = Combat.Close
     const effectBond = unitSelf1.unit.effects?.find((effect) => effect.key === EffectKey.Bond)
     if (!effectBond) {
       throw Error(`Could not find "${EffectKey.Bond}" effect on "${unitName1}" unit`)
@@ -209,7 +210,7 @@ describe('effect-bond', () => {
     if (!unitOpponent1) {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
-    const combatUnitOpponent = unitOpponent1.unit.combats ? unitOpponent1.unit.combats[0] : Combat.Close
+    const combatUnitOpponent = Combat.Ranged
     await playUnit({
       gameId: game.id,
       unitId: unitOpponent1.unit.id,
@@ -222,15 +223,8 @@ describe('effect-bond', () => {
     if (!unitSelf2) {
       throw Error(`Could not find unit "${unitName3}" in hand`)
     }
+    const combatUnit2 = Combat.Close
 
-    const expectedCombatRowOpponent: PlayerCombatRow = {
-      score: unitOpponent1.unit.strength || 0,
-      units: [
-        TestUtil.getGameUnit({
-          unit: unitOpponent1.unit,
-        }),
-      ],
-    }
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
     const expectedGamePlayer = expectizeGamePlayer({
       user: opponent,
@@ -239,16 +233,61 @@ describe('effect-bond', () => {
       ready: true,
       rounds: [
         expectizePlayerRound({
-          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          close: TestUtil.getPlayerCombatRow({}),
           moves: [
             expectizeMoveUnit({
-              unit: unitOpponent1,
+              unit: TestUtil.getFieldUnit({
+                unit: unitOpponent1.unit,
+                artStyle: unitOpponent1.artStyle,
+                effectiveStrength: unitOpponent1.unit.strength || 0,
+                row: combatUnitOpponent,
+              }),
             }),
           ],
-          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
-          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          ranged: {
+            score: unitOpponent1.unit.strength || 0,
+            units: [
+              TestUtil.getFieldUnit({
+                unit: unitOpponent1.unit,
+                artStyle: unitOpponent1.artStyle,
+                row: combatUnitOpponent,
+                effectiveStrength: unitOpponent1.unit.strength || 0,
+              }),
+            ],
+          },
+          siege: TestUtil.getPlayerCombatRow({}),
           score: unitOpponent1.unit.strength || 0,
         }),
+      ],
+    })
+    const fieldUnit1 = TestUtil.getFieldUnit({
+      unit: unitSelf1.unit,
+      effectiveStrength: 8,
+      row: combatUnit1,
+      effects: [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          total: 8,
+          reason: {
+            effect: effectBond,
+            unit: unitSelf2.unit,
+          },
+        },
+      ],
+    })
+    const fieldUnit2 = TestUtil.getFieldUnit({
+      unit: unitSelf2.unit,
+      effectiveStrength: 8,
+      row: combatUnit2,
+      effects: [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          total: 8,
+          reason: {
+            effect: effectBond,
+            unit: unitSelf1.unit,
+          },
+        },
       ],
     })
 
@@ -283,59 +322,21 @@ describe('effect-bond', () => {
                 expectizePlayerRound({
                   close: {
                     score: 16,
-                    units: [
-                      TestUtil.getGameUnit({
-                        unit: unitSelf1.unit,
-                        effectiveStrength: 8,
-                        effects: [
-                          {
-                            operator: EFFECT_OPERATOR.Double,
-                            total: 8,
-                            reason: {
-                              effect: effectBond,
-                              unit: unitSelf2.unit,
-                            },
-                          },
-                        ],
-                      }),
-                      TestUtil.getGameUnit({
-                        unit: unitSelf2.unit,
-                        effectiveStrength: 8,
-                        effects: [
-                          {
-                            operator: EFFECT_OPERATOR.Double,
-                            total: 8,
-                            reason: {
-                              effect: effectBond,
-                              unit: unitSelf1.unit,
-                            },
-                          },
-                        ],
-                      }),
-                    ],
+                    units: [fieldUnit1, fieldUnit2],
                   },
                   moves: [
                     expectizeMoveUnit({
-                      unit: unitSelf1,
+                      unit: TestUtil.getFieldUnit({
+                        unit: unitSelf1.unit,
+                        effectiveStrength: 4,
+                        row: combatUnit1,
+                      }),
                     }),
                     expectizeMoveUnit({
-                      unit: unitSelf2,
+                      unit: fieldUnit2,
                       impacts: [
                         TestUtil.getImpact({
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf1.unit,
-                            effectiveStrength: 8,
-                            effects: [
-                              {
-                                operator: EFFECT_OPERATOR.Double,
-                                reason: {
-                                  effect: effectBond,
-                                  unit: unitSelf2.unit,
-                                },
-                                total: 8,
-                              },
-                            ],
-                          }),
+                          unit: fieldUnit1,
                           user: self,
                         }),
                       ],

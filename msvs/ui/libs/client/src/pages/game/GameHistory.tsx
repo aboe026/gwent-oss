@@ -3,27 +3,32 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
+import { convertGameUnit, getUnitFromGameUnit } from '../../util/game-unit-util'
 import {
   DeckUnitFragment,
   EffectKey,
+  FieldUnitFragment,
+  FieldUnitFragmentDoc,
   GameFragment,
   GamePlayerFragment,
   GamePlayerFragmentDoc,
   GameStatus,
-  GameUnitFragment,
-  GameUnitFragmentDoc,
   GameUnitOrigin,
   ImpactFragment,
   ImpactFragmentDoc,
   MoveLeaderFragmentDoc,
   MoveReasonType,
   MoveUnitFragmentDoc,
+  MoveUnitReasonUnitFragmentDoc,
   PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
+  GameUnitFragmentDoc,
   UnitEffectFragment,
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
+  WeatherUnitFragment,
+  WeatherUnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getErrorMessages } from '../../util/error-util'
@@ -54,7 +59,9 @@ export default function GameHistory({
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
+  const cardSelectedUnit = cardSelected?.unitFragment
+    ? useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
+    : undefined
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
     playUnitProps.loading ||
@@ -145,14 +152,16 @@ function PlayerHistoryMove({
   const gamePlayer = game.players[playerMove.playerIndex]
   const player = useFragment(GamePlayerFragmentDoc, gamePlayer)
   const isSelf = player.user.name === self.user.name
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
+  const cardSelectedUnit = cardSelected?.unitFragment
+    ? useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
+    : undefined
   let isSelected = false
   let isOnBattlefield = false
   let textClass = `game-history-move-text ${isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'}`
   const descriptionClass = `game-history-move-user-description ${
     isSelf ? 'game-history-move-user-description-self' : 'game-history-move-user-description-opponent'
   }`
-  let primaryText: string
+  let primaryText = ''
   let secondaryText = ''
   let image = ''
   let imageTitle = ''
@@ -160,7 +169,7 @@ function PlayerHistoryMove({
   let error = false
   let pointable = false
   let impacts: ImpactFragment[] | undefined | null
-  let gameUnit: GameUnitFragment | undefined
+  let gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined
   let cardPlayer = player
 
   if (playerMove.move.__typename === 'MoveLeader') {
@@ -174,82 +183,83 @@ function PlayerHistoryMove({
     textClass += ' game-history-move-text-wrappable'
   } else if (playerMove.move.__typename === 'MoveUnit') {
     const unitMove = useFragment(MoveUnitFragmentDoc, playerMove.move)
-    gameUnit = useFragment(GameUnitFragmentDoc, unitMove.unit)
-    const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
-    impacts = useFragment(ImpactFragmentDoc, unitMove.impacts)
-    unitMoveIndex = unitMoves.findIndex((unitMove) => {
-      if (unitMove.move.__typename === 'MoveUnit') {
-        const potentialUnitMove = useFragment(MoveUnitFragmentDoc, unitMove.move)
-        const potentialUnit = useFragment(
-          UnitFragmentDoc,
-          useFragment(GameUnitFragmentDoc, potentialUnitMove.unit).unit
-        )
-        if (potentialUnit.id === unit.id) {
-          return unitMove.playerIndex === playerMove.playerIndex
+    const gameUnitFragment = useFragment(GameUnitFragmentDoc, unitMove.unit)
+    gameUnit = convertGameUnit(gameUnitFragment)
+    const unit = getUnitFromGameUnit(gameUnitFragment)
+    if (unit) {
+      impacts = useFragment(ImpactFragmentDoc, unitMove.impacts)
+      unitMoveIndex = unitMoves.findIndex((unitMove) => {
+        if (unitMove.move.__typename === 'MoveUnit') {
+          const potentialUnitMove = useFragment(MoveUnitFragmentDoc, unitMove.move)
+          const potentialUnit = getUnitFromGameUnit(useFragment(GameUnitFragmentDoc, potentialUnitMove.unit))
+          if (potentialUnit && potentialUnit.id === unit.id) {
+            return unitMove.playerIndex === playerMove.playerIndex
+          }
         }
+      })
+      pointable = true
+      primaryText = unit.name
+      let placement = ''
+      if (unitMove.target) {
+        placement += ` to spy on ${unitMove.target.name} `
       }
-    })
-    pointable = true
-    primaryText = unit.name
-    let placement = ''
-    if (unitMove.target) {
-      placement += ` to spy on ${unitMove.target.name} `
-    }
-    placement += gameUnit.row ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
-    if (unitMove.reason.unit?.unit.name) {
-      if (unitMove.reason.type === MoveReasonType.Transform) {
-        placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+      placement += gameUnit?.__typename === 'FieldUnit' ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
+      const reasonUnit = useFragment(MoveUnitReasonUnitFragmentDoc, unitMove.reason.unit)
+      if (reasonUnit?.unit.name) {
+        if (unitMove.reason.type === MoveReasonType.Transform) {
+          placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+        }
+        placement += ` by ${reasonUnit?.unit.name}`
       }
-      placement += ` by ${unitMove.reason.unit?.unit.name}`
-    }
-    let reason = 'deployed'
-    let source = ''
-    if (unitMove.reason.type === MoveReasonType.Muster) {
-      reason = 'mustered'
-      if (unitMove.source.origin === GameUnitOrigin.Hand) {
-        source = ' from Hand'
-      } else if (unitMove.source.origin === GameUnitOrigin.Undrawn) {
-        source = ' from Draw pile'
+      let reason = 'deployed'
+      let source = ''
+      if (unitMove.reason.type === MoveReasonType.Muster) {
+        reason = 'mustered'
+        if (unitMove.source.origin === GameUnitOrigin.Hand) {
+          source = ' from Hand'
+        } else if (unitMove.source.origin === GameUnitOrigin.Undrawn) {
+          source = ' from Draw pile'
+        }
+      } else if (unitMove.reason.type === MoveReasonType.Transform) {
+        reason = 'transformed'
       }
-    } else if (unitMove.reason.type === MoveReasonType.Transform) {
-      reason = 'transformed'
-    }
-    secondaryText = `${reason} ${placement}${source}`
-    image = unit.images[gameUnit.artStyle - 1]
-    imageTitle = unit.name
+      secondaryText = `${reason} ${placement}${source}`
+      image = unit.images[(gameUnit?.artStyle || 1) - 1]
+      imageTitle = unit.name
 
-    if (unitMove.target?.name) {
-      const potentialCardPlayer = useFragment(GamePlayerFragmentDoc, game.players).find(
-        (player) => player.user.name === unitMove.target?.name
-      )
-      if (!potentialCardPlayer) {
-        throw Error(`Could not find player for History move "${JSON.stringify(unitMove)}"`)
-      }
-      cardPlayer = potentialCardPlayer
-    }
-    isSelected = cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
-    if (isSelected) {
-      const playerRound = useFragment(PlayerRoundFragmentDoc, cardPlayer.rounds[game.round - 1])
-      const closeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.close)
-      const rangedRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.ranged)
-      const siegeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.siege)
-      const unitFragments: (GameUnitFragment | DeckUnitFragment)[] = []
-      for (const roundUnits of [closeRow.units, rangedRow.units, siegeRow.units]) {
-        if (roundUnits) {
-          unitFragments.push(...useFragment(GameUnitFragmentDoc, roundUnits))
+      if (unitMove.target?.name) {
+        const potentialCardPlayer = useFragment(GamePlayerFragmentDoc, game.players).find(
+          (player) => player.user.name === unitMove.target?.name
+        )
+        if (!potentialCardPlayer) {
+          throw Error(`Could not find player for History move "${JSON.stringify(unitMove)}"`)
         }
+        cardPlayer = potentialCardPlayer
       }
-      for (const modifier of [closeRow.modifier, rangedRow.modifier, siegeRow.modifier]) {
-        if (modifier) {
-          unitFragments.push(useFragment(GameUnitFragmentDoc, modifier))
+      isSelected = cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
+      if (isSelected) {
+        const playerRound = useFragment(PlayerRoundFragmentDoc, cardPlayer.rounds[game.round - 1])
+        const closeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.close)
+        const rangedRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.ranged)
+        const siegeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.siege)
+        const unitFragments: (DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment)[] = []
+        for (const roundUnits of [closeRow.units, rangedRow.units, siegeRow.units]) {
+          if (roundUnits) {
+            unitFragments.push(...useFragment(FieldUnitFragmentDoc, roundUnits))
+          }
         }
-      }
-      for (const weather of playerRound.weathers) {
-        unitFragments.push(useFragment(GameUnitFragmentDoc, weather))
-      }
-      for (let i = 0; i < unitFragments.length && !isOnBattlefield; i++) {
-        if (useFragment(UnitFragmentDoc, unitFragments[i].unit).id === unit.id) {
-          isOnBattlefield = true
+        for (const modifier of [closeRow.modifier, rangedRow.modifier, siegeRow.modifier]) {
+          if (modifier) {
+            unitFragments.push(useFragment(FieldUnitFragmentDoc, modifier))
+          }
+        }
+        for (const weather of playerRound.weathers) {
+          unitFragments.push(useFragment(WeatherUnitFragmentDoc, weather))
+        }
+        for (let i = 0; i < unitFragments.length && !isOnBattlefield; i++) {
+          if (useFragment(UnitFragmentDoc, unitFragments[i].unit).id === unit.id) {
+            isOnBattlefield = true
+          }
         }
       }
     }
@@ -269,12 +279,12 @@ function PlayerHistoryMove({
         onClick={() => {
           if (playerMove.move.__typename === 'MoveUnit') {
             const gameUnit = useFragment(GameUnitFragmentDoc, useFragment(MoveUnitFragmentDoc, playerMove.move).unit)
-            const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
+            const unit = getUnitFromGameUnit(gameUnit)
             setCardSelected(
-              cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
+              unit && cardSelectedUnit?.id === unit.id && cardSelected?.playerName === cardPlayer.user.name
                 ? undefined
                 : {
-                    unitFragment: gameUnit,
+                    unitFragment: convertGameUnit(gameUnit),
                     playerName: cardPlayer.user.name,
                   }
             )
@@ -299,7 +309,7 @@ function PlayerHistoryMove({
                         const move = useFragment(MoveUnitFragmentDoc, unitMove.move)
                         units.push({
                           playerName: player.user.name,
-                          unitFragment: useFragment(GameUnitFragmentDoc, move.unit),
+                          unitFragment: convertGameUnit(useFragment(GameUnitFragmentDoc, move.unit)),
                         })
                       }
                     }
@@ -368,7 +378,7 @@ function MoveUnitImpact({
   setFullUnits,
 }: {
   cardSelected: UnitForPlayer | undefined
-  gameUnit: GameUnitFragment
+  gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
   game: GameFragment
   impacts: ImpactFragment[] | null | undefined
   self: GamePlayerFragment
@@ -468,7 +478,7 @@ function renderImpacts({
       if (gameUnit) {
         units.push({
           playerName: impact.user.name,
-          unitFragment: gameUnit,
+          unitFragment: convertGameUnit(gameUnit),
         })
       }
     }
@@ -493,7 +503,7 @@ function renderImpacts({
               isSelf ? 'move-impact-unit-info-self' : 'move-impact-unit-info-opponent'
             }`
             const gameUnitForImpact = useFragment(GameUnitFragmentDoc, impactedUnit.unit)
-            const unitForImpact = useFragment(UnitFragmentDoc, gameUnitForImpact?.unit)
+            const unitForImpact = getUnitFromGameUnit(gameUnitForImpact)
             const description = getImpactDescription({
               effectKey,
               origin: impactedUnit.source?.origin,
@@ -513,18 +523,19 @@ function renderImpacts({
                 ...(useFragment(PlayerCombatRowFragmentDoc, round?.siege)?.units || []),
               ]
               for (let i = 0; i < units.length && !isOnBattlefield; i++) {
-                const battlefieldUnit = useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, units[i]).unit)
+                const battlefieldUnit = useFragment(UnitFragmentDoc, useFragment(FieldUnitFragmentDoc, units[i]).unit)
                 if (battlefieldUnit.id === unitForImpact?.id) {
                   isOnBattlefield = true
                 }
               }
             }
             const title = unitForImpact?.name || 'Unknown'
+            const knownUnit = unitForImpact && gameUnitForImpact
 
             return (
               <div
                 key={index}
-                className={`${HTML_CLASSES.GameHistoryMoveImpactUnitContainer} pointable ${playerClass} ${
+                className={`${HTML_CLASSES.GameHistoryMoveImpactUnitContainer} ${knownUnit ? 'pointable' : ''} ${playerClass} ${
                   isSelected ? 'item-highlighted' : ''
                 }`}
                 style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
@@ -535,7 +546,7 @@ function renderImpacts({
                       isSelected
                         ? undefined
                         : {
-                            unitFragment: gameUnitForImpact,
+                            unitFragment: convertGameUnit(gameUnitForImpact),
                             playerName: impactedUnit.user.name,
                           }
                     )
@@ -543,28 +554,26 @@ function renderImpacts({
                 }}
               >
                 <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
-                  {unitForImpact && gameUnitForImpact ? (
+                  {knownUnit ? (
                     <img
-                      src={unitForImpact.images[gameUnitForImpact.artStyle - 1]}
+                      src={unitForImpact.images[convertGameUnit(gameUnitForImpact).artStyle - 1]}
                       className="move-impact-unit-image"
                       title={title}
                       onClick={(event) => {
                         event.preventDefault()
                         event.stopPropagation()
-                        if (unitForImpact && gameUnitForImpact) {
-                          setFullUnits({
-                            currentIndex: units.findIndex(
-                              (unit) =>
-                                unit.playerName === impactedUnit.user.name &&
-                                useFragment(UnitFragmentDoc, unit.unitFragment.unit).id === unitForImpact.id
-                            ),
-                            units,
-                          })
-                          setCardSelected({
-                            unitFragment: gameUnitForImpact,
-                            playerName: impactedUnit.user.name,
-                          })
-                        }
+                        setFullUnits({
+                          currentIndex: units.findIndex(
+                            (unit) =>
+                              unit.playerName === impactedUnit.user.name &&
+                              useFragment(UnitFragmentDoc, unit.unitFragment.unit).id === unitForImpact.id
+                          ),
+                          units,
+                        })
+                        setCardSelected({
+                          unitFragment: convertGameUnit(gameUnitForImpact),
+                          playerName: impactedUnit.user.name,
+                        })
                       }}
                     />
                   ) : (
@@ -604,7 +613,11 @@ interface EffectForImpact {
 /**
  * Gets the single Effect a GameUnit could potentially have on other units on the battlefield.
  */
-function getEffectForImpact({ gameUnit }: { gameUnit: GameUnitFragment }): EffectForImpact {
+function getEffectForImpact({
+  gameUnit,
+}: {
+  gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
+}): EffectForImpact {
   let error = ''
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
   const unitEffects = useFragment(UnitEffectFragmentDoc, unit.effects)
@@ -626,7 +639,11 @@ function getEffectForImpact({ gameUnit }: { gameUnit: GameUnitFragment }): Effec
 /**
  * Whether or not a specific GameUnit is able to have an Impact on other units in the battlefield.
  */
-function hasImpactableEffect({ gameUnit }: { gameUnit: GameUnitFragment }): boolean {
+function hasImpactableEffect({
+  gameUnit,
+}: {
+  gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
+}): boolean {
   const effectsWithImpact = [
     EffectKey.Bond,
     EffectKey.Decoy,

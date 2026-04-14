@@ -16,7 +16,6 @@ import {
 import { FullUnitCards, ReadyProps, RedrawProps, UnitForPlayer } from './GameProps'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
-import isGameUnit from '../../util/is-game-unit'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import UnitGameCard from '../../components/UnitGameCard'
@@ -214,7 +213,7 @@ function RedrawCard({
     }
   }
   let fromCard: DeckUnitFragment | undefined =
-    cardSelected && !isGameUnit(cardSelected.unitFragment) ? cardSelected.unitFragment : undefined
+    cardSelected && cardSelected.unitFragment.__typename === 'DeckUnit' ? cardSelected.unitFragment : undefined
   if (index < gameDeck.redraws.length && gameDeck.redraws[index].from) {
     fromCard = useFragment(DeckUnitFragmentDoc, gameDeck.redraws[index].from)
   }

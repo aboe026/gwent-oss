@@ -1,11 +1,12 @@
 import { ObjectId } from 'mongodb'
 
 import {
+  Combat,
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
-  GameUnitDbObject,
-  GameUnitEffectDbObject,
+  FieldUnitDbObject,
+  FieldUnitEffectDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -23,7 +24,7 @@ describe('effect-horn', () => {
       const rowUnit = TestUtil.getDbUnit({
         hero: true,
       })
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const horningUnit = TestUtil.getDbUnit({})
@@ -34,18 +35,18 @@ describe('effect-horn', () => {
         hornEffect,
         logPrefix,
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [horningUnit._id.toString()],
         units: [horningUnit],
         expected: {},
-        updatedRowGameUnit: deepClone(rowGameUnit),
+        updatedRowFieldUnit: deepClone(rowFieldUnit),
         debugCalls: [[`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to horn effect.`]],
       })
     })
     it('does not effect if no unitIdsWithHornInRow', () => {
       const rowUnit = TestUtil.getDbUnit({})
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const horningUnit = TestUtil.getDbUnit({})
@@ -56,17 +57,17 @@ describe('effect-horn', () => {
         hornEffect,
         logPrefix,
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [],
         units: [horningUnit],
         expected: {},
-        updatedRowGameUnit: deepClone(rowGameUnit),
+        updatedRowFieldUnit: deepClone(rowFieldUnit),
       })
     })
     it('does not effect itself', () => {
       const rowUnit = TestUtil.getDbUnit({})
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const hornEffect = TestUtil.getDbEffect({
@@ -76,17 +77,17 @@ describe('effect-horn', () => {
         hornEffect,
         logPrefix,
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [rowUnit._id.toString()],
         units: [rowUnit],
         expected: {},
-        updatedRowGameUnit: deepClone(rowGameUnit),
+        updatedRowFieldUnit: deepClone(rowFieldUnit),
       })
     })
     it('maintains zero effectiveStrength if not already set', () => {
       const rowUnit = TestUtil.getDbUnit({})
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
       })
       const horningUnit = TestUtil.getDbUnit({})
@@ -97,13 +98,13 @@ describe('effect-horn', () => {
         hornEffect,
         logPrefix,
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [horningUnit._id.toString()],
         units: [horningUnit],
         expected: {},
-        updatedRowGameUnit: {
-          ...deepClone(rowGameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(rowFieldUnit),
           effectiveStrength: 0,
           effects: [
             {
@@ -126,7 +127,7 @@ describe('effect-horn', () => {
     })
     it('doubles effectiveStrength without impact if horningUnit is not newDeckUnit', () => {
       const rowUnit = TestUtil.getDbUnit({})
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
         effectiveStrength: 3,
       })
@@ -138,13 +139,13 @@ describe('effect-horn', () => {
         hornEffect,
         logPrefix,
         newDeckUnit: TestUtil.getDbDeckUnit({}),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [horningUnit._id.toString()],
         units: [horningUnit],
         expected: {},
-        updatedRowGameUnit: {
-          ...deepClone(rowGameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(rowFieldUnit),
           effectiveStrength: 6,
           effects: [
             {
@@ -167,7 +168,7 @@ describe('effect-horn', () => {
     })
     it('doubles effectiveStrength without impact if currentPlayerId is not userId', () => {
       const rowUnit = TestUtil.getDbUnit({})
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
         effectiveStrength: 3,
       })
@@ -181,15 +182,15 @@ describe('effect-horn', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: horningUnit._id,
         }),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [horningUnit._id.toString()],
         units: [horningUnit],
         currentPlayerId: new ObjectId(),
         userId: new ObjectId(),
         expected: {},
-        updatedRowGameUnit: {
-          ...deepClone(rowGameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(rowFieldUnit),
           effectiveStrength: 6,
           effects: [
             {
@@ -212,7 +213,7 @@ describe('effect-horn', () => {
     })
     it('doubles effectiveStrength with impact if horningUnit is newDeckUnit and currentPlayerId is userId', () => {
       const rowUnit = TestUtil.getDbUnit({})
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
         effectiveStrength: 3,
       })
@@ -221,13 +222,31 @@ describe('effect-horn', () => {
         key: EffectKey.Horn,
       })
       const userId = new ObjectId()
+      const effects: FieldUnitEffectDbObject[] = [
+        {
+          operator: EFFECT_OPERATOR.Double,
+          total: 6,
+          reason: {
+            effect: hornEffect._id,
+            type: EffectReasonType.Unit,
+            unit: horningUnit._id,
+          },
+        },
+      ]
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: rowFieldUnit.unit,
+        effectiveStrength: 6,
+        effects,
+        artStyle: rowFieldUnit.artStyle,
+        row: rowFieldUnit.row as Combat,
+      })
       testApplyHorn({
         hornEffect,
         logPrefix,
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: horningUnit._id,
         }),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [horningUnit._id.toString()],
         units: [horningUnit],
@@ -236,25 +255,15 @@ describe('effect-horn', () => {
         expected: {
           [horningUnit._id.toString()]: [
             {
-              unit: rowGameUnit,
+              unit: gameUnit,
               user: userId,
             },
           ],
         },
-        updatedRowGameUnit: {
-          ...deepClone(rowGameUnit),
+        updatedRowFieldUnit: {
+          ...deepClone(rowFieldUnit),
           effectiveStrength: 6,
-          effects: [
-            {
-              operator: EFFECT_OPERATOR.Double,
-              total: 6,
-              reason: {
-                effect: hornEffect._id,
-                type: EffectReasonType.Unit,
-                unit: horningUnit._id,
-              },
-            },
-          ],
+          effects,
         },
         debugCalls: [
           [
@@ -265,7 +274,7 @@ describe('effect-horn', () => {
     })
     it('logs to trace if enabled', () => {
       const rowUnit = TestUtil.getDbUnit({})
-      const rowGameUnit = TestUtil.getDbGameUnit({
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
         id: rowUnit._id,
         effectiveStrength: 3,
       })
@@ -274,7 +283,7 @@ describe('effect-horn', () => {
         key: EffectKey.Horn,
       })
       const userId = new ObjectId()
-      const gameUnitEffect: GameUnitEffectDbObject = {
+      const fieldUnitEffect: FieldUnitEffectDbObject = {
         operator: EFFECT_OPERATOR.Double,
         reason: {
           effect: hornEffect._id,
@@ -283,13 +292,20 @@ describe('effect-horn', () => {
         },
         total: 6,
       }
-      const updatedRowGameUnit = {
-        ...deepClone(rowGameUnit),
+      const updatedRowFieldUnit = {
+        ...deepClone(rowFieldUnit),
         effectiveStrength: 6,
-        effects: [gameUnitEffect],
+        effects: [fieldUnitEffect],
       }
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: updatedRowFieldUnit.unit,
+        effectiveStrength: 6,
+        effects: [fieldUnitEffect],
+        artStyle: updatedRowFieldUnit.artStyle,
+        row: updatedRowFieldUnit.row as Combat,
+      })
       const impact: ImpactDbObject = {
-        unit: updatedRowGameUnit,
+        unit: gameUnit,
         user: userId,
       }
       testApplyHorn({
@@ -298,7 +314,7 @@ describe('effect-horn', () => {
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: horningUnit._id,
         }),
-        rowGameUnit,
+        rowFieldUnit,
         rowUnit,
         unitIdsWithHornInRow: [horningUnit._id.toString()],
         units: [horningUnit],
@@ -307,7 +323,7 @@ describe('effect-horn', () => {
         expected: {
           [horningUnit._id.toString()]: [impact],
         },
-        updatedRowGameUnit,
+        updatedRowFieldUnit,
         debugCalls: [
           [
             `${logPrefix} adding horn boost to "${rowUnit._id}" from "${horningUnit._id}" for an effectiveStrength of "6"`,
@@ -317,7 +333,7 @@ describe('effect-horn', () => {
         traceCalls: [
           [`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`],
           [`${logPrefix} hornsToApply: "${JSON.stringify([horningUnit._id.toString()])}"`],
-          [`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`],
+          [`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`],
           [`${logPrefix} impact: "${JSON.stringify(impact)}"`],
         ],
       })
@@ -330,13 +346,13 @@ function testApplyHorn({
   unitIdsWithHornInRow,
   hornEffect,
   newDeckUnit,
-  rowGameUnit,
+  rowFieldUnit,
   rowUnit,
   units,
   userId = new ObjectId(),
   currentPlayerId,
   expected,
-  updatedRowGameUnit,
+  updatedRowFieldUnit,
   debugCalls = [],
   traceCalls = [],
   traceEnabled,
@@ -345,13 +361,13 @@ function testApplyHorn({
   unitIdsWithHornInRow: string[]
   hornEffect: EffectDbObject | undefined
   newDeckUnit: DeckUnitDbObject
-  rowGameUnit: GameUnitDbObject
+  rowFieldUnit: FieldUnitDbObject
   rowUnit: UnitDbObject
   units: UnitDbObject[]
   userId?: ObjectId
   currentPlayerId?: ObjectId | undefined
   expected: ImpactsByUnitId
-  updatedRowGameUnit: GameUnitDbObject
+  updatedRowFieldUnit: FieldUnitDbObject
   debugCalls?: string[][]
   traceCalls?: string[][]
   traceEnabled?: boolean
@@ -370,14 +386,14 @@ function testApplyHorn({
       hornEffect,
       logPrefix,
       newDeckUnit,
-      rowGameUnit,
+      rowFieldUnit,
       rowUnit,
       unitIdsWithHornInRow,
       units,
       userId,
     })
   ).toEqual(expected)
-  expect(rowGameUnit).toEqual(updatedRowGameUnit)
+  expect(rowFieldUnit).toEqual(updatedRowFieldUnit)
 
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
