@@ -77,6 +77,8 @@ export default class PlayUnitImplementation {
       musteredOrigins,
       scorches,
       spies,
+      avengers,
+      avengedUnits,
       decoys,
       deckUnitsAddedToHand,
       weathers: weatherBattlefieldImpacts,
@@ -110,7 +112,7 @@ export default class PlayUnitImplementation {
       weathers: weatherScoreImpacts,
     } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
-      units: [unit, ...roundUnits, ...existingRoundUnits, ...musteredUnits, ...transformedUnits],
+      units: [unit, ...roundUnits, ...existingRoundUnits, ...musteredUnits, ...transformedUnits, ...avengedUnits],
       effects: [...effects, ...unitEffects, ...musterEffects, ...transformedEffects],
       logPrefix,
       newDeckUnit: deckUnit,
@@ -123,6 +125,7 @@ export default class PlayUnitImplementation {
     UpdateHistory.newUnitDeployed({
       deckUnit,
       game,
+      avengers,
       decoys,
       musters,
       musteredOrigins,

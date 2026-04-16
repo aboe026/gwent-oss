@@ -120,9 +120,7 @@ New things that should be added to the codebase.
 
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
-- Avenger
-  - How to handle duplicates on battlefield? Use "created" field as differentiator?
-    - Apparently there are no duplicates allowed with latest patch?
+  - test avenger re-mediced cannot cause duplicate avenger
 - Better game summarization (graphs?)
   - points per round
   - time per round

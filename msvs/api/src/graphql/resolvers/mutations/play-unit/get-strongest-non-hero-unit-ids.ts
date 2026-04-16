@@ -70,7 +70,7 @@ export default class GetStrongestNonHeroUnitIds {
           fieldUnit.effectiveStrength === undefined || fieldUnit.effectiveStrength === null
             ? unit.strength
             : fieldUnit.effectiveStrength
-        if (strength && strength === highestStrength) {
+        if (strength === highestStrength) {
           GetStrongestNonHeroUnitIds.logger.trace(
             `${logPrefix} unit "${unit.name}" matches highest strength of "${highestStrength}", adding to strongestUnitIds`
           )

@@ -72,7 +72,7 @@ export default class EffectScorch {
     const hasScorchEffect =
       scorchEffect &&
       newUnit.effects &&
-      newUnit.effects.map((id) => id.toString()).includes(scorchEffect._id.toString())
+      newUnit.effects.map((effectId) => effectId.toString()).includes(scorchEffect._id.toString())
     if (EffectScorch.logger.isTraceEnabled()) {
       EffectScorch.logger.trace(`${logPrefix} hasScorchEffect: "${hasScorchEffect}"`)
     }

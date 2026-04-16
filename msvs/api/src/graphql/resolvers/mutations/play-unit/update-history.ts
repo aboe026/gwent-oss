@@ -43,6 +43,7 @@ export default class UpdateHistory {
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
+   * @param config.avengers Any potential units which were avenged by units leaving the battlefield.
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.targetId The potential target an effect is being applied to.
@@ -56,6 +57,7 @@ export default class UpdateHistory {
     deckUnit,
     playerId,
     logPrefix,
+    avengers,
     decoys,
     spies,
     scorches,
@@ -76,6 +78,7 @@ export default class UpdateHistory {
     deckUnit: DeckUnitDbObject
     playerId: string
     logPrefix: string
+    avengers: ImpactsByUnitId
     decoys: ImpactsByUnitId
     spies: ImpactsByUnitId
     scorches: ImpactsByUnitId
@@ -156,6 +159,7 @@ export default class UpdateHistory {
           logPrefix,
           mardroemes,
           morales,
+          avengers,
           musters,
           weathers,
           origin: GameUnitOrigin.Nondeck,
@@ -193,6 +197,7 @@ export default class UpdateHistory {
           created: move.created,
           game,
           horns,
+          avengers,
           decoys,
           spies,
           logPrefix,
@@ -208,6 +213,36 @@ export default class UpdateHistory {
           },
           scorches,
           unitId: muster.unit.unit,
+        })
+      }
+    }
+
+    for (const avengerUnitId of Object.keys(avengers)) {
+      const avengees = avengers[avengerUnitId]
+      for (const avengee of avengees) {
+        UpdateHistory.newUnitIndirect({
+          bonds,
+          created: move.created,
+          game,
+          horns,
+          decoys,
+          spies,
+          logPrefix,
+          mardroemes,
+          morales,
+          musters,
+          avengers: {
+            [avengerUnitId]: [avengee],
+          },
+          weathers,
+          origin: GameUnitOrigin.Nondeck,
+          playerId: avengee.user.toString(),
+          reason: {
+            type: MoveReasonType.Summon,
+            unit: avengee.unit,
+          },
+          scorches,
+          unitId: avengerUnitId,
         })
       }
     }
@@ -227,6 +262,7 @@ export default class UpdateHistory {
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
+   * @param config.avengers Any potential units that were summoned to the battlefield due to avengers leaving.
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
@@ -246,6 +282,7 @@ export default class UpdateHistory {
     musters,
     bonds,
     horns,
+    avengers,
     decoys,
     spies,
     morales,
@@ -253,7 +290,7 @@ export default class UpdateHistory {
     reason,
   }: {
     game: GameDbObject
-    unitId: ObjectId
+    unitId: ObjectId | string
     created: Date
     playerId: string
     logPrefix: string
@@ -263,6 +300,7 @@ export default class UpdateHistory {
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId
     horns: ImpactsByUnitId
+    avengers: ImpactsByUnitId
     decoys: ImpactsByUnitId
     spies: ImpactsByUnitId
     morales: ImpactsByUnitId
@@ -288,7 +326,8 @@ export default class UpdateHistory {
       morales[unitId.toString()] ||
       decoys[unitId.toString()] ||
       spies[unitId.toString()] ||
-      weathers[unitId.toString()]
+      weathers[unitId.toString()] ||
+      avengers[unitId.toString()]
     const move: MoveUnitDbObject = {
       created,
       reason,
