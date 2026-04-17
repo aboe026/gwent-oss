@@ -243,6 +243,7 @@ export default class UpdateHistory {
           },
           scorches,
           unitId: avengerUnitId,
+          targetId: avengee.user,
         })
       }
     }
@@ -269,6 +270,7 @@ export default class UpdateHistory {
    * @param config.weathers Any potential units the new battlefield unit Weathered when deployed.
    * @param config.reason Why the new unit is indirectly being added to the battlefield.
    * @param config.origin Where the new unit came from.
+   * @param config.targetId The potential targeted player the new unit being added is for.
    */
   private static newUnitIndirect({
     game,
@@ -288,6 +290,7 @@ export default class UpdateHistory {
     morales,
     weathers,
     reason,
+    targetId,
   }: {
     game: GameDbObject
     unitId: ObjectId | string
@@ -306,6 +309,7 @@ export default class UpdateHistory {
     morales: ImpactsByUnitId
     weathers: ImpactsByUnitId
     reason: MoveUnitReasonDbObject
+    targetId?: ObjectId
   }) {
     const fieldUnit = GetFieldUnits.getFieldUnit({
       game,
@@ -340,6 +344,7 @@ export default class UpdateHistory {
       source: {
         origin,
       },
+      target: targetId,
     }
     UpdateHistory.addMoveToCurrentPlayer({
       game,

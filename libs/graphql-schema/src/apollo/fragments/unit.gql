@@ -6,6 +6,7 @@ fragment Unit on Unit {
     image
     key
   }
+  effectPrefix
   effects {
     ...UnitEffect
   }
