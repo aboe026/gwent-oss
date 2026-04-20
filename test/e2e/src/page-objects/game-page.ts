@@ -1379,6 +1379,7 @@ export default class GamePage {
     row,
     round,
     spyOpponent,
+    instance = 1,
   }: HighlightedHistory): Promise<Selector> {
     const totalRounds = await GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
       .count
@@ -1386,8 +1387,10 @@ export default class GamePage {
       totalRounds - round
     )
     const movesCount = await roundContainer.child().count
+    // TODO; account for Avenger. (change spyOpponent to be just opponent? and add movereasontype?)
     const expectedMoveText = `${playerName}: ${unitName} deployed${spyOpponent ? ` to spy on ${spyOpponent}` : ''} as ${toTitleCase(row)}`
     let historyMove: Selector | undefined = undefined
+    let matchNumber = 1
     for (let j = 1; j < movesCount && !historyMove; j++) {
       const move = roundContainer.child().nth(j)
       const movePlayerName = await move.find(`.${HTML_CLASSES.GameHistoryMoveUsername}`).innerText
@@ -1397,7 +1400,11 @@ export default class GamePage {
         const moveReason = await secondaryTextDiv.innerText
         const moveText = `${movePlayerName}: ${moveUnitName} ${moveReason}`
         if (moveText === expectedMoveText) {
-          historyMove = move
+          if (matchNumber === instance) {
+            historyMove = move
+          } else {
+            matchNumber++
+          }
         }
       }
     }
@@ -1409,13 +1416,14 @@ export default class GamePage {
     return historyMove
   }
 
-  static async selectHistoryUnit({ playerName, unitName, row, round, spyOpponent }: HighlightedHistory) {
+  static async selectHistoryUnit({ playerName, unitName, row, round, spyOpponent, instance }: HighlightedHistory) {
     const historyUnit = await GamePage.getHistoryUnit({
       playerName,
       unitName,
       round,
       row,
       spyOpponent,
+      instance,
     })
     await t.click(historyUnit)
   }
@@ -1526,6 +1534,7 @@ export default class GamePage {
       unitName: move.unitName,
       userName: move.userName,
       round: move.round,
+      instance: move.instance,
     })
 
     const children = historyMove.find(`.${HTML_CLASSES.GameHistoryMoveImpactUnitContainer}`)
@@ -1663,6 +1672,7 @@ interface ImpactSelection {
     unitName: string
     userName: string
     round: number
+    instance?: number
   }
   impact: {
     unitName: string
@@ -1730,6 +1740,7 @@ export interface HighlightedHistory {
   round: number
   dotted?: boolean
   spyOpponent?: string
+  instance?: number
 }
 
 export interface CombatUnit {

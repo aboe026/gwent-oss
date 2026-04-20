@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Game, GamePlayer, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { Game, GamePlayer, MoveReasonType, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -180,7 +180,10 @@ export default class GameResolver {
                   return {
                     ...move,
                     impacts: move.impacts?.map((impact) => {
-                      const hideImpactUnit = move.target?.id && impact.user.id !== userId.toString()
+                      const hideImpactUnit =
+                        move.target?.id &&
+                        impact.user.id !== userId.toString() &&
+                        move.reason.type !== MoveReasonType.Summon
                       return {
                         ...impact,
                         unit: hideImpactUnit ? undefined : impact.unit,
