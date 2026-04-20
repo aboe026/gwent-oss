@@ -349,17 +349,19 @@ export default class GamePage {
             } else if (move.reason?.type === MoveReasonType.Summon) {
               action = 'summoned'
             }
-            if (move.targetUserName && move.reason?.type !== MoveReasonType.Summon) {
-              action += ` to spy on ${move.targetUserName}`
+            if (move.targetUserName) {
+              if (move.reason?.type === MoveReasonType.Summon) {
+                action += ` for ${move.targetUserName}`
+              } else {
+                action += ` to spy on ${move.targetUserName}`
+              }
             }
             let description = `${move.userName}: ${move.unitName} ${action} ${row}`
             if (move.reason) {
               if (move.reason.type === MoveReasonType.Transform) {
                 description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
               }
-              if (move.reason.type === MoveReasonType.Summon) {
-                description += ` for ${move.targetUserName}`
-              } else {
+              if (move.reason.type !== MoveReasonType.Summon) {
                 description += ` by ${move.reason.name}${source}`
               }
             }
@@ -368,7 +370,8 @@ export default class GamePage {
               highlightedMove.playerName === move.userName &&
               highlightedMove.row === move.combatRow &&
               highlightedMove.unitName === move.unitName &&
-              highlightedMove.round === i + 1
+              highlightedMove.round === i + 1 &&
+              (!highlightedMove.targetUser || highlightedMove.targetUser === move.targetUserName)
             if (selected) {
               highlightedMoveFound = true
             }
@@ -1378,7 +1381,8 @@ export default class GamePage {
     unitName,
     row,
     round,
-    spyOpponent,
+    targetUser,
+    reason,
     instance = 1,
   }: HighlightedHistory): Promise<Selector> {
     const totalRounds = await GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
@@ -1387,8 +1391,16 @@ export default class GamePage {
       totalRounds - round
     )
     const movesCount = await roundContainer.child().count
-    // TODO; account for Avenger. (change spyOpponent to be just opponent? and add movereasontype?)
-    const expectedMoveText = `${playerName}: ${unitName} deployed${spyOpponent ? ` to spy on ${spyOpponent}` : ''} as ${toTitleCase(row)}`
+    const reasonText = reason === MoveReasonType.Summon ? 'summoned' : 'deployed'
+    let targetText = ''
+    if (targetUser) {
+      if (reason === MoveReasonType.Summon) {
+        targetText = ` for ${targetUser}`
+      } else {
+        targetText = ` to spy on ${targetUser}`
+      }
+    }
+    const expectedMoveText = `${playerName}: ${unitName} ${reasonText}${targetText} as ${toTitleCase(row)}`
     let historyMove: Selector | undefined = undefined
     let matchNumber = 1
     for (let j = 1; j < movesCount && !historyMove; j++) {
@@ -1416,16 +1428,25 @@ export default class GamePage {
     return historyMove
   }
 
-  static async selectHistoryUnit({ playerName, unitName, row, round, spyOpponent, instance }: HighlightedHistory) {
+  static async selectHistoryUnit({
+    playerName,
+    unitName,
+    row,
+    round,
+    targetUser,
+    reason,
+    instance,
+  }: HighlightedHistory) {
     const historyUnit = await GamePage.getHistoryUnit({
       playerName,
       unitName,
       round,
       row,
-      spyOpponent,
+      targetUser,
+      reason,
       instance,
     })
-    await t.click(historyUnit)
+    await t.click(historyUnit.find(`.${HTML_CLASSES.GameHistoryMoveUnit}`))
   }
 
   static async getBattlefieldCard({
@@ -1739,7 +1760,8 @@ export interface HighlightedHistory {
   row: Combat
   round: number
   dotted?: boolean
-  spyOpponent?: string
+  targetUser?: string
+  reason?: MoveReasonType
   instance?: number
 }
 

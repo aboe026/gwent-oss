@@ -1,4 +1,4 @@
-import { Combat, EffectKey, FactionKey } from '@gwent/node-client'
+import { Combat, EffectKey, FactionKey, MoveReasonType } from '@gwent/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 import GamePage from '../page-objects/game-page'
@@ -281,45 +281,52 @@ test('Avengers for self and opponent summoned after self scorch', async (t) => {
       },
     ],
   })
+  console.log('TEST 0')
   await GamePage.selectHistoryUnit({
     playerName: gameManager.self.gamePlayer.name,
     round: gameManager.round,
     row: Combat.Close,
     unitName: unitName3,
-    spyOpponent: gameManager.opponent.gamePlayer.name,
-    instance: 1,
+    targetUser: gameManager.opponent.gamePlayer.name,
+    reason: MoveReasonType.Summon,
   })
+  console.log('TEST 1')
   await gameManager.verify({
     highlightedHistory: {
       playerName: gameManager.self.gamePlayer.name,
       round: gameManager.round,
       row: Combat.Close,
       unitName: unitName3,
-    },
-    highlightedBattlefieldCard: {
-      row: Combat.Close,
-      unitName: unitName3,
-      userName: gameManager.self.gamePlayer.name,
-    },
-  })
-  await GamePage.selectHistoryUnit({
-    playerName: gameManager.self.gamePlayer.name,
-    round: gameManager.round,
-    row: Combat.Close,
-    unitName: unitName3,
-    instance: 2,
-  })
-  await gameManager.verify({
-    highlightedHistory: {
-      playerName: gameManager.self.gamePlayer.name,
-      round: gameManager.round,
-      row: Combat.Close,
-      unitName: unitName3,
+      targetUser: gameManager.opponent.gamePlayer.name,
+      reason: MoveReasonType.Summon,
     },
     highlightedBattlefieldCard: {
       row: Combat.Close,
       unitName: unitName3,
       userName: gameManager.opponent.gamePlayer.name,
+    },
+  })
+  await GamePage.selectHistoryUnit({
+    playerName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+    row: Combat.Close,
+    unitName: unitName3,
+    targetUser: gameManager.self.gamePlayer.name,
+    reason: MoveReasonType.Summon,
+  })
+  await gameManager.verify({
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Close,
+      unitName: unitName3,
+      targetUser: gameManager.self.gamePlayer.name,
+      reason: MoveReasonType.Summon,
+    },
+    highlightedBattlefieldCard: {
+      row: Combat.Close,
+      unitName: unitName3,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
 })

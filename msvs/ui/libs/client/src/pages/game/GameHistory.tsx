@@ -207,21 +207,22 @@ function PlayerHistoryMove({
       pointable = true
       primaryText = unit.name
       let placement = ''
-      if (unitMove.target && unitMove.reason.type !== MoveReasonType.Summon) {
-        placement += ` to spy on ${unitMove.target.name} `
+      if (unitMove.target) {
+        if (unitMove.reason.type === MoveReasonType.Summon) {
+          placement += `for ${unitMove.target.name} `
+        } else {
+          placement += `to spy on ${unitMove.target.name} `
+        }
       }
       placement += gameUnit?.__typename === 'FieldUnit' ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
       const reasonUnit = useFragment(MoveUnitReasonUnitFragmentDoc, unitMove.reason.unit)
       if (reasonUnit?.unit.name) {
         if (unitMove.reason.type === MoveReasonType.Transform) {
-          placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+          placement += `from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
         }
         if (unitMove.reason.type !== MoveReasonType.Summon) {
-          placement += ` by ${reasonUnit?.unit.name}`
+          placement += `by ${reasonUnit?.unit.name}`
         }
-      }
-      if (unitMove.target && unitMove.reason.type === MoveReasonType.Summon) {
-        placement += ` for ${unitMove.target.name} `
       }
       let reason = 'deployed'
       let source = ''
