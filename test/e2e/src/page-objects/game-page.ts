@@ -346,8 +346,10 @@ export default class GamePage {
               }
             } else if (move.reason?.type === MoveReasonType.Transform) {
               action = 'transformed'
+            } else if (move.reason?.type === MoveReasonType.Summon) {
+              action = 'summoned'
             }
-            if (move.targetUserName) {
+            if (move.targetUserName && move.reason?.type !== MoveReasonType.Summon) {
               action += ` to spy on ${move.targetUserName}`
             }
             let description = `${move.userName}: ${move.unitName} ${action} ${row}`
@@ -355,7 +357,11 @@ export default class GamePage {
               if (move.reason.type === MoveReasonType.Transform) {
                 description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
               }
-              description += ` by ${move.reason.name}${source}`
+              if (move.reason.type === MoveReasonType.Summon) {
+                description += ` for ${move.targetUserName}`
+              } else {
+                description += ` by ${move.reason.name}${source}`
+              }
             }
             const selected =
               highlightedMove &&

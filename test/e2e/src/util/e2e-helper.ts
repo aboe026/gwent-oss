@@ -375,6 +375,7 @@ export class E2eHelper {
     mustering,
     bonding,
     decoying,
+    avenging,
     spying,
     weathering,
     impacts,
@@ -394,6 +395,7 @@ export class E2eHelper {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    avenging?: AvengingExpected[]
     spying?: SpyingExpected
     weathering?: WeatheringExpected[]
     impacts?: number
@@ -490,6 +492,16 @@ export class E2eHelper {
           row: bond.row,
           unitName: bond.name,
           instance: i + 1,
+        })
+      }
+    }
+    if (avenging) {
+      for (const avenge of avenging) {
+        E2eHelper.addUnitToGamePlayer({
+          player: avenge.newUnitPlayer,
+          row: avenge.row,
+          unitName: avenge.name,
+          strength: avenge.effectiveStrength,
         })
       }
     }
@@ -639,6 +651,25 @@ export class E2eHelper {
               }
             : undefined,
           origin: GameUnitOrigin.Undrawn,
+        })
+      }
+    }
+    if (moves && avenging) {
+      for (const avenge of avenging) {
+        moves.push({
+          userName: avenge.turn.name,
+          unitName: avenge.name,
+          combatRow: avenge.row,
+          reason: {
+            name: avenge.name === 'Bovine Defense Force' ? 'Cow' : 'Kambi',
+            type: MoveReasonType.Summon,
+          },
+          impacts: {
+            effectKey: EffectKey.Avenger,
+            number: 1,
+          },
+          origin: GameUnitOrigin.Nondeck,
+          targetUserName: avenge.newUnitPlayer.name,
         })
       }
     }
@@ -806,4 +837,12 @@ export interface SpyingExpected {
   row: Combat
   effectiveStrength: number
   instance?: number
+}
+
+export interface AvengingExpected {
+  turn: GamePlayerExpected
+  newUnitPlayer: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
 }

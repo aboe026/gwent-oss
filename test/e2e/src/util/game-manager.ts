@@ -1,5 +1,6 @@
 import ApiClient from './api-client'
 import {
+  AvengingExpected,
   BondingExpected,
   DecoyingExpected,
   E2eHelper,
@@ -104,6 +105,7 @@ export class GameManager {
     bonding,
     impacts,
     decoying,
+    avenging,
     spying,
     weathering,
     modifier,
@@ -122,6 +124,7 @@ export class GameManager {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    avenging?: AvengingExpected[]
     spying?: SpyingExpected
     weathering?: WeatheringExpected[]
     impacts?: number
@@ -182,6 +185,7 @@ export class GameManager {
       mustering,
       bonding,
       decoying,
+      avenging,
       spying,
       weathering,
       impacts,
