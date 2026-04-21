@@ -281,7 +281,6 @@ test('Avengers for self and opponent summoned after self scorch', async (t) => {
       },
     ],
   })
-  console.log('TEST 0')
   await GamePage.selectHistoryUnit({
     playerName: gameManager.self.gamePlayer.name,
     round: gameManager.round,
@@ -290,7 +289,6 @@ test('Avengers for self and opponent summoned after self scorch', async (t) => {
     targetUser: gameManager.opponent.gamePlayer.name,
     reason: MoveReasonType.Summon,
   })
-  console.log('TEST 1')
   await gameManager.verify({
     highlightedHistory: {
       playerName: gameManager.self.gamePlayer.name,
@@ -329,6 +327,102 @@ test('Avengers for self and opponent summoned after self scorch', async (t) => {
       userName: gameManager.self.gamePlayer.name,
     },
   })
+})
+
+test('Single avenger for self summoned after round ended', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName3 = 'Bovine Defense Force'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.pass({})
+  await gameManager.pass({}) // TODO: have new input field "avengers" to "gameManager.pass" method
+  // await gameManager.deploy({
+  //   unitName: unitName2,
+  //   scorching: [
+  //     {
+  //       name: unitName1,
+  //       player: gameManager.self.gamePlayer,
+  //       row: Combat.Ranged,
+  //       strength: 0,
+  //     },
+  //   ],
+  //   avenging: [
+  //     {
+  //       name: unitName3,
+  //       effectiveStrength: 8,
+  //       turn: gameManager.opponent.gamePlayer,
+  //       newUnitPlayer: gameManager.self.gamePlayer,
+  //       row: Combat.Close,
+  //     },
+  //   ],
+  // })
+  // await GamePage.toggleImpacts({
+  //   round: gameManager.round,
+  //   unitName: unitName3,
+  //   userName: gameManager.opponent.gamePlayer.name,
+  // })
+  // await GamePage.verifyImpacts({
+  //   moves: [
+  //     {
+  //       effectKey: EffectKey.Avenger,
+  //       round: gameManager.round,
+  //       unitName: unitName3,
+  //       userName: gameManager.opponent.gamePlayer.name,
+  //       impacts: [
+  //         {
+  //           unitName: unitName1,
+  //           username: gameManager.self.gamePlayer.name,
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // })
+  // await GamePage.selectImpactCard({
+  //   move: {
+  //     round: gameManager.round,
+  //     unitName: unitName3,
+  //     userName: gameManager.opponent.gamePlayer.name,
+  //   },
+  //   impact: {
+  //     unitName: unitName1,
+  //     userName: gameManager.self.gamePlayer.name,
+  //   },
+  // })
+  // await gameManager.verify({
+  //   highlightedHistory: {
+  //     playerName: gameManager.self.gamePlayer.name,
+  //     round: gameManager.round,
+  //     row: Combat.Ranged,
+  //     unitName: unitName1,
+  //     dotted: true,
+  //   },
+  //   impacts: [
+  //     {
+  //       effectKey: EffectKey.Avenger,
+  //       round: gameManager.round,
+  //       unitName: unitName3,
+  //       userName: gameManager.opponent.gamePlayer.name,
+  //       impacts: [
+  //         {
+  //           unitName: unitName1,
+  //           username: gameManager.self.gamePlayer.name,
+  //           dotted: true,
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // })
 })
 
 // avenger opponent from scorch

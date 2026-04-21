@@ -118,6 +118,9 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- show what caused avengee to leave battlefield (scorch unit or round ending)?
+  - how to represent? new relationship in db or infer in front end?
+
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
   - test avenger re-mediced cannot cause duplicate avenger

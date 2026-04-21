@@ -7,26 +7,23 @@ import { GameDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/dat
  * @param config.game The Game which should have a new round initialized on it.
  */
 export default function initializeNewRound({ game }: { game: GameDbObject }) {
-  const startingCombatRow: PlayerCombatRowDbObject = {
-    score: 0,
-    units: [],
-  }
   for (const player of game.players) {
     player.rounds.push({
-      close: {
-        ...startingCombatRow,
-      },
+      close: getStartingCombatRow(),
       moves: [],
       passed: false,
-      ranged: {
-        ...startingCombatRow,
-      },
+      ranged: getStartingCombatRow(),
       score: 0,
-      siege: {
-        ...startingCombatRow,
-      },
+      siege: getStartingCombatRow(),
       weathers: [],
     })
   }
   game.round = game.round + 1
+}
+
+export function getStartingCombatRow(): PlayerCombatRowDbObject {
+  return {
+    score: 0,
+    units: [],
+  }
 }

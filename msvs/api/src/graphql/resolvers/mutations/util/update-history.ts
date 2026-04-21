@@ -18,7 +18,7 @@ import {
 import { GameUnitType, MoveType } from '@gwent/graphql-schema'
 import GetFieldUnits from '../../util/get-field-units'
 import { ImpactsByUnitId } from '../../resolver-util'
-import { MusteredOrigins } from './effect-muster'
+import { MusteredOrigins } from '../play-unit/effect-muster'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -136,7 +136,7 @@ export default class UpdateHistory {
     if (targetId) {
       move.target = new ObjectId(targetId)
     }
-    UpdateHistory.addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToPlayer({
       game,
       move,
     })
@@ -257,6 +257,7 @@ export default class UpdateHistory {
    * @param config.unitId The new ID of the unit being indirectly added to the battlefield.
    * @param config.created The Date the move was made to add the unit indirectly to the battlefield.
    * @param config.playerId The ID of the game player who is deploying the new unit to the battlefield.
+   * @param config.turnUserId The ID of the User whose turn it currently is.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
@@ -272,23 +273,24 @@ export default class UpdateHistory {
    * @param config.origin Where the new unit came from.
    * @param config.targetId The potential targeted player the new unit being added is for.
    */
-  private static newUnitIndirect({
+  static newUnitIndirect({
     game,
     unitId,
     created,
     playerId,
+    turnUserId,
     logPrefix,
     origin,
-    scorches,
-    mardroemes,
-    musters,
-    bonds,
-    horns,
-    avengers,
-    decoys,
-    spies,
-    morales,
-    weathers,
+    scorches = {},
+    mardroemes = {},
+    musters = {},
+    bonds = {},
+    horns = {},
+    avengers = {},
+    decoys = {},
+    spies = {},
+    morales = {},
+    weathers = {},
     reason,
     targetId,
   }: {
@@ -296,18 +298,19 @@ export default class UpdateHistory {
     unitId: ObjectId | string
     created: Date
     playerId: string
+    turnUserId?: ObjectId
     logPrefix: string
     origin: GameUnitOrigin
-    scorches: ImpactsByUnitId
-    mardroemes: ImpactsByUnitId
-    musters: ImpactsByUnitId
-    bonds: ImpactsByUnitId
-    horns: ImpactsByUnitId
-    avengers: ImpactsByUnitId
-    decoys: ImpactsByUnitId
-    spies: ImpactsByUnitId
-    morales: ImpactsByUnitId
-    weathers: ImpactsByUnitId
+    scorches?: ImpactsByUnitId
+    mardroemes?: ImpactsByUnitId
+    musters?: ImpactsByUnitId
+    bonds?: ImpactsByUnitId
+    horns?: ImpactsByUnitId
+    avengers?: ImpactsByUnitId
+    decoys?: ImpactsByUnitId
+    spies?: ImpactsByUnitId
+    morales?: ImpactsByUnitId
+    weathers?: ImpactsByUnitId
     reason: MoveUnitReasonDbObject
     targetId?: ObjectId
   }) {
@@ -346,9 +349,10 @@ export default class UpdateHistory {
       },
       target: targetId,
     }
-    UpdateHistory.addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToPlayer({
       game,
       move,
+      userId: turnUserId,
     })
   }
 
@@ -358,9 +362,14 @@ export default class UpdateHistory {
    * @param config The configuration used to add the Move to the Game player.
    * @param config.game The game containing the player to add the Move to, based on the current turn in the Game.
    * @param config.move The move to add to the current player on the Game.
+   * @param config.userId The ID of the User to add the move to.
    */
-  static addMoveToCurrentPlayer({ game, move }: { game: GameDbObject; move: MoveDbObject }) {
-    const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
+  static addMoveToPlayer({ game, move, userId }: { game: GameDbObject; move: MoveDbObject; userId?: ObjectId }) {
+    const playerId = userId || game.turn
+    if (!playerId) {
+      throw Error('Could not determine player to add move to')
+    }
+    const player = game.players.find((player) => player.user.toString() === playerId.toString())
     if (player) {
       player.rounds[game.round - 1].moves.push(move)
     } else {

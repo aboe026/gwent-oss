@@ -1,19 +1,23 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import clearBattlefieldUnits from './clear-battlefield-units'
-import { GameDbObject, MovePassDbObject } from '@gwent/graphql-schema/database-typings'
+import EffectAvenger from '../play-unit/effect-avenger'
+import { GameDbObject, GameUnitOrigin, MovePassDbObject, MoveReasonType } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
+import { GameUnitType, MoveType } from '@gwent/graphql-schema'
+import getRoundUnits from '../play-unit/get-round-units'
+import getUnitEffects from '../play-unit/get-unit-effects'
 import initializeNewRound from '../util/initialize-new-round'
 import IsGameOver from './is-game-over'
 import IsRoundOver from './is-round-over'
-import { MoveType } from '@gwent/graphql-schema'
 import passCurrentPlayer from './pass-current-player'
 import PresentableError from '../../../../util/presentable-error'
 import SetGameVictors from './set-game-victors'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
 import SetRoundResults from './set-round-results'
 import SetTurnForNextRound from './set-turn-for-next-round'
-import UpdateHistory from '../play-unit/update-history'
+import UpdateHistory from '../util/update-history'
 import { ValidatedPlayPass } from './play-pass-validation'
 
 /**
@@ -32,12 +36,14 @@ export default class PlayPassImplementation {
    * @throws {PresentableError} if known problem playing pass.
    */
   static async playPassImplementation({ game, logPrefix }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
+    const passingDate = new Date()
+    const passingPlayer = game.turn
     passCurrentPlayer(game)
 
-    UpdateHistory.addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToPlayer({
       game,
       move: {
-        created: new Date(),
+        created: passingDate,
         type: MoveType.Pass,
       } as MovePassDbObject,
     })
@@ -71,6 +77,13 @@ export default class PlayPassImplementation {
         initializeNewRound({
           game,
         })
+
+        await PlayPassImplementation.summonAvengers({
+          game,
+          logPrefix,
+          passingDate,
+          passingPlayer,
+        })
       }
     } else {
       SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
@@ -90,6 +103,70 @@ export default class PlayPassImplementation {
     return {
       game: updatedGame,
       roundOver,
+    }
+  }
+
+  private static async summonAvengers({
+    game,
+    logPrefix,
+    passingDate,
+    passingPlayer,
+  }: {
+    game: GameDbObject
+    logPrefix: string
+    passingDate: Date
+    passingPlayer?: ObjectId
+  }) {
+    const previousRoundUnits = await getRoundUnits({
+      game,
+      round: game.round - 2,
+    })
+    const unitEffects = await getUnitEffects({
+      units: previousRoundUnits,
+    })
+    const removedGameUnits = game.players
+      .map((player) => {
+        const round = player.rounds[game.round - 2]
+        return [...round.close.units, ...round.ranged.units, ...round.siege.units].map((unit) => {
+          return {
+            unit: {
+              ...unit,
+              type: GameUnitType.Field,
+            },
+            user: player.user,
+          }
+        })
+      })
+      .flat()
+
+    const { impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
+      battlefieldUnits: previousRoundUnits,
+      effects: unitEffects,
+      game,
+      logPrefix,
+      removedGameUnits,
+    })
+    for (const avengerUnitId of Object.keys(avengers)) {
+      const avengees = avengers[avengerUnitId]
+      for (const avengee of avengees) {
+        UpdateHistory.newUnitIndirect({
+          created: passingDate,
+          game,
+          logPrefix,
+          avengers: {
+            [avengerUnitId]: [avengee],
+          },
+          origin: GameUnitOrigin.Nondeck,
+          playerId: avengee.user.toString(),
+          turnUserId: passingPlayer,
+          reason: {
+            type: MoveReasonType.Summon,
+            unit: avengee.unit,
+          },
+          unitId: avengerUnitId,
+          targetId: avengee.user,
+        })
+      }
     }
   }
 }

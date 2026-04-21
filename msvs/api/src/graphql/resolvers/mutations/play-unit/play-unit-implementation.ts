@@ -9,7 +9,7 @@ import getUnitEffects from './get-unit-effects'
 import PresentableError from '../../../../util/presentable-error'
 import setGameScores from './set-game-scores'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
-import UpdateHistory from './update-history'
+import UpdateHistory from '../util/update-history'
 import { ValidatedPlayUnit } from './play-unit-validation'
 
 /**
