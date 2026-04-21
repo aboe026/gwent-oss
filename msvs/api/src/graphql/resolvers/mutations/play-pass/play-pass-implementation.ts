@@ -1,6 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
+import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
 import clearBattlefieldUnits from './clear-battlefield-units'
 import EffectAvenger from '../play-unit/effect-avenger'
 import { GameDbObject, GameUnitOrigin, MovePassDbObject, MoveReasonType } from '@gwent/graphql-schema/database-typings'
@@ -13,6 +14,7 @@ import IsGameOver from './is-game-over'
 import IsRoundOver from './is-round-over'
 import passCurrentPlayer from './pass-current-player'
 import PresentableError from '../../../../util/presentable-error'
+import setGameScores from '../util/set-game-scores'
 import SetGameVictors from './set-game-victors'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
 import SetRoundResults from './set-round-results'
@@ -139,7 +141,7 @@ export default class PlayPassImplementation {
       })
       .flat()
 
-    const { impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
+    const { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
       battlefieldUnits: previousRoundUnits,
       effects: unitEffects,
       game,
@@ -168,6 +170,15 @@ export default class PlayPassImplementation {
         })
       }
     }
+
+    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+      game,
+      units: [...previousRoundUnits, ...avengedUnits],
+      effects: unitEffects,
+      logPrefix,
+    })
+
+    setGameScores(game)
   }
 }
 

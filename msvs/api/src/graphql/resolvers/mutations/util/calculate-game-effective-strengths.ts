@@ -11,14 +11,14 @@ import {
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import EffectBond from './effect-bond'
-import EffectHorn from './effect-horn'
-import EffectMorale from './effect-morale'
-import EffectWeather from './effect-weather'
-import GetEffectWithKey from './get-effect-with-key'
+import EffectBond from '../play-unit/effect-bond'
+import EffectHorn from '../play-unit/effect-horn'
+import EffectMorale from '../play-unit/effect-morale'
+import EffectWeather from '../play-unit/effect-weather'
+import GetEffectWithKey from '../play-unit/get-effect-with-key'
 import GetFieldUnits from '../../util/get-field-units'
-import getUnitIdsWithEffect from './get-unit-ids-with-effect'
-import GetWeatherUnitsForRow, { PlayerWeatherUnit } from './get-weather-units-for-row'
+import getUnitIdsWithEffect from '../play-unit/get-unit-ids-with-effect'
+import GetWeatherUnitsForRow, { PlayerWeatherUnit } from '../play-unit/get-weather-units-for-row'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -49,16 +49,16 @@ export default class CalculateGameEffectiveStrengths {
     effects,
     logPrefix,
     newDeckUnit,
-    musteredUnitIds,
-    transformedUnitIds,
+    musteredUnitIds = [],
+    transformedUnitIds = [],
   }: {
     game: GameDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
     logPrefix: string
-    newDeckUnit: DeckUnitDbObject
-    musteredUnitIds: string[]
-    transformedUnitIds: string[]
+    newDeckUnit?: DeckUnitDbObject
+    musteredUnitIds?: string[]
+    transformedUnitIds?: string[]
   }): StrengthImpacts {
     const weathers: ImpactsByUnitId = {}
     const bonds: ImpactsByUnitId = {}
@@ -211,7 +211,7 @@ export default class CalculateGameEffectiveStrengths {
     moraleEffect: EffectDbObject | undefined
     bondEffect: EffectDbObject | undefined
     hornEffect: EffectDbObject | undefined
-    newDeckUnit: DeckUnitDbObject
+    newDeckUnit?: DeckUnitDbObject
     musteredUnitIds: string[]
     transformedUnitIds: string[]
     userId: ObjectId
@@ -258,66 +258,66 @@ export default class CalculateGameEffectiveStrengths {
         rowFieldUnit.effectiveStrength = rowUnit.strength
         rowFieldUnit.effects = []
 
-        addListsToMap({
-          baseMap: weathers,
-          newLists: EffectWeather.weatherScores({
-            logPrefix,
-            newDeckUnit,
-            rowFieldUnit,
-            rowUnit,
-            weatherUnits,
-            userId,
-            weatherEffect,
-            currentPlayerId,
-          }),
-        })
-        addListsToMap({
-          baseMap: bonds,
-          newLists: EffectBond.applyBonds({
-            logPrefix,
-            bondEffect,
-            unitIdsWithBondInRow: bondIdsInRow,
-            newDeckUnit,
-            musteredUnitIds,
-            transformedUnitIds,
-            rowFieldUnit,
-            rowUnit,
-            units,
-            userId,
-            currentPlayerId,
-          }),
-        })
-
-        addListsToMap({
-          baseMap: morales,
-          newLists: EffectMorale.applyMorales({
-            logPrefix,
-            moraleEffect,
-            unitIdsWithMoraleInRow: moraleIdsInRow,
-            newDeckUnit,
-            rowFieldUnit,
-            rowUnit,
-            units,
-            userId,
-            currentPlayerId,
-            transformedUnitIds,
-          }),
-        })
-
-        addListsToMap({
-          baseMap: horns,
-          newLists: EffectHorn.applyHorn({
-            logPrefix,
-            hornEffect,
-            unitIdsWithHornInRow: hornIdsInRow,
-            newDeckUnit,
-            rowFieldUnit,
-            rowUnit,
-            units,
-            userId,
-            currentPlayerId,
-          }),
-        })
+        if (newDeckUnit) {
+          addListsToMap({
+            baseMap: weathers,
+            newLists: EffectWeather.weatherScores({
+              logPrefix,
+              newDeckUnit,
+              rowFieldUnit,
+              rowUnit,
+              weatherUnits,
+              userId,
+              weatherEffect,
+              currentPlayerId,
+            }),
+          })
+          addListsToMap({
+            baseMap: bonds,
+            newLists: EffectBond.applyBonds({
+              logPrefix,
+              bondEffect,
+              unitIdsWithBondInRow: bondIdsInRow,
+              newDeckUnit,
+              musteredUnitIds,
+              transformedUnitIds,
+              rowFieldUnit,
+              rowUnit,
+              units,
+              userId,
+              currentPlayerId,
+            }),
+          })
+          addListsToMap({
+            baseMap: morales,
+            newLists: EffectMorale.applyMorales({
+              logPrefix,
+              moraleEffect,
+              unitIdsWithMoraleInRow: moraleIdsInRow,
+              newDeckUnit,
+              rowFieldUnit,
+              rowUnit,
+              units,
+              userId,
+              currentPlayerId,
+              transformedUnitIds,
+            }),
+          })
+          addListsToMap({
+            baseMap: horns,
+            newLists: EffectHorn.applyHorn({
+              logPrefix,
+              hornEffect,
+              unitIdsWithHornInRow: hornIdsInRow,
+              newDeckUnit,
+              rowFieldUnit,
+              rowUnit,
+              units,
+              userId,
+              currentPlayerId,
+            }),
+          })
+        }
       }
     }
 

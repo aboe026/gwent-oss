@@ -11,7 +11,7 @@ import {
   SpyingExpected,
   WeatheringExpected,
 } from './e2e-helper'
-import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/node-client'
+import { Combat, DeckUnit, EffectKey, FactionKey, GameDeck, GameUnitOrigin, MoveReasonType } from '@gwent/node-client'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
 import env from './e2e-env'
@@ -212,10 +212,12 @@ export class GameManager {
   async pass({
     verify,
     switchTurnsWith,
+    avenging,
     victors,
   }: {
     verify?: boolean
     switchTurnsWith?: GamePlayerExpected
+    avenging?: AvengingExpected[]
     victors?: string[]
   }) {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
@@ -263,6 +265,31 @@ export class GameManager {
       if (!this.victors) {
         this.moves.push([])
         this.round++
+      }
+      if (avenging) {
+        for (const avenge of avenging) {
+          E2eHelper.addUnitToGamePlayer({
+            player: avenge.newUnitPlayer,
+            row: avenge.row,
+            unitName: avenge.name,
+            strength: avenge.effectiveStrength,
+          })
+          this.moves[this.moves.length - 1].push({
+            userName: avenge.turn.name,
+            unitName: avenge.name,
+            combatRow: avenge.row,
+            reason: {
+              name: avenge.name === 'Bovine Defense Force' ? 'Cow' : 'Kambi',
+              type: MoveReasonType.Summon,
+            },
+            impacts: {
+              effectKey: EffectKey.Avenger,
+              number: 1,
+            },
+            origin: GameUnitOrigin.Nondeck,
+            targetUserName: avenge.newUnitPlayer.name,
+          })
+        }
       }
     }
 
