@@ -248,7 +248,7 @@ export default class CalculateGameEffectiveStrengths {
 
     for (const rowFieldUnit of rowFieldUnits) {
       const rowUnit = units.find((unit) => unit._id.toString() === rowFieldUnit.unit.toString())
-      if (rowUnit && rowUnit.strength !== undefined && rowUnit.strength !== null) {
+      if (rowUnit) {
         const bondIdsInRow = EffectBond.getUnitsWithBond({
           bondEffect,
           logPrefix,

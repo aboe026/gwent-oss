@@ -128,50 +128,56 @@ export default class EffectBond {
       if (EffectBond.logger.isTraceEnabled()) {
         EffectBond.logger.trace(`${logPrefix} bondsToApply: "${JSON.stringify(bondsToApply)}"`)
       }
-      const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
-      for (const unitIdWithBond of bondsToApply) {
-        const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
-        if (bondingUnit) {
-          rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
-          EffectBond.logger.debug(
-            `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
-          )
-          const reason: EffectFromUnitDbObject = {
-            effect: bondEffect._id,
-            type: EffectReasonType.Unit,
-            unit: bondingUnit._id,
-          }
-
-          const fieldUnitEffect: FieldUnitEffectDbObject = {
-            operator: EFFECT_OPERATOR.Double,
-            reason,
-            total: rowFieldUnit.effectiveStrength,
-          }
-          if (EffectBond.logger.isTraceEnabled()) {
-            EffectBond.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
-          }
-          rowFieldUnit.effects.push(fieldUnitEffect)
+      if (unitIdsWithBondInRow.length > 0 && bondsToApply.length === 0) {
+        for (const unitIdWithBondInRow of unitIdsWithBondInRow) {
+          impacts[unitIdWithBondInRow] = []
         }
-      }
-      // wait to set impacts so know full effectiveStrength of rowFieldUnit
-      for (const unitIdWithBond of bondsToApply) {
-        const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
-        if (
-          bondingUnit &&
-          impactables.includes(bondingUnit._id.toString()) &&
-          userId.toString() === currentPlayerId?.toString()
-        ) {
-          const impact: ImpactDbObject = {
-            unit: {
-              ...rowFieldUnit,
-              type: GameUnitType.Field,
-            },
-            user: userId,
+      } else {
+        const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
+        for (const unitIdWithBond of bondsToApply) {
+          const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
+          if (bondingUnit) {
+            rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
+            EffectBond.logger.debug(
+              `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
+            )
+            const reason: EffectFromUnitDbObject = {
+              effect: bondEffect._id,
+              type: EffectReasonType.Unit,
+              unit: bondingUnit._id,
+            }
+
+            const fieldUnitEffect: FieldUnitEffectDbObject = {
+              operator: EFFECT_OPERATOR.Double,
+              reason,
+              total: rowFieldUnit.effectiveStrength,
+            }
+            if (EffectBond.logger.isTraceEnabled()) {
+              EffectBond.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
+            }
+            rowFieldUnit.effects.push(fieldUnitEffect)
           }
-          if (EffectBond.logger.isTraceEnabled()) {
-            EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+        }
+        // wait to set impacts so know full effectiveStrength of rowFieldUnit
+        for (const unitIdWithBond of bondsToApply) {
+          const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
+          if (
+            bondingUnit &&
+            impactables.includes(bondingUnit._id.toString()) &&
+            userId.toString() === currentPlayerId?.toString()
+          ) {
+            const impact: ImpactDbObject = {
+              unit: {
+                ...rowFieldUnit,
+                type: GameUnitType.Field,
+              },
+              user: userId,
+            }
+            if (EffectBond.logger.isTraceEnabled()) {
+              EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+            }
+            impacts[bondingUnit._id.toString()] = [impact]
           }
-          impacts[bondingUnit._id.toString()] = [impact]
         }
       }
     }

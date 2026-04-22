@@ -218,7 +218,7 @@ function PlayerHistoryMove({
       const reasonUnit = useFragment(MoveUnitReasonUnitFragmentDoc, unitMove.reason.unit)
       if (reasonUnit?.unit.name) {
         if (unitMove.reason.type === MoveReasonType.Transform) {
-          placement += `from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+          placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'} `
         }
         if (unitMove.reason.type !== MoveReasonType.Summon) {
           placement += `by ${reasonUnit?.unit.name}`

@@ -166,19 +166,17 @@ export default class EffectWeather {
               currentPlayerId &&
               weather.userId.toString() === currentPlayerId.toString()
             ) {
-              if (rowUnit.strength > 1) {
-                const impact: ImpactDbObject = {
-                  unit: {
-                    ...rowFieldUnit,
-                    type: GameUnitType.Field,
-                  },
-                  user: userId,
-                }
-                if (EffectWeather.logger.isTraceEnabled()) {
-                  EffectWeather.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
-                }
-                impacts[weather.unit._id.toString()] = [impact]
+              const impact: ImpactDbObject = {
+                unit: {
+                  ...rowFieldUnit,
+                  type: GameUnitType.Field,
+                },
+                user: userId,
               }
+              if (EffectWeather.logger.isTraceEnabled()) {
+                EffectWeather.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+              }
+              impacts[weather.unit._id.toString()] = [impact]
             }
           } else {
             impacts[weather.unit._id.toString()] = []
