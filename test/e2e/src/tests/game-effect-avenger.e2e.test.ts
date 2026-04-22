@@ -17,13 +17,10 @@ test('Avenger not summoned when game ends', async (t) => {
       handUnitNames: [unitName1],
     },
   })
-  console.log('TEST 0')
   await gameManager.pass({})
-  console.log('TEST 1')
   await gameManager.pass({
     switchTurnsWith: gameManager.opponent.gamePlayer,
   })
-  console.log('TEST 2')
   await gameManager.initialize({})
 
   await gameManager.pass({})

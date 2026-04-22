@@ -116,7 +116,7 @@ export default class EffectWeather {
       EffectWeather.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
     }
 
-    if (!rowUnit.hero && rowUnit.strength && rowUnit.strength > 1) {
+    if (!rowUnit.hero && rowUnit.strength !== undefined && rowUnit.strength !== null) {
       const weathersToApply = weatherUnits
         .filter((weather) => weather.unit._id.toString() !== rowFieldUnit.unit.toString())
         // put current turn player's weathers in the "back"
@@ -138,44 +138,50 @@ export default class EffectWeather {
       for (let i = 0; i < weathersToApply.length && !weathered; i++) {
         const weather = weathersToApply[i]
         if (weatherEffect && weather && rowFieldUnit.effects) {
-          weathered = true
-          rowFieldUnit.effectiveStrength = 1
-          EffectWeather.logger.debug(
-            `${logPrefix} weathering unit "${rowUnit._id}" by "${weather.unit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}".`
-          )
-          const reason: EffectFromUnitDbObject = {
-            effect: weatherEffect._id,
-            type: EffectReasonType.Unit,
-            unit: weather.unit._id,
-          }
+          if (rowUnit.strength > 1) {
+            weathered = true
+            rowFieldUnit.effectiveStrength = 1
+            EffectWeather.logger.debug(
+              `${logPrefix} weathering unit "${rowUnit._id}" by "${weather.unit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}".`
+            )
+            const reason: EffectFromUnitDbObject = {
+              effect: weatherEffect._id,
+              type: EffectReasonType.Unit,
+              unit: weather.unit._id,
+            }
 
-          const fieldUnitEffect: FieldUnitEffectDbObject = {
-            operator: EFFECT_OPERATOR.Set,
-            reason,
-            total: rowFieldUnit.effectiveStrength,
-          }
-          if (EffectWeather.logger.isTraceEnabled()) {
-            EffectWeather.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
-          }
-          rowFieldUnit.effects.push(fieldUnitEffect)
-
-          const impactables = [newDeckUnit.unit.toString()]
-          if (
-            impactables.includes(weather.unit._id.toString()) &&
-            currentPlayerId &&
-            weather.userId.toString() === currentPlayerId.toString()
-          ) {
-            const impact: ImpactDbObject = {
-              unit: {
-                ...rowFieldUnit,
-                type: GameUnitType.Field,
-              },
-              user: userId,
+            const fieldUnitEffect: FieldUnitEffectDbObject = {
+              operator: EFFECT_OPERATOR.Set,
+              reason,
+              total: rowFieldUnit.effectiveStrength,
             }
             if (EffectWeather.logger.isTraceEnabled()) {
-              EffectWeather.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+              EffectWeather.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
             }
-            impacts[weather.unit._id.toString()] = [impact]
+            rowFieldUnit.effects.push(fieldUnitEffect)
+
+            const impactables = [newDeckUnit.unit.toString()]
+            if (
+              impactables.includes(weather.unit._id.toString()) &&
+              currentPlayerId &&
+              weather.userId.toString() === currentPlayerId.toString()
+            ) {
+              if (rowUnit.strength > 1) {
+                const impact: ImpactDbObject = {
+                  unit: {
+                    ...rowFieldUnit,
+                    type: GameUnitType.Field,
+                  },
+                  user: userId,
+                }
+                if (EffectWeather.logger.isTraceEnabled()) {
+                  EffectWeather.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+                }
+                impacts[weather.unit._id.toString()] = [impact]
+              }
+            }
+          } else {
+            impacts[weather.unit._id.toString()] = []
           }
         }
       }

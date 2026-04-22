@@ -74,3 +74,7 @@ test('Cannot pass when not turn', async (t) => {
 
   await gameManager.verify({})
 })
+
+// TODO: verify passing to end round counts field unit as lost card
+// TODO: verify passing to end round counts modifier as lost card
+// TODO: verify passing to end round counts weather as lost card
