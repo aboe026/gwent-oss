@@ -52,11 +52,10 @@ export default class EffectMardroeme {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
   }): Promise<Transformations> {
-    const impacts: ImpactDbObject[] = []
+    const impacts: ImpactsByUnitId = {}
     const transformedUnits: UnitDbObject[] = []
     const transformedFieldUnits: FieldUnitDbObject[] = []
     let mardroemingFieldUnit: FieldUnitDbObject | undefined = undefined
-    let isMardroeming = false
 
     const mardroemeEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Mardroeme,
@@ -96,7 +95,9 @@ export default class EffectMardroeme {
       }
 
       if (mardroemeUnitIds.length > 0) {
-        isMardroeming = true
+        const newUnitIsMardroeming = mardroemeUnitIds.includes(newDeckUnit.unit.toString())
+        const newUnitImpacts: ImpactDbObject[] = []
+
         const berserkerUnitIds = getUnitIdsWithEffect({
           effect: berserkerEffect,
           units: playerRowBattlefieldUnits,
@@ -104,6 +105,7 @@ export default class EffectMardroeme {
         if (EffectMardroeme.logger.isTraceEnabled()) {
           EffectMardroeme.logger.trace(`${logPrefix} berserkerUnitIds: "${JSON.stringify(berserkerUnitIds)}"`)
         }
+
         if (berserkerUnitIds.length > 0 && combat) {
           mardroemingFieldUnit = EffectMardroeme.getMardroemingFieldUnit({
             fieldUnits,
@@ -131,11 +133,9 @@ export default class EffectMardroeme {
               `${logPrefix} transformed "${JSON.stringify(transformedPairs.map((pair) => pair.to.unit))}" berserkers into vildkaarls`
             )
 
-            const newUnitImpact = mardroemeUnitIds.includes(newDeckUnit.unit.toString())
-
             for (const transformedPair of transformedPairs) {
-              if (newUnitImpact) {
-                impacts.push({
+              if (newUnitIsMardroeming) {
+                newUnitImpacts.push({
                   unit: {
                     ...transformedPair.from,
                     type: GameUnitType.Field,
@@ -148,15 +148,14 @@ export default class EffectMardroeme {
             }
           }
         }
+        if (newUnitIsMardroeming) {
+          impacts[newDeckUnit.unit.toString()] = newUnitImpacts
+        }
       }
     }
 
     return {
-      impacts: isMardroeming
-        ? {
-            [newDeckUnit.unit.toString()]: impacts,
-          }
-        : {},
+      impacts,
       transformedUnits,
       transformedFieldUnits,
       mardroemingFieldUnit,

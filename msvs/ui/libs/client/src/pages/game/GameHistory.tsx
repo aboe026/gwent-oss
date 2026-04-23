@@ -221,7 +221,7 @@ function PlayerHistoryMove({
           placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'} `
         }
         if (unitMove.reason.type !== MoveReasonType.Summon) {
-          placement += `by ${reasonUnit?.unit.name}`
+          placement += ` by ${reasonUnit?.unit.name}`
         }
       }
       let reason = 'deployed'

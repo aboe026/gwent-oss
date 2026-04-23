@@ -62,18 +62,16 @@ export default class EffectHorn {
       EffectHorn.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
     }
 
-    if (!rowUnit.hero) {
-      const hornsToApply = unitIdsWithHornInRow.filter((id) => id !== rowFieldUnit.unit.toString())
-      if (EffectHorn.logger.isTraceEnabled()) {
-        EffectHorn.logger.trace(`${logPrefix} hornsToApply: "${JSON.stringify(hornsToApply)}"`)
-      }
-      if (unitIdsWithHornInRow.length > 0 && hornsToApply.length === 0) {
-        impacts[newDeckUnit.unit.toString()] = []
-      } else {
-        let horned = false
-        for (let i = 0; i < hornsToApply.length && !horned; i++) {
-          const horningUnit = units.find((unit) => unit._id.toString() === hornsToApply[i])
-          if (hornEffect && horningUnit && rowFieldUnit.effects) {
+    let horned = false
+    for (let i = 0; i < unitIdsWithHornInRow.length && !horned; i++) {
+      const horningUnit = units.find((unit) => unit._id.toString() === unitIdsWithHornInRow[i])
+      if (hornEffect && horningUnit && rowFieldUnit.effects) {
+        if (rowUnit.hero) {
+          EffectHorn.logger.debug(`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to horn effect.`)
+        } else {
+          const newUnitIsHorn = horningUnit._id.toString() === newDeckUnit.unit.toString()
+          const impactsForNewUnit: ImpactDbObject[] = []
+          if (horningUnit._id.toString() !== rowFieldUnit.unit.toString()) {
             horned = true
             rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
             EffectHorn.logger.debug(
@@ -95,8 +93,7 @@ export default class EffectHorn {
             }
             rowFieldUnit.effects.push(fieldUnitEffect)
 
-            const impactables = [newDeckUnit.unit.toString()]
-            if (impactables.includes(horningUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
+            if (newUnitIsHorn && userId.toString() === currentPlayerId?.toString()) {
               const impact: ImpactDbObject = {
                 unit: {
                   ...rowFieldUnit,
@@ -107,13 +104,14 @@ export default class EffectHorn {
               if (EffectHorn.logger.isTraceEnabled()) {
                 EffectHorn.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
               }
-              impacts[horningUnit._id.toString()] = [impact]
+              impactsForNewUnit.push(impact)
             }
+          }
+          if (newUnitIsHorn) {
+            impacts[newDeckUnit.unit.toString()] = impactsForNewUnit
           }
         }
       }
-    } else {
-      EffectHorn.logger.debug(`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to horn effect.`)
     }
 
     return impacts

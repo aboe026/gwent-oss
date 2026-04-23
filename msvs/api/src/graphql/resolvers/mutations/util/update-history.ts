@@ -18,6 +18,7 @@ import {
 import { GameUnitType, MoveType } from '@gwent/graphql-schema'
 import GetFieldUnits from '../../util/get-field-units'
 import { ImpactsByUnitId } from '../../resolver-util'
+import mergeImpacts from '../play-unit/merge-impacts'
 import { MusteredOrigins } from '../play-unit/effect-muster'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -100,16 +101,18 @@ export default class UpdateHistory {
       unitId: deckUnit.unit,
       userId: targetId || playerId,
     })
-    const impacts: ImpactDbObject[] | undefined =
-      bonds[deckUnit.unit.toString()] ||
-      horns[deckUnit.unit.toString()] ||
-      mardroemes[deckUnit.unit.toString()] ||
-      morales[deckUnit.unit.toString()] ||
-      musters[deckUnit.unit.toString()] ||
-      scorches[deckUnit.unit.toString()] ||
-      decoys[deckUnit.unit.toString()] ||
-      spies[deckUnit.unit.toString()] ||
-      weathers[deckUnit.unit.toString()]
+    const impacts = mergeImpacts(
+      avengers,
+      bonds,
+      decoys,
+      horns,
+      mardroemes,
+      morales,
+      musters,
+      scorches,
+      spies,
+      weathers
+    )[deckUnit.unit.toString()]
     const updatedImpacts = UpdateHistory.updateImpactFieldUnits({
       game,
       impacts,
@@ -324,17 +327,18 @@ export default class UpdateHistory {
       UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
       throw Error(`${message}.`)
     }
-    const impacts =
-      scorches[unitId.toString()] ||
-      mardroemes[unitId.toString()] ||
-      musters[unitId.toString()] ||
-      bonds[unitId.toString()] ||
-      horns[unitId.toString()] ||
-      morales[unitId.toString()] ||
-      decoys[unitId.toString()] ||
-      spies[unitId.toString()] ||
-      weathers[unitId.toString()] ||
-      avengers[unitId.toString()]
+    const impacts = mergeImpacts(
+      avengers,
+      bonds,
+      decoys,
+      horns,
+      mardroemes,
+      morales,
+      musters,
+      scorches,
+      spies,
+      weathers
+    )[unitId.toString()]
     const move: MoveUnitDbObject = {
       created,
       reason,

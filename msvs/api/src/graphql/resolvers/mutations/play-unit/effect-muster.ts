@@ -50,7 +50,7 @@ export default class EffectMuster {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
   }): Promise<Musterings> {
-    const impacts: ImpactDbObject[] = []
+    const impacts: ImpactsByUnitId = {}
     const musteredUnits: UnitDbObject[] = []
     const musteredOrigins: MusteredOrigins = {}
 
@@ -84,6 +84,8 @@ export default class EffectMuster {
 
     if (hasMusterEffect && combat) {
       EffectMuster.logger.debug(`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`)
+      impacts[newDeckUnit.unit.toString()] = []
+      const impactsForNewUnit: ImpactDbObject[] = [] // get impacts first to sort them before putting them on "impacts" object
 
       const musterableUnits = await UnitStore.get({
         namePrefix: newUnit.effectPrefix ? `"${newUnit.effectPrefix}"` : undefined,
@@ -96,6 +98,7 @@ export default class EffectMuster {
       }
 
       for (const musterableUnit of musterableUnits) {
+        impacts[musterableUnit._id.toString()] = []
         const { impact, origin } = EffectMuster.getMusterImpact({
           game,
           logPrefix,
@@ -103,53 +106,51 @@ export default class EffectMuster {
           potentialMuster: musterableUnit,
         })
         if (impact && origin) {
-          impacts.push(impact)
+          impactsForNewUnit.push(impact)
           musteredUnits.push(musterableUnit)
           musteredOrigins[musterableUnit._id.toString()] = origin
         }
       }
-    }
 
-    // sort to ensure units from hand show first in history/impacts (reduces non-deterministic behavior in tests)
-    const sortedImpacts = sortObjectArray({
-      array: impacts,
-      sortProperties: ['source.origin'],
-    })
+      // sort to ensure units from hand show first in history/impacts (reduces non-deterministic behavior in tests)
+      const sortedImpactsForNewUnit = sortObjectArray({
+        array: impactsForNewUnit,
+        sortProperties: ['source.origin'],
+      })
 
-    for (const impact of sortedImpacts) {
-      if (impact.unit !== undefined) {
-        const unit = musteredUnits.find((musteredUnit) => musteredUnit._id.toString() === impact.unit?.unit.toString())
-        if (!unit) {
-          const message = `Could not find unit "${impact.unit?.unit}" from muster impact`
+      for (const impact of sortedImpactsForNewUnit) {
+        if (impact.unit !== undefined) {
+          const unit = musteredUnits.find(
+            (musteredUnit) => musteredUnit._id.toString() === impact.unit?.unit.toString()
+          )
+          if (!unit) {
+            const message = `Could not find unit "${impact.unit?.unit}" from muster impact`
+            EffectMuster.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
+            throw Error(`${message}.`)
+          }
+          const combat = unit.combats ? (unit.combats[0] as Combat) : undefined
+          if (!combat) {
+            const message = `Cannot muster unit "${unit._id}" without combat`
+            EffectMuster.logger.error(`${logPrefix} ${message}`)
+            throw Error(`${message}.`)
+          }
+          EffectMuster.musterUnitToBattlefield({
+            combat,
+            game,
+            muster: impact.unit,
+            origin: musteredOrigins[unit._id.toString()],
+          })
+          impacts[newDeckUnit.unit.toString()].push(impact)
+        } else {
+          const message = `Impact for muster does not have unit: "${JSON.stringify(impact)}"`
           EffectMuster.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
           throw Error(`${message}.`)
         }
-        const combat = unit.combats ? (unit.combats[0] as Combat) : undefined
-        if (!combat) {
-          const message = `Cannot muster unit "${unit._id}" without combat`
-          EffectMuster.logger.error(`${logPrefix} ${message}`)
-          throw Error(`${message}.`)
-        }
-        EffectMuster.musterUnitToBattlefield({
-          combat,
-          game,
-          muster: impact.unit,
-          origin: musteredOrigins[unit._id.toString()],
-        })
-      } else {
-        const message = `Impact for muster does not have unit: "${JSON.stringify(impact)}"`
-        EffectMuster.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
-        throw Error(`${message}.`)
       }
     }
 
     return {
-      impacts:
-        sortedImpacts.length > 0
-          ? {
-              [newDeckUnit.unit.toString()]: sortedImpacts,
-            }
-          : {},
+      impacts,
       musteredUnits,
       musteredOrigins,
     }

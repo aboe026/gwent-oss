@@ -6,6 +6,7 @@ import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql
 import GameStore from '../../../../database/stores/game-store'
 import getRoundUnits from './get-round-units'
 import getUnitEffects from './get-unit-effects'
+import mergeImpacts from './merge-impacts'
 import PresentableError from '../../../../util/presentable-error'
 import setGameScores from '../util/set-game-scores'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
@@ -136,7 +137,7 @@ export default class PlayUnitImplementation {
       bonds,
       horns,
       morales,
-      weathers: Object.keys(weatherBattlefieldImpacts).length > 0 ? weatherBattlefieldImpacts : weatherScoreImpacts,
+      weathers: mergeImpacts(weatherBattlefieldImpacts, weatherScoreImpacts),
       mardroemes,
       transformedFieldUnits,
       mardroemingFieldUnit,

@@ -65,52 +65,61 @@ export default class EffectMorale {
       EffectMorale.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
     }
 
-    if (!rowUnit.hero) {
-      const moralesToApply = unitIdsWithMoraleInRow.filter((id) => id !== rowFieldUnit.unit.toString())
-      if (EffectMorale.logger.isTraceEnabled()) {
-        EffectMorale.logger.trace(`${logPrefix} moralesToApply: "${JSON.stringify(moralesToApply)}"`)
-      }
-      for (const unitIdWithMorale of moralesToApply) {
-        const moralingUnit = units.find((unit) => unit._id.toString() === unitIdWithMorale)
-        if (moraleEffect && moralingUnit && rowFieldUnit.effects) {
-          rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) + 1
-          EffectMorale.logger.debug(
-            `${logPrefix} adding morale boost to "${rowUnit._id}" from "${moralingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
-          )
-          const reason: EffectFromUnitDbObject = {
-            effect: moraleEffect._id,
-            type: EffectReasonType.Unit,
-            unit: moralingUnit._id,
-          }
+    for (const unitIdWithMorale of unitIdsWithMoraleInRow) {
+      const moralingUnit = units.find((unit) => unit._id.toString() === unitIdWithMorale)
+      if (moraleEffect && moralingUnit && rowFieldUnit.effects) {
+        const impactsForMoralingUnit: ImpactDbObject[] = []
+        if (unitIdWithMorale !== rowFieldUnit.unit.toString()) {
+          if (rowUnit.hero) {
+            EffectMorale.logger.debug(
+              `${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to morale effect.`
+            )
+          } else if (rowUnit.strength === undefined || rowUnit.strength === null) {
+            EffectMorale.logger.debug(
+              `${logPrefix} rowUnit "${rowUnit._id}" does not have strength so not susceptible to morale effect.`
+            )
+          } else {
+            rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) + 1
+            EffectMorale.logger.debug(
+              `${logPrefix} adding morale boost to "${rowUnit._id}" from "${moralingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
+            )
+            const reason: EffectFromUnitDbObject = {
+              effect: moraleEffect._id,
+              type: EffectReasonType.Unit,
+              unit: moralingUnit._id,
+            }
 
-          const fieldUnitEffect: FieldUnitEffectDbObject = {
-            operator: EFFECT_OPERATOR.Plus,
-            reason,
-            total: rowFieldUnit.effectiveStrength,
-          }
-          if (EffectMorale.logger.isTraceEnabled()) {
-            EffectMorale.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
-          }
-          rowFieldUnit.effects.push(fieldUnitEffect)
-
-          const impactables = [newDeckUnit.unit.toString(), ...transformedUnitIds]
-          if (impactables.includes(moralingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
-            const impact: ImpactDbObject = {
-              unit: {
-                ...rowFieldUnit,
-                type: GameUnitType.Field,
-              },
-              user: userId,
+            const fieldUnitEffect: FieldUnitEffectDbObject = {
+              operator: EFFECT_OPERATOR.Plus,
+              reason,
+              total: rowFieldUnit.effectiveStrength,
             }
             if (EffectMorale.logger.isTraceEnabled()) {
-              EffectMorale.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+              EffectMorale.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
             }
-            impacts[moralingUnit._id.toString()] = [impact]
+            rowFieldUnit.effects.push(fieldUnitEffect)
+
+            const impactables = [newDeckUnit.unit.toString(), ...transformedUnitIds]
+            if (
+              impactables.includes(moralingUnit._id.toString()) &&
+              userId.toString() === currentPlayerId?.toString()
+            ) {
+              const impact: ImpactDbObject = {
+                unit: {
+                  ...rowFieldUnit,
+                  type: GameUnitType.Field,
+                },
+                user: userId,
+              }
+              if (EffectMorale.logger.isTraceEnabled()) {
+                EffectMorale.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+              }
+              impactsForMoralingUnit.push(impact)
+            }
           }
         }
+        impacts[moralingUnit._id.toString()] = impactsForMoralingUnit
       }
-    } else {
-      EffectMorale.logger.debug(`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to morale effect.`)
     }
 
     return impacts

@@ -46,9 +46,11 @@ export default class EffectDecoy {
     targetId: string | undefined | null
     isDecoy: boolean
   }): PotentialDecoy {
-    let impact: ImpactDbObject | undefined = undefined
+    const impacts: ImpactsByUnitId = {}
+    let deckUnitAddedToHand: DeckUnitDbObject | undefined = undefined
 
     if (isDecoy && targetId && combat) {
+      impacts[newDeckUnit.unit.toString()] = []
       const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
       if (!player) {
         const message = `Could not find player "${game.turn}" in game "${game._id}"`
@@ -57,13 +59,16 @@ export default class EffectDecoy {
       }
       const round = player?.rounds[game.round - 1]
       const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege
-      impact = EffectDecoy.decoyFromRow({
+      const impact = EffectDecoy.decoyFromRow({
         player,
         row,
         targetId,
       })
 
-      if (!impact) {
+      if (impact) {
+        impacts[newDeckUnit.unit.toString()].push(impact)
+        deckUnitAddedToHand = impact.unit
+      } else {
         const message = `Decoy "${newDeckUnit.unit}" did not get applied for unit "${targetId}"`
         this.logger.error(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
@@ -71,12 +76,8 @@ export default class EffectDecoy {
     }
 
     return {
-      deckUnitAddedToHand: impact?.unit,
-      impacts: impact
-        ? {
-            [newDeckUnit.unit.toString()]: [impact],
-          }
-        : {},
+      deckUnitAddedToHand,
+      impacts,
     }
   }
 
