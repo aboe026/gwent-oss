@@ -144,6 +144,7 @@ describe('effect-bond', () => {
                       unit: TestUtil.getFieldUnit({
                         unit: unitSelf1.unit,
                       }),
+                      impacts: [],
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
@@ -331,6 +332,7 @@ describe('effect-bond', () => {
                         effectiveStrength: 4,
                         row: combatUnit1,
                       }),
+                      impacts: [],
                     }),
                     expectizeMoveUnit({
                       unit: fieldUnit2,

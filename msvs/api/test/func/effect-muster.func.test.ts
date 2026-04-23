@@ -182,6 +182,7 @@ describe('effect-muster', () => {
                         type: MoveReasonType.Muster,
                         unit: fieldUnitSelf1,
                       },
+                      impacts: [],
                     }),
                     expectizeMoveUnit({
                       unit: fieldUnitSelf3,
@@ -192,6 +193,7 @@ describe('effect-muster', () => {
                       source: TestUtil.getSource({
                         origin: GameUnitOrigin.Undrawn,
                       }),
+                      impacts: [],
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
@@ -359,6 +361,7 @@ describe('effect-muster', () => {
                         type: MoveReasonType.Muster,
                         unit: fieldUnitSelf1,
                       },
+                      impacts: [],
                     }),
                     expectizeMoveUnit({
                       unit: fieldUnitSelf3,
@@ -366,6 +369,7 @@ describe('effect-muster', () => {
                         type: MoveReasonType.Muster,
                         unit: fieldUnitSelf1,
                       },
+                      impacts: [],
                     }),
                     expectizeMoveUnit({
                       unit: fieldUnitSelf4,
@@ -376,6 +380,7 @@ describe('effect-muster', () => {
                       source: TestUtil.getSource({
                         origin: GameUnitOrigin.Undrawn,
                       }),
+                      impacts: [],
                     }),
                     expectizeMoveUnit({
                       unit: fieldUnitSelf5,
@@ -386,6 +391,7 @@ describe('effect-muster', () => {
                       source: TestUtil.getSource({
                         origin: GameUnitOrigin.Undrawn,
                       }),
+                      impacts: [],
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
