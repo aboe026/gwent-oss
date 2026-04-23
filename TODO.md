@@ -82,6 +82,7 @@ Existing problems in the codebase that need to be fixed.
       - effectiveStrength (for strength after all active effects applied)
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - replace "effectiveStrength" with "score" for GameUnit
+  - rename "CalculateGameEffectiveStrengths" to just "UnitScores"
 - carry over username (and password?) when switching between log-in and sign-up
   - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
@@ -120,6 +121,7 @@ New things that should be added to the codebase.
 
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
   - how to represent? new relationship in db or infer in front end?
+  - would same approach work for other effects (like mardroeme)?
 
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
