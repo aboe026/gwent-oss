@@ -142,6 +142,8 @@ export default class UpdateHistory {
     UpdateHistory.addMoveToPlayer({
       game,
       move,
+      logPrefix,
+      playerId,
     })
 
     if (transformedFieldUnits) {
@@ -356,7 +358,8 @@ export default class UpdateHistory {
     UpdateHistory.addMoveToPlayer({
       game,
       move,
-      userId: turnUserId,
+      playerId: turnUserId || playerId,
+      logPrefix,
     })
   }
 
@@ -366,18 +369,27 @@ export default class UpdateHistory {
    * @param config The configuration used to add the Move to the Game player.
    * @param config.game The game containing the player to add the Move to, based on the current turn in the Game.
    * @param config.move The move to add to the current player on the Game.
-   * @param config.userId The ID of the User to add the move to.
+   * @param config.playerId The ID of the User on the Game to add the move to.
+   * @param config.logPrefix What to prepend log statements with.
    */
-  static addMoveToPlayer({ game, move, userId }: { game: GameDbObject; move: MoveDbObject; userId?: ObjectId }) {
-    const playerId = userId || game.turn
-    if (!playerId) {
-      throw Error('Could not determine player to add move to')
-    }
+  static addMoveToPlayer({
+    game,
+    move,
+    logPrefix,
+    playerId,
+  }: {
+    game: GameDbObject
+    move: MoveDbObject
+    logPrefix: string
+    playerId: ObjectId | string
+  }) {
     const player = game.players.find((player) => player.user.toString() === playerId.toString())
     if (player) {
       player.rounds[game.round - 1].moves.push(move)
     } else {
-      throw new PresentableError(`Could not find player "${game.turn}" on game "${game._id}" to add move to.`)
+      const message = `Could not find player "${playerId}" on game "${game._id}" to add move to`
+      UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+      throw new PresentableError(`${message}.`)
     }
   }
 

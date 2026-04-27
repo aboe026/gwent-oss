@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/battlefield-updates'
-import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
+import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import {
   DeckUnitDbObject,
@@ -19,10 +19,10 @@ import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
-import * as setGameScores from '../../src/graphql/resolvers/mutations/play-unit/set-game-scores'
+import * as setGameScores from '../../src/graphql/resolvers/mutations/util/set-game-scores'
 import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
 import TestUtil from '../util/test-util'
-import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
+import UpdateHistory from '../../src/graphql/resolvers/mutations/util/update-history'
 
 describe('play-unit-implementation', () => {
   const logPrefix = 'log-prefix'

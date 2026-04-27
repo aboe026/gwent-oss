@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import CalculateGameEffectiveStrengths, {
   StrengthImpacts,
-} from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
+} from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
 import { Combat, EffectKey, PlayerCombatRowDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectBond from '../../src/graphql/resolvers/mutations/play-unit/effect-bond'

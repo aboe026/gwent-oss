@@ -11,13 +11,14 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
+import EffectAvenger from '../../src/graphql/resolvers/mutations/play-unit/effect-avenger'
 import EffectDecoy from '../../src/graphql/resolvers/mutations/play-unit/effect-decoy'
 import EffectMardroeme from '../../src/graphql/resolvers/mutations/play-unit/effect-mardroeme'
+import EffectMuster, { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
+import EffectScorch from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import EffectSpy from '../../src/graphql/resolvers/mutations/play-unit/effect-spy'
 import EffectWeather from '../../src/graphql/resolvers/mutations/play-unit/effect-weather'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
-import MusterBattlefield, { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
-import ScorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import TestUtil from '../util/test-util'
 
 describe('battlefield-updates', () => {
@@ -127,6 +128,70 @@ describe('battlefield-updates', () => {
         scorchImpacts: {
           [newDeckUnit.unit.toString()]: impacts,
         },
+      })
+    })
+    it('returns single impact for avenger', () => {
+      const scorchUnit = TestUtil.getDbGameUnit({})
+      const avengerUnit = TestUtil.getDbUnit({})
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      testModifyBattlefieldWithNewUnit({
+        newDeckUnit,
+        newUnit: TestUtil.getDbUnit({}),
+        scorchImpacts: {
+          [new ObjectId().toString()]: [
+            {
+              user: new ObjectId(),
+              unit: scorchUnit,
+            },
+          ],
+        },
+        avengerImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
+        avengedUnits: [avengerUnit],
+      })
+    })
+    it('returns multiple impacts for avengers', () => {
+      const scorchUnit1 = TestUtil.getDbGameUnit({})
+      const scorchUnit2 = TestUtil.getDbGameUnit({})
+      const avengerUnit1 = TestUtil.getDbUnit({})
+      const avengerUnit2 = TestUtil.getDbUnit({})
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      testModifyBattlefieldWithNewUnit({
+        newDeckUnit,
+        newUnit: TestUtil.getDbUnit({}),
+        scorchImpacts: {
+          [new ObjectId().toString()]: [
+            {
+              user: new ObjectId(),
+              unit: scorchUnit1,
+            },
+            {
+              user: new ObjectId(),
+              unit: scorchUnit2,
+            },
+          ],
+        },
+        avengerImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
+        avengedUnits: [avengerUnit1, avengerUnit2],
       })
     })
     it('returns single impact for mardroeme', async () => {
@@ -3974,6 +4039,8 @@ async function testModifyBattlefieldWithNewUnit({
   isDecoy = false,
   isSpy = false,
   isWeather = false,
+  avengedUnits = [],
+  avengerImpacts = {},
   musterImpacts = {},
   musteredUnits = [],
   musteredOrigins = {},
@@ -3993,6 +4060,8 @@ async function testModifyBattlefieldWithNewUnit({
   isDecoy?: boolean
   isSpy?: boolean
   isWeather?: boolean
+  avengedUnits?: UnitDbObject[]
+  avengerImpacts?: ImpactsByUnitId
   musterImpacts?: ImpactsByUnitId
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
@@ -4020,8 +4089,12 @@ async function testModifyBattlefieldWithNewUnit({
     impacts: spyImpacts,
   })
   const addNewUnitToBattlefieldSpy = jest.spyOn(BattlefieldUpdates, 'addNewUnitToBattlefield').mockReturnValue()
-  const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockReturnValue(scorchImpacts)
-  const musterBattlefieldSpy = jest.spyOn(MusterBattlefield, 'musterBattlefield').mockResolvedValue({
+  const scorchBattlefieldSpy = jest.spyOn(EffectScorch, 'scorchBattlefield').mockReturnValue(scorchImpacts)
+  const avengeRemovedUnitsSpy = jest.spyOn(EffectAvenger, 'avengeRemovedUnits').mockResolvedValue({
+    avengedUnits: avengedUnits,
+    impacts: avengerImpacts,
+  })
+  const musterBattlefieldSpy = jest.spyOn(EffectMuster, 'musterBattlefield').mockResolvedValue({
     impacts: musterImpacts,
     musteredUnits,
     musteredOrigins,
@@ -4059,6 +4132,8 @@ async function testModifyBattlefieldWithNewUnit({
       isWeather,
     })
   ).resolves.toEqual({
+    avengedUnits,
+    avengers: avengerImpacts,
     scorches: scorchImpacts,
     musters: musterImpacts,
     musteredUnits,
@@ -4128,6 +4203,26 @@ async function testModifyBattlefieldWithNewUnit({
         game,
         logPrefix,
         newDeckUnit,
+      },
+    ],
+  ])
+  expect(avengeRemovedUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        battlefieldUnits,
+        effects,
+        game,
+        logPrefix,
+        removedGameUnits: scorchImpacts
+          ? Object.values(scorchImpacts)
+              .flat()
+              .map((scorch) => {
+                return {
+                  user: scorch.user,
+                  unit: scorch.unit,
+                }
+              })
+          : [],
       },
     ],
   ])

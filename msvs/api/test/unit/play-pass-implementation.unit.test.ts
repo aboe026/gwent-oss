@@ -11,7 +11,7 @@ import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/ut
 import SetRoundResults from '../../src/graphql/resolvers/mutations/play-pass/set-round-results'
 import SetTurnForNextRound from '../../src/graphql/resolvers/mutations/play-pass/set-turn-for-next-round'
 import TestUtil from '../util/test-util'
-import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
+import UpdateHistory from '../../src/graphql/resolvers/mutations/util/update-history'
 
 describe('play-pass-implementation', () => {
   const logPrefix = 'log-prefix'

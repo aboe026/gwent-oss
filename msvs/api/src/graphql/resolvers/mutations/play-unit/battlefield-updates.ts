@@ -108,16 +108,14 @@ export default class BattlefieldUpdates {
       effects,
       game,
       logPrefix,
-      removedGameUnits: scorches
-        ? Object.values(scorches)
-            .flat()
-            .map((scorch) => {
-              return {
-                user: scorch.user,
-                unit: scorch.unit,
-              }
-            })
-        : [],
+      removedGameUnits: Object.values(scorches)
+        .flat()
+        .map((scorch) => {
+          return {
+            user: scorch.user,
+            unit: scorch.unit,
+          }
+        }),
     })
     const {
       impacts: musterImpacts,

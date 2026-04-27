@@ -8,6 +8,7 @@ import {
   GameUnitDbObject,
   GameUnitOrigin,
   ImpactDbObject,
+  MoveDbObject,
   MoveReasonType,
   MoveUnitDbObject,
   MoveUnitReasonDbObject,
@@ -17,8 +18,9 @@ import { EffectReasonType, GameUnitType, MoveType } from '@gwent/graphql-schema'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
+import PresentableError from '../../src/util/presentable-error'
 import TestUtil from '../util/test-util'
-import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
+import UpdateHistory from '../../src/graphql/resolvers/mutations/util/update-history'
 
 describe('update-history', () => {
   describe('newUnitDeployed', () => {
@@ -78,24 +80,24 @@ describe('update-history', () => {
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('calls addMoveToCurrentPlayer once without impacts close', () => {
+    it('calls addMoveToPlayer once without impacts close', () => {
       testNewUnitDeployed({
         logPrefix,
       })
     })
-    it('calls addMoveToCurrentPlayer once without impacts ranged', () => {
+    it('calls addMoveToPlayer once without impacts ranged', () => {
       testNewUnitDeployed({
         combat: Combat.Ranged,
         logPrefix,
       })
     })
-    it('calls addMoveToCurrentPlayer once without impacts siege', () => {
+    it('calls addMoveToPlayer once without impacts siege', () => {
       testNewUnitDeployed({
         combat: Combat.Siege,
         logPrefix,
       })
     })
-    it('calls addMoveToCurrentPlayer once with scorch impact', () => {
+    it('calls addMoveToPlayer once with scorch impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
@@ -110,7 +112,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls addMoveToCurrentPlayer once with morale impact', () => {
+    it('calls addMoveToPlayer once with morale impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
@@ -125,7 +127,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls addMoveToCurrentPlayer once with bond impact', () => {
+    it('calls addMoveToPlayer once with bond impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
@@ -140,7 +142,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls addMoveToCurrentPlayer once with horn impact', () => {
+    it('calls addMoveToPlayer once with horn impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
@@ -155,7 +157,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls addMoveToCurrentPlayer once with decoy impact', () => {
+    it('calls addMoveToPlayer once with decoy impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
@@ -170,7 +172,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls addMoveToCurrentPlayer once with spy impact', () => {
+    it('calls addMoveToPlayer once with spy impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
@@ -186,7 +188,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls addMoveToCurrentPlayer once with weather impact', () => {
+    it('calls addMoveToPlayer once with weather impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
         unit: TestUtil.getDbGameUnit({}),
@@ -201,7 +203,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls to addMoveToCurrentPlayer for single valid muster without own impact', () => {
+    it('calls to addMoveToPlayer for single valid muster without own impact', () => {
       const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
@@ -221,7 +223,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls to addMoveToCurrentPlayer for single valid muster with own impact', () => {
+    it('calls to addMoveToPlayer for single valid muster with own impact', () => {
       const musteredUnit = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact1: ImpactDbObject = {
@@ -249,7 +251,7 @@ describe('update-history', () => {
         logPrefix,
       })
     })
-    it('calls to addMoveToCurrentPlayer for multiple valid musters', () => {
+    it('calls to addMoveToPlayer for multiple valid musters', () => {
       const musteredUnit1 = TestUtil.getDbFieldUnit({})
       const musteredUnit2 = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
@@ -275,7 +277,7 @@ describe('update-history', () => {
         expectedImpacts: [impact1, impact2],
       })
     })
-    it('calls to addMoveToCurrentPlayer for single mardroeme without mardroemingFieldUnit', () => {
+    it('calls to addMoveToPlayer for single mardroeme without mardroemingFieldUnit', () => {
       const mardroeming = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
@@ -297,7 +299,7 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
-    it('calls to addMoveToCurrentPlayer for single mardroeme with mardroemingFieldUnit', () => {
+    it('calls to addMoveToPlayer for single mardroeme with mardroemingFieldUnit', () => {
       const mardroeming = TestUtil.getDbFieldUnit({})
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
@@ -318,6 +320,45 @@ describe('update-history', () => {
           }),
         ],
         expectedImpacts: [impact],
+      })
+    })
+    it('calls to addMoveToPlayer for single valid avenger', () => {
+      const avengedUnit = TestUtil.getDbFieldUnit({})
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(avengedUnit),
+        user: new ObjectId(),
+      }
+      const avengers = {
+        [deckUnit.unit.toString()]: [impact],
+      }
+      testNewUnitDeployed({
+        logPrefix,
+        deckUnit,
+        avengers,
+        expectedImpacts: [impact],
+      })
+    })
+    it('calls to addMoveToPlayer for multiple valid avengers', () => {
+      const avengedUnit1 = TestUtil.getDbFieldUnit({})
+      const avengedUnit2 = TestUtil.getDbFieldUnit({})
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(avengedUnit1),
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(avengedUnit2),
+        user: new ObjectId(),
+      }
+      const avengers = {
+        [deckUnit.unit.toString()]: [impact1, impact2],
+      }
+      testNewUnitDeployed({
+        deckUnit,
+        avengers,
+        logPrefix,
+        expectedImpacts: [impact1, impact2],
       })
     })
   })
@@ -341,7 +382,7 @@ describe('update-history', () => {
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('calls to addMoveToCurrentPlayer without impact', () => {
+    it('calls to addMoveToPlayer without impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -374,7 +415,82 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with scorch impact', () => {
+    it('calls to addMoveToPlayer with turnUserId', () => {
+      const turnUserId = new ObjectId()
+      const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
+      const move: MoveUnitDbObject = {
+        created: new Date(),
+        reason: {
+          type: MoveReasonType.Muster,
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+        },
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          artStyle: fieldUnit.artStyle,
+          effectiveStrength: fieldUnit.effectiveStrength,
+          id: fieldUnit.unit,
+          row: fieldUnit.row as Combat,
+        }),
+        impacts: undefined,
+      }
+      testNewUnitIndirect({
+        game: TestUtil.getDbGame({}),
+        unitId: move.unit.unit,
+        created: move.created,
+        turnUserId,
+        logPrefix,
+        origin: move.source.origin as GameUnitOrigin,
+        playerId: new ObjectId().toString(),
+        reason: move.reason,
+        getFieldUnitResponse: fieldUnit,
+        move,
+      })
+    })
+    it('calls to addMoveToPlayer with avenger impact', () => {
+      const combat = Combat.Close
+      const fieldUnit = TestUtil.getDbFieldUnit({
+        row: combat,
+      })
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const move: MoveUnitDbObject = {
+        created: new Date(),
+        reason: {
+          type: MoveReasonType.Muster,
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+        },
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          id: fieldUnit.unit,
+          row: combat,
+        }),
+        impacts: [impact],
+      }
+      testNewUnitIndirect({
+        game: TestUtil.getDbGame({}),
+        unitId: move.unit.unit,
+        created: move.created,
+        logPrefix,
+        origin: move.source.origin as GameUnitOrigin,
+        playerId: new ObjectId().toString(),
+        reason: move.reason,
+        getFieldUnitResponse: fieldUnit,
+        avengers: {
+          [move.unit.unit.toString()]: [impact],
+        },
+        move,
+      })
+    })
+    it('calls to addMoveToPlayer with scorch impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -413,7 +529,7 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with mardroeme impact', () => {
+    it('calls to addMoveToPlayer with mardroeme impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -452,7 +568,7 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with muster impact', () => {
+    it('calls to addMoveToPlayer with muster impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -491,7 +607,7 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with bond impact', () => {
+    it('calls to addMoveToPlayer with bond impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -530,7 +646,7 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with horn impact', () => {
+    it('calls to addMoveToPlayer with horn impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -569,7 +685,7 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with decoy impact', () => {
+    it('calls to addMoveToPlayer with decoy impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -608,7 +724,7 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with weather impact', () => {
+    it('calls to addMoveToPlayer with weather impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -647,7 +763,7 @@ describe('update-history', () => {
         move,
       })
     })
-    it('calls to addMoveToCurrentPlayer with morale impact', () => {
+    it('calls to addMoveToPlayer with morale impact', () => {
       const combat = Combat.Close
       const fieldUnit = TestUtil.getDbFieldUnit({
         row: combat,
@@ -687,52 +803,27 @@ describe('update-history', () => {
       })
     })
   })
-  describe('addMoveToCurrentPlayer', () => {
+  describe('addMoveToPlayer', () => {
+    const logPrefix = 'log-prefix'
     describe('self', () => {
       it('throws error if player not found', () => {
         const userId = new ObjectId()
         const game = TestUtil.getDbGame({
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({}),
-              }),
-              order: 0,
-              ready: true,
-              rounds: [TestUtil.getDbPlayerRound({})],
-              user: new ObjectId(),
-            }),
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({}),
-              }),
-              order: 1,
-              ready: true,
-              rounds: [TestUtil.getDbPlayerRound({})],
-              user: new ObjectId(),
-            }),
-          ],
-          round: 1,
-          turn: userId,
+          players: [TestUtil.getDbGamePlayer({})],
+          turn: new ObjectId(),
         })
-        const move: MoveUnitDbObject = {
-          created: new Date(),
+        const move = TestUtil.getDbMove({
           type: MoveType.Unit,
-          unit: TestUtil.getDbGameUnit({}),
-          reason: {
-            type: MoveReasonType.Deploy,
-          },
-          source: {
-            origin: GameUnitOrigin.Hand,
-          },
-        }
-
-        expect(() =>
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toThrow(`Could not find player "${game.turn}" on game "${game._id}" to add move to.`)
+        })
+        const message = `Could not find player "${userId}" on game "${game._id}" to add move to`
+        testAddMoveToPlayer({
+          game,
+          move,
+          playerId: userId,
+          logPrefix,
+          error: new PresentableError(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
       })
       it('appends move without other moves in first round', () => {
         const self = TestUtil.getDbGamePlayer({
@@ -756,7 +847,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 1,
-          turn: self.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -771,27 +862,26 @@ describe('update-history', () => {
           },
         }
 
-        expect(
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toEqual(undefined)
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            {
-              ...origGame.players[0],
-              rounds: [
-                {
-                  ...origGame.players[0].rounds[0],
-                  moves: [move],
-                },
-              ],
-            },
-            origGame.players[1],
-          ],
+        testAddMoveToPlayer({
+          game,
+          move,
+          logPrefix,
+          playerId: self.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    moves: [move],
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          },
         })
       })
       it('appends move after other moves in first round', () => {
@@ -831,7 +921,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 1,
-          turn: self.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -846,27 +936,26 @@ describe('update-history', () => {
           },
         }
 
-        expect(
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toEqual(undefined)
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            {
-              ...origGame.players[0],
-              rounds: [
-                {
-                  ...origGame.players[0].rounds[0],
-                  moves: [oldMove, move],
-                },
-              ],
-            },
-            origGame.players[1],
-          ],
+        testAddMoveToPlayer({
+          game,
+          move,
+          logPrefix,
+          playerId: self.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    moves: [oldMove, move],
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          },
         })
       })
       it('appends move without other moves in second round', () => {
@@ -891,7 +980,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 2,
-          turn: self.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -906,28 +995,27 @@ describe('update-history', () => {
           },
         }
 
-        expect(
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toEqual(undefined)
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            {
-              ...origGame.players[0],
-              rounds: [
-                origGame.players[0].rounds[0],
-                {
-                  ...origGame.players[0].rounds[1],
-                  moves: [move],
-                },
-              ],
-            },
-            origGame.players[1],
-          ],
+        testAddMoveToPlayer({
+          game,
+          move,
+          logPrefix,
+          playerId: self.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                rounds: [
+                  origGame.players[0].rounds[0],
+                  {
+                    ...origGame.players[0].rounds[1],
+                    moves: [move],
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          },
         })
       })
       it('appends move after other moves in second round', () => {
@@ -968,7 +1056,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 2,
-          turn: self.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -983,26 +1071,27 @@ describe('update-history', () => {
           },
         }
 
-        UpdateHistory.addMoveToCurrentPlayer({
+        testAddMoveToPlayer({
           game,
           move,
-        })
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            {
-              ...origGame.players[0],
-              rounds: [
-                origGame.players[0].rounds[0],
-                {
-                  ...origGame.players[0].rounds[1],
-                  moves: [oldMove, move],
-                },
-              ],
-            },
-            origGame.players[1],
-          ],
+          logPrefix,
+          playerId: self.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                rounds: [
+                  origGame.players[0].rounds[0],
+                  {
+                    ...origGame.players[0].rounds[1],
+                    moves: [oldMove, move],
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          },
         })
       })
     })
@@ -1029,7 +1118,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 1,
-          turn: opponent.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -1044,27 +1133,26 @@ describe('update-history', () => {
           },
         }
 
-        expect(
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toEqual(undefined)
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            origGame.players[0],
-            {
-              ...origGame.players[1],
-              rounds: [
-                {
-                  ...origGame.players[1].rounds[0],
-                  moves: [move],
-                },
-              ],
-            },
-          ],
+        testAddMoveToPlayer({
+          game,
+          move,
+          logPrefix,
+          playerId: opponent.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              origGame.players[0],
+              {
+                ...origGame.players[1],
+                rounds: [
+                  {
+                    ...origGame.players[1].rounds[0],
+                    moves: [move],
+                  },
+                ],
+              },
+            ],
+          },
         })
       })
       it('appends move after other moves in first round', () => {
@@ -1104,7 +1192,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 1,
-          turn: opponent.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -1119,27 +1207,26 @@ describe('update-history', () => {
           },
         }
 
-        expect(
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toEqual(undefined)
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            origGame.players[0],
-            {
-              ...origGame.players[1],
-              rounds: [
-                {
-                  ...origGame.players[1].rounds[0],
-                  moves: [oldMove, move],
-                },
-              ],
-            },
-          ],
+        testAddMoveToPlayer({
+          game,
+          move,
+          logPrefix,
+          playerId: opponent.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              origGame.players[0],
+              {
+                ...origGame.players[1],
+                rounds: [
+                  {
+                    ...origGame.players[1].rounds[0],
+                    moves: [oldMove, move],
+                  },
+                ],
+              },
+            ],
+          },
         })
       })
       it('appends move without other moves in second round', () => {
@@ -1164,7 +1251,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 2,
-          turn: opponent.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -1179,28 +1266,27 @@ describe('update-history', () => {
           },
         }
 
-        expect(
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toEqual(undefined)
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            origGame.players[0],
-            {
-              ...origGame.players[1],
-              rounds: [
-                origGame.players[1].rounds[0],
-                {
-                  ...origGame.players[1].rounds[1],
-                  moves: [move],
-                },
-              ],
-            },
-          ],
+        testAddMoveToPlayer({
+          game,
+          move,
+          logPrefix,
+          playerId: opponent.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              origGame.players[0],
+              {
+                ...origGame.players[1],
+                rounds: [
+                  origGame.players[1].rounds[0],
+                  {
+                    ...origGame.players[1].rounds[1],
+                    moves: [move],
+                  },
+                ],
+              },
+            ],
+          },
         })
       })
       it('appends move after other moves in second round', () => {
@@ -1241,7 +1327,7 @@ describe('update-history', () => {
         const game = TestUtil.getDbGame({
           players: [self, opponent],
           round: 2,
-          turn: opponent.user,
+          turn: new ObjectId(),
         })
         const origGame = deepClone(game)
         const move: MoveUnitDbObject = {
@@ -1256,28 +1342,27 @@ describe('update-history', () => {
           },
         }
 
-        expect(
-          UpdateHistory.addMoveToCurrentPlayer({
-            game,
-            move,
-          })
-        ).toEqual(undefined)
-
-        expect(game).toEqual({
-          ...origGame,
-          players: [
-            origGame.players[0],
-            {
-              ...origGame.players[1],
-              rounds: [
-                origGame.players[1].rounds[0],
-                {
-                  ...origGame.players[1].rounds[1],
-                  moves: [oldMove, move],
-                },
-              ],
-            },
-          ],
+        testAddMoveToPlayer({
+          game,
+          move,
+          logPrefix,
+          playerId: opponent.user,
+          updatedGame: {
+            ...origGame,
+            players: [
+              origGame.players[0],
+              {
+                ...origGame.players[1],
+                rounds: [
+                  origGame.players[1].rounds[0],
+                  {
+                    ...origGame.players[1].rounds[1],
+                    moves: [oldMove, move],
+                  },
+                ],
+              },
+            ],
+          },
         })
       })
     })
@@ -1521,6 +1606,7 @@ function testNewUnitDeployed({
   deckUnit = TestUtil.getDbDeckUnit({}),
   combat = Combat.Close,
   isWeather = false,
+  avengers = {},
   scorches = {},
   musters = {},
   morales = {},
@@ -1542,6 +1628,7 @@ function testNewUnitDeployed({
   deckUnit?: DeckUnitDbObject
   combat?: Combat | null | undefined
   isWeather?: boolean
+  avengers?: ImpactsByUnitId
   scorches?: ImpactsByUnitId
   musters?: ImpactsByUnitId
   morales?: ImpactsByUnitId
@@ -1593,7 +1680,7 @@ function testNewUnitDeployed({
   if (targetId) {
     move.target = new ObjectId(targetId)
   }
-  const addMoveToCurrentPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToCurrentPlayer').mockImplementation()
+  const addMoveToPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToPlayer').mockImplementation()
   const getFieldUnitDbObjectSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit').mockReturnValueOnce(fieldUnit)
   const newUnitIndirectSpy = jest.spyOn(UpdateHistory as any, 'newUnitIndirect').mockImplementation()
   const newUnitIndirectCalls: any[][] = []
@@ -1605,6 +1692,7 @@ function testNewUnitDeployed({
             bonds,
             created: move.created,
             game,
+            avengers,
             horns,
             decoys,
             weathers,
@@ -1633,6 +1721,7 @@ function testNewUnitDeployed({
           bonds,
           created: move.created,
           game,
+          avengers,
           horns,
           decoys,
           weathers,
@@ -1658,6 +1747,38 @@ function testNewUnitDeployed({
       ])
     }
   }
+  for (const avengerUnitId of Object.keys(avengers)) {
+    const avengees = avengers[avengerUnitId]
+    for (const avengee of avengees) {
+      newUnitIndirectCalls.push([
+        {
+          bonds,
+          created: move.created,
+          game,
+          horns,
+          decoys,
+          spies,
+          logPrefix,
+          mardroemes,
+          morales,
+          musters,
+          avengers: {
+            [avengerUnitId]: [avengee],
+          },
+          weathers,
+          origin: GameUnitOrigin.Nondeck,
+          playerId: avengee.user.toString(),
+          reason: {
+            type: MoveReasonType.Summon,
+            unit: avengee.unit,
+          },
+          scorches,
+          unitId: avengerUnitId,
+          targetId: avengee.user,
+        },
+      ])
+    }
+  }
 
   const errorSpy = jest.fn().mockImplementation()
   UpdateHistory['logger'] = {
@@ -1670,6 +1791,7 @@ function testNewUnitDeployed({
         combat,
         deckUnit,
         game,
+        avengers,
         decoys,
         weathers,
         musteredOrigins,
@@ -1694,6 +1816,7 @@ function testNewUnitDeployed({
         combat,
         deckUnit,
         game,
+        avengers,
         musteredOrigins,
         musters,
         playerId,
@@ -1742,11 +1865,13 @@ function testNewUnitDeployed({
       },
     ],
   ])
-  expect(addMoveToCurrentPlayerSpy.mock.calls).toEqual([
+  expect(addMoveToPlayerSpy.mock.calls).toEqual([
     [
       {
         game,
         move,
+        logPrefix,
+        playerId,
       },
     ],
   ])
@@ -1758,18 +1883,20 @@ function testNewUnitIndirect({
   game,
   unitId,
   created,
+  turnUserId,
   playerId,
   logPrefix,
   origin,
-  scorches = {},
-  mardroemes = {},
-  musters = {},
-  bonds = {},
-  horns = {},
-  morales = {},
-  decoys = {},
-  weathers = {},
-  spies = {},
+  avengers,
+  scorches,
+  mardroemes,
+  musters,
+  bonds,
+  horns,
+  morales,
+  decoys,
+  weathers,
+  spies,
   reason,
   getFieldUnitResponse,
   move,
@@ -1780,8 +1907,10 @@ function testNewUnitIndirect({
   unitId: ObjectId
   created: Date
   playerId: string
+  turnUserId?: ObjectId
   logPrefix: string
   origin: GameUnitOrigin
+  avengers?: ImpactsByUnitId
   scorches?: ImpactsByUnitId
   mardroemes?: ImpactsByUnitId
   musters?: ImpactsByUnitId
@@ -1798,7 +1927,7 @@ function testNewUnitIndirect({
   errorCalls?: string[][]
 }) {
   const getFieldUnitDbObjectSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit').mockReturnValue(getFieldUnitResponse)
-  const addMoveToCurrentPlayerSpy = jest.spyOn(UpdateHistory as any, 'addMoveToCurrentPlayer').mockImplementation()
+  const addMoveToPlayerSpy = jest.spyOn(UpdateHistory as any, 'addMoveToPlayer').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   UpdateHistory['logger'] = {
     error: errorSpy,
@@ -1812,6 +1941,7 @@ function testNewUnitIndirect({
         game,
         horns,
         logPrefix,
+        avengers,
         mardroemes,
         morales,
         musters,
@@ -1823,6 +1953,7 @@ function testNewUnitIndirect({
         reason,
         scorches,
         unitId,
+        turnUserId,
       })
     ).toThrow(error)
   } else {
@@ -1831,6 +1962,7 @@ function testNewUnitIndirect({
         bonds,
         created,
         game,
+        avengers,
         horns,
         logPrefix,
         mardroemes,
@@ -1844,6 +1976,7 @@ function testNewUnitIndirect({
         reason,
         scorches,
         unitId,
+        turnUserId,
       })
     ).toEqual(undefined)
   }
@@ -1857,7 +1990,7 @@ function testNewUnitIndirect({
       },
     ],
   ])
-  expect(addMoveToCurrentPlayerSpy.mock.calls).toEqual(
+  expect(addMoveToPlayerSpy.mock.calls).toEqual(
     error
       ? []
       : [
@@ -1865,10 +1998,60 @@ function testNewUnitIndirect({
             {
               game,
               move,
+              playerId: turnUserId || playerId,
+              logPrefix,
             },
           ],
         ]
   )
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+function testAddMoveToPlayer({
+  game,
+  move,
+  logPrefix,
+  playerId,
+  updatedGame,
+  error,
+  errorCalls = [],
+}: {
+  game: GameDbObject
+  move: MoveDbObject
+  logPrefix: string
+  playerId: ObjectId
+  updatedGame?: GameDbObject
+  error?: Error
+  errorCalls?: string[][]
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  UpdateHistory['logger'] = {
+    error: errorSpy,
+  } as any
+
+  if (error) {
+    expect(() =>
+      UpdateHistory.addMoveToPlayer({
+        game,
+        logPrefix,
+        move,
+        playerId,
+      })
+    ).toThrow(error)
+  } else {
+    expect(
+      UpdateHistory.addMoveToPlayer({
+        game,
+        logPrefix,
+        move,
+        playerId: playerId,
+      })
+    ).toEqual(undefined)
+  }
+  if (updatedGame) {
+    expect(game).toEqual(updatedGame)
+  }
+
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 

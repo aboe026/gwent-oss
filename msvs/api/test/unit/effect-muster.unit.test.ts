@@ -10,12 +10,12 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
-import { GameUnitType } from '@gwent/graphql-schema'
-import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
-import MusterBattlefield, {
+import EffectMuster, {
   MusterForPlayer,
   Musterings,
 } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
+import { GameUnitType } from '@gwent/graphql-schema'
+import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 
@@ -3803,24 +3803,22 @@ async function testMusterBattlefield({
   const effects = [TestUtil.getDbEffect({})]
   const getEffectWithKeySpy = jest.spyOn(GetEffectWithKey, 'getEffectWithKey').mockReturnValue(musterEffect)
   const unitStoreGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(musterableUnits)
-  const getMusterImpactSpy = jest.spyOn(MusterBattlefield as any, 'getMusterImpact')
-  const musterUnitToBattlefieldSpy = jest
-    .spyOn(MusterBattlefield as any, 'musterUnitToBattlefield')
-    .mockImplementation()
+  const getMusterImpactSpy = jest.spyOn(EffectMuster as any, 'getMusterImpact')
+  const musterUnitToBattlefieldSpy = jest.spyOn(EffectMuster as any, 'musterUnitToBattlefield').mockImplementation()
   for (const getMusterImpactResponse of getMusterImpactResponses) {
     getMusterImpactSpy.mockReturnValueOnce(getMusterImpactResponse)
   }
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  MusterBattlefield['logger'] = {
+  EffectMuster['logger'] = {
     error: errorSpy,
     debug: debugSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
-  const promise = MusterBattlefield.musterBattlefield({
+  const promise = EffectMuster.musterBattlefield({
     battlefieldUnits,
     combat,
     effects,
@@ -3879,7 +3877,7 @@ function testgetMusterImpact({
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  MusterBattlefield['logger'] = {
+  EffectMuster['logger'] = {
     error: errorSpy,
     debug: debugSpy,
     trace: traceSpy,
@@ -3888,7 +3886,7 @@ function testgetMusterImpact({
 
   if (expected instanceof Error) {
     expect(() =>
-      MusterBattlefield['getMusterImpact']({
+      EffectMuster['getMusterImpact']({
         game,
         combat,
         logPrefix,
@@ -3897,7 +3895,7 @@ function testgetMusterImpact({
     ).toThrow(expected)
   } else {
     expect(
-      MusterBattlefield['getMusterImpact']({
+      EffectMuster['getMusterImpact']({
         game,
         combat,
         logPrefix,
@@ -3925,7 +3923,7 @@ function testMusterUnitToBattlefield({
   updatedGame: GameDbObject
 }) {
   expect(
-    MusterBattlefield['musterUnitToBattlefield']({
+    EffectMuster['musterUnitToBattlefield']({
       combat,
       game,
       origin,

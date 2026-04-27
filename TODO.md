@@ -13,11 +13,14 @@ A list of things to be done in the future.
 Existing problems in the codebase that need to be fixed.
 
 - no spaces in username?
+- show what caused avengee to leave battlefield (scorch unit or round ending)?
+  - how to represent? new relationship in db or infer in front end?
+  - would same approach work for other effects (like mardroeme)?
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row
   - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)
-- improve performance when typing name for deck
+- improve performance when typing (long) name for deck
 - remove unnecessary dependencies
   - figlet: just have hard-coded banner text for startup
   - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
@@ -118,10 +121,6 @@ Existing problems in the codebase that need to be fixed.
 ## Features
 
 New things that should be added to the codebase.
-
-- show what caused avengee to leave battlefield (scorch unit or round ending)?
-  - how to represent? new relationship in db or infer in front end?
-  - would same approach work for other effects (like mardroeme)?
 
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
