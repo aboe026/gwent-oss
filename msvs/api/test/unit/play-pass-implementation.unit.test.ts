@@ -59,6 +59,36 @@ describe('play-pass-implementation', () => {
         avengers: {},
       })
     })
+    it('calls to newUnitIndirect once if avengers is single object with single avengee', async () => {
+      testSummonAvengers({
+        avengers: {
+          [new ObjectId().toString()]: [
+            {
+              user: new ObjectId(),
+              unit: TestUtil.getDbGameUnit({}),
+            },
+          ],
+        },
+      })
+    })
+    it('calls to newUnitIndirect once if avengers is multiple objects with single avengee', async () => {
+      testSummonAvengers({
+        avengers: {
+          [new ObjectId().toString()]: [
+            {
+              user: new ObjectId(),
+              unit: TestUtil.getDbGameUnit({}),
+            },
+          ],
+          [new ObjectId().toString()]: [
+            {
+              user: new ObjectId(),
+              unit: TestUtil.getDbGameUnit({}),
+            },
+          ],
+        },
+      })
+    })
   })
 })
 
@@ -334,23 +364,25 @@ async function testSummonAvengers({ avengers }: { avengers?: ImpactsByUnitId }) 
     for (const avengerUnitId of Object.keys(avengers)) {
       const avengees = avengers[avengerUnitId]
       for (const avengee of avengees) {
-        newUnitIndirectCalls.push({
-          created: passingDate,
-          game,
-          logPrefix,
-          avengers: {
-            [avengerUnitId]: [avengee],
+        newUnitIndirectCalls.push([
+          {
+            created: passingDate,
+            game,
+            logPrefix,
+            avengers: {
+              [avengerUnitId]: [avengee],
+            },
+            origin: GameUnitOrigin.Nondeck,
+            playerId: avengee.user.toString(),
+            turnUserId: passingPlayerId,
+            reason: {
+              type: MoveReasonType.Summon,
+              unit: avengee.unit,
+            },
+            unitId: avengerUnitId,
+            targetId: avengee.user,
           },
-          origin: GameUnitOrigin.Nondeck,
-          playerId: avengee.user.toString(),
-          turnUserId: passingPlayerId,
-          reason: {
-            type: MoveReasonType.Summon,
-            unit: avengee.unit,
-          },
-          unitId: avengerUnitId,
-          targetId: avengee.user,
-        })
+        ])
       }
     }
   }
