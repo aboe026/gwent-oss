@@ -1,6 +1,6 @@
 import { EffectDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import EffectStore from '../../src/database/stores/effect-store'
-import getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
+import getUnitEffects from '../../src/graphql/resolvers/mutations/util/get-unit-effects'
 import TestUtil from '../util/test-util'
 
 describe('get-unit-effects', () => {

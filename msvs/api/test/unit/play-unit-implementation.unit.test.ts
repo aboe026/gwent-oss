@@ -14,8 +14,8 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
-import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
-import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
+import * as getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
+import * as getUnitEffects from '../../src/graphql/resolvers/mutations/util/get-unit-effects'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'

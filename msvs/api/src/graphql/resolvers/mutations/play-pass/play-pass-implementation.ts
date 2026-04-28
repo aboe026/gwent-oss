@@ -7,8 +7,8 @@ import EffectAvenger from '../play-unit/effect-avenger'
 import { GameDbObject, GameUnitOrigin, MovePassDbObject, MoveReasonType } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import { GameUnitType, MoveType } from '@gwent/graphql-schema'
-import getRoundUnits from '../play-unit/get-round-units'
-import getUnitEffects from '../play-unit/get-unit-effects'
+import getRoundUnits from '../util/get-round-units'
+import getUnitEffects from '../util/get-unit-effects'
 import initializeNewRound from '../util/initialize-new-round'
 import IsGameOver from './is-game-over'
 import IsRoundOver from './is-round-over'
@@ -34,12 +34,12 @@ export default class PlayPassImplementation {
    * @param config The configuration used to pass on the game.
    * @param config.game The game to pass the rest of the round for the current user.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.userId The User ID of the player passing the round.
    * @returns The Game with the round passed for the user as well as if the round is over or not.
    * @throws {PresentableError} if known problem playing pass.
    */
-  static async playPassImplementation({ game, logPrefix }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
+  static async playPassImplementation({ game, logPrefix, userId }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
     const passingDate = new Date()
-    const passingPlayer = game.turn
     passCurrentPlayer(game)
 
     UpdateHistory.addMoveToPlayer({
@@ -48,6 +48,8 @@ export default class PlayPassImplementation {
         created: passingDate,
         type: MoveType.Pass,
       } as MovePassDbObject,
+      logPrefix,
+      playerId: userId,
     })
 
     const roundOver = IsRoundOver.isRoundOver({
@@ -84,7 +86,7 @@ export default class PlayPassImplementation {
           game,
           logPrefix,
           passingDate,
-          passingPlayer,
+          passingPlayerId: userId,
         })
       }
     } else {
@@ -108,16 +110,25 @@ export default class PlayPassImplementation {
     }
   }
 
+  /**
+   * Summon avenging units for any potential avenger units removed from the end of the last round.
+   *
+   * @param config The configuration used to determine potential avengers to summon.
+   * @param config.game The game being passed on.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.passingDate The Date the passing move was played, so summoned avengers history time lines up with it.
+   * @param config.passingPlayerId The ID of the player performing the pass for the round.
+   */
   private static async summonAvengers({
     game,
     logPrefix,
     passingDate,
-    passingPlayer,
+    passingPlayerId,
   }: {
     game: GameDbObject
     logPrefix: string
     passingDate: Date
-    passingPlayer?: ObjectId
+    passingPlayerId: ObjectId
   }) {
     const previousRoundUnits = await getRoundUnits({
       game,
@@ -160,7 +171,7 @@ export default class PlayPassImplementation {
           },
           origin: GameUnitOrigin.Nondeck,
           playerId: avengee.user.toString(),
-          turnUserId: passingPlayer,
+          turnUserId: passingPlayerId,
           reason: {
             type: MoveReasonType.Summon,
             unit: avengee.unit,
