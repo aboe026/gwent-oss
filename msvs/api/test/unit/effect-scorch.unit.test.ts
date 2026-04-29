@@ -17,6 +17,7 @@ import deepClone from '../util/deep-clone'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import GetStrongestNonHeroUnitIds from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-unit-ids'
+import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import ScorchBattelfield from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import TestUtil from '../util/test-util'
 
@@ -50,7 +51,7 @@ describe('effect-scorch', () => {
         }),
         scorchEffect,
         game,
-        error: Error(message),
+        expected: Error(message),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
@@ -78,6 +79,7 @@ describe('effect-scorch', () => {
         }),
         scorchEffect,
         game,
+        expected: {},
       })
     })
     it('calls to scorchPlayer if newDeckUnit has scorch effect with no scorchScope and first player', () => {
@@ -92,13 +94,14 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
         getFieldUnitsCalls: [
@@ -108,6 +111,9 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
       })
     })
     it('calls to scorchPlayer if newDeckUnit has scorch effect with no scorchScope and second player', () => {
@@ -122,13 +128,14 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
         getFieldUnitsCalls: [
@@ -138,6 +145,9 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
       })
     })
     it('calls to scorchPlayer if newDeckUnit has scorch effect with scorchScope and first player', () => {
@@ -153,13 +163,14 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
         getFieldUnitsCalls: [
@@ -170,6 +181,9 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
       })
     })
     it('calls to scorchPlayer if newDeckUnit has scorch effect with scorchScope and second player', () => {
@@ -185,13 +199,14 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
         getFieldUnitsCalls: [
@@ -202,6 +217,9 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
       })
     })
     it('returns single scorch from single player', () => {
@@ -217,24 +235,21 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
-        scorchPlayerResponses: [
-          [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-          ],
-          [],
-        ],
+        scorchPlayerResponses: [[impact1], []],
         getFieldUnitsCalls: [
           [
             {
@@ -243,9 +258,12 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [impact1],
+        },
       })
     })
-    it('returns multiple scorchs from single player', () => {
+    it('returns multiple scorches from single player', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
@@ -258,28 +276,25 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
+      const impact2: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
-        scorchPlayerResponses: [
-          [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-          ],
-          [],
-        ],
+        scorchPlayerResponses: [[impact1, impact2], []],
         getFieldUnitsCalls: [
           [
             {
@@ -288,6 +303,9 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [impact1, impact2],
+        },
       })
     })
     it('returns single scorch from multiple players', () => {
@@ -303,29 +321,25 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
+      const impact1 = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
+      const impact2 = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
-        scorchPlayerResponses: [
-          [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-          ],
-          [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-          ],
-        ],
+        scorchPlayerResponses: [[impact1], [impact2]],
         getFieldUnitsCalls: [
           [
             {
@@ -334,6 +348,9 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [impact1, impact2],
+        },
       })
     })
     it('returns multiple scorches from multiple players', () => {
@@ -349,36 +366,35 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
+      const impact1 = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
+      const impact2 = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
+      const impact3 = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
+      const impact4 = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
         scorchPlayerResponses: [
-          [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-          ],
-          [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: self.user,
-            },
-          ],
+          [impact1, impact2],
+          [impact3, impact4],
         ],
         getFieldUnitsCalls: [
           [
@@ -388,6 +404,9 @@ describe('effect-scorch', () => {
             },
           ],
         ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [impact1, impact2, impact3, impact4],
+        },
       })
     })
     it('logs to trace if enabled', () => {
@@ -402,13 +421,14 @@ describe('effect-scorch', () => {
         turn: self.user,
         round: 1,
       })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
 
       testScorchBattlefield({
         logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit: TestUtil.getDbDeckUnit({
-          id: unit._id,
-        }),
+        newDeckUnit,
         scorchEffect,
         game,
         getFieldUnitsCalls: [
@@ -419,6 +439,9 @@ describe('effect-scorch', () => {
           ],
         ],
         traceEnabled: true,
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
       })
     })
   })
@@ -1467,7 +1490,7 @@ function testScorchBattlefield({
   game,
   newDeckUnit,
   scorchPlayerResponses,
-  error,
+  expected,
   getFieldUnitsCalls = [],
   errorCalls = [],
   traceEnabled,
@@ -1478,7 +1501,7 @@ function testScorchBattlefield({
   game: GameDbObject
   newDeckUnit: DeckUnitDbObject
   scorchPlayerResponses?: ImpactDbObject[][]
-  error?: Error
+  expected: ImpactsByUnitId | Error
   getFieldUnitsCalls?: any[][]
   errorCalls?: string[][]
   traceEnabled?: boolean
@@ -1519,7 +1542,7 @@ function testScorchBattlefield({
     }
   }
 
-  if (error instanceof Error) {
+  if (expected instanceof Error) {
     expect(() =>
       ScorchBattelfield.scorchBattlefield({
         battlefieldUnits,
@@ -1528,7 +1551,7 @@ function testScorchBattlefield({
         game,
         newDeckUnit,
       })
-    ).toThrow(error)
+    ).toThrow(expected)
   } else {
     expect(
       ScorchBattelfield.scorchBattlefield({
@@ -1538,17 +1561,11 @@ function testScorchBattlefield({
         game,
         newDeckUnit,
       })
-    ).toEqual(
-      impacts.length > 0
-        ? {
-            [newDeckUnit.unit.toString()]: impacts,
-          }
-        : {}
-    )
+    ).toEqual(expected)
   }
 
   expect(getEffectWithKeySpy.mock.calls).toEqual(
-    error
+    expected instanceof Error
       ? []
       : [
           [
