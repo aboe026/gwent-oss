@@ -3,7 +3,13 @@ import { ObjectId } from 'mongodb'
 import CalculateGameEffectiveStrengths, {
   StrengthImpacts,
 } from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
-import { Combat, EffectKey, PlayerCombatRowDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  Combat,
+  DeckUnitDbObject,
+  EffectKey,
+  PlayerCombatRowDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectBond from '../../src/graphql/resolvers/mutations/play-unit/effect-bond'
 import EffectHorn from '../../src/graphql/resolvers/mutations/play-unit/effect-horn'
@@ -81,6 +87,8 @@ describe('calculate-game-effective-strengths', () => {
           empty,
           empty,
         ],
+        musteredUnitIds: [new ObjectId().toString()],
+        transformedUnitIds: [new ObjectId().toString()],
         expected: {
           ...empty,
           bonds: {
@@ -607,6 +615,7 @@ describe('calculate-game-effective-strengths', () => {
         applyMoralesCalls: [],
         applyBondsCalls: [],
         applyWeatherCalls: [],
+        applyHornCalls: [],
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
@@ -629,7 +638,7 @@ describe('calculate-game-effective-strengths', () => {
         },
       })
     })
-    it('does not set effectiveStrength for unit with undefined strength', () => {
+    it('sets effectiveStrength for unit with undefined strength', () => {
       const rowUnit = TestUtil.getDbFieldUnit({})
       testCalculateEffectiveStrengthsForRow({
         row: {
@@ -651,12 +660,9 @@ describe('calculate-game-effective-strengths', () => {
           score: 0,
           units: [deepClone(rowUnit)],
         },
-        applyMoralesCalls: [],
-        applyBondsCalls: [],
-        applyWeatherCalls: [],
       })
     })
-    it('does not set effectiveStrength for unit with null strength', () => {
+    it('sets effectiveStrength for unit with null strength', () => {
       const rowUnit = TestUtil.getDbFieldUnit({})
       testCalculateEffectiveStrengthsForRow({
         row: {
@@ -677,11 +683,13 @@ describe('calculate-game-effective-strengths', () => {
         },
         modifiedRow: {
           score: 0,
-          units: [deepClone(rowUnit)],
+          units: [
+            {
+              ...deepClone(rowUnit),
+              effectiveStrength: null as any,
+            },
+          ],
         },
-        applyMoralesCalls: [],
-        applyBondsCalls: [],
-        applyWeatherCalls: [],
       })
     })
     it('sets effectiveStrength for unit with strength zero', () => {
@@ -742,6 +750,41 @@ describe('calculate-game-effective-strengths', () => {
             },
           ],
         },
+      })
+    })
+    it('does not call for weather bond morale or horn if no newDeckUnit', () => {
+      const rowFieldUnit = TestUtil.getDbFieldUnit({})
+      const rowUnit = TestUtil.getDbUnit({
+        id: rowFieldUnit.unit,
+        strength: 1,
+      })
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowFieldUnit],
+        },
+        units: [rowUnit],
+        newDeckUnit: null,
+        expected: {
+          bonds: {},
+          horns: {},
+          morales: {},
+          weathers: {},
+        },
+        modifiedRow: {
+          score: 0,
+          units: [
+            {
+              ...deepClone(rowFieldUnit),
+              effectiveStrength: 1,
+              effects: [],
+            },
+          ],
+        },
+        applyWeatherCalls: [],
+        applyBondsCalls: [],
+        applyMoralesCalls: [],
+        applyHornCalls: [],
       })
     })
     it('sets effectiveStrength for row with modifier', () => {
@@ -2118,9 +2161,13 @@ describe('calculate-game-effective-strengths', () => {
 
 function testCalculateEffectiveStrengths({
   rowResults,
+  musteredUnitIds,
+  transformedUnitIds,
   expected,
 }: {
   rowResults: StrengthImpacts[]
+  musteredUnitIds?: string[]
+  transformedUnitIds?: string[]
   expected: StrengthImpacts
 }) {
   const logPrefix = 'log-prefix'
@@ -2128,8 +2175,6 @@ function testCalculateEffectiveStrengths({
   const moraleEffect = TestUtil.getDbEffect({})
   const bondEffect = TestUtil.getDbEffect({})
   const hornEffect = TestUtil.getDbEffect({})
-  const musteredUnitIds = [new ObjectId().toString()]
-  const transformedUnitIds = [new ObjectId().toString()]
   const getEffectWithKeySpy = jest
     .spyOn(GetEffectWithKey, 'getEffectWithKey')
     .mockReturnValueOnce(weatherEffect)
@@ -2304,8 +2349,8 @@ function testCalculateEffectiveStrengths({
     moraleEffect,
     bondEffect,
     currentPlayerId: game.turn,
-    musteredUnitIds,
-    transformedUnitIds,
+    musteredUnitIds: musteredUnitIds || [],
+    transformedUnitIds: transformedUnitIds || [],
     hornEffect,
     weatherEffect,
   }
@@ -2365,6 +2410,7 @@ function testCalculateEffectiveStrengthsForRow({
   row,
   units,
   logPrefix = 'log-prefix',
+  newDeckUnit = TestUtil.getDbDeckUnit({}),
   expected,
   applyMoralesResponses,
   applyBondsResponses,
@@ -2374,11 +2420,13 @@ function testCalculateEffectiveStrengthsForRow({
   applyBondsCalls,
   applyMoralesCalls,
   applyWeatherCalls,
+  applyHornCalls,
   errorCalls = [],
 }: {
   row: PlayerCombatRowDbObject
   units: UnitDbObject[]
   logPrefix?: string
+  newDeckUnit?: DeckUnitDbObject | null
   expected: StrengthImpacts | Error
   applyMoralesResponses?: ImpactsByUnitId[]
   applyBondsResponses?: ImpactsByUnitId[]
@@ -2388,6 +2436,7 @@ function testCalculateEffectiveStrengthsForRow({
   applyMoralesCalls?: any[][]
   applyBondsCalls?: any[][]
   applyWeatherCalls?: any[][]
+  applyHornCalls?: any[][]
   errorCalls?: string[][]
 }) {
   const currentPlayerId = new ObjectId()
@@ -2413,7 +2462,9 @@ function testCalculateEffectiveStrengthsForRow({
       unit: TestUtil.getDbUnit({}),
     },
   ]
-  const newDeckUnit = TestUtil.getDbDeckUnit({})
+  if (newDeckUnit === undefined) {
+    newDeckUnit = TestUtil.getDbDeckUnit({})
+  }
   const musteredUnitIds = [new ObjectId().toString()]
   const transformedUnitIds = [new ObjectId().toString()]
 
@@ -2461,7 +2512,7 @@ function testCalculateEffectiveStrengthsForRow({
         moraleEffect,
         hornEffect,
         weatherEffect,
-        newDeckUnit,
+        newDeckUnit: newDeckUnit || undefined,
         weatherUnits,
         row,
         units,
@@ -2480,7 +2531,7 @@ function testCalculateEffectiveStrengthsForRow({
         hornEffect,
         weatherEffect,
         weatherUnits,
-        newDeckUnit,
+        newDeckUnit: newDeckUnit || undefined,
         row,
         units,
         userId,
@@ -2563,6 +2614,22 @@ function testCalculateEffectiveStrengthsForRow({
           },
         ]
       })
+  )
+  expect(applyHornsSpy.mock.calls).toEqual(
+    applyHornCalls ||
+      rowUnits.map((rowFieldUnit, index) => [
+        {
+          logPrefix,
+          hornEffect,
+          unitIdsWithHornInRow: hornIdsInRow,
+          newDeckUnit,
+          rowFieldUnit,
+          rowUnit: units[index],
+          units,
+          userId,
+          currentPlayerId,
+        },
+      ])
   )
   expect(applyWeathersSpy.mock.calls).toEqual(
     applyWeatherCalls ||

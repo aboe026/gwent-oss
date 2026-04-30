@@ -7,6 +7,7 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
+  FieldUnitDbObject,
   GameDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
@@ -226,12 +227,20 @@ export default class CalculateGameEffectiveStrengths {
     const rowFieldUnits = GetFieldUnits.fromRow({
       row,
     })
-    for (const rowUnit of rowFieldUnits) {
-      const matchingUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
+    const rowFieldUnitPairs: {
+      fieldUnit: FieldUnitDbObject
+      unit: UnitDbObject
+    }[] = []
+    for (const rowFieldUnit of rowFieldUnits) {
+      const matchingUnit = units.find((unit) => unit._id.toString() === rowFieldUnit.unit.toString())
       if (matchingUnit) {
         rowDbUnits.push(matchingUnit)
+        rowFieldUnitPairs.push({
+          fieldUnit: rowFieldUnit,
+          unit: matchingUnit,
+        })
       } else {
-        const message = `Could not find Unit with ID "${rowUnit.unit}"`
+        const message = `Could not find Unit with ID "${rowFieldUnit.unit}"`
         CalculateGameEffectiveStrengths.logger.error(`${logPrefix} failed: ${message}`)
         throw new PresentableError(`${message}.`)
       }
@@ -246,78 +255,76 @@ export default class CalculateGameEffectiveStrengths {
       units: rowDbUnits,
     })
 
-    for (const rowFieldUnit of rowFieldUnits) {
-      const rowUnit = units.find((unit) => unit._id.toString() === rowFieldUnit.unit.toString())
-      if (rowUnit) {
+    for (const rowFieldUnitPair of rowFieldUnitPairs) {
+      const { fieldUnit: rowFieldUnit, unit: rowUnit } = rowFieldUnitPair
+      rowFieldUnit.effectiveStrength = rowUnit.strength
+      rowFieldUnit.effects = []
+
+      if (newDeckUnit) {
         const bondIdsInRow = EffectBond.getUnitsWithBond({
           bondEffect,
           logPrefix,
           units: rowDbUnits,
           unitName: rowUnit.name,
         })
-        rowFieldUnit.effectiveStrength = rowUnit.strength
-        rowFieldUnit.effects = []
-
-        if (newDeckUnit) {
-          addListsToMap({
-            baseMap: weathers,
-            newLists: EffectWeather.weatherScores({
-              logPrefix,
-              newDeckUnit,
-              rowFieldUnit,
-              rowUnit,
-              weatherUnits,
-              userId,
-              weatherEffect,
-              currentPlayerId,
-            }),
-          })
-          addListsToMap({
-            baseMap: bonds,
-            newLists: EffectBond.applyBonds({
-              logPrefix,
-              bondEffect,
-              unitIdsWithBondInRow: bondIdsInRow,
-              newDeckUnit,
-              musteredUnitIds,
-              transformedUnitIds,
-              rowFieldUnit,
-              rowUnit,
-              units,
-              userId,
-              currentPlayerId,
-            }),
-          })
-          addListsToMap({
-            baseMap: morales,
-            newLists: EffectMorale.applyMorales({
-              logPrefix,
-              moraleEffect,
-              unitIdsWithMoraleInRow: moraleIdsInRow,
-              newDeckUnit,
-              rowFieldUnit,
-              rowUnit,
-              units,
-              userId,
-              currentPlayerId,
-              transformedUnitIds,
-            }),
-          })
-          addListsToMap({
-            baseMap: horns,
-            newLists: EffectHorn.applyHorn({
-              logPrefix,
-              hornEffect,
-              unitIdsWithHornInRow: hornIdsInRow,
-              newDeckUnit,
-              rowFieldUnit,
-              rowUnit,
-              units,
-              userId,
-              currentPlayerId,
-            }),
-          })
-        }
+        addListsToMap({
+          baseMap: weathers,
+          newLists: EffectWeather.weatherScores({
+            logPrefix,
+            newDeckUnit,
+            rowFieldUnit,
+            rowUnit,
+            weatherUnits,
+            userId,
+            weatherEffect,
+            currentPlayerId,
+          }),
+        })
+        addListsToMap({
+          baseMap: bonds,
+          newLists: EffectBond.applyBonds({
+            logPrefix,
+            bondEffect,
+            unitIdsWithBondInRow: bondIdsInRow,
+            newDeckUnit,
+            musteredUnitIds,
+            transformedUnitIds,
+            rowFieldUnit,
+            rowUnit,
+            units,
+            userId,
+            currentPlayerId,
+          }),
+        })
+        addListsToMap({
+          baseMap: morales,
+          newLists: EffectMorale.applyMorales({
+            logPrefix,
+            moraleEffect,
+            unitIdsWithMoraleInRow: moraleIdsInRow,
+            newDeckUnit,
+            rowFieldUnit,
+            rowUnit,
+            units,
+            userId,
+            currentPlayerId,
+            transformedUnitIds,
+          }),
+        })
+        addListsToMap({
+          baseMap: horns,
+          newLists: EffectHorn.applyHorn({
+            logPrefix,
+            hornEffect,
+            unitIdsWithHornInRow: hornIdsInRow,
+            newDeckUnit,
+            rowFieldUnit,
+            rowUnit,
+            units,
+            userId,
+            currentPlayerId,
+          }),
+        })
       }
     }
 
