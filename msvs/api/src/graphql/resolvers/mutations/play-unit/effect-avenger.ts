@@ -13,7 +13,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GetEffectWithKey from './get-effect-with-key'
-import GetFieldUnits from '../../util/get-field-units'
+import getRoundUnits from '../util/get-round-units'
 import { ImpactsByUnitId } from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
 
@@ -67,7 +67,7 @@ export default class EffectAvenger {
           if (!removedUnit) {
             const message = `Could not find unit for removed game unit "${removedGameUnitId}"`
             EffectAvenger.logger.error(`${logPrefix} failed: ${message}`)
-            throw Error(message)
+            throw Error(`${message}.`)
           }
           if (EffectAvenger.logger.isTraceEnabled()) {
             EffectAvenger.logger.trace(`${logPrefix} removedUnit: "${JSON.stringify(removedUnit)}"`)
@@ -77,7 +77,7 @@ export default class EffectAvenger {
             removedUnit.effects &&
             removedUnit.effects.map((effectId) => effectId.toString()).includes(avengerEffect._id.toString())
           if (EffectAvenger.logger.isTraceEnabled()) {
-            EffectAvenger.logger.trace(`${logPrefix} hasAvengerEffect: "${JSON.stringify(hasAvengerEffect)}"`)
+            EffectAvenger.logger.trace(`${logPrefix} hasAvengerEffect: "${hasAvengerEffect}"`)
           }
 
           if (hasAvengerEffect) {
@@ -85,39 +85,40 @@ export default class EffectAvenger {
             if (!avengerName) {
               const message = `Could not find name of unit to summon as avenger for removed game unit "${removedGameUnitId}"`
               EffectAvenger.logger.error(`${logPrefix} failed: ${message}`)
-              throw Error(message)
+              throw Error(`${message}.`)
             }
 
-            const existingFieldUnit = GetFieldUnits.getFieldUnit({
+            const playerUnits = await getRoundUnits({
               game,
-              unitName: avengerName,
-              userId: removedGameUnit.user,
+              units: battlefieldUnits,
+              playerId: removedGameUnit.user,
             })
+            const existingAvengerUnit = playerUnits.find((unit) => unit.name === avengerName)
             if (EffectAvenger.logger.isTraceEnabled()) {
-              EffectAvenger.logger.trace(`${logPrefix} existingFieldUnit: "${JSON.stringify(existingFieldUnit)}"`)
+              EffectAvenger.logger.trace(`${logPrefix} existingAvengerUnit: "${JSON.stringify(existingAvengerUnit)}"`)
             }
-            if (existingFieldUnit) {
+            if (existingAvengerUnit) {
               EffectAvenger.logger.debug(
                 `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, but "${avengerName}" already on the battlefield`
               )
             } else {
               EffectAvenger.logger.debug(
-                `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, summoning "${avengerName}" to the battlefield`
+                `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, summoning "${avengerName}" to the battlefield for player "${removedGameUnit.user}"`
               )
               const avengerUnits = await UnitStore.get({
                 names: [avengerName],
               })
-              if (!avengerUnits || avengerUnits.length === 0) {
+              if (avengerUnits.length === 0) {
                 const message = `Could not find avenger unit "${avengerName}" for removed game unit "${removedGameUnitId}"`
                 EffectAvenger.logger.error(`${logPrefix} failed: ${message}`)
-                throw Error(message)
+                throw Error(`${message}.`)
               }
               if (avengerUnits.length > 1) {
                 const message = `Found more than 1 avenger unit "${avengerName}" for removed game unit "${removedGameUnitId}"`
                 EffectAvenger.logger.error(
                   `${logPrefix} failed: ${message}, avengerUnits: "${JSON.stringify(avengerUnits)}"`
                 )
-                throw Error(message)
+                throw Error(`${message}.`)
               }
 
               const avengerUnit = avengerUnits[0]
@@ -127,7 +128,7 @@ export default class EffectAvenger {
               if (!player) {
                 const message = `Could not find player "${removedGameUnit.user}" for removed game unit "${removedGameUnitId}"`
                 EffectAvenger.logger.error(`${logPrefix} failed: ${message}`)
-                throw Error(message)
+                throw Error(`${message}.`)
               }
               const playerRound = player.rounds[game.round - 1]
               const combat = avengerUnit.combats ? avengerUnit.combats[0] : undefined
@@ -136,7 +137,7 @@ export default class EffectAvenger {
                 EffectAvenger.logger.error(
                   `${logPrefix} failed: ${message}, avengerUnit: "${JSON.stringify(avengerUnit)}"`
                 )
-                throw Error(message)
+                throw Error(`${message}.`)
               }
               const avengerFieldUnit: FieldUnitDbObject = {
                 artStyle: 1,
@@ -177,7 +178,7 @@ export default class EffectAvenger {
   }
 }
 
-interface RemovedGameUnit {
+export interface RemovedGameUnit {
   unit?: GameUnitDbObject
   user: ObjectId
 }

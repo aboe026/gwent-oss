@@ -85,6 +85,46 @@ describe('effect-horn', () => {
         updatedRowFieldUnit: deepClone(rowFieldUnit),
       })
     })
+    it('does not effect if no hornEffect', () => {
+      const rowUnit = TestUtil.getDbUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        id: rowUnit._id,
+      })
+      const horningUnit = TestUtil.getDbUnit({})
+      const hornEffect = undefined
+      testApplyHorn({
+        hornEffect,
+        logPrefix,
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowFieldUnit,
+        rowUnit,
+        unitIdsWithHornInRow: [horningUnit._id.toString()],
+        units: [horningUnit],
+        expected: {},
+        updatedRowFieldUnit: deepClone(rowFieldUnit),
+      })
+    })
+    it('does not effect if no horningUnit', () => {
+      const rowUnit = TestUtil.getDbUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        id: rowUnit._id,
+      })
+      const horningUnit = TestUtil.getDbUnit({})
+      const hornEffect = TestUtil.getDbEffect({
+        key: EffectKey.Horn,
+      })
+      testApplyHorn({
+        hornEffect,
+        logPrefix,
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowFieldUnit,
+        rowUnit,
+        unitIdsWithHornInRow: [horningUnit._id.toString()],
+        units: [],
+        expected: {},
+        updatedRowFieldUnit: deepClone(rowFieldUnit),
+      })
+    })
     it('maintains zero effectiveStrength if not already set', () => {
       const rowUnit = TestUtil.getDbUnit({})
       const rowFieldUnit = TestUtil.getDbFieldUnit({

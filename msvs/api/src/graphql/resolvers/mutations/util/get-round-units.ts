@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import { GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import UnitStore from '../../../../database/stores/unit-store'
 
@@ -8,6 +10,7 @@ import UnitStore from '../../../../database/stores/unit-store'
  * @param config.game The game whose currently deployed battlefield units on the current round should be retreived.
  * @param config.unitBeingPlayed The current unit being played and for which the database object has already been retreived, making it unnecessary to retreive it again.
  * @param config.units Any potential Unit objects which have already been retrieved.
+ * @param config.playerId A potential player ID to scope round units to. If not specified, will get round units for all players.
  * @param config.round The round of the game to get Units for. If not provided, will be current round of the game.
  * @returns An array of all database Units on the battlefield in the current round of the game, including the unitBeingPlayed.
  */
@@ -15,11 +18,13 @@ export default async function getRoundUnits({
   game,
   unitBeingPlayed,
   units,
+  playerId,
   round,
 }: {
   game: GameDbObject
   unitBeingPlayed?: UnitDbObject
   units?: UnitDbObject[]
+  playerId?: ObjectId
   round?: number
 }): Promise<UnitDbObject[]> {
   const unitIds: string[] = []
@@ -34,24 +39,26 @@ export default async function getRoundUnits({
 
   const gameRound = round === undefined ? game.round - 1 : round
   for (const player of game.players) {
-    const round = player.rounds[gameRound]
-    for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
-      if (!unitIds.includes(rowUnit.unit.toString()) && !existingUnitIds.includes(rowUnit.unit.toString())) {
-        unitIds.push(rowUnit.unit.toString())
+    if (!playerId || player.user.toString() === playerId.toString()) {
+      const round = player.rounds[gameRound]
+      for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
+        if (!unitIds.includes(rowUnit.unit.toString()) && !existingUnitIds.includes(rowUnit.unit.toString())) {
+          unitIds.push(rowUnit.unit.toString())
+        }
       }
-    }
-    for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
-      if (
-        modifier &&
-        !unitIds.includes(modifier.unit.toString()) &&
-        !existingUnitIds.includes(modifier.unit.toString())
-      ) {
-        unitIds.push(modifier.unit.toString())
+      for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
+        if (
+          modifier &&
+          !unitIds.includes(modifier.unit.toString()) &&
+          !existingUnitIds.includes(modifier.unit.toString())
+        ) {
+          unitIds.push(modifier.unit.toString())
+        }
       }
-    }
-    for (const weather of round.weathers) {
-      if (!unitIds.includes(weather.unit.toString()) && !existingUnitIds.includes(weather.unit.toString())) {
-        unitIds.push(weather.unit.toString())
+      for (const weather of round.weathers) {
+        if (!unitIds.includes(weather.unit.toString()) && !existingUnitIds.includes(weather.unit.toString())) {
+          unitIds.push(weather.unit.toString())
+        }
       }
     }
   }

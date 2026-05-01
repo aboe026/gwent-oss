@@ -21,6 +21,11 @@ export default function initializeNewRound({ game }: { game: GameDbObject }) {
   game.round = game.round + 1
 }
 
+/**
+ * Gets the empty state of a player combat row.
+ *
+ * @returns The empty state a player combat row starts in.
+ */
 export function getStartingCombatRow(): PlayerCombatRowDbObject {
   return {
     score: 0,

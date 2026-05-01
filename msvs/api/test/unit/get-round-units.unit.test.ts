@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import { GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
 import TestUtil from '../util/test-util'
@@ -58,6 +60,159 @@ describe('get-round-units', () => {
             }),
             unitBeingPlayed,
             unitsGetResponse: [unitsSelf.close, unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get multiple if no unitBeingPlayed', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitsGetResponse: [unitsSelf.close, unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get multiple if explicit current round', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            round: round - 1,
+            unitsGetResponse: [unitsSelf.close, unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get multiple if explicit not current round', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                    TestUtil.getDbPlayerRound({}),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                    TestUtil.getDbPlayerRound({}),
+                  ],
+                }),
+              ],
+            }),
+            round,
+            unitsGetResponse: [],
+          })
+        })
+        it('calls to UnitStore to get multiple if scoped to specific player', async () => {
+          const userId = new ObjectId()
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                    TestUtil.getDbPlayerRound({}),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  user: userId,
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: TestUtil.getDbPlayerCombatRow({
+                        units: [
+                          TestUtil.getDbFieldUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      }),
+                    }),
+                    TestUtil.getDbPlayerRound({}),
+                  ],
+                }),
+              ],
+            }),
+            playerId: userId,
+            unitsGetResponse: [unitsOpponent.close],
           })
         })
         it('calls to UnitStore to get single ignoring presolved', async () => {
@@ -7101,11 +7256,15 @@ describe('get-round-units', () => {
 async function testGetRoundUnits({
   game,
   unitBeingPlayed,
+  round,
+  playerId,
   units,
   unitsGetResponse,
 }: {
   game: GameDbObject
-  unitBeingPlayed: UnitDbObject
+  unitBeingPlayed?: UnitDbObject
+  round?: number
+  playerId?: ObjectId
   units?: UnitDbObject[]
   unitsGetResponse: UnitDbObject[]
 }) {
@@ -7115,6 +7274,8 @@ async function testGetRoundUnits({
     getRoundUnits({
       game,
       unitBeingPlayed,
+      round,
+      playerId,
       units,
     })
   ).resolves.toEqual(unitsGetResponse)

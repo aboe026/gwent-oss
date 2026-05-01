@@ -18,25 +18,18 @@ export default class GetFieldUnits {
    * @param config The configuration used to get the FieldUnit.
    * @param config.game The Game to search the battlefield for the FieldUnit.
    * @param config.unitId The ID of the FieldUnit to find on the battlefield of the game.
-   * @param config.unitName The Name of the FieldUnit to find on the battlefield of the game.
    * @param config.userId The ID of the User to scope the search for the FieldUnit to.
    * @returns The FieldUnit if it exists on the battlefield.
    */
   static getFieldUnit({
     game,
     unitId,
-    unitName,
     userId,
   }: {
     game: GameDbObject
-    unitId?: ObjectId | string
-    unitName?: string
+    unitId: ObjectId | string
     userId: ObjectId | string
   }): FieldUnitDbObject | undefined {
-    const identifier = unitId || unitName
-    if (!identifier) {
-      throw Error('Must specify either unitId or unitName')
-    }
     const players = game.players.filter((player) => player.user.toString() === userId.toString())
     if (players.length === 0) {
       throw Error(`Could not find player "${userId}" on game "${game._id}"`)
@@ -56,7 +49,7 @@ export default class GetFieldUnits {
         row: playerRound.siege,
       }),
     ]
-    return fieldUnits.find((fieldUnit) => fieldUnit.unit.toString() === identifier.toString())
+    return fieldUnits.find((fieldUnit) => fieldUnit.unit.toString() === unitId.toString())
   }
 
   /**
