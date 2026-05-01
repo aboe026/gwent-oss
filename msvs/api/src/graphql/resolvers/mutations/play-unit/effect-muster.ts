@@ -98,7 +98,7 @@ export default class EffectMuster {
       }
 
       for (const musterableUnit of musterableUnits) {
-        impacts[musterableUnit._id.toString()] = [] // TODO: does this need to be here?
+        impacts[musterableUnit._id.toString()] = []
         const { impact, origin } = EffectMuster.getMusterImpact({
           game,
           logPrefix,

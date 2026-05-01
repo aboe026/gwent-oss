@@ -307,7 +307,10 @@ describe('effect-muster', () => {
             },
           ],
           expected: {
-            impacts: {},
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
+              [musterableUnit._id.toString()]: [],
+            },
             musteredUnits: [],
             musteredOrigins: {},
           },
@@ -365,6 +368,7 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
+              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -436,6 +440,7 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
+              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -524,6 +529,8 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact2, impact1],
+              [musterableUnit1._id.toString()]: [],
+              [musterableUnit2._id.toString()]: [],
             },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
@@ -607,7 +614,10 @@ describe('effect-muster', () => {
             },
           ],
           expected: {
-            impacts: {},
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
+              [musterableUnit._id.toString()]: [],
+            },
             musteredUnits: [],
             musteredOrigins: {},
           },
@@ -665,6 +675,7 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
+              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -736,6 +747,7 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
+              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -824,6 +836,8 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact2, impact1],
+              [musterableUnit1._id.toString()]: [],
+              [musterableUnit2._id.toString()]: [],
             },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
@@ -907,7 +921,10 @@ describe('effect-muster', () => {
             },
           ],
           expected: {
-            impacts: {},
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
+              [musterableUnit._id.toString()]: [],
+            },
             musteredUnits: [],
             musteredOrigins: {},
           },
@@ -965,6 +982,7 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
+              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -1036,6 +1054,7 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
+              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -1124,6 +1143,8 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact2, impact1],
+              [musterableUnit1._id.toString()]: [],
+              [musterableUnit2._id.toString()]: [],
             },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
@@ -1206,7 +1227,10 @@ describe('effect-muster', () => {
           },
         ],
         expected: {
-          impacts: {},
+          impacts: {
+            [newUnit._id.toString()]: [],
+            [musterableUnit._id.toString()]: [],
+          },
           musteredUnits: [],
           musteredOrigins: {},
         },

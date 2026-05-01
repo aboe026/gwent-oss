@@ -1,5 +1,11 @@
 import { ImpactsByUnitId } from '../../resolver-util'
 
+/**
+ * Merge multiple Impacts into a single one.
+ *
+ * @param impacts The multiple Impacts to merge into a single one.
+ * @returns All of the Impacts merged into one.
+ */
 export default function mergeImpacts(...impacts: ImpactsByUnitId[]): ImpactsByUnitId {
   const mergedImpacts: ImpactsByUnitId = {}
 

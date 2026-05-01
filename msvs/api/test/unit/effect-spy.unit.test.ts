@@ -147,7 +147,9 @@ describe('effect-spy', () => {
           getRandomNumberResponses: [0],
           expected: {
             deckUnitsAddedToHand: [],
-            impacts: {},
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
+            },
           },
           updatedGame: {
             ...updatedGame,
@@ -514,7 +516,9 @@ describe('effect-spy', () => {
           getRandomNumberResponses: [0],
           expected: {
             deckUnitsAddedToHand: [],
-            impacts: {},
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
+            },
           },
           updatedGame: {
             ...updatedGame,
@@ -881,7 +885,9 @@ describe('effect-spy', () => {
           getRandomNumberResponses: [0],
           expected: {
             deckUnitsAddedToHand: [],
-            impacts: {},
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
+            },
           },
           updatedGame: {
             ...updatedGame,

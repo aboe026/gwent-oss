@@ -125,9 +125,17 @@ export default class EffectBond {
 
     if (bondEffect && rowFieldUnit.effects) {
       const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
+      const idAndUnits: {
+        id: string
+        unit: UnitDbObject
+      }[] = []
       for (const unitIdWithBond of unitIdsWithBondInRow) {
         const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
         if (bondingUnit) {
+          idAndUnits.push({
+            id: unitIdWithBond,
+            unit: bondingUnit,
+          })
           if (unitIdWithBond !== rowFieldUnit.unit.toString()) {
             rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
             EffectBond.logger.debug(
@@ -149,32 +157,34 @@ export default class EffectBond {
             }
             rowFieldUnit.effects.push(fieldUnitEffect)
           }
+        } else {
+          const message = `Could not find unit for bonding unit ID "${unitIdWithBond}"`
+          EffectBond.logger.error(`${logPrefix} failed: ${message}`)
+          throw Error(`${message}.`)
         }
       }
       // wait to set impacts so know full effectiveStrength of rowFieldUnit
-      for (const unitIdWithBond of unitIdsWithBondInRow) {
-        const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
+      for (const idAndUnit of idAndUnits) {
+        const { unit: bondingUnit } = idAndUnit
         const impactsForUnit: ImpactDbObject[] = []
-        if (bondingUnit) {
-          if (
-            bondingUnit._id.toString() !== rowFieldUnit.unit.toString() &&
-            impactables.includes(bondingUnit._id.toString()) &&
-            userId.toString() === currentPlayerId?.toString()
-          ) {
-            const impact: ImpactDbObject = {
-              unit: {
-                ...rowFieldUnit,
-                type: GameUnitType.Field,
-              },
-              user: userId,
-            }
-            if (EffectBond.logger.isTraceEnabled()) {
-              EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
-            }
-            impactsForUnit.push(impact)
+        if (
+          bondingUnit._id.toString() !== rowFieldUnit.unit.toString() &&
+          impactables.includes(bondingUnit._id.toString()) &&
+          userId.toString() === currentPlayerId?.toString()
+        ) {
+          const impact: ImpactDbObject = {
+            unit: {
+              ...rowFieldUnit,
+              type: GameUnitType.Field,
+            },
+            user: userId,
           }
-          impacts[bondingUnit._id.toString()] = impactsForUnit
+          if (EffectBond.logger.isTraceEnabled()) {
+            EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
+          }
+          impactsForUnit.push(impact)
         }
+        impacts[bondingUnit._id.toString()] = impactsForUnit
       }
     }
 

@@ -2415,7 +2415,7 @@ function testCalculateEffectiveStrengthsForRow({
   applyMoralesResponses,
   applyBondsResponses,
   applyHornsResponses,
-  applyWeatherResponses = [],
+  applyWeatherResponses,
   modifiedRow,
   applyBondsCalls,
   applyMoralesCalls,
@@ -2478,21 +2478,27 @@ function testCalculateEffectiveStrengthsForRow({
     for (const applyMoralesResponse of applyMoralesResponses) {
       applyMoralesSpy.mockReturnValueOnce(applyMoralesResponse)
     }
+  } else {
+    applyMoralesSpy.mockReturnValue({})
   }
   const applyBondsSpy = jest.spyOn(EffectBond, 'applyBonds')
   if (applyBondsResponses) {
     for (const applyBondsResponse of applyBondsResponses) {
       applyBondsSpy.mockReturnValueOnce(applyBondsResponse)
     }
+  } else {
+    applyBondsSpy.mockReturnValue({})
   }
   const applyHornsSpy = jest.spyOn(EffectHorn, 'applyHorn')
   if (applyHornsResponses) {
     for (const applyHornsResponse of applyHornsResponses) {
       applyHornsSpy.mockReturnValueOnce(applyHornsResponse)
     }
+  } else {
+    applyHornsSpy.mockReturnValue({})
   }
   const applyWeathersSpy = jest.spyOn(EffectWeather, 'weatherScores')
-  if (applyWeatherResponses.length > 0) {
+  if (applyWeatherResponses) {
     for (const applyWeatherResponse of applyWeatherResponses) {
       applyWeathersSpy.mockReturnValueOnce(applyWeatherResponse)
     }

@@ -61,12 +61,6 @@ describe('effect-mardroeme', () => {
             id: newDeckUnit.unit,
           }),
         ],
-        getEffectWithKeyResponses: [
-          undefined,
-          TestUtil.getDbEffect({
-            key: EffectKey.Berserker,
-          }),
-        ],
         expected: {
           impacts: {},
           mardroemingFieldUnit: undefined,
@@ -96,6 +90,11 @@ describe('effect-mardroeme', () => {
         getEffectWithKeyResponses: [
           TestUtil.getDbEffect({
             key: EffectKey.Mardroeme,
+          }),
+        ],
+        getFieldUnitsResponse: [
+          TestUtil.getDbFieldUnit({
+            id: newDeckUnit.unit,
           }),
         ],
         expected: {
@@ -128,9 +127,6 @@ describe('effect-mardroeme', () => {
         getEffectWithKeyResponses: [
           TestUtil.getDbEffect({
             key: EffectKey.Mardroeme,
-          }),
-          TestUtil.getDbEffect({
-            key: EffectKey.Berserker,
           }),
         ],
         getFieldUnitsResponse: [
@@ -1920,24 +1916,26 @@ async function testTransformBerserkers({
   )
   const fieldUnitIds = getFieldUnitsResponse?.map((fieldUnit) => fieldUnit.unit.toString())
   const units = battlefieldUnits.filter((battlefieldUnit) => fieldUnitIds?.includes(battlefieldUnit._id.toString()))
-  expect(getUnitIdsWithEffectSpy.mock.calls).toEqual(
-    getUnitsIdsWithEffectResponses
-      ? [
-          [
-            {
-              effect: getEffectWithKeyResponses ? getEffectWithKeyResponses[0] : undefined,
-              units,
-            },
-          ],
-          [
-            {
-              effect: getEffectWithKeyResponses ? getEffectWithKeyResponses[1] : undefined,
-              units,
-            },
-          ],
-        ]
-      : []
-  )
+  const getUnitIdsWithEffectCalls: any[][] = []
+  if (getEffectWithKeyResponses) {
+    if (getEffectWithKeyResponses[0]) {
+      getUnitIdsWithEffectCalls.push([
+        {
+          effect: getEffectWithKeyResponses[0],
+          units,
+        },
+      ])
+    }
+    if (getEffectWithKeyResponses[1]) {
+      getUnitIdsWithEffectCalls.push([
+        {
+          effect: getEffectWithKeyResponses[1],
+          units,
+        },
+      ])
+    }
+  }
+  expect(getUnitIdsWithEffectSpy.mock.calls).toEqual(getUnitIdsWithEffectCalls)
   expect(getmardroemingFieldUnitSpy.mock.calls).toEqual(
     replaceBerserkersWithVildkaarlResponse
       ? [

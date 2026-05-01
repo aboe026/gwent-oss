@@ -69,7 +69,9 @@ describe('effect-weather', () => {
           id: newUnit._id,
         }),
         isWeather: true,
-        expected: {},
+        expected: {
+          [newUnit._id.toString()]: [],
+        },
         debugCalls: [[`${logPrefix} adding weather "${newUnit._id}"`]],
       })
     })
@@ -101,7 +103,9 @@ describe('effect-weather', () => {
           id: newUnit._id,
         }),
         isWeather: true,
-        expected: {},
+        expected: {
+          [newUnit._id.toString()]: [],
+        },
         debugCalls: [
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${userId}"`],
           [`${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${opponentId}"`],
@@ -457,7 +461,9 @@ describe('effect-weather', () => {
             }),
           },
         ],
-        expected: {},
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
         newEffects: [],
         debugCalls: [[`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to weather effect.`]],
       })
@@ -518,7 +524,9 @@ describe('effect-weather', () => {
             }),
           },
         ],
-        expected: {},
+        expected: {
+          [weatherUnitId.toString()]: [],
+        },
         newEffects: [
           {
             operator: EFFECT_OPERATOR.Set,
@@ -561,7 +569,9 @@ describe('effect-weather', () => {
             }),
           },
         ],
-        expected: {},
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
         newEffects: [
           {
             operator: EFFECT_OPERATOR.Set,
@@ -576,6 +586,109 @@ describe('effect-weather', () => {
         debugCalls: [
           [`${logPrefix} weathering unit "${rowUnit._id}" by "${newDeckUnit.unit}" for an effectiveStrength of "1".`],
         ],
+      })
+    })
+    it('does not add impact if weather if rowUnit strength is undefined', () => {
+      const currentPlayerId = new ObjectId()
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const rowUnit = TestUtil.getDbUnit({
+        strength: undefined,
+      })
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        id: rowUnit._id,
+      })
+      const weatherEffect = TestUtil.getDbEffect({})
+      testWeatherScores({
+        logPrefix,
+        currentPlayerId,
+        newDeckUnit,
+        rowFieldUnit,
+        rowUnit,
+        userId: currentPlayerId,
+        weatherEffect,
+        weatherUnits: [
+          {
+            userId: currentPlayerId,
+            unit: TestUtil.getDbUnit({
+              id: newDeckUnit.unit,
+            }),
+          },
+        ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
+        debugCalls: [
+          [
+            `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" does not have strength so not susceptible to weather effect.`,
+          ],
+        ],
+      })
+    })
+    it('does not add impact if weather if rowUnit strength is null', () => {
+      const currentPlayerId = new ObjectId()
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const rowUnit = TestUtil.getDbUnit({
+        strength: null as any,
+      })
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        id: rowUnit._id,
+      })
+      const weatherEffect = TestUtil.getDbEffect({})
+      testWeatherScores({
+        logPrefix,
+        currentPlayerId,
+        newDeckUnit,
+        rowFieldUnit,
+        rowUnit,
+        userId: currentPlayerId,
+        weatherEffect,
+        weatherUnits: [
+          {
+            userId: currentPlayerId,
+            unit: TestUtil.getDbUnit({
+              id: newDeckUnit.unit,
+            }),
+          },
+        ],
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
+        debugCalls: [
+          [
+            `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" does not have strength so not susceptible to weather effect.`,
+          ],
+        ],
+      })
+    })
+    it('does not add impact if weather unit is same as rowUnit', () => {
+      const currentPlayerId = new ObjectId()
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const rowUnit = TestUtil.getDbUnit({
+        strength: 3,
+      })
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        id: rowUnit._id,
+      })
+      const weatherEffect = TestUtil.getDbEffect({})
+      testWeatherScores({
+        logPrefix,
+        currentPlayerId,
+        newDeckUnit,
+        rowFieldUnit,
+        rowUnit,
+        userId: currentPlayerId,
+        weatherEffect,
+        weatherUnits: [
+          {
+            userId: currentPlayerId,
+            unit: TestUtil.getDbUnit({
+              id: rowUnit._id,
+            }),
+          },
+        ],
+        expected: {
+          [rowUnit._id.toString()]: [],
+        },
       })
     })
     it('adds impact if weather is current player and newDeckUnit', () => {
@@ -663,7 +776,9 @@ describe('effect-weather', () => {
             }),
           },
         ],
-        expected: {},
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
         debugCalls: [
           [
             `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" is less than "2" so not susceptible to weather effect.`,
@@ -704,7 +819,9 @@ describe('effect-weather', () => {
             }),
           },
         ],
-        expected: {},
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
         newEffects: [
           {
             operator: EFFECT_OPERATOR.Set,
@@ -754,7 +871,9 @@ describe('effect-weather', () => {
             }),
           },
         ],
-        expected: {},
+        expected: {
+          [newDeckUnit.unit.toString()]: [],
+        },
         newEffects: [
           {
             operator: EFFECT_OPERATOR.Set,
