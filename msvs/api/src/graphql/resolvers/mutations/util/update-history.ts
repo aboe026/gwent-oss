@@ -242,6 +242,7 @@ export default class UpdateHistory {
           weathers,
           origin: GameUnitOrigin.Nondeck,
           playerId: avengee.user.toString(),
+          turnUserId: playerId,
           reason: {
             type: MoveReasonType.Summon,
             unit: avengee.unit,
@@ -303,7 +304,7 @@ export default class UpdateHistory {
     unitId: ObjectId | string
     created: Date
     playerId: string
-    turnUserId?: ObjectId
+    turnUserId?: ObjectId | string
     logPrefix: string
     origin: GameUnitOrigin
     scorches?: ImpactsByUnitId

@@ -1768,6 +1768,7 @@ function testNewUnitDeployed({
           weathers,
           origin: GameUnitOrigin.Nondeck,
           playerId: avengee.user.toString(),
+          turnUserId: playerId,
           reason: {
             type: MoveReasonType.Summon,
             unit: avengee.unit,
