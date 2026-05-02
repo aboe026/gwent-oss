@@ -1,4 +1,4 @@
-FROM nginx:1.29.6
+FROM nginx:1.29.8
 
 RUN apt-get update && \
     apt-get install -y openssl && \

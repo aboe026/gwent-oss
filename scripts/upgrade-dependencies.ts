@@ -5,6 +5,16 @@ import { replaceInFile } from 'replace-in-file'
 import execa from './execute-async'
 
 const DENY_LIST: string[] = [
+  '@graphql-codegen/add', // 7.0 switched to ESM, need to switch to ESM to be able to use
+  '@graphql-codegen/cli',
+  '@graphql-codegen/client-preset',
+  '@graphql-codegen/fragment-matcher',
+  '@graphql-codegen/schema-ast',
+  '@graphql-codegen/typescript',
+  '@graphql-codegen/typescript-mongodb',
+  '@graphql-codegen/typescript-operations',
+  '@graphql-codegen/typescript-resolvers',
+  '@graphql-codegen/typescript-graphql-request',
   '@types/express', // 5.0.0 breaks, waiting for it to become compatible with express 5
   '@types/node', // manually keep in sync with Node.js version
   '@types/url-join', // 5.0 breaks and is not needed for url-join 5.0
