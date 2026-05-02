@@ -19,7 +19,9 @@ export default function getImpactDescription({
   origin?: GameUnitOrigin
   name?: string
 }): string {
-  if (effectKey === EffectKey.Bond) {
+  if (effectKey === EffectKey.Avenger) {
+    return 'avenged when removed from battlefield'
+  } else if (effectKey === EffectKey.Bond) {
     return 'bonded in strength'
   } else if (effectKey === EffectKey.Decoy) {
     return 'decoyed from battlefield'

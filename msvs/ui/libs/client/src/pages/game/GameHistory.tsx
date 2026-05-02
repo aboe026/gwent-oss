@@ -16,6 +16,7 @@ import {
   GameUnitOrigin,
   ImpactFragment,
   ImpactFragmentDoc,
+  MoveFragmentDoc,
   MoveLeaderFragmentDoc,
   MoveReasonType,
   MoveUnitFragmentDoc,
@@ -171,6 +172,8 @@ function PlayerHistoryMove({
   let impacts: ImpactFragment[] | undefined | null
   let gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined
   let cardPlayer = player
+  let hasImpacts = false
+  let moveReasonType: MoveReasonType | undefined = undefined
 
   if (playerMove.move.__typename === 'MoveLeader') {
     const leaderMove = useFragment(MoveLeaderFragmentDoc, playerMove.move)
@@ -183,6 +186,10 @@ function PlayerHistoryMove({
     textClass += ' game-history-move-text-wrappable'
   } else if (playerMove.move.__typename === 'MoveUnit') {
     const unitMove = useFragment(MoveUnitFragmentDoc, playerMove.move)
+    moveReasonType = unitMove.reason.type
+    if (unitMove.impacts) {
+      hasImpacts = true
+    }
     const gameUnitFragment = useFragment(GameUnitFragmentDoc, unitMove.unit)
     gameUnit = convertGameUnit(gameUnitFragment)
     const unit = getUnitFromGameUnit(gameUnitFragment)
@@ -201,15 +208,21 @@ function PlayerHistoryMove({
       primaryText = unit.name
       let placement = ''
       if (unitMove.target) {
-        placement += ` to spy on ${unitMove.target.name} `
+        if (unitMove.reason.type === MoveReasonType.Summon) {
+          placement += `for ${unitMove.target.name} `
+        } else {
+          placement += `to spy on ${unitMove.target.name} `
+        }
       }
       placement += gameUnit?.__typename === 'FieldUnit' ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
       const reasonUnit = useFragment(MoveUnitReasonUnitFragmentDoc, unitMove.reason.unit)
       if (reasonUnit?.unit.name) {
         if (unitMove.reason.type === MoveReasonType.Transform) {
-          placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+          placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'} `
         }
-        placement += ` by ${reasonUnit?.unit.name}`
+        if (unitMove.reason.type !== MoveReasonType.Summon) {
+          placement += ` by ${reasonUnit?.unit.name}`
+        }
       }
       let reason = 'deployed'
       let source = ''
@@ -222,6 +235,8 @@ function PlayerHistoryMove({
         }
       } else if (unitMove.reason.type === MoveReasonType.Transform) {
         reason = 'transformed'
+      } else if (unitMove.reason.type === MoveReasonType.Summon) {
+        reason = 'summoned'
       }
       secondaryText = `${reason} ${placement}${source}`
       image = unit.images[(gameUnit?.artStyle || 1) - 1]
@@ -347,20 +362,18 @@ function PlayerHistoryMove({
           </div>
         </div>
       </div>
-      {gameUnit &&
-        hasImpactableEffect({
-          gameUnit,
-        }) && (
-          <MoveUnitImpact
-            cardSelected={cardSelected}
-            gameUnit={gameUnit}
-            game={game}
-            impacts={impacts}
-            self={self}
-            setCardSelected={setCardSelected}
-            setFullUnits={setFullUnits}
-          />
-        )}
+      {gameUnit && hasImpacts && (
+        <MoveUnitImpact
+          cardSelected={cardSelected}
+          gameUnit={gameUnit}
+          game={game}
+          impacts={impacts}
+          moveReasonType={moveReasonType}
+          self={self}
+          setCardSelected={setCardSelected}
+          setFullUnits={setFullUnits}
+        />
+      )}
     </div>
   )
 }
@@ -373,6 +386,7 @@ function MoveUnitImpact({
   gameUnit,
   game,
   impacts,
+  moveReasonType,
   self,
   setCardSelected,
   setFullUnits,
@@ -381,15 +395,22 @@ function MoveUnitImpact({
   gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
   game: GameFragment
   impacts: ImpactFragment[] | null | undefined
+  moveReasonType: MoveReasonType | undefined
   self: GamePlayerFragment
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const [expanded, setExpanded] = useState(false)
   const unitsImpacted = impacts ? impacts.length : 0
-  const { effect, error } = getEffectForImpact({
-    gameUnit,
-  })
+  const { effect, error } =
+    moveReasonType === MoveReasonType.Summon
+      ? findEffectForMoveByPrefix({
+          gameUnit,
+          self,
+        })
+      : getEffectForImpact({
+          gameUnit,
+        })
 
   if (!effect) {
     return <div className="error-text">{error}</div>
@@ -637,26 +658,45 @@ function getEffectForImpact({
 }
 
 /**
- * Whether or not a specific GameUnit is able to have an Impact on other units in the battlefield.
+ * Finds the Effect for a move by its effectPrefix. Used to find the Avenger Effect for GameUnits that have been summoned to the battlefield.
  */
-function hasImpactableEffect({
+function findEffectForMoveByPrefix({
   gameUnit,
+  self,
 }: {
   gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
-}): boolean {
-  const effectsWithImpact = [
-    EffectKey.Bond,
-    EffectKey.Decoy,
-    EffectKey.Horn,
-    EffectKey.Mardroeme,
-    EffectKey.Medic,
-    EffectKey.Morale,
-    EffectKey.Muster,
-    EffectKey.Scorch,
-    EffectKey.Spy,
-    EffectKey.Weather,
-  ]
+  self: GamePlayerFragment
+}): EffectForImpact {
+  let error = ''
+  let effect: UnitEffectFragment | undefined | null = undefined
+
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
-  const unitEffects = useFragment(UnitEffectFragmentDoc, unit.effects)
-  return !!unitEffects && unitEffects.filter((effect) => effectsWithImpact.includes(effect.key)).length > 0
+
+  const selfMoveFragments = self.rounds
+    .map((round) => {
+      return useFragment(PlayerRoundFragmentDoc, round).moves
+    })
+    .flat()
+  for (let i = 0; i < selfMoveFragments.length && !effect; i++) {
+    const moveFragment = selfMoveFragments[i]
+    const move = useFragment(MoveFragmentDoc, moveFragment)
+    if (move.__typename === 'MoveUnit') {
+      const unitMove = useFragment(MoveUnitFragmentDoc, move)
+      const gameUnitForMove = useFragment(GameUnitFragmentDoc, unitMove.unit)
+      const unitForMove = getUnitFromGameUnit(gameUnitForMove)
+      if (unitForMove?.effectPrefix === unit.name) {
+        const unitEffects = useFragment(UnitEffectFragmentDoc, unitForMove?.effects)
+        effect = unitEffects && unitEffects[0]
+      }
+    }
+  }
+
+  if (!effect) {
+    error = 'Could not find Effect for Impact'
+  }
+
+  return {
+    effect,
+    error,
+  }
 }

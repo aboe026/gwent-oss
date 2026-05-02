@@ -8,6 +8,7 @@ import {
   GameDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import EffectAvenger from './effect-avenger'
 import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
@@ -102,6 +103,20 @@ export default class BattlefieldUpdates {
       logPrefix,
       newDeckUnit,
     })
+    const { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
+      battlefieldUnits,
+      effects,
+      game,
+      logPrefix,
+      removedGameUnits: Object.values(scorches)
+        .flat()
+        .map((scorch) => {
+          return {
+            user: scorch.user,
+            unit: scorch.unit,
+          }
+        }),
+    })
     const {
       impacts: musterImpacts,
       musteredUnits,
@@ -139,6 +154,8 @@ export default class BattlefieldUpdates {
       deckUnitsAddedToHand.push(deckUnitAddedToHand)
     }
     return {
+      avengers,
+      avengedUnits,
       decoys: decoyImpacts,
       deckUnitsAddedToHand,
       scorches,
@@ -219,6 +236,8 @@ export default class BattlefieldUpdates {
 }
 
 interface ModificationImpacts {
+  avengers: ImpactsByUnitId
+  avengedUnits: UnitDbObject[]
   decoys: ImpactsByUnitId
   deckUnitsAddedToHand: DeckUnitDbObject[]
   scorches: ImpactsByUnitId

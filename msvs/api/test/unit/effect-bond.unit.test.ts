@@ -157,6 +157,32 @@ describe('effect-bond', () => {
   })
   describe('applyBonds', () => {
     const logPrefix = 'log-prefix'
+    it('throws error if bonding unit not round', () => {
+      const userId = new ObjectId()
+      const unit = TestUtil.getDbUnit({})
+      const message = `Could not find unit for bonding unit ID "${unit._id}"`
+      testApplyBonds({
+        logPrefix,
+        bondEffect: TestUtil.getDbEffect({
+          key: EffectKey.Bond,
+        }),
+        currentPlayerId: userId,
+        userId,
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        rowFieldUnit: TestUtil.getDbFieldUnit({
+          id: unit._id,
+        }),
+        rowUnit: TestUtil.getDbUnit({
+          id: unit._id,
+        }),
+        unitIdsWithBondInRow: [unit._id.toString()],
+        units: [],
+        expected: Error(`${message}.`),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
     it('returns empty object if no bonds to apply', () => {
       const userId = new ObjectId()
       testApplyBonds({
@@ -195,7 +221,9 @@ describe('effect-bond', () => {
         }),
         unitIdsWithBondInRow: [unit._id.toString()],
         units: [unit],
-        expected: {},
+        expected: {
+          [unit._id.toString()]: [],
+        },
       })
     })
     it('does not apply bond if bondEffect is undefined', () => {
@@ -246,7 +274,10 @@ describe('effect-bond', () => {
         }),
         unitIdsWithBondInRow: [unit1._id.toString(), unit2._id.toString()],
         units: [unit1, unit2],
-        expected: {},
+        expected: {
+          [unit1._id.toString()]: [],
+          [unit2._id.toString()]: [],
+        },
         updatedRowFieldUnit: {
           ...deepClone(fieldUnit),
           effectiveStrength: 8,
@@ -317,6 +348,7 @@ describe('effect-bond', () => {
               user: userId,
             },
           ],
+          [unit2._id.toString()]: [],
         },
         updatedRowFieldUnit: {
           ...deepClone(fieldUnit),
@@ -377,6 +409,7 @@ describe('effect-bond', () => {
               user: userId,
             },
           ],
+          [unit2._id.toString()]: [],
         },
         updatedRowFieldUnit: {
           ...deepClone(fieldUnit),
@@ -437,6 +470,7 @@ describe('effect-bond', () => {
               user: userId,
             },
           ],
+          [unit2._id.toString()]: [],
         },
         updatedRowFieldUnit: {
           ...deepClone(fieldUnit),
@@ -497,6 +531,7 @@ describe('effect-bond', () => {
               user: userId,
             },
           ],
+          [unit2._id.toString()]: [],
         },
         updatedRowFieldUnit: {
           ...deepClone(fieldUnit),
@@ -568,6 +603,8 @@ describe('effect-bond', () => {
               user: userId,
             },
           ],
+          [unit2._id.toString()]: [],
+          [unit3._id.toString()]: [],
         },
         updatedRowFieldUnit: {
           ...deepClone(fieldUnit),
@@ -640,6 +677,7 @@ describe('effect-bond', () => {
               user: userId,
             },
           ],
+          [unit2._id.toString()]: [],
           [unit3._id.toString()]: [
             {
               unit: gameUnit,
@@ -704,6 +742,7 @@ describe('effect-bond', () => {
         units: [unit1, unit2],
         expected: {
           [unit1._id.toString()]: [impact],
+          [unit2._id.toString()]: [],
         },
         updatedRowFieldUnit: {
           ...deepClone(fieldUnit),
@@ -715,7 +754,6 @@ describe('effect-bond', () => {
         ],
         traceCalls: [
           [`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`],
-          [`${logPrefix} bondsToApply: "${JSON.stringify([unit1._id])}"`],
           [`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`],
           [`${logPrefix} impact: "${JSON.stringify(impact)}"`],
         ],
@@ -779,6 +817,7 @@ function testApplyBonds({
   currentPlayerId,
   expected,
   updatedRowFieldUnit,
+  errorCalls = [],
   debugCalls = [],
   traceCalls = [],
   traceEnabled,
@@ -794,38 +833,60 @@ function testApplyBonds({
   units: UnitDbObject[]
   userId: ObjectId
   currentPlayerId: ObjectId | undefined
-  expected: ImpactsByUnitId
+  expected: ImpactsByUnitId | Error
   updatedRowFieldUnit?: FieldUnitDbObject
+  errorCalls?: any[][]
   debugCalls?: any[][]
   traceCalls?: any[][]
   traceEnabled?: boolean
 }) {
+  const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   EffectBond['logger'] = {
+    error: errorSpy,
     debug: debugSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
   const ogRowFieldUnit = deepClone(rowFieldUnit)
 
-  expect(
-    EffectBond.applyBonds({
-      bondEffect,
-      currentPlayerId,
-      logPrefix,
-      musteredUnitIds,
-      transformedUnitIds,
-      newDeckUnit,
-      rowFieldUnit,
-      rowUnit,
-      unitIdsWithBondInRow,
-      units,
-      userId,
-    })
-  ).toEqual(expected)
+  if (expected instanceof Error) {
+    expect(() =>
+      EffectBond.applyBonds({
+        bondEffect,
+        currentPlayerId,
+        logPrefix,
+        musteredUnitIds,
+        transformedUnitIds,
+        newDeckUnit,
+        rowFieldUnit,
+        rowUnit,
+        unitIdsWithBondInRow,
+        units,
+        userId,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      EffectBond.applyBonds({
+        bondEffect,
+        currentPlayerId,
+        logPrefix,
+        musteredUnitIds,
+        transformedUnitIds,
+        newDeckUnit,
+        rowFieldUnit,
+        rowUnit,
+        unitIdsWithBondInRow,
+        units,
+        userId,
+      })
+    ).toEqual(expected)
+  }
   expect(rowFieldUnit).toEqual(updatedRowFieldUnit || ogRowFieldUnit)
 
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

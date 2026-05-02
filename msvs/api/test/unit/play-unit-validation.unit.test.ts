@@ -13,7 +13,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import EffectStore from '../../src/database/stores/effect-store'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
-import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
+import * as getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import PlayUnitValidation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-validation'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'

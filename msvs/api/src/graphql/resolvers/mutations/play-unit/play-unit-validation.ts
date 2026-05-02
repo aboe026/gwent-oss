@@ -13,7 +13,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import EffectStore from '../../../../database/stores/effect-store'
 import GetFieldUnits from '../../util/get-field-units'
-import getRoundUnits from './get-round-units'
+import getRoundUnits from '../util/get-round-units'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'

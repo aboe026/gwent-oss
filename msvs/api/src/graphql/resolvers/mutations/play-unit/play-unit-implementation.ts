@@ -1,15 +1,16 @@
 import { getLogger } from 'log4js'
 
 import BattlefieldUpdates from './battlefield-updates'
-import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
+import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
 import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
-import getRoundUnits from './get-round-units'
-import getUnitEffects from './get-unit-effects'
+import getRoundUnits from '../util/get-round-units'
+import getUnitEffects from '../util/get-unit-effects'
+import mergeImpacts from './merge-impacts'
 import PresentableError from '../../../../util/presentable-error'
-import setGameScores from './set-game-scores'
+import setGameScores from '../util/set-game-scores'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
-import UpdateHistory from './update-history'
+import UpdateHistory from '../util/update-history'
 import { ValidatedPlayUnit } from './play-unit-validation'
 
 /**
@@ -77,6 +78,8 @@ export default class PlayUnitImplementation {
       musteredOrigins,
       scorches,
       spies,
+      avengers,
+      avengedUnits,
       decoys,
       deckUnitsAddedToHand,
       weathers: weatherBattlefieldImpacts,
@@ -110,7 +113,7 @@ export default class PlayUnitImplementation {
       weathers: weatherScoreImpacts,
     } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
-      units: [unit, ...roundUnits, ...existingRoundUnits, ...musteredUnits, ...transformedUnits],
+      units: [unit, ...roundUnits, ...existingRoundUnits, ...musteredUnits, ...transformedUnits, ...avengedUnits],
       effects: [...effects, ...unitEffects, ...musterEffects, ...transformedEffects],
       logPrefix,
       newDeckUnit: deckUnit,
@@ -123,6 +126,7 @@ export default class PlayUnitImplementation {
     UpdateHistory.newUnitDeployed({
       deckUnit,
       game,
+      avengers,
       decoys,
       musters,
       musteredOrigins,
@@ -133,7 +137,7 @@ export default class PlayUnitImplementation {
       bonds,
       horns,
       morales,
-      weathers: Object.keys(weatherBattlefieldImpacts).length > 0 ? weatherBattlefieldImpacts : weatherScoreImpacts,
+      weathers: mergeImpacts(weatherBattlefieldImpacts, weatherScoreImpacts),
       mardroemes,
       transformedFieldUnits,
       mardroemingFieldUnit,

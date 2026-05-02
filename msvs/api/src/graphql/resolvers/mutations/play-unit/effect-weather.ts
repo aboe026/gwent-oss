@@ -46,9 +46,10 @@ export default class EffectWeather {
     newUnit: UnitDbObject
     isWeather: boolean
   }): ImpactsByUnitId {
-    const impacts: ImpactDbObject[] = []
+    const impacts: ImpactsByUnitId = {}
 
     if (isWeather) {
+      const impactsForNewUnit: ImpactDbObject[] = []
       for (const player of game.players) {
         const round = player.rounds[game.round - 1]
         const clearWeather = !newUnit.combats || newUnit.combats.length === 0
@@ -58,7 +59,7 @@ export default class EffectWeather {
             `${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${player.user}"`
           )
           for (const weather of round.weathers) {
-            impacts.push({
+            impactsForNewUnit.push({
               unit: {
                 ...weather,
                 type: GameUnitType.Weather,
@@ -72,9 +73,10 @@ export default class EffectWeather {
           round.weathers.push(newDeckUnit)
         }
       }
+      impacts[newDeckUnit.unit.toString()] = impactsForNewUnit
     }
 
-    return impacts.length > 0 ? { [newDeckUnit.unit.toString()]: impacts } : {}
+    return impacts
   }
 
   /**
@@ -116,28 +118,41 @@ export default class EffectWeather {
       EffectWeather.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
     }
 
-    if (!rowUnit.hero && rowUnit.strength && rowUnit.strength > 1) {
-      const weathersToApply = weatherUnits
-        .filter((weather) => weather.unit._id.toString() !== rowFieldUnit.unit.toString())
-        // put current turn player's weathers in the "back"
-        // to prevent incorrectly showing a weather impact
-        // which happened in a previous turn
-        .sort((a, b) => {
-          if (currentPlayerId && a.userId.toString() === currentPlayerId?.toString()) {
-            return 1
-          }
-          if (currentPlayerId && b.userId.toString() === currentPlayerId?.toString()) {
-            return -1
-          }
-          return 0
-        })
-      if (EffectWeather.logger.isTraceEnabled()) {
-        EffectWeather.logger.trace(`${logPrefix} weathersToApply: "${JSON.stringify(weathersToApply)}"`)
-      }
-      let weathered = false
-      for (let i = 0; i < weathersToApply.length && !weathered; i++) {
-        const weather = weathersToApply[i]
-        if (weatherEffect && weather && rowFieldUnit.effects) {
+    const weathersToApply = weatherUnits
+      // put current turn player's weathers in the "back"
+      // to prevent incorrectly showing a weather impact
+      // which happened in a previous turn
+      .sort((a, b) => {
+        if (currentPlayerId && a.userId.toString() === currentPlayerId?.toString()) {
+          return 1
+        }
+        if (currentPlayerId && b.userId.toString() === currentPlayerId?.toString()) {
+          return -1
+        }
+        return 0
+      })
+    if (EffectWeather.logger.isTraceEnabled()) {
+      EffectWeather.logger.trace(`${logPrefix} weathersToApply: "${JSON.stringify(weathersToApply)}"`)
+    }
+    let weathered = false
+    for (let i = 0; i < weathersToApply.length && !weathered; i++) {
+      const weather = weathersToApply[i]
+      if (weatherEffect && weather && rowFieldUnit.effects) {
+        const impactsForNewUnit: ImpactDbObject[] = []
+
+        if (rowUnit.hero) {
+          EffectWeather.logger.debug(
+            `${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to weather effect.`
+          )
+        } else if (rowUnit.strength === undefined || rowUnit.strength === null) {
+          EffectWeather.logger.debug(
+            `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" does not have strength so not susceptible to weather effect.`
+          )
+        } else if (rowUnit.strength < 2) {
+          EffectWeather.logger.debug(
+            `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" is less than "2" so not susceptible to weather effect.`
+          )
+        } else if (weather.unit._id.toString() !== rowFieldUnit.unit.toString()) {
           weathered = true
           rowFieldUnit.effectiveStrength = 1
           EffectWeather.logger.debug(
@@ -175,19 +190,10 @@ export default class EffectWeather {
             if (EffectWeather.logger.isTraceEnabled()) {
               EffectWeather.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
             }
-            impacts[weather.unit._id.toString()] = [impact]
+            impactsForNewUnit.push(impact)
           }
         }
-      }
-    } else {
-      if (rowUnit.hero) {
-        EffectWeather.logger.debug(
-          `${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to weather effect.`
-        )
-      } else {
-        EffectWeather.logger.debug(
-          `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" is less than "2" so not susceptible to weather effect.`
-        )
+        impacts[weather.unit._id.toString()] = impactsForNewUnit
       }
     }
 

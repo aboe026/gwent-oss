@@ -85,6 +85,46 @@ describe('effect-horn', () => {
         updatedRowFieldUnit: deepClone(rowFieldUnit),
       })
     })
+    it('does not effect if no hornEffect', () => {
+      const rowUnit = TestUtil.getDbUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        id: rowUnit._id,
+      })
+      const horningUnit = TestUtil.getDbUnit({})
+      const hornEffect = undefined
+      testApplyHorn({
+        hornEffect,
+        logPrefix,
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowFieldUnit,
+        rowUnit,
+        unitIdsWithHornInRow: [horningUnit._id.toString()],
+        units: [horningUnit],
+        expected: {},
+        updatedRowFieldUnit: deepClone(rowFieldUnit),
+      })
+    })
+    it('does not effect if no horningUnit', () => {
+      const rowUnit = TestUtil.getDbUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        id: rowUnit._id,
+      })
+      const horningUnit = TestUtil.getDbUnit({})
+      const hornEffect = TestUtil.getDbEffect({
+        key: EffectKey.Horn,
+      })
+      testApplyHorn({
+        hornEffect,
+        logPrefix,
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowFieldUnit,
+        rowUnit,
+        unitIdsWithHornInRow: [horningUnit._id.toString()],
+        units: [],
+        expected: {},
+        updatedRowFieldUnit: deepClone(rowFieldUnit),
+      })
+    })
     it('maintains zero effectiveStrength if not already set', () => {
       const rowUnit = TestUtil.getDbUnit({})
       const rowFieldUnit = TestUtil.getDbFieldUnit({
@@ -188,7 +228,9 @@ describe('effect-horn', () => {
         units: [horningUnit],
         currentPlayerId: new ObjectId(),
         userId: new ObjectId(),
-        expected: {},
+        expected: {
+          [horningUnit._id.toString()]: [],
+        },
         updatedRowFieldUnit: {
           ...deepClone(rowFieldUnit),
           effectiveStrength: 6,
@@ -332,7 +374,6 @@ describe('effect-horn', () => {
         traceEnabled: true,
         traceCalls: [
           [`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`],
-          [`${logPrefix} hornsToApply: "${JSON.stringify([horningUnit._id.toString()])}"`],
           [`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`],
           [`${logPrefix} impact: "${JSON.stringify(impact)}"`],
         ],

@@ -46,10 +46,11 @@ export default class EffectSpy {
     targetId: string | undefined | null
     isSpy: boolean
   }): PotentialSpies {
-    const impacts: ImpactDbObject[] = []
+    const impacts: ImpactsByUnitId = {}
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
 
     if (isSpy && targetId && combat) {
+      const impactsForNewUnit: ImpactDbObject[] = []
       const opponent = game.players.find((player) => player.user.toString() === targetId)
 
       if (opponent) {
@@ -91,7 +92,7 @@ export default class EffectSpy {
           )
           self.deck.hand.push(undrawnToMoveToHand)
           deckUnitsAddedToHand.push(undrawnToMoveToHand)
-          impacts.push({
+          impactsForNewUnit.push({
             unit: {
               ...undrawnToMoveToHand,
               type: GameUnitType.Deck,
@@ -104,16 +105,13 @@ export default class EffectSpy {
         EffectSpy.logger.error(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
+
+      impacts[newDeckUnit.unit.toString()] = impactsForNewUnit
     }
 
     return {
       deckUnitsAddedToHand,
-      impacts:
-        impacts.length > 0
-          ? {
-              [newDeckUnit.unit.toString()]: impacts,
-            }
-          : {},
+      impacts,
     }
   }
 }

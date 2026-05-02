@@ -460,7 +460,7 @@ test('Selecting spying history highlights it and battlefield card', async (t) =>
     row: Combat.Close,
     playerName: gameManager.self.gamePlayer.name,
     round: gameManager.round,
-    spyOpponent: gameManager.opponent.gamePlayer.name,
+    targetUser: gameManager.opponent.gamePlayer.name,
   })
   await gameManager.verify({
     highlightedBattlefieldCard: {

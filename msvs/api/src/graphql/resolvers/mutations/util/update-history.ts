@@ -18,7 +18,8 @@ import {
 import { GameUnitType, MoveType } from '@gwent/graphql-schema'
 import GetFieldUnits from '../../util/get-field-units'
 import { ImpactsByUnitId } from '../../resolver-util'
-import { MusteredOrigins } from './effect-muster'
+import mergeImpacts from '../play-unit/merge-impacts'
+import { MusteredOrigins } from '../play-unit/effect-muster'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -43,6 +44,7 @@ export default class UpdateHistory {
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
+   * @param config.avengers Any potential units which were avenged by units leaving the battlefield.
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.targetId The potential target an effect is being applied to.
@@ -56,6 +58,7 @@ export default class UpdateHistory {
     deckUnit,
     playerId,
     logPrefix,
+    avengers,
     decoys,
     spies,
     scorches,
@@ -76,6 +79,7 @@ export default class UpdateHistory {
     deckUnit: DeckUnitDbObject
     playerId: string
     logPrefix: string
+    avengers: ImpactsByUnitId
     decoys: ImpactsByUnitId
     spies: ImpactsByUnitId
     scorches: ImpactsByUnitId
@@ -97,16 +101,18 @@ export default class UpdateHistory {
       unitId: deckUnit.unit,
       userId: targetId || playerId,
     })
-    const impacts: ImpactDbObject[] | undefined =
-      bonds[deckUnit.unit.toString()] ||
-      horns[deckUnit.unit.toString()] ||
-      mardroemes[deckUnit.unit.toString()] ||
-      morales[deckUnit.unit.toString()] ||
-      musters[deckUnit.unit.toString()] ||
-      scorches[deckUnit.unit.toString()] ||
-      decoys[deckUnit.unit.toString()] ||
-      spies[deckUnit.unit.toString()] ||
-      weathers[deckUnit.unit.toString()]
+    const impacts = mergeImpacts(
+      avengers,
+      bonds,
+      decoys,
+      horns,
+      mardroemes,
+      morales,
+      musters,
+      scorches,
+      spies,
+      weathers
+    )[deckUnit.unit.toString()]
     const updatedImpacts = UpdateHistory.updateImpactFieldUnits({
       game,
       impacts,
@@ -133,9 +139,11 @@ export default class UpdateHistory {
     if (targetId) {
       move.target = new ObjectId(targetId)
     }
-    UpdateHistory.addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToPlayer({
       game,
       move,
+      logPrefix,
+      playerId,
     })
 
     if (transformedFieldUnits) {
@@ -156,6 +164,7 @@ export default class UpdateHistory {
           logPrefix,
           mardroemes,
           morales,
+          avengers,
           musters,
           weathers,
           origin: GameUnitOrigin.Nondeck,
@@ -193,6 +202,7 @@ export default class UpdateHistory {
           created: move.created,
           game,
           horns,
+          avengers,
           decoys,
           spies,
           logPrefix,
@@ -211,6 +221,38 @@ export default class UpdateHistory {
         })
       }
     }
+
+    for (const avengerUnitId of Object.keys(avengers)) {
+      const avengees = avengers[avengerUnitId]
+      for (const avengee of avengees) {
+        UpdateHistory.newUnitIndirect({
+          bonds,
+          created: move.created,
+          game,
+          horns,
+          decoys,
+          spies,
+          logPrefix,
+          mardroemes,
+          morales,
+          musters,
+          avengers: {
+            [avengerUnitId]: [avengee],
+          },
+          weathers,
+          origin: GameUnitOrigin.Nondeck,
+          playerId: avengee.user.toString(),
+          turnUserId: playerId,
+          reason: {
+            type: MoveReasonType.Summon,
+            unit: avengee.unit,
+          },
+          scorches,
+          unitId: avengerUnitId,
+          targetId: avengee.user,
+        })
+      }
+    }
   }
 
   /**
@@ -221,53 +263,62 @@ export default class UpdateHistory {
    * @param config.unitId The new ID of the unit being indirectly added to the battlefield.
    * @param config.created The Date the move was made to add the unit indirectly to the battlefield.
    * @param config.playerId The ID of the game player who is deploying the new unit to the battlefield.
+   * @param config.turnUserId The ID of the User whose turn it currently is.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
+   * @param config.avengers Any potential units that were summoned to the battlefield due to avengers leaving.
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
    * @param config.weathers Any potential units the new battlefield unit Weathered when deployed.
    * @param config.reason Why the new unit is indirectly being added to the battlefield.
    * @param config.origin Where the new unit came from.
+   * @param config.targetId The potential targeted player the new unit being added is for.
    */
-  private static newUnitIndirect({
+  static newUnitIndirect({
     game,
     unitId,
     created,
     playerId,
+    turnUserId,
     logPrefix,
     origin,
-    scorches,
-    mardroemes,
-    musters,
-    bonds,
-    horns,
-    decoys,
-    spies,
-    morales,
-    weathers,
+    scorches = {},
+    mardroemes = {},
+    musters = {},
+    bonds = {},
+    horns = {},
+    avengers = {},
+    decoys = {},
+    spies = {},
+    morales = {},
+    weathers = {},
     reason,
+    targetId,
   }: {
     game: GameDbObject
-    unitId: ObjectId
+    unitId: ObjectId | string
     created: Date
     playerId: string
+    turnUserId?: ObjectId | string
     logPrefix: string
     origin: GameUnitOrigin
-    scorches: ImpactsByUnitId
-    mardroemes: ImpactsByUnitId
-    musters: ImpactsByUnitId
-    bonds: ImpactsByUnitId
-    horns: ImpactsByUnitId
-    decoys: ImpactsByUnitId
-    spies: ImpactsByUnitId
-    morales: ImpactsByUnitId
-    weathers: ImpactsByUnitId
+    scorches?: ImpactsByUnitId
+    mardroemes?: ImpactsByUnitId
+    musters?: ImpactsByUnitId
+    bonds?: ImpactsByUnitId
+    horns?: ImpactsByUnitId
+    avengers?: ImpactsByUnitId
+    decoys?: ImpactsByUnitId
+    spies?: ImpactsByUnitId
+    morales?: ImpactsByUnitId
+    weathers?: ImpactsByUnitId
     reason: MoveUnitReasonDbObject
+    targetId?: ObjectId
   }) {
     const fieldUnit = GetFieldUnits.getFieldUnit({
       game,
@@ -279,16 +330,18 @@ export default class UpdateHistory {
       UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
       throw Error(`${message}.`)
     }
-    const impacts =
-      scorches[unitId.toString()] ||
-      mardroemes[unitId.toString()] ||
-      musters[unitId.toString()] ||
-      bonds[unitId.toString()] ||
-      horns[unitId.toString()] ||
-      morales[unitId.toString()] ||
-      decoys[unitId.toString()] ||
-      spies[unitId.toString()] ||
-      weathers[unitId.toString()]
+    const impacts = mergeImpacts(
+      avengers,
+      bonds,
+      decoys,
+      horns,
+      mardroemes,
+      morales,
+      musters,
+      scorches,
+      spies,
+      weathers
+    )[unitId.toString()]
     const move: MoveUnitDbObject = {
       created,
       reason,
@@ -301,10 +354,13 @@ export default class UpdateHistory {
       source: {
         origin,
       },
+      target: targetId,
     }
-    UpdateHistory.addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToPlayer({
       game,
       move,
+      playerId: turnUserId || playerId,
+      logPrefix,
     })
   }
 
@@ -314,13 +370,27 @@ export default class UpdateHistory {
    * @param config The configuration used to add the Move to the Game player.
    * @param config.game The game containing the player to add the Move to, based on the current turn in the Game.
    * @param config.move The move to add to the current player on the Game.
+   * @param config.playerId The ID of the User on the Game to add the move to.
+   * @param config.logPrefix What to prepend log statements with.
    */
-  static addMoveToCurrentPlayer({ game, move }: { game: GameDbObject; move: MoveDbObject }) {
-    const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
+  static addMoveToPlayer({
+    game,
+    move,
+    logPrefix,
+    playerId,
+  }: {
+    game: GameDbObject
+    move: MoveDbObject
+    logPrefix: string
+    playerId: ObjectId | string
+  }) {
+    const player = game.players.find((player) => player.user.toString() === playerId.toString())
     if (player) {
       player.rounds[game.round - 1].moves.push(move)
     } else {
-      throw new PresentableError(`Could not find player "${game.turn}" on game "${game._id}" to add move to.`)
+      const message = `Could not find player "${playerId}" on game "${game._id}" to add move to`
+      UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+      throw new PresentableError(`${message}.`)
     }
   }
 

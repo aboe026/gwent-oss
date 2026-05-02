@@ -1,19 +1,25 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
+import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
 import clearBattlefieldUnits from './clear-battlefield-units'
-import { GameDbObject, MovePassDbObject } from '@gwent/graphql-schema/database-typings'
+import EffectAvenger from '../play-unit/effect-avenger'
+import { GameDbObject, GameUnitOrigin, MovePassDbObject, MoveReasonType } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
+import { GameUnitType, MoveType } from '@gwent/graphql-schema'
+import getRoundUnits from '../util/get-round-units'
+import getUnitEffects from '../util/get-unit-effects'
 import initializeNewRound from '../util/initialize-new-round'
 import IsGameOver from './is-game-over'
 import IsRoundOver from './is-round-over'
-import { MoveType } from '@gwent/graphql-schema'
 import passCurrentPlayer from './pass-current-player'
 import PresentableError from '../../../../util/presentable-error'
+import setGameScores from '../util/set-game-scores'
 import SetGameVictors from './set-game-victors'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
 import SetRoundResults from './set-round-results'
 import SetTurnForNextRound from './set-turn-for-next-round'
-import UpdateHistory from '../play-unit/update-history'
+import UpdateHistory from '../util/update-history'
 import { ValidatedPlayPass } from './play-pass-validation'
 
 /**
@@ -28,18 +34,22 @@ export default class PlayPassImplementation {
    * @param config The configuration used to pass on the game.
    * @param config.game The game to pass the rest of the round for the current user.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.userId The User ID of the player passing the round.
    * @returns The Game with the round passed for the user as well as if the round is over or not.
    * @throws {PresentableError} if known problem playing pass.
    */
-  static async playPassImplementation({ game, logPrefix }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
+  static async playPassImplementation({ game, logPrefix, userId }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
+    const passingDate = new Date()
     passCurrentPlayer(game)
 
-    UpdateHistory.addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToPlayer({
       game,
       move: {
-        created: new Date(),
+        created: passingDate,
         type: MoveType.Pass,
       } as MovePassDbObject,
+      logPrefix,
+      playerId: userId,
     })
 
     const roundOver = IsRoundOver.isRoundOver({
@@ -71,6 +81,13 @@ export default class PlayPassImplementation {
         initializeNewRound({
           game,
         })
+
+        await PlayPassImplementation.summonAvengers({
+          game,
+          logPrefix,
+          passingDate,
+          passingPlayerId: userId,
+        })
       }
     } else {
       SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
@@ -91,6 +108,88 @@ export default class PlayPassImplementation {
       game: updatedGame,
       roundOver,
     }
+  }
+
+  /**
+   * Summon avenging units for any potential avenger units removed from the end of the last round.
+   *
+   * @param config The configuration used to determine potential avengers to summon.
+   * @param config.game The game being passed on.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.passingDate The Date the passing move was played, so summoned avengers history time lines up with it.
+   * @param config.passingPlayerId The ID of the player performing the pass for the round.
+   */
+  private static async summonAvengers({
+    game,
+    logPrefix,
+    passingDate,
+    passingPlayerId,
+  }: {
+    game: GameDbObject
+    logPrefix: string
+    passingDate: Date
+    passingPlayerId: ObjectId
+  }) {
+    const previousRoundUnits = await getRoundUnits({
+      game,
+      round: game.round - 2,
+    })
+    const unitEffects = await getUnitEffects({
+      units: previousRoundUnits,
+    })
+    const removedGameUnits = game.players
+      .map((player) => {
+        const round = player.rounds[game.round - 2]
+        return [...round.close.units, ...round.ranged.units, ...round.siege.units].map((unit) => {
+          return {
+            unit: {
+              ...unit,
+              type: GameUnitType.Field,
+            },
+            user: player.user,
+          }
+        })
+      })
+      .flat()
+
+    const { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
+      battlefieldUnits: previousRoundUnits,
+      effects: unitEffects,
+      game,
+      logPrefix,
+      removedGameUnits,
+    })
+    for (const avengerUnitId of Object.keys(avengers)) {
+      const avengees = avengers[avengerUnitId]
+      for (const avengee of avengees) {
+        UpdateHistory.newUnitIndirect({
+          created: passingDate,
+          game,
+          logPrefix,
+          avengers: {
+            [avengerUnitId]: [avengee],
+          },
+          origin: GameUnitOrigin.Nondeck,
+          playerId: avengee.user.toString(),
+          turnUserId: passingPlayerId,
+          reason: {
+            type: MoveReasonType.Summon,
+            unit: avengee.unit,
+          },
+          unitId: avengerUnitId,
+          targetId: avengee.user,
+        })
+      }
+    }
+
+    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+      game,
+      units: [...previousRoundUnits, ...avengedUnits],
+      effects: unitEffects,
+      logPrefix,
+    })
+
+    setGameScores(game)
   }
 }
 

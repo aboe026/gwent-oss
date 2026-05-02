@@ -13,11 +13,14 @@ A list of things to be done in the future.
 Existing problems in the codebase that need to be fixed.
 
 - no spaces in username?
+- show what caused avengee to leave battlefield (scorch unit or round ending)?
+  - how to represent? new relationship in db or infer in front end?
+  - would same approach work for other effects (like mardroeme)?
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row
   - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)
-- improve performance when typing name for deck
+- improve performance when typing (long) name for deck
 - remove unnecessary dependencies
   - figlet: just have hard-coded banner text for startup
   - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
@@ -82,6 +85,7 @@ Existing problems in the codebase that need to be fixed.
       - effectiveStrength (for strength after all active effects applied)
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - replace "effectiveStrength" with "score" for GameUnit
+  - rename "CalculateGameEffectiveStrengths" to just "UnitScores"
 - carry over username (and password?) when switching between log-in and sign-up
   - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
@@ -120,9 +124,7 @@ New things that should be added to the codebase.
 
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
-- Avenger
-  - How to handle duplicates on battlefield? Use "created" field as differentiator?
-    - Apparently there are no duplicates allowed with latest patch?
+  - test avenger re-mediced cannot cause duplicate avenger
 - Better game summarization (graphs?)
   - points per round
   - time per round

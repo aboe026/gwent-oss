@@ -74,3 +74,95 @@ test('Cannot pass when not turn', async (t) => {
 
   await gameManager.verify({})
 })
+
+test('Pass moves field units to lost piles', async (t) => {
+  const unitName1 = 'Siegfried of Denesle'
+  const unitName2 = 'Ves'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1],
+    },
+    opponent: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+  })
+})
+
+test('Pass moves modifiers to lost piles', async (t) => {
+  const unitName1 = "Commander's Horn"
+  const unitName2 = 'Mardroeme'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1],
+    },
+    opponent: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    modifier: true,
+    horning: [],
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    modifier: true,
+    mardroeming: [],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+  })
+})
+
+test('Pass moves weathers to lost piles', async (t) => {
+  const unitName1 = 'Biting Frost'
+  const unitName2 = 'Impenetrable Fog'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1],
+    },
+    opponent: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    weather: true,
+    weathering: [],
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    weather: true,
+    weathering: [],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+  })
+})

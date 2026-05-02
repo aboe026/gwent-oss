@@ -9,12 +9,12 @@ describe('getImpactDescription', () => {
       })
     ).toThrow(`No impact description for effect "${EffectKey.Agile}"`)
   })
-  it('throws error for Avenger', () => {
-    expect(() =>
+  it('returns correct text for Avenger', () => {
+    expect(
       getImpactDescription({
         effectKey: EffectKey.Avenger,
       })
-    ).toThrow(`No impact description for effect "${EffectKey.Avenger}"`)
+    ).toEqual('avenged when removed from battlefield')
   })
   it('throws error for Berserker', () => {
     expect(() =>

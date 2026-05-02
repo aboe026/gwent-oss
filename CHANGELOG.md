@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.23.0 - 2026-05-01
+
+### Added
+
+- Avenger effect ([#58](https://github.com/aboe026/gwent/pull/58)) (Adam Boe)
+
 ## 0.22.0 - 2026-04-14
 
 ### Fixed

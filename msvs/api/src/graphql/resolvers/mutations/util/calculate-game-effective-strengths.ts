@@ -7,18 +7,19 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
+  FieldUnitDbObject,
   GameDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import EffectBond from './effect-bond'
-import EffectHorn from './effect-horn'
-import EffectMorale from './effect-morale'
-import EffectWeather from './effect-weather'
-import GetEffectWithKey from './get-effect-with-key'
+import EffectBond from '../play-unit/effect-bond'
+import EffectHorn from '../play-unit/effect-horn'
+import EffectMorale from '../play-unit/effect-morale'
+import EffectWeather from '../play-unit/effect-weather'
+import GetEffectWithKey from '../play-unit/get-effect-with-key'
 import GetFieldUnits from '../../util/get-field-units'
-import getUnitIdsWithEffect from './get-unit-ids-with-effect'
-import GetWeatherUnitsForRow, { PlayerWeatherUnit } from './get-weather-units-for-row'
+import getUnitIdsWithEffect from '../play-unit/get-unit-ids-with-effect'
+import GetWeatherUnitsForRow, { PlayerWeatherUnit } from '../play-unit/get-weather-units-for-row'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -49,16 +50,16 @@ export default class CalculateGameEffectiveStrengths {
     effects,
     logPrefix,
     newDeckUnit,
-    musteredUnitIds,
-    transformedUnitIds,
+    musteredUnitIds = [],
+    transformedUnitIds = [],
   }: {
     game: GameDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
     logPrefix: string
-    newDeckUnit: DeckUnitDbObject
-    musteredUnitIds: string[]
-    transformedUnitIds: string[]
+    newDeckUnit?: DeckUnitDbObject
+    musteredUnitIds?: string[]
+    transformedUnitIds?: string[]
   }): StrengthImpacts {
     const weathers: ImpactsByUnitId = {}
     const bonds: ImpactsByUnitId = {}
@@ -211,7 +212,7 @@ export default class CalculateGameEffectiveStrengths {
     moraleEffect: EffectDbObject | undefined
     bondEffect: EffectDbObject | undefined
     hornEffect: EffectDbObject | undefined
-    newDeckUnit: DeckUnitDbObject
+    newDeckUnit?: DeckUnitDbObject
     musteredUnitIds: string[]
     transformedUnitIds: string[]
     userId: ObjectId
@@ -226,12 +227,20 @@ export default class CalculateGameEffectiveStrengths {
     const rowFieldUnits = GetFieldUnits.fromRow({
       row,
     })
-    for (const rowUnit of rowFieldUnits) {
-      const matchingUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
+    const rowFieldUnitPairs: {
+      fieldUnit: FieldUnitDbObject
+      unit: UnitDbObject
+    }[] = []
+    for (const rowFieldUnit of rowFieldUnits) {
+      const matchingUnit = units.find((unit) => unit._id.toString() === rowFieldUnit.unit.toString())
       if (matchingUnit) {
         rowDbUnits.push(matchingUnit)
+        rowFieldUnitPairs.push({
+          fieldUnit: rowFieldUnit,
+          unit: matchingUnit,
+        })
       } else {
-        const message = `Could not find Unit with ID "${rowUnit.unit}"`
+        const message = `Could not find Unit with ID "${rowFieldUnit.unit}"`
         CalculateGameEffectiveStrengths.logger.error(`${logPrefix} failed: ${message}`)
         throw new PresentableError(`${message}.`)
       }
@@ -246,18 +255,18 @@ export default class CalculateGameEffectiveStrengths {
       units: rowDbUnits,
     })
 
-    for (const rowFieldUnit of rowFieldUnits) {
-      const rowUnit = units.find((unit) => unit._id.toString() === rowFieldUnit.unit.toString())
-      if (rowUnit && rowUnit.strength !== undefined && rowUnit.strength !== null) {
+    for (const rowFieldUnitPair of rowFieldUnitPairs) {
+      const { fieldUnit: rowFieldUnit, unit: rowUnit } = rowFieldUnitPair
+      rowFieldUnit.effectiveStrength = rowUnit.strength
+      rowFieldUnit.effects = []
+
+      if (newDeckUnit) {
         const bondIdsInRow = EffectBond.getUnitsWithBond({
           bondEffect,
           logPrefix,
           units: rowDbUnits,
           unitName: rowUnit.name,
         })
-        rowFieldUnit.effectiveStrength = rowUnit.strength
-        rowFieldUnit.effects = []
-
         addListsToMap({
           baseMap: weathers,
           newLists: EffectWeather.weatherScores({
@@ -287,7 +296,6 @@ export default class CalculateGameEffectiveStrengths {
             currentPlayerId,
           }),
         })
-
         addListsToMap({
           baseMap: morales,
           newLists: EffectMorale.applyMorales({
@@ -303,7 +311,6 @@ export default class CalculateGameEffectiveStrengths {
             transformedUnitIds,
           }),
         })
-
         addListsToMap({
           baseMap: horns,
           newLists: EffectHorn.applyHorn({

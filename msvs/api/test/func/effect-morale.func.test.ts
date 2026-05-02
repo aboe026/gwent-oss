@@ -140,6 +140,7 @@ describe('effect-morale', () => {
                   moves: [
                     expectizeMoveUnit({
                       unit: fieldUnitSelf1,
+                      impacts: [],
                     }),
                   ],
                   ranged: {
@@ -306,6 +307,7 @@ describe('effect-morale', () => {
                   moves: [
                     expectizeMoveUnit({
                       unit: fieldUnitSelf1,
+                      impacts: [],
                     }),
                     expectizeMoveUnit({
                       unit: fieldUnitSelf2,
@@ -644,6 +646,7 @@ describe('effect-morale', () => {
                     }),
                     expectizeMoveUnit({
                       unit: fieldUnitSelf2,
+                      impacts: [],
                     }),
                   ],
                   ranged: {

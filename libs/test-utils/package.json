@@ -1,6 +1,6 @@
 {
   "name": "@gwent/test-utils",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "author": "Adam Boe",
   "description": "Utility functions for tests",
   "main": "build/src/index.js",

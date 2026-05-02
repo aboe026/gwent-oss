@@ -50,7 +50,7 @@ export default class EffectScorch {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
   }): ImpactsByUnitId {
-    const scorched: ImpactDbObject[] = []
+    const impacts: ImpactsByUnitId = {}
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
@@ -72,13 +72,14 @@ export default class EffectScorch {
     const hasScorchEffect =
       scorchEffect &&
       newUnit.effects &&
-      newUnit.effects.map((id) => id.toString()).includes(scorchEffect._id.toString())
+      newUnit.effects.map((effectId) => effectId.toString()).includes(scorchEffect._id.toString())
     if (EffectScorch.logger.isTraceEnabled()) {
       EffectScorch.logger.trace(`${logPrefix} hasScorchEffect: "${hasScorchEffect}"`)
     }
 
     if (hasScorchEffect) {
       EffectScorch.logger.debug(`${logPrefix} unit "${newUnit.name}" has scorch effect, applying it`)
+      const scorched: ImpactDbObject[] = []
       const scorchedPlayers = newUnit.scorchScope
         ? game.players.filter((player) => player.user.toString() !== game.turn?.toString())
         : game.players
@@ -113,12 +114,10 @@ export default class EffectScorch {
           })
         )
       }
+
+      impacts[newDeckUnit.unit.toString()] = scorched
     }
-    return scorched.length > 0
-      ? {
-          [newDeckUnit.unit.toString()]: scorched,
-        }
-      : {}
+    return impacts
   }
 
   /**

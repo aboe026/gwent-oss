@@ -702,6 +702,7 @@ describe('play-unit-mutation', () => {
                       moves: [
                         expectizeMoveUnit({
                           unit: fieldUnit,
+                          impacts: [],
                         }),
                       ],
                       ranged: TestUtil.getPlayerCombatRow({}),

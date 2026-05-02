@@ -7,7 +7,6 @@ import {
   EffectKey,
   FieldUnitDbObject,
   FieldUnitEffectDbObject,
-  ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
@@ -40,9 +39,69 @@ describe('effect-morale', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: {},
+        expected: {
+          [moralingUnit._id.toString()]: [],
+        },
         modifiedRowFieldUnit: deepClone(rowFieldUnit),
         debugCalls: [[`${logPrefix} rowUnit "${rowFieldUnit.unit}" is hero so not susceptible to morale effect.`]],
+      })
+    })
+    it('does nothing if rowUnit strength undefined', () => {
+      const moralingUnit = TestUtil.getDbUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        effects: [],
+      })
+      const moraleEffect = TestUtil.getDbEffect({
+        key: EffectKey.Morale,
+      })
+      testApplyMorales({
+        logPrefix,
+        moraleEffect,
+        moraleIdsInRow: [moralingUnit._id.toString()],
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowFieldUnit,
+        rowUnit: TestUtil.getDbUnit({
+          id: rowFieldUnit.unit,
+          strength: undefined,
+        }),
+        userId: new ObjectId(),
+        units: [moralingUnit],
+        expected: {
+          [moralingUnit._id.toString()]: [],
+        },
+        modifiedRowFieldUnit: deepClone(rowFieldUnit),
+        debugCalls: [
+          [`${logPrefix} rowUnit "${rowFieldUnit.unit}" does not have strength so not susceptible to morale effect.`],
+        ],
+      })
+    })
+    it('does nothing if rowUnit strength null', () => {
+      const moralingUnit = TestUtil.getDbUnit({})
+      const rowFieldUnit = TestUtil.getDbFieldUnit({
+        effects: [],
+      })
+      const moraleEffect = TestUtil.getDbEffect({
+        key: EffectKey.Morale,
+      })
+      testApplyMorales({
+        logPrefix,
+        moraleEffect,
+        moraleIdsInRow: [moralingUnit._id.toString()],
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowFieldUnit,
+        rowUnit: TestUtil.getDbUnit({
+          id: rowFieldUnit.unit,
+          strength: null as any,
+        }),
+        userId: new ObjectId(),
+        units: [moralingUnit],
+        expected: {
+          [moralingUnit._id.toString()]: [],
+        },
+        modifiedRowFieldUnit: deepClone(rowFieldUnit),
+        debugCalls: [
+          [`${logPrefix} rowUnit "${rowFieldUnit.unit}" does not have strength so not susceptible to morale effect.`],
+        ],
       })
     })
     it('does nothing if moraleIdsInRow empty', () => {
@@ -111,7 +170,9 @@ describe('effect-morale', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: {},
+        expected: {
+          [moralingUnit._id.toString()]: [],
+        },
         modifiedRowFieldUnit: deepClone(rowFieldUnit),
       })
     })
@@ -131,10 +192,13 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 1,
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: {},
+        expected: {
+          [moralingUnit._id.toString()]: [],
+        },
         modifiedRowFieldUnit: {
           ...deepClone(rowFieldUnit),
           effectiveStrength: 1,
@@ -175,10 +239,13 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 1,
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: {},
+        expected: {
+          [moralingUnit._id.toString()]: [],
+        },
         modifiedRowFieldUnit: {
           ...deepClone(rowFieldUnit),
           effectiveStrength: 1,
@@ -218,10 +285,14 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 1,
         }),
         userId: new ObjectId(),
         units: [moralingUnit1, moralingUnit2],
-        expected: {},
+        expected: {
+          [moralingUnit1._id.toString()]: [],
+          [moralingUnit2._id.toString()]: [],
+        },
         modifiedRowFieldUnit: {
           ...deepClone(rowFieldUnit),
           effectiveStrength: 2,
@@ -275,10 +346,14 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 2,
         }),
         userId: new ObjectId(),
         units: [moralingUnit1, moralingUnit2],
-        expected: {},
+        expected: {
+          [moralingUnit1._id.toString()]: [],
+          [moralingUnit2._id.toString()]: [],
+        },
         modifiedRowFieldUnit: {
           ...deepClone(rowFieldUnit),
           effectiveStrength: 2,
@@ -343,13 +418,14 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 1,
         }),
         userId,
         currentPlayerId: userId,
         units: [moralingUnit],
         expected: {
           [moralingUnit._id.toString()]: [
-            {
+            TestUtil.getDbImpact({
               unit: TestUtil.getDbGameUnit({
                 artStyle: rowFieldUnit.artStyle,
                 id: rowFieldUnit.unit,
@@ -358,7 +434,7 @@ describe('effect-morale', () => {
                 row: rowFieldUnit.row as Combat,
               }),
               user: userId,
-            },
+            }),
           ],
         },
         modifiedRowFieldUnit: {
@@ -401,6 +477,7 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 1,
         }),
         userId,
         currentPlayerId: userId,
@@ -408,7 +485,7 @@ describe('effect-morale', () => {
         transformedUnitIds: [moralingUnit._id.toString()],
         expected: {
           [moralingUnit._id.toString()]: [
-            {
+            TestUtil.getDbImpact({
               unit: TestUtil.getDbGameUnit({
                 artStyle: rowFieldUnit.artStyle,
                 id: rowFieldUnit.unit,
@@ -417,7 +494,7 @@ describe('effect-morale', () => {
                 row: rowFieldUnit.row as Combat,
               }),
               user: userId,
-            },
+            }),
           ],
         },
         modifiedRowFieldUnit: {
@@ -472,13 +549,15 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 2,
         }),
         userId,
         currentPlayerId: userId,
         units: [moralingUnit1, moralingUnit2],
         expected: {
+          [moralingUnit1._id.toString()]: [],
           [moralingUnit2._id.toString()]: [
-            {
+            TestUtil.getDbImpact({
               unit: TestUtil.getDbGameUnit({
                 artStyle: rowFieldUnit.artStyle,
                 id: rowFieldUnit.unit,
@@ -487,7 +566,7 @@ describe('effect-morale', () => {
                 row: rowFieldUnit.row as Combat,
               }),
               user: userId,
-            },
+            }),
           ],
         },
         modifiedRowFieldUnit: {
@@ -526,29 +605,31 @@ describe('effect-morale', () => {
         rowFieldUnit,
         rowUnit: TestUtil.getDbUnit({
           id: rowFieldUnit.unit,
+          strength: 2,
         }),
         userId,
         currentPlayerId: userId,
         units: [moralingUnit1, moralingUnit2, moralingUnit3],
         transformedUnitIds: [moralingUnit3._id.toString()],
         expected: {
+          [moralingUnit1._id.toString()]: [],
           [moralingUnit2._id.toString()]: [
-            {
+            TestUtil.getDbImpact({
               unit: TestUtil.convertFieldDbUnitToGameDbUnit({
                 ...rowFieldUnit,
                 effectiveStrength: 2,
               }),
               user: userId,
-            },
+            }),
           ],
           [moralingUnit3._id.toString()]: [
-            {
+            TestUtil.getDbImpact({
               unit: TestUtil.convertFieldDbUnitToGameDbUnit({
                 ...rowFieldUnit,
                 effectiveStrength: 3,
               }),
               user: userId,
-            },
+            }),
           ],
         },
         modifiedRowFieldUnit: {
@@ -609,6 +690,7 @@ describe('effect-morale', () => {
       const userId = new ObjectId()
       const rowUnit = TestUtil.getDbUnit({
         id: rowFieldUnit.unit,
+        strength: 4,
       })
 
       const effect = {
@@ -625,7 +707,7 @@ describe('effect-morale', () => {
         effectiveStrength: 5,
         effects: [effect],
       }
-      const impact: ImpactDbObject = {
+      const impact = TestUtil.getDbImpact({
         unit: TestUtil.getDbGameUnit({
           artStyle: rowFieldUnit.artStyle,
           id: rowFieldUnit.unit,
@@ -634,7 +716,7 @@ describe('effect-morale', () => {
           row: rowFieldUnit.row as Combat,
         }),
         user: userId,
-      }
+      })
       testApplyMorales({
         logPrefix,
         moraleEffect,
@@ -659,7 +741,6 @@ describe('effect-morale', () => {
         traceEnabled: true,
         traceCalls: [
           [`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`],
-          [`${logPrefix} moralesToApply: "${JSON.stringify([moralingUnit._id.toString()])}"`],
           [`${logPrefix} fieldUnitEffect: "${JSON.stringify(effect)}"`],
           [`${logPrefix} impact: "${JSON.stringify(impact)}"`],
         ],

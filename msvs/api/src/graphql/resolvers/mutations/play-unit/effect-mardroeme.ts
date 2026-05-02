@@ -52,7 +52,7 @@ export default class EffectMardroeme {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
   }): Promise<Transformations> {
-    const impacts: ImpactDbObject[] = []
+    const impacts: ImpactsByUnitId = {}
     const transformedUnits: UnitDbObject[] = []
     const transformedFieldUnits: FieldUnitDbObject[] = []
     let mardroemingFieldUnit: FieldUnitDbObject | undefined = undefined
@@ -74,7 +74,7 @@ export default class EffectMardroeme {
       EffectMardroeme.logger.trace(`${logPrefix} berserkerEffect: "${JSON.stringify(berserkerEffect)}"`)
     }
     const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
-    if (player && mardroemeEffect && berserkerEffect) {
+    if (player && mardroemeEffect) {
       const fieldUnits = GetFieldUnits.fromRounds({
         combat,
         rounds: [player.rounds[game.round - 1]],
@@ -93,67 +93,69 @@ export default class EffectMardroeme {
       if (EffectMardroeme.logger.isTraceEnabled()) {
         EffectMardroeme.logger.trace(`${logPrefix} mardroemeUnitIds: "${JSON.stringify(mardroemeUnitIds)}"`)
       }
-      const berserkerUnitIds = getUnitIdsWithEffect({
-        effect: berserkerEffect,
-        units: playerRowBattlefieldUnits,
-      })
-      if (EffectMardroeme.logger.isTraceEnabled()) {
-        EffectMardroeme.logger.trace(`${logPrefix} berserkerUnitIds: "${JSON.stringify(berserkerUnitIds)}"`)
-      }
 
-      if (mardroemeUnitIds.length > 0 && berserkerUnitIds.length > 0 && combat) {
-        mardroemingFieldUnit = EffectMardroeme.getMardroemingFieldUnit({
-          fieldUnits,
-          mardroemeUnitIds,
-        })
-        const berserkers = playerRowBattlefieldUnits.filter((unit) => berserkerUnitIds.includes(unit._id.toString()))
-        const existingVildkaarlIds = EffectMardroeme.getExistingVildkaarlIds({
-          battlefieldUnits,
-          fieldUnits,
-        })
-        const vildkaarls = await EffectMardroeme.getVildkaarlsForTransformation({
-          berserkers,
-          existingVildkaarlIds,
-          limit: berserkers.length,
-        })
+      if (mardroemeUnitIds.length > 0) {
+        const newUnitIsMardroeming = mardroemeUnitIds.includes(newDeckUnit.unit.toString())
+        const newUnitImpacts: ImpactDbObject[] = []
 
-        const round = player.rounds[game.round - 1]
-        const transformedPairs = EffectMardroeme.replaceBerserkersWithVildkaarl({
-          berserkers,
-          row: combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege,
-          vildkaarls,
+        const berserkerUnitIds = getUnitIdsWithEffect({
+          effect: berserkerEffect,
+          units: playerRowBattlefieldUnits,
         })
-        if (transformedPairs.length > 0) {
-          EffectMardroeme.logger.debug(
-            `${logPrefix} transformed "${JSON.stringify(transformedPairs.map((pair) => pair.to.unit))}" berserkers into vildkaarls`
-          )
+        if (EffectMardroeme.logger.isTraceEnabled()) {
+          EffectMardroeme.logger.trace(`${logPrefix} berserkerUnitIds: "${JSON.stringify(berserkerUnitIds)}"`)
+        }
 
-          const newUnitImpact = mardroemeUnitIds.includes(newDeckUnit.unit.toString())
+        if (berserkerUnitIds.length > 0 && combat) {
+          mardroemingFieldUnit = EffectMardroeme.getMardroemingFieldUnit({
+            fieldUnits,
+            mardroemeUnitIds,
+          })
+          const berserkers = playerRowBattlefieldUnits.filter((unit) => berserkerUnitIds.includes(unit._id.toString()))
+          const existingVildkaarlIds = EffectMardroeme.getExistingVildkaarlIds({
+            battlefieldUnits,
+            fieldUnits,
+          })
+          const vildkaarls = await EffectMardroeme.getVildkaarlsForTransformation({
+            berserkers,
+            existingVildkaarlIds,
+            limit: berserkers.length,
+          })
 
-          for (const transformedPair of transformedPairs) {
-            if (newUnitImpact) {
-              impacts.push({
-                unit: {
-                  ...transformedPair.from,
-                  type: GameUnitType.Field,
-                },
-                user: player.user,
-              })
+          const round = player.rounds[game.round - 1]
+          const transformedPairs = EffectMardroeme.replaceBerserkersWithVildkaarl({
+            berserkers,
+            row: combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege,
+            vildkaarls,
+          })
+          if (transformedPairs.length > 0) {
+            EffectMardroeme.logger.debug(
+              `${logPrefix} transformed "${JSON.stringify(transformedPairs.map((pair) => pair.to.unit))}" berserkers into vildkaarls`
+            )
+
+            for (const transformedPair of transformedPairs) {
+              if (newUnitIsMardroeming) {
+                newUnitImpacts.push({
+                  unit: {
+                    ...transformedPair.from,
+                    type: GameUnitType.Field,
+                  },
+                  user: player.user,
+                })
+              }
+              transformedUnits.push(transformedPair.unit)
+              transformedFieldUnits.push(transformedPair.to)
             }
-            transformedUnits.push(transformedPair.unit)
-            transformedFieldUnits.push(transformedPair.to)
           }
+        }
+        if (newUnitIsMardroeming) {
+          impacts[newDeckUnit.unit.toString()] = newUnitImpacts
         }
       }
     }
 
     return {
-      impacts:
-        impacts.length > 0
-          ? {
-              [newDeckUnit.unit.toString()]: impacts,
-            }
-          : {},
+      impacts,
       transformedUnits,
       transformedFieldUnits,
       mardroemingFieldUnit,

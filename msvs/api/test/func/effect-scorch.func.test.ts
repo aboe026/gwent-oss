@@ -77,6 +77,7 @@ describe('effect-scorch', () => {
                   moves: [
                     expectizeMoveUnit({
                       unit: unitSelf1,
+                      impacts: [],
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
@@ -400,6 +401,7 @@ describe('effect-scorch', () => {
                   moves: [
                     expectizeMoveUnit({
                       unit: unitSelf1,
+                      impacts: [],
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),

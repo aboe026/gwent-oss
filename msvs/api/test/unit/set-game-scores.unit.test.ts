@@ -1,5 +1,5 @@
 import deepClone from '../util/deep-clone'
-import setGameScores, { getUnitsScore } from '../../src/graphql/resolvers/mutations/play-unit/set-game-scores'
+import setGameScores, { getUnitsScore } from '../../src/graphql/resolvers/mutations/util/set-game-scores'
 import TestUtil from '../util/test-util'
 
 describe('set-game-scores', () => {

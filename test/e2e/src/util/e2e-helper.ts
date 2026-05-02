@@ -335,7 +335,15 @@ export class E2eHelper {
     }
   }
 
-  static resetPlayerCombatRow({ player, row }: { player: GamePlayerExpected; row: Combat }): number {
+  static resetPlayerCombatRow({
+    player,
+    row,
+    discards,
+  }: {
+    player: GamePlayerExpected
+    row: Combat
+    discards: number | undefined | null
+  }): number {
     let discardsForRow = 0
     if (row === Combat.Close) {
       discardsForRow = (player.close?.units || []).length
@@ -356,7 +364,22 @@ export class E2eHelper {
         units: [],
       }
     }
-    return discardsForRow
+    return (discards || 0) + discardsForRow
+  }
+
+  static resetPlayerWeather({
+    player,
+    discards,
+  }: {
+    player: GamePlayerExpected
+    discards: number | undefined | null
+  }): number {
+    let discardFromWeather = 0
+    if (player.weathering) {
+      discardFromWeather += player.weathering.length
+      player.weathering = []
+    }
+    return (discards || 0) + discardFromWeather
   }
 
   static playUnit({
@@ -375,6 +398,7 @@ export class E2eHelper {
     mustering,
     bonding,
     decoying,
+    avenging,
     spying,
     weathering,
     impacts,
@@ -394,6 +418,7 @@ export class E2eHelper {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    avenging?: AvengingExpected[]
     spying?: SpyingExpected
     weathering?: WeatheringExpected[]
     impacts?: number
@@ -490,6 +515,16 @@ export class E2eHelper {
           row: bond.row,
           unitName: bond.name,
           instance: i + 1,
+        })
+      }
+    }
+    if (avenging) {
+      for (const avenge of avenging) {
+        E2eHelper.addUnitToGamePlayer({
+          player: avenge.newUnitPlayer,
+          row: avenge.row,
+          unitName: avenge.name,
+          strength: avenge.effectiveStrength,
         })
       }
     }
@@ -642,6 +677,25 @@ export class E2eHelper {
         })
       }
     }
+    if (moves && avenging) {
+      for (const avenge of avenging) {
+        moves.push({
+          userName: avenge.turn.name,
+          unitName: avenge.name,
+          combatRow: avenge.row,
+          reason: {
+            name: avenge.name === 'Bovine Defense Force' ? 'Cow' : 'Kambi',
+            type: MoveReasonType.Summon,
+          },
+          impacts: {
+            effectKey: EffectKey.Avenger,
+            number: 1,
+          },
+          origin: GameUnitOrigin.Nondeck,
+          targetUserName: avenge.newUnitPlayer.name,
+        })
+      }
+    }
     if (switchTurnsWith) {
       player.turn = undefined
       switchTurnsWith.turn = PlayerTurn.Current
@@ -685,42 +739,38 @@ export class E2eHelper {
   }) {
     self.score = 0
     opponent.score = 0
-    self.discard =
-      (self.discard || 0) +
-      E2eHelper.resetPlayerCombatRow({
-        player: self,
-        row: Combat.Close,
-      })
-    self.discard =
-      (self.discard || 0) +
-      E2eHelper.resetPlayerCombatRow({
-        player: self,
-        row: Combat.Ranged,
-      })
-    self.discard =
-      (self.discard || 0) +
-      E2eHelper.resetPlayerCombatRow({
-        player: self,
-        row: Combat.Siege,
-      })
-    opponent.discard =
-      (opponent.discard || 0) +
-      E2eHelper.resetPlayerCombatRow({
-        player: opponent,
-        row: Combat.Close,
-      })
-    opponent.discard =
-      (opponent.discard || 0) +
-      E2eHelper.resetPlayerCombatRow({
-        player: opponent,
-        row: Combat.Ranged,
-      })
-    opponent.discard =
-      (opponent.discard || 0) +
-      E2eHelper.resetPlayerCombatRow({
-        player: opponent,
-        row: Combat.Siege,
-      })
+    self.discard = E2eHelper.resetPlayerCombatRow({
+      player: self,
+      row: Combat.Close,
+      discards: self.discard,
+    })
+    self.discard = E2eHelper.resetPlayerCombatRow({
+      player: self,
+      row: Combat.Ranged,
+      discards: self.discard,
+    })
+    self.discard = E2eHelper.resetPlayerCombatRow({
+      player: self,
+      row: Combat.Siege,
+      discards: self.discard,
+    })
+    opponent.discard = E2eHelper.resetPlayerCombatRow({
+      player: opponent,
+      row: Combat.Close,
+      discards: opponent.discard,
+    })
+    opponent.discard = E2eHelper.resetPlayerCombatRow({
+      player: opponent,
+      row: Combat.Ranged,
+      discards: opponent.discard,
+    })
+    opponent.discard = E2eHelper.resetPlayerCombatRow({
+      player: opponent,
+      row: Combat.Siege,
+      discards: opponent.discard,
+    })
+    self.discard = E2eHelper.resetPlayerWeather({ player: self, discards: self.discard })
+    opponent.discard = E2eHelper.resetPlayerWeather({ player: opponent, discards: opponent.discard })
     self.passed = false
     opponent.passed = undefined
     if (gameOver) {
@@ -806,4 +856,12 @@ export interface SpyingExpected {
   row: Combat
   effectiveStrength: number
   instance?: number
+}
+
+export interface AvengingExpected {
+  turn: GamePlayerExpected
+  newUnitPlayer: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
 }

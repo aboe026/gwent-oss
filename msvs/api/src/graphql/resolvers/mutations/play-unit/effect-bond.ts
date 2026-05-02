@@ -124,40 +124,51 @@ export default class EffectBond {
     }
 
     if (bondEffect && rowFieldUnit.effects) {
-      const bondsToApply = unitIdsWithBondInRow.filter((id) => id !== rowFieldUnit.unit.toString())
-      if (EffectBond.logger.isTraceEnabled()) {
-        EffectBond.logger.trace(`${logPrefix} bondsToApply: "${JSON.stringify(bondsToApply)}"`)
-      }
       const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
-      for (const unitIdWithBond of bondsToApply) {
+      const idAndUnits: {
+        id: string
+        unit: UnitDbObject
+      }[] = []
+      for (const unitIdWithBond of unitIdsWithBondInRow) {
         const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
         if (bondingUnit) {
-          rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
-          EffectBond.logger.debug(
-            `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
-          )
-          const reason: EffectFromUnitDbObject = {
-            effect: bondEffect._id,
-            type: EffectReasonType.Unit,
-            unit: bondingUnit._id,
-          }
+          idAndUnits.push({
+            id: unitIdWithBond,
+            unit: bondingUnit,
+          })
+          if (unitIdWithBond !== rowFieldUnit.unit.toString()) {
+            rowFieldUnit.effectiveStrength = (rowFieldUnit.effectiveStrength || 0) * 2
+            EffectBond.logger.debug(
+              `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowFieldUnit.effectiveStrength}"`
+            )
+            const reason: EffectFromUnitDbObject = {
+              effect: bondEffect._id,
+              type: EffectReasonType.Unit,
+              unit: bondingUnit._id,
+            }
 
-          const fieldUnitEffect: FieldUnitEffectDbObject = {
-            operator: EFFECT_OPERATOR.Double,
-            reason,
-            total: rowFieldUnit.effectiveStrength,
+            const fieldUnitEffect: FieldUnitEffectDbObject = {
+              operator: EFFECT_OPERATOR.Double,
+              reason,
+              total: rowFieldUnit.effectiveStrength,
+            }
+            if (EffectBond.logger.isTraceEnabled()) {
+              EffectBond.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
+            }
+            rowFieldUnit.effects.push(fieldUnitEffect)
           }
-          if (EffectBond.logger.isTraceEnabled()) {
-            EffectBond.logger.trace(`${logPrefix} fieldUnitEffect: "${JSON.stringify(fieldUnitEffect)}"`)
-          }
-          rowFieldUnit.effects.push(fieldUnitEffect)
+        } else {
+          const message = `Could not find unit for bonding unit ID "${unitIdWithBond}"`
+          EffectBond.logger.error(`${logPrefix} failed: ${message}`)
+          throw Error(`${message}.`)
         }
       }
       // wait to set impacts so know full effectiveStrength of rowFieldUnit
-      for (const unitIdWithBond of bondsToApply) {
-        const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
+      for (const idAndUnit of idAndUnits) {
+        const { unit: bondingUnit } = idAndUnit
+        const impactsForUnit: ImpactDbObject[] = []
         if (
-          bondingUnit &&
+          bondingUnit._id.toString() !== rowFieldUnit.unit.toString() &&
           impactables.includes(bondingUnit._id.toString()) &&
           userId.toString() === currentPlayerId?.toString()
         ) {
@@ -171,8 +182,9 @@ export default class EffectBond {
           if (EffectBond.logger.isTraceEnabled()) {
             EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
           }
-          impacts[bondingUnit._id.toString()] = [impact]
+          impactsForUnit.push(impact)
         }
+        impacts[bondingUnit._id.toString()] = impactsForUnit
       }
     }
 

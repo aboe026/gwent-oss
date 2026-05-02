@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/battlefield-updates'
-import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
+import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import {
   DeckUnitDbObject,
@@ -14,15 +14,15 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
-import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
-import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
+import * as getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
+import * as getUnitEffects from '../../src/graphql/resolvers/mutations/util/get-unit-effects'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
-import * as setGameScores from '../../src/graphql/resolvers/mutations/play-unit/set-game-scores'
+import * as setGameScores from '../../src/graphql/resolvers/mutations/util/set-game-scores'
 import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
 import TestUtil from '../util/test-util'
-import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
+import UpdateHistory from '../../src/graphql/resolvers/mutations/util/update-history'
 
 describe('play-unit-implementation', () => {
   const logPrefix = 'log-prefix'
@@ -102,6 +102,39 @@ describe('play-unit-implementation', () => {
         updated: new Date(),
       },
       logPrefix,
+      expectedGameDeck: player.deck,
+    })
+  })
+  it('passes avenger impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const fieldUnit = TestUtil.getDbFieldUnit({})
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      avengers: {
+        [fieldUnit.unit.toString()]: impacts,
+      },
+      avengedUnits: [
+        TestUtil.getDbUnit({
+          id: fieldUnit.unit,
+        }),
+      ],
       expectedGameDeck: player.deck,
     })
   })
@@ -437,6 +470,8 @@ async function testPlayUnitImplementation({
   isDecoy = false,
   isSpy = false,
   isWeather = false,
+  avengers = {},
+  avengedUnits = [],
   scorches = {},
   musters = {},
   musteredUnits = [],
@@ -468,6 +503,8 @@ async function testPlayUnitImplementation({
   isDecoy?: boolean
   isSpy?: boolean
   isWeather?: boolean
+  avengers?: ImpactsByUnitId
+  avengedUnits?: UnitDbObject[]
   scorches?: ImpactsByUnitId
   musters?: ImpactsByUnitId
   musteredUnits?: UnitDbObject[]
@@ -519,6 +556,8 @@ async function testPlayUnitImplementation({
   const modifyBattlefieldWithNewUnitSpy = jest
     .spyOn(BattlefieldUpdates, 'modifyBattlefieldWithNewUnit')
     .mockResolvedValue({
+      avengers,
+      avengedUnits,
       scorches,
       musters,
       musteredUnits,
@@ -641,7 +680,7 @@ async function testPlayUnitImplementation({
           [
             {
               game,
-              units: [unit, ...units, ...musteredUnits, ...transformedUnits],
+              units: [unit, ...units, ...musteredUnits, ...transformedUnits, ...avengedUnits],
               effects: [...(effects || []), unitEffect, musterEffect, mardroemeEffect],
               logPrefix,
               newDeckUnit: deckUnit,
@@ -665,6 +704,7 @@ async function testPlayUnitImplementation({
               musteredOrigins,
               playerId: game.turn?.toString(),
               logPrefix,
+              avengers,
               scorches,
               bonds,
               horns,
