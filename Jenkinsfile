@@ -8,7 +8,7 @@ node {
     def workDir = "${WORKSPACE}/${env.BRANCH_NAME}-${env.BUILD_ID}"
     def nodeImage
     def composeVersion = '5.1.2'
-    def dockerRegistry = 'localhost:5000'
+    def dockerRegistry = 'registry.cicd.com'
     def composeFileName = 'docker-compose.yaml'
     def e2eSuites = [
         [
