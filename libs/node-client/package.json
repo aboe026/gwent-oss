@@ -1,6 +1,6 @@
 {
   "name": "@gwent/node-client",
-  "version": "0.23.0",
+  "version": "0.23.1",
   "author": "Adam Boe",
   "description": "A Node.js client/SDK for the Gwent GraphQL API",
   "main": "build/src/node-client.js",
@@ -26,11 +26,11 @@
     "graphql-tag": "2.12.6"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "6.2.1",
-    "@graphql-codegen/typescript": "5.0.9",
-    "@graphql-codegen/typescript-graphql-request": "7.0.0",
-    "@graphql-codegen/typescript-operations": "5.0.9",
-    "@graphql-tools/schema": "10.0.31",
+    "@graphql-codegen/cli": "6.3.0",
+    "@graphql-codegen/typescript": "5.0.10",
+    "@graphql-codegen/typescript-graphql-request": "7.0.1",
+    "@graphql-codegen/typescript-operations": "5.1.0",
+    "@graphql-tools/schema": "10.0.33",
     "@types/node": "22.18.0"
   }
 }
