@@ -48,6 +48,7 @@ export default class UpdateHistory {
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.targetId The potential target an effect is being applied to.
+   * @param config.medics Any potential units that were revived by the new battlefield unit being played.
    * @param config.weathers Any potential weather units that were deployed by the new battlefield unit being played.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    * @param config.isWeather Whether or not the new unit is weathering the battlefield.
@@ -69,6 +70,7 @@ export default class UpdateHistory {
     bonds,
     horns,
     morales,
+    medics,
     weathers,
     musteredOrigins,
     targetId,
@@ -90,6 +92,7 @@ export default class UpdateHistory {
     bonds: ImpactsByUnitId
     horns: ImpactsByUnitId
     morales: ImpactsByUnitId
+    medics: ImpactsByUnitId
     weathers: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
     targetId: string | null | undefined
@@ -111,7 +114,8 @@ export default class UpdateHistory {
       musters,
       scorches,
       spies,
-      weathers
+      weathers,
+      medics
     )[deckUnit.unit.toString()]
     const updatedImpacts = UpdateHistory.updateImpactFieldUnits({
       game,
@@ -166,6 +170,7 @@ export default class UpdateHistory {
           morales,
           avengers,
           musters,
+          medics,
           weathers,
           origin: GameUnitOrigin.Nondeck,
           playerId,
@@ -209,6 +214,7 @@ export default class UpdateHistory {
           mardroemes,
           morales,
           musters,
+          medics,
           weathers,
           origin,
           playerId,
@@ -236,6 +242,7 @@ export default class UpdateHistory {
           mardroemes,
           morales,
           musters,
+          medics,
           avengers: {
             [avengerUnitId]: [avengee],
           },
@@ -250,6 +257,56 @@ export default class UpdateHistory {
           scorches,
           unitId: avengerUnitId,
           targetId: avengee.user,
+        })
+      }
+    }
+
+    for (const medicUnitId of Object.keys(medics)) {
+      const medicImpacts = medics[medicUnitId]
+      for (const medicImpact of medicImpacts) {
+        const medicFieldUnit = GetFieldUnits.getFieldUnit({
+          game,
+          unitId: medicUnitId,
+          userId: playerId,
+        })
+        if (!medicFieldUnit) {
+          const message = `Could not find field unit for medic "${medicUnitId}"`
+          UpdateHistory.logger.error(`${logPrefix} failed: ${message}, medics: "${JSON.stringify(medics)}"`)
+          throw Error(`${message}.`)
+        }
+        if (!medicImpact.unit) {
+          const message = 'No unit provided for revival'
+          UpdateHistory.logger.error(`${logPrefix} failed: ${message}, medics: "${JSON.stringify(medics)}"`)
+          throw Error(`${message}.`)
+        }
+        UpdateHistory.newUnitIndirect({
+          bonds,
+          created: move.created,
+          game,
+          horns,
+          decoys,
+          spies,
+          logPrefix,
+          mardroemes,
+          morales,
+          musters,
+          medics,
+          avengers: {
+            [medicUnitId]: [medicImpact],
+          },
+          weathers,
+          origin: GameUnitOrigin.Discard,
+          playerId: medicImpact.user.toString(),
+          turnUserId: playerId,
+          reason: {
+            type: MoveReasonType.Revive,
+            unit: UpdateHistory.getMoveGameUnit({
+              fieldUnit: medicFieldUnit,
+              deckUnit: medicFieldUnit,
+            }),
+          },
+          scorches,
+          unitId: medicImpact.unit.unit,
         })
       }
     }
@@ -274,6 +331,7 @@ export default class UpdateHistory {
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
+   * @param config.medics Any potential units the new battlefield unit revived to the battlefield.
    * @param config.weathers Any potential units the new battlefield unit Weathered when deployed.
    * @param config.reason Why the new unit is indirectly being added to the battlefield.
    * @param config.origin Where the new unit came from.
@@ -296,6 +354,7 @@ export default class UpdateHistory {
     decoys = {},
     spies = {},
     morales = {},
+    medics = {},
     weathers = {},
     reason,
     targetId,
@@ -316,6 +375,7 @@ export default class UpdateHistory {
     decoys?: ImpactsByUnitId
     spies?: ImpactsByUnitId
     morales?: ImpactsByUnitId
+    medics?: ImpactsByUnitId
     weathers?: ImpactsByUnitId
     reason: MoveUnitReasonDbObject
     targetId?: ObjectId
@@ -340,6 +400,7 @@ export default class UpdateHistory {
       musters,
       scorches,
       spies,
+      medics,
       weathers
     )[unitId.toString()]
     const move: MoveUnitDbObject = {

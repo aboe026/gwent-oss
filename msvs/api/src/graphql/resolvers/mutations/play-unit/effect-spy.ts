@@ -26,7 +26,7 @@ export default class EffectSpy {
    * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The Decoy unit being played.
    * @param config.combat The combat row the new unit, and in effect the target, are in.
-   * @param config.targetId The ID of the battlefield unit to replace with the Decoy.
+   * @param config.targetIds Array containing the ID of the battlefield unit to replace with the Decoy.
    * @param config.isSpy Whether or not the new unit being played has the Spy effect.
    * @throws {PresentableError} If problem decoying target.
    * @returns If the unit being played is a Decoy, the unit removed from the battlefield and its Impact, otherwise undefined.
@@ -36,20 +36,21 @@ export default class EffectSpy {
     logPrefix,
     newDeckUnit,
     combat,
-    targetId,
+    targetIds,
     isSpy,
   }: {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     combat: Combat | null | undefined
-    targetId: string | undefined | null
+    targetIds: string[] | undefined | null
     isSpy: boolean
   }): PotentialSpies {
     const impacts: ImpactsByUnitId = {}
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
 
-    if (isSpy && targetId && combat) {
+    if (isSpy && targetIds && targetIds[0] && combat) {
+      const targetId = targetIds[0]
       const impactsForNewUnit: ImpactDbObject[] = []
       const opponent = game.players.find((player) => player.user.toString() === targetId)
 

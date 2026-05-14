@@ -236,7 +236,7 @@ function renderSharedInfo({
                 return (
                   <div className="weather-card-wrapper" key={index}>
                     <UnitGameCard
-                      deckUnit={weather.unitFragment}
+                      gameUnit={weather.unitFragment}
                       title={weatherUnit.name}
                       cursor={'pointer'}
                       selected={selected}

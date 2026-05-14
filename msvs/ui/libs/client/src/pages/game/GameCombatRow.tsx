@@ -34,10 +34,12 @@ export default function GameCombatRow({
   isTurn,
   player,
   playUnitProps,
+  reviveDialogOpen,
   selectedCardInHand,
   scrollHistoryIntoView,
   setCardSelected,
   setFullUnits,
+  setReviveDialogOpen,
   weather,
 }: {
   cardSelected: UnitForPlayer | undefined
@@ -48,10 +50,12 @@ export default function GameCombatRow({
   isTurn?: boolean
   player: GamePlayerFragment
   playUnitProps: PlayUnitProps
+  reviveDialogOpen: boolean
   selectedCardInHand: boolean
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  setReviveDialogOpen: Dispatch<SetStateAction<boolean>>
   weather?: boolean
 }) {
   const { checkAuth } = useUserContext()
@@ -67,6 +71,9 @@ export default function GameCombatRow({
   const weatherSelected =
     cardSelectedUnit?.effects &&
     cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Weather)
+  const medicSelected =
+    cardSelectedUnit?.effects &&
+    cardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Medic)
   const validPlayer = spySelected ? !isSelf : isSelf
   const validRow =
     validPlayer &&
@@ -236,19 +243,24 @@ export default function GameCombatRow({
           }}
           title={description ? description : undefined}
           onClick={async () => {
-            if (isTurn && cardSelectedUnit && validRow && !playUnitProps.loading) {
+            if (isTurn && cardSelectedUnit && validRow && !playUnitProps.loading && !reviveDialogOpen) {
               await retryCheckingAuth({
                 checkAuth,
                 method: async () => {
-                  await playUnitProps.playUnit({
-                    variables: {
-                      game: game.id,
-                      combat: combat,
-                      unit: cardSelectedUnit.id,
-                      target: spySelected ? player.user.id : undefined,
-                    },
-                  })
-                  setCardSelected(undefined)
+                  // TODO: no need to show if no eligible discards left
+                  if (medicSelected) {
+                    setReviveDialogOpen(true)
+                  } else {
+                    await playUnitProps.playUnit({
+                      variables: {
+                        game: game.id,
+                        combat: combat,
+                        unit: cardSelectedUnit.id,
+                        targets: spySelected ? [player.user.id] : undefined,
+                      },
+                    })
+                    setCardSelected(undefined)
+                  }
                 },
               })
             }
@@ -372,7 +384,7 @@ function GameRowUnit({
       }}
     >
       <UnitGameCard
-        deckUnit={{
+        gameUnit={{
           artStyle: fieldUnit.artStyle,
           unit: fieldUnit.unit,
         }}
@@ -412,7 +424,7 @@ function GameRowUnit({
                     game: gameId,
                     combat: combat,
                     unit: cardSelectedUnit.id,
-                    target: unit.id,
+                    targets: [unit.id],
                   },
                 })
                 setCardSelected(undefined)

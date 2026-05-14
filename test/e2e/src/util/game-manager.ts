@@ -5,6 +5,7 @@ import {
   DecoyingExpected,
   E2eHelper,
   MardroemingExpected,
+  MedicingExpected,
   MoralingExpected,
   MusteringExpected,
   ScorchingExpected,
@@ -101,6 +102,7 @@ export class GameManager {
     moraling,
     horning,
     mardroeming,
+    medicing,
     mustering,
     bonding,
     impacts,
@@ -121,6 +123,7 @@ export class GameManager {
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mardroeming?: MardroemingExpected[]
+    medicing?: MedicingExpected[]
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
@@ -149,6 +152,7 @@ export class GameManager {
         decoyTarget: decoying?.name,
         eligibleRows: eligibleCombats,
         weather,
+        revivals: medicing ? medicing.map((medic) => medic.name) : undefined,
         spy: !!spying,
       })
     } else {
@@ -166,7 +170,7 @@ export class GameManager {
         gameId: this.gameId,
         unitId: unitToMove.unit.id,
         combat: combatRow,
-        target: targetId,
+        targets: targetId ? [targetId] : undefined,
       })
     }
     E2eHelper.playUnit({
@@ -182,6 +186,7 @@ export class GameManager {
       moraling,
       horning,
       mardroeming,
+      medicing,
       mustering,
       bonding,
       decoying,

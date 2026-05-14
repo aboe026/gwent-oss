@@ -15,6 +15,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { GameUnitType } from '@gwent/graphql-schema'
+import GameUnitUtil from '../util/game-unit-util'
 import GetEffectWithKey from './get-effect-with-key'
 import GetFieldUnits from '../../util/get-field-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'
@@ -155,7 +156,7 @@ export default class EffectScorch {
   }): ImpactDbObject[] {
     if (scorchingUnit.name === 'Scorch' && player.user.toString() === turn?.toString()) {
       // the named "Scorch" card does not stay on the battlefield
-      player.deck.discard.push(scorchingDeckUnit)
+      player.deck.discard.push(GameUnitUtil.convertDeckUnitToGameUnit(scorchingDeckUnit))
       EffectScorch.logger.trace(
         `${logPrefix} newUnit "${scorchingUnit._id}" has name "Scorch" and current player, so discarding it`
       )
@@ -241,7 +242,7 @@ export default class EffectScorch {
           unitsScorched.map((fieldUnit) => fieldUnit.unit)
         )}"`
       )
-      player.deck.discard.push(...unitsScorched)
+      player.deck.discard.push(...unitsScorched.map((fieldUnit) => GameUnitUtil.convertFieldUnitToGameUnit(fieldUnit)))
     }
 
     return unitsScorched.map((unitScorched) => {

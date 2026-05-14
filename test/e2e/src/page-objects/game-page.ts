@@ -21,6 +21,7 @@ import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, ROUTES }
 import { getImpactDescription, getNoImpactMessage, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { Leader } from '@gwent/node-client'
 import RedrawUnits, { RedrawPair } from '../components/redraw-units'
+import ReviveUnits from '../components/revive-units'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)
@@ -273,7 +274,8 @@ export default class GamePage {
     if (names) {
       await t.expect(GamePage.elements.HandIcon.exists).notOk()
       const actualNames: (string | null)[] = []
-      for (let i = 0; i < names.length; i++) {
+      const actualCardsCount = await GamePage.elements.Hand.childElementCount
+      for (let i = 0; i < actualCardsCount; i++) {
         const card = await GamePage.elements.Hand.child(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
         const cardName = await card.getAttribute('title')
         const isSelected = await card.hasClass(HTML_CLASSES.ItemHighlighted)
@@ -348,6 +350,8 @@ export default class GamePage {
               action = 'transformed'
             } else if (move.reason?.type === MoveReasonType.Summon) {
               action = 'summoned'
+            } else if (move.reason?.type === MoveReasonType.Revive) {
+              action = 'revived'
             }
             if (move.targetUserName) {
               if (move.reason?.type === MoveReasonType.Summon) {
@@ -1138,6 +1142,7 @@ export default class GamePage {
     eligibleRows,
     weather,
     spy,
+    revivals,
     verify = true,
   }: {
     unitName: string
@@ -1147,6 +1152,7 @@ export default class GamePage {
     decoyTarget?: string
     weather?: boolean
     spy?: boolean
+    revivals?: string[]
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
@@ -1280,6 +1286,18 @@ export default class GamePage {
       await t.click(GamePage.elements.WeatherContainer)
     } else {
       await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`))
+
+      await ReviveUnits.verfiy({
+        open: !!revivals,
+        medicName: unitName,
+        disards: [],
+        revivals: revivals,
+      })
+      if (revivals) {
+        for (const revival of revivals) {
+          await ReviveUnits.selectUnitToRevive(revival)
+        }
+      }
     }
   }
 
@@ -1391,7 +1409,12 @@ export default class GamePage {
       totalRounds - round
     )
     const movesCount = await roundContainer.child().count
-    const reasonText = reason === MoveReasonType.Summon ? 'summoned' : 'deployed'
+    let reasonText = 'deployed'
+    if (reason === MoveReasonType.Summon) {
+      reasonText = 'summoned'
+    } else if (reason === MoveReasonType.Revive) {
+      reasonText = 'revived'
+    }
     let targetText = ''
     if (targetUser) {
       if (reason === MoveReasonType.Summon) {

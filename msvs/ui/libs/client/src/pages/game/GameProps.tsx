@@ -4,35 +4,34 @@ import type { useMutation } from '@apollo/client/react'
 
 import {
   AddGameMutation,
-  Combat,
   DeckUnitFragment,
-  Exact,
   FragmentType,
   GameDeckFragmentDoc,
   GameDeckQuery,
   GameFragment,
   GameQuery,
-  InputMaybe,
   MoveFragment,
   PlayPassMutation,
   PlayUnitMutation,
   RedrawMutation,
-  Scalars,
   SetDeckMutation,
   SetOrderMutation,
   ReadyMutation,
   WeatherUnitFragment,
   FieldUnitFragment,
+  PlayUnitMutationVariables,
+  AddGameMutationVariables,
+  GameQueryVariables,
+  GameDeckQueryVariables,
+  SetDeckMutationVariables,
+  SetOrderMutationVariables,
+  RedrawMutationVariables,
+  ReadyMutationVariables,
+  PlayPassMutationVariables,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
-  addGame: useMutation.MutationFunction<
-    AddGameMutation,
-    {
-      opponentNames: Array<Scalars['String']['input']> | Scalars['String']['input']
-    },
-    ApolloCache
-  >
+  addGame: useMutation.MutationFunction<AddGameMutation, AddGameMutationVariables, ApolloCache>
   loading: boolean
   error: unknown
 }
@@ -41,106 +40,48 @@ export interface GameProps {
   game: GameFragment | undefined
   error: unknown
   loading: boolean
-  refetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            id: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloClient.QueryResult<GameQuery>>
+  refetch: (variables?: GameQueryVariables) => Promise<ApolloClient.QueryResult<GameQuery>>
 }
 
 export interface GameDeckProps {
   deck: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
   error: unknown
   loading: boolean
-  refetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            game: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloClient.QueryResult<GameDeckQuery>>
+  refetch: (variables?: GameDeckQueryVariables) => Promise<ApolloClient.QueryResult<GameDeckQuery>>
 }
 
 export interface SetDeckProps {
-  setDeck: useMutation.MutationFunction<
-    SetDeckMutation,
-    {
-      game: Scalars['ID']['input']
-      deck: Scalars['ID']['input']
-    },
-    ApolloCache
-  >
+  setDeck: useMutation.MutationFunction<SetDeckMutation, SetDeckMutationVariables, ApolloCache>
   loading: boolean
   error: unknown
 }
 
 export interface SetOrderProps {
-  setOrder: useMutation.MutationFunction<
-    SetOrderMutation,
-    {
-      game: Scalars['ID']['input']
-      users?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']> | undefined
-    },
-    ApolloCache
-  >
+  setOrder: useMutation.MutationFunction<SetOrderMutation, SetOrderMutationVariables, ApolloCache>
   loading: boolean
   error: unknown
 }
 
 export interface RedrawProps {
-  redraw: useMutation.MutationFunction<
-    RedrawMutation,
-    {
-      game: Scalars['ID']['input']
-      unit: Scalars['ID']['input']
-    },
-    ApolloCache
-  >
+  redraw: useMutation.MutationFunction<RedrawMutation, RedrawMutationVariables, ApolloCache>
   error: unknown
   loading: boolean
 }
 
 export interface ReadyProps {
-  ready: useMutation.MutationFunction<
-    ReadyMutation,
-    {
-      game: Scalars['ID']['input']
-    },
-    ApolloCache
-  >
+  ready: useMutation.MutationFunction<ReadyMutation, ReadyMutationVariables, ApolloCache>
   error: unknown
   loading: boolean
 }
 
 export interface PlayUnitProps {
-  playUnit: useMutation.MutationFunction<
-    PlayUnitMutation,
-    {
-      game: Scalars['ID']['input']
-      unit: Scalars['ID']['input']
-      combat?: InputMaybe<Combat> | undefined
-      target?: InputMaybe<Scalars['ID']['input']>
-    },
-    ApolloCache
-  >
+  playUnit: useMutation.MutationFunction<PlayUnitMutation, PlayUnitMutationVariables, ApolloCache>
   error: unknown
   loading: boolean
 }
 
 export interface PlayPassProps {
-  playPass: useMutation.MutationFunction<
-    PlayPassMutation,
-    {
-      game: Scalars['ID']['input']
-    },
-    ApolloCache
-  >
+  playPass: useMutation.MutationFunction<PlayPassMutation, PlayPassMutationVariables, ApolloCache>
   error: unknown
   loading: boolean
 }

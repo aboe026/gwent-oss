@@ -23,7 +23,7 @@ import './UnitGameCard.css'
  */
 export default function UnitGameCard({
   cursor = 'pointer',
-  deckUnit,
+  gameUnit,
   dotted,
   dottedTitle,
   effectiveStrength,
@@ -33,8 +33,8 @@ export default function UnitGameCard({
   selected,
   title,
 }: UnitGameCardProps) {
-  const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
-  const combatSymbol = getCombatImage(deckUnit)
+  const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
+  const combatSymbol = getCombatImage(gameUnit)
   const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
   const unitTitle = title || unit.name
   const effects = useFragment(UnitEffectFragmentDoc, unit.effects)
@@ -50,27 +50,29 @@ export default function UnitGameCard({
       onClick={(event) => {
         if (onClick) {
           onClick({
-            deckUnit,
+            gameUnit,
             event,
           })
         }
       }}
     >
-      <img className="unit-game-card-image" title={unitTitle} src={unit.images[deckUnit.artStyle - 1]} />
+      <img className="unit-game-card-image" title={unitTitle} src={unit.images[gameUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
         <StrengthCircle size="100%" unit={unit} effectiveStrength={effectiveStrength} effectHighlight={true} />
       </div>
-      <div
-        className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
-        title="Fullscreen"
-        onClick={(event) => {
-          event.stopPropagation()
-          event.preventDefault()
-          onFullscreen(deckUnit)
-        }}
-      >
-        <CgMaximizeAlt className="unit-game-card-fullscreen-icon" />
-      </div>
+      {onFullscreen && (
+        <div
+          className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
+          title="Fullscreen"
+          onClick={(event) => {
+            event.stopPropagation()
+            event.preventDefault()
+            onFullscreen(gameUnit)
+          }}
+        >
+          <CgMaximizeAlt className="unit-game-card-fullscreen-icon" />
+        </div>
+      )}
       <div className="unit-game-card-bottom">
         {combatSymbol && (
           <img
@@ -99,14 +101,15 @@ export default function UnitGameCard({
 
 interface UnitGameCardProps {
   cursor?: string
-  deckUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
+  gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
   effectiveStrength?: number | null
   dotted?: boolean
   dottedTitle?: string
   iconSize?: string
-  onFullscreen: (deckUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment) => void
+  // TODO: revert this and allow for fullscreen from revive units
+  onFullscreen?: (gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment) => void
   onClick?: (args: {
-    deckUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
+    gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
     event: MouseEvent<HTMLDivElement>
   }) => void
   selected?: boolean

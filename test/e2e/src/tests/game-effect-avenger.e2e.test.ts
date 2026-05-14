@@ -847,3 +847,5 @@ test('Scorched avenger not re-avenged after round ends', async (t) => {
     },
   })
 })
+
+// TODO: test that avenger which is decoyed does not summon unit at end of round

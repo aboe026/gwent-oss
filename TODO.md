@@ -125,6 +125,9 @@ New things that should be added to the codebase.
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
   - test avenger re-mediced cannot cause duplicate avenger
+  - what happens when medic agile unit? does it go to its former row?
+  - test playing muster which musters at least 1, medicing 1 of them, decoying into hand, then medicing the other. Will one in hand get mustered?
+  - ensure we also check game deck hand for avenger before summoning (worth testing)?
 - Better game summarization (graphs?)
   - points per round
   - time per round

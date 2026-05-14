@@ -1,5 +1,5 @@
-mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat, $target: ID) {
-  playUnit(game: $game, unit: $unit, combat: $combat, target: $target) {
+mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat, $targets: [ID!]) {
+  playUnit(game: $game, unit: $unit, combat: $combat, targets: $targets) {
     ...Game
   }
 }

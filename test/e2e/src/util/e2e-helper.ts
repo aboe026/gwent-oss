@@ -396,6 +396,7 @@ export class E2eHelper {
     moraling,
     horning,
     mustering,
+    medicing,
     bonding,
     decoying,
     avenging,
@@ -416,6 +417,7 @@ export class E2eHelper {
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
+    medicing?: MedicingExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
     avenging?: AvengingExpected[]
@@ -465,6 +467,19 @@ export class E2eHelper {
           row: mardroeme.row,
           strength: mardroeme.effectiveStrength,
         })
+      }
+    }
+    if (medicing) {
+      for (const revival of medicing) {
+        E2eHelper.addUnitToGamePlayer({
+          player: revival.player,
+          unitName: revival.name,
+          row: revival.row,
+          strength: revival.effectiveStrength,
+        })
+        const discardIndex = gameDeck.discard.findIndex((discard) => discard.unit.name === revival.name)
+        gameDeck.discard = gameDeck.discard.splice(discardIndex, 1)
+        player.discard = gameDeck.discard.length
       }
     }
     if (mustering) {
@@ -597,6 +612,8 @@ export class E2eHelper {
         effectKey = EffectKey.Mardroeme
       } else if (moraling) {
         effectKey = EffectKey.Morale
+      } else if (medicing) {
+        effectKey = EffectKey.Medic
       } else if (horning) {
         effectKey = EffectKey.Horn
       } else if (mustering) {
@@ -619,8 +636,17 @@ export class E2eHelper {
         } else if (spying) {
           numImpacts = undrawnSpiedIntoHand
         } else {
-          numImpacts = (scorching || mardroeming || moraling || mustering || bonding || horning || weathering || [])
-            ?.length
+          numImpacts = (
+            scorching ||
+            mardroeming ||
+            medicing ||
+            moraling ||
+            mustering ||
+            bonding ||
+            horning ||
+            weathering ||
+            []
+          )?.length
         }
       }
       moves.push({
@@ -654,6 +680,27 @@ export class E2eHelper {
               }
             : undefined,
           origin: muster.hand ? GameUnitOrigin.Hand : GameUnitOrigin.Undrawn,
+        })
+      }
+    }
+    if (moves && medicing) {
+      for (let i = 0; i < medicing.length; i++) {
+        const revival = medicing[i]
+        moves.push({
+          userName: revival.player.name,
+          unitName: revival.name,
+          combatRow: revival.row,
+          reason: {
+            name: i === 0 ? deckUnit.unit.name : medicing[i - 1].name,
+            type: MoveReasonType.Revive,
+          },
+          impacts: revival.impact
+            ? {
+                effectKey: revival.impact.type,
+                number: revival.impact.instances || 0,
+              }
+            : undefined,
+          origin: GameUnitOrigin.Discard,
         })
       }
     }
@@ -827,6 +874,17 @@ export interface MardroemingExpected {
   row: Combat
   effectiveStrength: number
   reason?: string
+  impact?: {
+    type: EffectKey
+    instances?: number
+  }
+}
+
+export interface MedicingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
   impact?: {
     type: EffectKey
     instances?: number

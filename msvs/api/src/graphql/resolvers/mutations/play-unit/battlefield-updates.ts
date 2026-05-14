@@ -11,11 +11,15 @@ import {
 import EffectAvenger from './effect-avenger'
 import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
+import EffectMedic from './effect-medic'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
 import EffectSpy from './effect-spy'
 import EffectWeather from './effect-weather'
+import { GameUnitType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
+import mergeImpacts from './merge-impacts'
+import mergeMusteredOrigins from './merge-mustered-origins'
 
 /**
  * A class for altering the units present on the battlefield due to a player move.
@@ -28,46 +32,52 @@ export default class BattlefieldUpdates {
    *
    * @param config The configuration used to determine the impact the new unit has on the battlefield.
    * @param config.battlefieldUnits All of the Units currently on the battlefield.
+   * @param config.unitsToRevive Any potential Units which should be revived to the battlefield by a Medic being played.
    * @param config.combat The combat row the unit is being deployed to.
    * @param config.effects The effects that any unit might have.
    * @param config.game The game whose battlefield should have the units deployment applied to it.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The new DeckUnit being introduced to the battlefield.
    * @param config.newUnit The new Unit being introduced to the battlefield.
-   * @param config.targetId The ID of a potential Unit being targeted by the new battlefield unit. Used for Decoy and Spies.
+   * @param config.targetIds Potential IDs of resources effected by card. For example, would contain a User ID for Spy, Unit ID for Decoy, or Unit IDs for Medic.
    * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @param config.isSpy Whether or not the new unit being played has the Spy effect.
    * @param config.isWeather Whether or not the new unit being played has the Weather effect.
+   * @param config.isMedic Whether or not the new unit being played has the Medic effect.
    * @returns Any impacts the new unit has on the battlefield.
    */
   static async modifyBattlefieldWithNewUnit({
     battlefieldUnits,
+    unitsToRevive = [],
     combat,
     effects,
     game,
     logPrefix,
     newDeckUnit,
     newUnit,
-    targetId,
+    targetIds,
     isDecoy,
     isSpy,
     isWeather,
+    isMedic,
   }: {
     battlefieldUnits: UnitDbObject[]
+    unitsToRevive?: UnitDbObject[]
     combat?: Combat | null
     effects: EffectDbObject[]
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
-    targetId: string | undefined | null
+    targetIds: string[] | undefined | null
     isDecoy: boolean
     isSpy: boolean
     isWeather: boolean
+    isMedic: boolean
   }): Promise<ModificationImpacts> {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
 
-    const weatherImpacts = EffectWeather.weatherBattlefield({
+    let weatherImpacts = EffectWeather.weatherBattlefield({
       game,
       logPrefix,
       newDeckUnit,
@@ -75,17 +85,16 @@ export default class BattlefieldUpdates {
       isWeather,
     })
 
-    const { deckUnitsAddedToHand: spiedUnitsAddedToHand, impacts: spyImpacts } = EffectSpy.spyBattlefield({
+    const spies = EffectSpy.spyBattlefield({
       combat,
       game,
       isSpy,
       logPrefix,
       newDeckUnit,
-      targetId,
+      targetIds,
     })
-    if (spiedUnitsAddedToHand.length > 0) {
-      deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
-    }
+    let spyImpacts = spies.impacts
+    deckUnitsAddedToHand.push(...spies.deckUnitsAddedToHand)
 
     BattlefieldUpdates.addNewUnitToBattlefield({
       combat,
@@ -96,14 +105,14 @@ export default class BattlefieldUpdates {
       spy: isSpy,
     })
 
-    const scorches = EffectScorch.scorchBattlefield({
+    let scorches = EffectScorch.scorchBattlefield({
       battlefieldUnits,
       effects,
       game,
       logPrefix,
       newDeckUnit,
     })
-    const { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
+    let { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
       battlefieldUnits,
       effects,
       game,
@@ -117,7 +126,7 @@ export default class BattlefieldUpdates {
           }
         }),
     })
-    const {
+    let {
       impacts: musterImpacts,
       musteredUnits,
       musteredOrigins,
@@ -129,7 +138,7 @@ export default class BattlefieldUpdates {
       logPrefix,
       newDeckUnit,
     })
-    const {
+    let {
       impacts: mardroemeImpacts,
       transformedUnits,
       transformedFieldUnits,
@@ -142,17 +151,76 @@ export default class BattlefieldUpdates {
       newDeckUnit,
       combat,
     })
-    const { deckUnitAddedToHand, impacts: decoyImpacts } = EffectDecoy.decoyFromBattlefield({
+    const decoys = EffectDecoy.decoyFromBattlefield({
       game,
       logPrefix,
       newDeckUnit,
       combat,
-      targetId,
+      targetIds,
       isDecoy,
     })
-    if (deckUnitAddedToHand) {
-      deckUnitsAddedToHand.push(deckUnitAddedToHand)
+    let decoyImpacts = decoys.impacts
+    if (decoys.deckUnitAddedToHand) {
+      deckUnitsAddedToHand.push(decoys.deckUnitAddedToHand)
     }
+
+    const medics = await EffectMedic.reviveLostUnits({
+      unitsToRevive,
+      effects,
+      game,
+      logPrefix,
+      newDeckUnit,
+      isMedic,
+      targetIds,
+    })
+    let medicImpacts = medics.impacts
+    const revivals = medics.revivals
+
+    for (let i = 0; i < revivals.length; i++) {
+      const revival = revivals[i]
+      let combat: Combat | null | undefined = undefined
+      if (revival.gameUnit.type === GameUnitType.Field) {
+        combat = (revival.gameUnit as FieldUnitDbObject).row as Combat
+      }
+      battlefieldUnits.push(revival.unit)
+      const modifications = await BattlefieldUpdates.modifyBattlefieldWithNewUnit({
+        battlefieldUnits,
+        effects,
+        game,
+        isDecoy: false, // cannot revive decoys since they are special
+        isMedic: revival.isMedic,
+        isSpy: revival.isSpy,
+        isWeather: false, // cannot revive weathers since they are special
+        logPrefix,
+        newDeckUnit: {
+          artStyle: revival.gameUnit.artStyle,
+          unit: revival.gameUnit.unit,
+        },
+        newUnit: revival.unit,
+        targetIds: targetIds?.slice(i + 1),
+        combat,
+        unitsToRevive,
+      })
+
+      avengers = mergeImpacts(avengers, modifications.avengers)
+      avengedUnits = [...avengedUnits, ...modifications.avengedUnits]
+      decoyImpacts = mergeImpacts(decoyImpacts, modifications.decoys)
+      deckUnitsAddedToHand.push(...modifications.deckUnitsAddedToHand)
+      scorches = mergeImpacts(scorches, modifications.scorches)
+      musterImpacts = mergeImpacts(musterImpacts, modifications.musters)
+      musteredUnits = [...musteredUnits, ...modifications.musteredUnits]
+      musteredOrigins = mergeMusteredOrigins(musteredOrigins, modifications.musteredOrigins)
+      mardroemeImpacts = mergeImpacts(mardroemeImpacts, modifications.mardroemes)
+      transformedUnits = [...transformedUnits, ...modifications.transformedUnits]
+      transformedFieldUnits = [...transformedFieldUnits, ...modifications.transformedFieldUnits]
+      if (modifications.mardroemingFieldUnit) {
+        mardroemingFieldUnit = modifications.mardroemingFieldUnit
+      }
+      spyImpacts = mergeImpacts(spyImpacts, modifications.spies)
+      medicImpacts = mergeImpacts(medicImpacts, modifications.medics)
+      weatherImpacts = mergeImpacts(weatherImpacts, modifications.weathers)
+    }
+
     return {
       avengers,
       avengedUnits,
@@ -167,6 +235,7 @@ export default class BattlefieldUpdates {
       transformedUnits,
       transformedFieldUnits,
       mardroemingFieldUnit,
+      medics: medicImpacts,
       weathers: weatherImpacts,
     }
   }
@@ -249,5 +318,6 @@ interface ModificationImpacts {
   transformedUnits: UnitDbObject[]
   transformedFieldUnits: FieldUnitDbObject[]
   mardroemingFieldUnit: FieldUnitDbObject | undefined
+  medics: ImpactsByUnitId
   weathers: ImpactsByUnitId
 }

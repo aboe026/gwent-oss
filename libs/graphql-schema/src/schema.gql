@@ -203,7 +203,7 @@ type GameConfig {
 
 type GameDeck @entity {
   "The units which have been sent to the graveyard"
-  discard: [DeckUnit!]! @column(overrideType: "Array<DeckUnitDbObject>")
+  discard: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
   "A snapshot of the user deck when it was selected for the game"
   from: Deck @column(overrideType: "DeckDbObject")
   "The currently playable units"
@@ -490,8 +490,8 @@ type Mutation {
   "Pass for the rest of the round in a game."
   playPass(game: ID!): Game!
 
-  "Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. Specify target for Decoy or Spy."
-  playUnit(game: ID!, unit: ID!, combat: Combat, target: ID): Game!
+  "Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. Specify targets for Decoy, Spy or Medic."
+  playUnit(game: ID!, unit: ID!, combat: Combat, targets: [ID!]): Game!
 
   "Mark player as ready to play the game, no more deck modifications allowed."
   ready(game: ID!): Game!

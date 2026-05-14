@@ -102,7 +102,7 @@ export default function GameRowUnit({
       }}
     >
       <UnitGameCard
-        deckUnit={{
+        gameUnit={{
           artStyle: gameUnitFragment.artStyle,
           unit: gameUnitFragment.unit,
         }}
@@ -142,7 +142,7 @@ export default function GameRowUnit({
                     game: gameId,
                     combat: combat,
                     unit: cardSelectedUnit.id,
-                    target: unit.id,
+                    targets: [unit.id],
                   },
                 })
                 setCardSelected(undefined)

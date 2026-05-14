@@ -24,12 +24,14 @@ export default class PlayUnitMutation {
       game,
       logPrefix,
       unit,
-      targetId,
+      targetIds,
       roundUnits,
       effects,
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
+      unitsToRevive,
       userId,
     } = await PlayUnitValidation.playUnitValidation(args, context, info)
 
@@ -43,12 +45,14 @@ export default class PlayUnitMutation {
       game,
       logPrefix,
       unit,
-      targetId,
+      targetIds,
       roundUnits,
       effects,
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
+      unitsToRevive,
       userId,
     })
 

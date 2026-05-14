@@ -434,10 +434,6 @@ th {
   align-items: center;
 }
 
-.temp {
-  height: 50%;
-}
-
 .game-deck-redraw-card-container {
   display: flex;
   justify-content: center;

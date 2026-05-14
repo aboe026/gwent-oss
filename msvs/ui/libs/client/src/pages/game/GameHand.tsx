@@ -156,7 +156,7 @@ function GameHandUnit({
     >
       <UnitGameCard
         cursor={cursor}
-        deckUnit={deckUnit}
+        gameUnit={deckUnit}
         selected={selected}
         dotted={dotted}
         dottedTitle={dottedTitle}

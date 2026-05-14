@@ -26,7 +26,7 @@ export default class EffectDecoy {
    * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The Decoy unit being played.
    * @param config.combat The combat row the new unit, and in effect the target, are in.
-   * @param config.targetId The ID of the battlefield unit to replace with the Decoy.
+   * @param config.targetIds An array containing the ID of the battlefield unit to replace with the Decoy.
    * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @throws {PresentableError} If problem decoying target.
    * @returns If the unit being played is a Decoy, the unit removed from the battlefield and its Impact, otherwise undefined.
@@ -36,20 +36,21 @@ export default class EffectDecoy {
     logPrefix,
     newDeckUnit,
     combat,
-    targetId,
+    targetIds,
     isDecoy,
   }: {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     combat: Combat | null | undefined
-    targetId: string | undefined | null
+    targetIds: string[] | undefined | null
     isDecoy: boolean
   }): PotentialDecoy {
     const impacts: ImpactsByUnitId = {}
     let deckUnitAddedToHand: DeckUnitDbObject | undefined = undefined
 
-    if (isDecoy && targetId && combat) {
+    if (isDecoy && targetIds && targetIds[0] && combat) {
+      const targetId = targetIds[0]
       impacts[newDeckUnit.unit.toString()] = []
       const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
       if (!player) {

@@ -24,22 +24,26 @@ export default function GameBattlefield({
   game,
   opponent,
   playUnitProps,
+  reviveDialogOpen,
   selectedCardInHand,
   scrollHistoryIntoView,
   self,
   setCardSelected,
   setFullUnits,
+  setReviveDialogOpen,
 }: {
   cardSelected: UnitForPlayer | undefined
   fullUnits: FullUnitCards | undefined
   game: GameFragment
   opponent: GamePlayerFragment
   playUnitProps: PlayUnitProps
+  reviveDialogOpen: boolean
   selectedCardInHand: boolean
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   self: GamePlayerFragment
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  setReviveDialogOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const { checkAuth } = useUserContext()
   const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
@@ -81,10 +85,12 @@ export default function GameBattlefield({
     checkAuth,
     game,
     isTurn,
+    reviveDialogOpen,
+    scrollHistoryIntoView,
     selectedCardInHand,
     setCardSelected,
     setFullUnits,
-    scrollHistoryIntoView,
+    setReviveDialogOpen,
   }
 
   return (

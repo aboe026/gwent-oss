@@ -24,6 +24,7 @@ import {
   GamesDocument,
   GamesQuery,
   GameStatus,
+  GameUnitFragment,
   MoveFragmentDoc,
   MoveUnitFragmentDoc,
   PlayerCombatRowFragmentDoc,
@@ -81,6 +82,7 @@ import {
 import { getUnitFromGameUnit } from '../../util/game-unit-util'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import NewGame from './NewGame'
+import ReviveDialog from './ReviveDialog'
 import { sortObjectArray } from '@gwent/utils'
 import UnitFullCard from '../../components/UnitFullCard'
 import updateGameDeckCacheOnRedraw from '../../util/update-game-deck-cache-on-redraw'
@@ -289,22 +291,26 @@ export default function GamePage() {
                       useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
                     ),
                   ]
-                  let targetUnit: DeckUnitFragment | undefined = undefined
-                  for (let i = 0; i < previousBattlefieldUnits.length && !targetUnit; i++) {
-                    const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
-                    const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
-                    if (previousBattlefieldUnit.id === variables?.target) {
-                      targetUnit = {
-                        __typename: 'DeckUnit',
-                        artStyle: previousBattlefieldGameUnit.artStyle,
-                        unit: previousBattlefieldUnit,
+                  if (variables?.targets) {
+                    let targetUnit: DeckUnitFragment | undefined = undefined
+                    for (let i = 0; i < previousBattlefieldUnits.length && !targetUnit; i++) {
+                      const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
+                      const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
+                      if (variables.targets.includes(previousBattlefieldUnit.id)) {
+                        targetUnit = {
+                          __typename: 'DeckUnit',
+                          artStyle: previousBattlefieldGameUnit.artStyle,
+                          unit: previousBattlefieldUnit,
+                        }
                       }
                     }
+                    if (!targetUnit) {
+                      throw Error(
+                        `Could not find target unit(S) "${JSON.stringify(variables.targets)}" in previous game`
+                      )
+                    }
+                    unitsAddedToHand.push(targetUnit)
                   }
-                  if (!targetUnit) {
-                    throw Error(`Could not find target unit "${variables?.target}" in previous game`)
-                  }
-                  unitsAddedToHand.push(targetUnit)
                 }
               }
               return {
@@ -427,6 +433,9 @@ function ExistingGame({
   const [coinTossVisible, setCoinTossVisible] = useState(false)
   const [fullUnits, setFullUnits] = useState<FullUnitCards | undefined>()
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
+  const [reviveDialogOpen, setReviveDialogOpen] = useState(false)
+  // TODO: is this used/needed?
+  const [gameUnitsToRevive, setGameUnitsToRevive] = useState<GameUnitFragment[]>([])
   const { game } = gameProps
   const gameErrorMessages = getErrorMessages(gameProps.error)
   const gameDeckErrorMessages = getErrorMessages(gameDeckProps.error)
@@ -662,6 +671,21 @@ function ExistingGame({
           game: game.id,
         }}
       />
+      <ReviveDialog
+        open={reviveDialogOpen}
+        medic={cardSelected?.unitFragment}
+        gameId={game.id}
+        discarded={
+          gameDeckProps.deck
+            ? useFragment(GameUnitFragmentDoc, useFragment(GameDeckFragmentDoc, gameDeckProps.deck).discard)
+            : []
+        }
+        gameUnitsToRevive={gameUnitsToRevive}
+        setGameUnitsToRevive={setGameUnitsToRevive}
+        setCardSelected={setCardSelected}
+        setOpen={setReviveDialogOpen}
+        playUnitProps={playUnitProps}
+      />
       <div id="gameContainerUpper">
         <GameInfo
           cardSelected={cardSelected}
@@ -741,11 +765,13 @@ function ExistingGame({
               game={game}
               opponent={opponent}
               playUnitProps={playUnitProps}
+              reviveDialogOpen={reviveDialogOpen}
               selectedCardInHand={selectedCardInHand}
               scrollHistoryIntoView={scrollHistoryIntoView}
               self={self}
               setCardSelected={setCardSelected}
               setFullUnits={setFullUnits}
+              setReviveDialogOpen={setReviveDialogOpen}
             />
           ) : (
             <GameSummary game={game} />

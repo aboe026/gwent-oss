@@ -28,12 +28,14 @@ export default class PlayUnitImplementation {
    * @param config.game The game the unit is being played for.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.unit The Unit being played.
-   * @param config.targetId The Unit ID that a potential Decoy card should target.
+   * @param config.targetIds Potential IDs of resources effected by card. For example, would contain a User ID for Spy, Unit ID for Decoy, or Unit IDs for Medic.
    * @param config.effects The Effects for the new DeckUnit that have been pre-fetched. If not provided, will be retrieved.
    * @param config.roundUnits The Units for all players in the game round that have been pre-fetched. If not provided, will be retrieved.
+   * @param config.unitsToRevive The Units to be revived by the Medic being played.
    * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @param config.isSpy Whether or not the new unit being played has the Spy effect.
    * @param config.isWeather Whether or not the new unit being played has the Weather effect.
+   * @param config.isMedic Whether or not the new unit being played has the Medic effect.
    * @returns The Game and GameDeck with the unit played for the user.
    * @throws {PresentableError} if known problem playing unit.
    * @throws {Error} if unforseen problem adding the user.
@@ -44,12 +46,14 @@ export default class PlayUnitImplementation {
     game,
     logPrefix,
     unit,
-    targetId,
+    targetIds,
     effects = [],
     roundUnits = [],
+    unitsToRevive = [],
     isDecoy,
     isSpy,
     isWeather,
+    isMedic,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
     if (!playerId) {
@@ -64,7 +68,7 @@ export default class PlayUnitImplementation {
       units: roundUnits,
     })
     const unitEffects = await getUnitEffects({
-      units: [unit, ...roundUnits, ...existingRoundUnits],
+      units: [unit, ...roundUnits, ...existingRoundUnits, ...unitsToRevive],
       effects,
     })
 
@@ -82,19 +86,22 @@ export default class PlayUnitImplementation {
       avengedUnits,
       decoys,
       deckUnitsAddedToHand,
+      medics,
       weathers: weatherBattlefieldImpacts,
     } = await BattlefieldUpdates.modifyBattlefieldWithNewUnit({
       battlefieldUnits: [unit, ...roundUnits, ...existingRoundUnits],
+      unitsToRevive,
       combat,
       effects: [...effects, ...unitEffects],
       game,
       logPrefix,
       newDeckUnit: deckUnit,
       newUnit: unit,
-      targetId,
+      targetIds,
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
     })
 
     const musterEffects = await getUnitEffects({
@@ -113,7 +120,15 @@ export default class PlayUnitImplementation {
       weathers: weatherScoreImpacts,
     } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
-      units: [unit, ...roundUnits, ...existingRoundUnits, ...musteredUnits, ...transformedUnits, ...avengedUnits],
+      units: [
+        unit,
+        ...roundUnits,
+        ...existingRoundUnits,
+        ...musteredUnits,
+        ...transformedUnits,
+        ...avengedUnits,
+        ...unitsToRevive,
+      ],
       effects: [...effects, ...unitEffects, ...musterEffects, ...transformedEffects],
       logPrefix,
       newDeckUnit: deckUnit,
@@ -137,12 +152,13 @@ export default class PlayUnitImplementation {
       bonds,
       horns,
       morales,
+      medics,
       weathers: mergeImpacts(weatherBattlefieldImpacts, weatherScoreImpacts),
       mardroemes,
       transformedFieldUnits,
       mardroemingFieldUnit,
       isWeather,
-      targetId: isSpy ? targetId : undefined,
+      targetId: isSpy ? targetIds && targetIds[0] : undefined,
       combat,
     })
 

@@ -390,11 +390,12 @@ async function playRound({
         await log(
           `🪖 Playing unit "${unit.unit.name}" (${unit.unit.id}) as "${combat}" for user "${name}"${targetFieldUnitText || targetSpyUserText}`
         )
+        const targetId = targetSpyUser?.user.id || targetFieldUnit?.unit.id
         await client.playUnit({
           game: gameId,
           unit: unit.unit.id,
           combat: targetFieldUnit ? targetFieldUnit.row : combat,
-          target: targetSpyUser?.user.id || targetFieldUnit?.unit.id,
+          targets: targetId ? [targetId] : undefined,
         })
       }
     } else {

@@ -230,18 +230,18 @@ export default class ApiClient {
     gameId,
     unitId,
     combat,
-    target,
+    targets,
   }: {
     gameId: string | ObjectId
     unitId: string | ObjectId
     combat: Combat
-    target?: string | ObjectId
+    targets?: (string | ObjectId)[]
   }): Promise<Game> {
     return this.client.playUnit({
       game: gameId.toString(),
       unit: unitId.toString(),
       combat,
-      target: target ? target.toString() : undefined,
+      targets: targets ? targets.map((target) => target.toString()) : undefined,
     })
   }
 

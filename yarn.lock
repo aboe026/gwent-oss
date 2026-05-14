@@ -4272,6 +4272,7 @@ __metadata:
     react: "npm:19.2.5"
     react-dom: "npm:19.2.5"
     react-icons: "npm:5.6.0"
+    react-rnd: "npm:10.5.3"
     react-router: "npm:7.15.0"
     rxjs: "npm:7.8.2"
     ts-jest: "npm:29.4.9"
@@ -8091,6 +8092,13 @@ __metadata:
     kind-of: "npm:^6.0.2"
     shallow-clone: "npm:^3.0.0"
   checksum: 10/770f912fe4e6f21873c8e8fbb1e99134db3b93da32df271d00589ea4a29dbe83a9808a322c93f3bcaf8584b8b4fa6fc269fc8032efbaa6728e0c9886c74467d2
+  languageName: node
+  linkType: hard
+
+"clsx@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "clsx@npm:2.1.1"
+  checksum: 10/cdfb57fa6c7649bbff98d9028c2f0de2f91c86f551179541cf784b1cfdc1562dcb951955f46d54d930a3879931a980e32a46b598acaea274728dbe068deca919
   languageName: node
   linkType: hard
 
@@ -12754,7 +12762,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.0.0":
+"loose-envify@npm:^1.0.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -13758,7 +13766,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-assign@npm:^4, object-assign@npm:^4.0.1":
+"object-assign@npm:^4, object-assign@npm:^4.0.1, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: 10/fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
@@ -14567,6 +14575,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prop-types@npm:^15.8.1":
+  version: 15.8.1
+  resolution: "prop-types@npm:15.8.1"
+  dependencies:
+    loose-envify: "npm:^1.4.0"
+    object-assign: "npm:^4.1.1"
+    react-is: "npm:^16.13.1"
+  checksum: 10/7d959caec002bc964c86cdc461ec93108b27337dabe6192fb97d69e16a0c799a03462713868b40749bfc1caf5f57ef80ac3e4ffad3effa636ee667582a75e2c0
+  languageName: node
+  linkType: hard
+
 "proxy-addr@npm:^2.0.7":
   version: 2.0.7
   resolution: "proxy-addr@npm:2.0.7"
@@ -14696,6 +14715,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"re-resizable@npm:^6.11.2":
+  version: 6.11.2
+  resolution: "re-resizable@npm:6.11.2"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10/3b814c61b77af294862bd36382b6f2e7f9a90a86f3696fd93780d39d2534c1fcbab68f63b088fc1e1935b1b9dba6c1ab8f61f4f4e6e5d16e86e5805bae40cfb6
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:19.2.5":
   version: 19.2.5
   resolution: "react-dom@npm:19.2.5"
@@ -14704,6 +14733,19 @@ __metadata:
   peerDependencies:
     react: ^19.2.5
   checksum: 10/ba14b022c7191d27b723314b964a1a4d839832e6edd231294097e323973808f97ac647bcf182ab0104e20ae6532dbc36733aec3e8333a1446a7183099c96b255
+  languageName: node
+  linkType: hard
+
+"react-draggable@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "react-draggable@npm:4.5.0"
+  dependencies:
+    clsx: "npm:^2.1.1"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    react: ">= 16.3.0"
+    react-dom: ">= 16.3.0"
+  checksum: 10/fd4080a082fad199103c6978c8a78c80154a0205dbd14ca2c7bb75634132a6afd83a3e4669f2d8fe54efe68569ef24a992439183289d83e71030b0a1791d3476
   languageName: node
   linkType: hard
 
@@ -14716,10 +14758,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-is@npm:^16.13.1":
+  version: 16.13.1
+  resolution: "react-is@npm:16.13.1"
+  checksum: 10/5aa564a1cde7d391ac980bedee21202fc90bdea3b399952117f54fb71a932af1e5902020144fb354b4690b2414a0c7aafe798eb617b76a3d441d956db7726fdf
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
   checksum: 10/d5f60c87d285af24b1e1e7eaeb123ec256c3c8bdea7061ab3932e3e14685708221bf234ec50b21e10dd07f008f1b966a2730a0ce4ff67905b3872ff2042aec22
+  languageName: node
+  linkType: hard
+
+"react-rnd@npm:10.5.3":
+  version: 10.5.3
+  resolution: "react-rnd@npm:10.5.3"
+  dependencies:
+    re-resizable: "npm:^6.11.2"
+    react-draggable: "npm:^4.5.0"
+    tslib: "npm:2.6.2"
+  peerDependencies:
+    react: ">=16.3.0"
+    react-dom: ">=16.3.0"
+  checksum: 10/925e6b5511e8c9ab595da5c024b762ea605a713242e90470a3264c856655ccd49a7fef0c7600969dfefe3996446b702424487a6bf2a4b9af170927811bb507dc
   languageName: node
   linkType: hard
 
@@ -16759,17 +16822,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:2.6.2, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:~2.6.0":
+  version: 2.6.2
+  resolution: "tslib@npm:2.6.2"
+  checksum: 10/bd26c22d36736513980091a1e356378e8b662ded04204453d353a7f34a4c21ed0afc59b5f90719d4ba756e581a162ecbf93118dc9c6be5acf70aa309188166ca
+  languageName: node
+  linkType: hard
+
 "tslib@npm:2.8.1, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:~2.6.0":
-  version: 2.6.2
-  resolution: "tslib@npm:2.6.2"
-  checksum: 10/bd26c22d36736513980091a1e356378e8b662ded04204453d353a7f34a4c21ed0afc59b5f90719d4ba756e581a162ecbf93118dc9c6be5acf70aa309188166ca
   languageName: node
   linkType: hard
 

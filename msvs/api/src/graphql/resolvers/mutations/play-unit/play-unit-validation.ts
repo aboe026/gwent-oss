@@ -51,7 +51,7 @@ export default class PlayUnitValidation {
     })
     const unitId = args.unit
     let combat = args.combat
-    let targetId = args.target
+    let targetIds = args.targets
 
     const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${game._id}"`
     const resolverUtil = new ResolverUtil({
@@ -116,8 +116,11 @@ export default class PlayUnitValidation {
     const isDecoy = effects && effects.some((effect) => effect.key === EffectKey.Decoy)
     const isSpy = effects && effects.some((effect) => effect.key === EffectKey.Spy)
     const isWeather = effects && effects.some((effect) => effect.key === EffectKey.Weather)
+    const medicEffect = effects && effects.find((effect) => effect.key === EffectKey.Medic)
+    const isMedic = !!medicEffect
 
     let roundUnits: UnitDbObject[] | undefined = undefined
+    const unitsToRevive: UnitDbObject[] = []
 
     if (!isDecoy && !isWeather) {
       if (unit.combats && unit.combats.length > 1 && !combat) {
@@ -146,16 +149,27 @@ export default class PlayUnitValidation {
     }
 
     if (isDecoy) {
-      if (!targetId) {
-        const message = `Argument "target" required for units with "${EffectKey.Decoy}" effect.`
+      if (!targetIds) {
+        const message = `Argument "targets" required for units with "${EffectKey.Decoy}" effect.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (targetIds.length === 0) {
+        const message = `Argument "targets" empty, must have single unit ID for units with "${EffectKey.Decoy}" effect.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (targetIds.length > 1) {
+        const message = `Argument "targets" contains multiple entries, must be only 1 unit ID for units with "${EffectKey.Decoy}" effect.`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
 
       resolverUtil.verifyMongoIds({
-        ids: [targetId],
+        ids: targetIds,
         label: 'Target ID',
       })
+      const targetId = targetIds[0]
 
       const fieldUnit = GetFieldUnits.getFieldUnit({
         game,
@@ -198,8 +212,9 @@ export default class PlayUnitValidation {
     }
 
     if (isSpy) {
+      let targetId = ''
       const opponents = game.players.filter((player) => player.user.toString() !== userId.toString())
-      if (!targetId) {
+      if (!targetIds) {
         if (opponents.length === 1) {
           targetId = opponents[0].user.toString()
         } else {
@@ -208,23 +223,96 @@ export default class PlayUnitValidation {
           throw new PresentableError(message)
         }
       } else {
+        if (targetIds.length === 0) {
+          const message = `Argument "targets" empty, must have single user ID for units with "${EffectKey.Spy}" effect.`
+          PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+          throw new PresentableError(message)
+        }
+        if (targetIds.length > 1) {
+          const message = `Argument "targets" contains multiple entries, must be only 1 user ID for units with "${EffectKey.Spy}" effect.`
+          PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+          throw new PresentableError(message)
+        }
+
         resolverUtil.verifyMongoIds({
-          ids: [targetId],
+          ids: targetIds,
           label: 'Target ID',
         })
 
+        targetId = targetIds[0]
+
         if (targetId === userId.toString()) {
-          const message = `Invalid spy target "${targetId}": Cannot be self, must be an opponent.`
+          const message = `Invalid spy target "${targetIds}": Cannot be self, must be an opponent.`
           PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
           throw new PresentableError(message)
         }
         const opponent = opponents.find((player) => player.user.toString() === targetId)
         if (!opponent) {
-          const message = `Invalid spy target "${targetId}": Could not find that opponent on game.`
+          const message = `Invalid spy target "${targetIds}": Could not find that opponent on game.`
           PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
           throw new PresentableError(message)
         }
       }
+
+      targetIds = [targetId]
+    }
+
+    if (isMedic) {
+      const lostUnits = await UnitStore.get({
+        ids: player.deck.discard.map((discard) => discard.unit),
+      })
+      const revivableUnits = lostUnits.filter((unit) => !unit.special && !unit.hero)
+      const reviveAttempts = (targetIds || []).length
+      if (reviveAttempts > revivableUnits.length) {
+        const message = `Cannot attempt to revive more units (${reviveAttempts}) that are eligible in discard pile (${revivableUnits.length}).`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if ((!targetIds || targetIds.length === 0) && revivableUnits.length > 0) {
+        const message = `Must specify unit to revive with medic using the "targets" argument.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+
+      if (targetIds) {
+        for (let i = 0; i < reviveAttempts; i++) {
+          const targetId = targetIds[i]
+          const indexToRevive = revivableUnits.findIndex((unit) => unit._id.toString() === targetId)
+          if (indexToRevive < 0) {
+            const message = `Invalid target "${targetId}": Not an eligible unit in discard pile.`
+            PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+            throw new PresentableError(message)
+          }
+          const unitToRevive = revivableUnits[indexToRevive]
+          unitsToRevive.push(unitToRevive)
+          revivableUnits.splice(indexToRevive, 1)
+          const revivedMedic =
+            unitToRevive.effects &&
+            unitToRevive.effects.some((effect) => effect.toString() === medicEffect._id.toString())
+          const lastAttempt = i === reviveAttempts - 1
+          if (!revivedMedic && !lastAttempt) {
+            const message = `Invalid target "${targetId}": Lacks Medic effect to revive further units.`
+            PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+            throw new PresentableError(message)
+          }
+          if (revivedMedic && lastAttempt && revivableUnits.length > 0) {
+            // reviving another medic, which must revive another card if there are any eligible (can never play medic without reviving units if eligible)
+            const message = `Invalid target "${targetId}": Revived medic must revive another eligible unit in discard pile.`
+            PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+            throw new PresentableError(message)
+          }
+        }
+      }
+
+      if (!targetIds) {
+        const message = `Argument "targets" required for units with "${EffectKey.Decoy}" effect.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      resolverUtil.verifyMongoIds({
+        ids: targetIds,
+        label: 'Target ID',
+      })
     }
 
     if (isWeather) {
@@ -237,12 +325,14 @@ export default class PlayUnitValidation {
       game,
       logPrefix,
       unit,
-      targetId,
+      targetIds,
       roundUnits,
+      unitsToRevive,
       effects,
       isDecoy: !!isDecoy,
       isSpy: !!isSpy,
       isWeather: !!isWeather,
+      isMedic,
       userId,
     }
   }
@@ -254,11 +344,13 @@ export interface ValidatedPlayUnit {
   game: GameDbObject
   logPrefix: string
   unit: UnitDbObject
-  targetId: string | undefined | null
+  targetIds: string[] | undefined | null
   roundUnits?: UnitDbObject[]
+  unitsToRevive?: UnitDbObject[]
   effects?: EffectDbObject[]
   isDecoy: boolean
   isSpy: boolean
   isWeather: boolean
+  isMedic: boolean
   userId: ObjectId
 }

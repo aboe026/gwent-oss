@@ -1,6 +1,6 @@
 fragment GameDeck on GameDeck {
   discard {
-    ...DeckUnit
+    ...GameUnit
   }
   from {
     created

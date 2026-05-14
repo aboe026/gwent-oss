@@ -257,7 +257,7 @@ function RedrawCard({
         <div className={HTML_CLASSES.GameDeckRedrawPair}>
           {fromCard && (
             <UnitGameCard
-              deckUnit={fromCard}
+              gameUnit={fromCard}
               selected={fromCardSelected}
               dotted={fromCardDotted}
               dottedTitle={fromCardDotted ? 'This unit is no longer in your hand' : ''}
@@ -290,7 +290,7 @@ function RedrawCard({
           <CgArrowLongRight color="black" title="Redrawn to" />
           {index < gameDeck.redraws.length && toCard ? (
             <UnitGameCard
-              deckUnit={toCard}
+              gameUnit={toCard}
               selected={toCardSelected}
               dotted={toCardDotted}
               dottedTitle={toCardDotted ? 'This unit is no longer in your hand' : ''}
