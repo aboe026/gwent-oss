@@ -156,7 +156,7 @@ export class GameManager {
         spy: !!spying,
       })
     } else {
-      let targetId: string | undefined = undefined
+      let targetIds: string[] | undefined = undefined
       if (decoying) {
         const target = await currentPlayer.client.getBattlefieldUnit({
           gameId: this.gameId,
@@ -164,13 +164,24 @@ export class GameManager {
           name: decoying.name,
           instance: decoying.instance,
         })
-        targetId = target.id
+        targetIds = [target.id]
       }
+      // TODO: uncomment
+      // if (medicing) {
+      //   targetIds = []
+      //   for (const medic of medicing) {
+      //     const target = currentPlayer.deck.discard.find((discard) => discard.unit.name === medic.name)
+      //     if (!target) {
+      //       throw Error(`Could not find unit "${medic.name}" in Discard to revive.`)
+      //     }
+      //     targetIds.push(target.unit.id)
+      //   }
+      // }
       await currentPlayer.client.playUnit({
         gameId: this.gameId,
         unitId: unitToMove.unit.id,
         combat: combatRow,
-        targets: targetId ? [targetId] : undefined,
+        targets: targetIds ? targetIds : undefined,
       })
     }
     E2eHelper.playUnit({

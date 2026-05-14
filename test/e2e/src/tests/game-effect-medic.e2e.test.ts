@@ -41,11 +41,58 @@ test('Medic revives unit', async (t) => {
   })
 })
 
+test.only('Medic revives medic which revives unit', async (t) => {
+  const unitName1 = 'Rotten Mangonel'
+  const unitName2 = 'Etolian Auxiliary Archers'
+  const unitName3 = 'Siege Technician'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2, unitName3],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Siege,
+  })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    medicing: [],
+  })
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+  })
+  await gameManager.initialize({})
+
+  await t.debug()
+  await gameManager.deploy({
+    unitName: unitName3,
+    combat: Combat.Siege,
+    medicing: [
+      {
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        effectiveStrength: 1,
+      },
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+        effectiveStrength: 3,
+      },
+    ],
+  })
+})
+
 // cannot revive hero
 // cannot revive special
-// medic without no units left
-// medic with no eligible units left
-// medic with single unit left
-// medic with multiple units left
+// medic without no units in discard
+// medic with no eligible units in deiscard
+// medic with single unit in discard
+// medic with multiple units in discard
 // 2 medics
 // 3 medics

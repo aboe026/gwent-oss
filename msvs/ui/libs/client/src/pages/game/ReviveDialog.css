@@ -41,6 +41,12 @@
   border-radius: 10px;
 }
 
+.revive-medic-pair {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .revival-unit {
   height: 150px;
 }

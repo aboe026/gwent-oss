@@ -257,10 +257,35 @@ export default class PlayUnitValidation {
       targetIds = [targetId]
     }
 
+    // TODO: break these out into separate methods?
     if (isMedic) {
       const lostUnits = await UnitStore.get({
         ids: player.deck.discard.map((discard) => discard.unit),
       })
+      if (targetIds) {
+        resolverUtil.verifyMongoIds({
+          ids: targetIds,
+          label: 'Target ID',
+        })
+        for (const targetId of targetIds) {
+          const targetUnit = lostUnits.find((lostUnit) => lostUnit._id.toString() === targetId)
+          if (targetUnit) {
+            if (targetUnit.hero) {
+              const message = `Invalid target "${targetId}": Cannot revive hero.`
+              PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+              throw new PresentableError(message)
+            } else if (targetUnit.special) {
+              const message = `Invalid target "${targetId}": Cannot revive special.`
+              PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+              throw new PresentableError(message)
+            }
+          } else {
+            const message = `Invalid target "${targetId}": Not in Discard pile.`
+            PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+            throw new PresentableError(message)
+          }
+        }
+      }
       const revivableUnits = lostUnits.filter((unit) => !unit.special && !unit.hero)
       const reviveAttempts = (targetIds || []).length
       if (reviveAttempts > revivableUnits.length) {
@@ -268,6 +293,9 @@ export default class PlayUnitValidation {
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
+      console.log(`TEST reviveAttempts: "${reviveAttempts}"`)
+      console.log(`TEST targetIds: "${JSON.stringify(targetIds)}"`)
+      console.log(`TEST revivableUnits: "${JSON.stringify(revivableUnits)}"`)
       if ((!targetIds || targetIds.length === 0) && revivableUnits.length > 0) {
         const message = `Must specify unit to revive with medic using the "targets" argument.`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -276,7 +304,9 @@ export default class PlayUnitValidation {
 
       if (targetIds) {
         for (let i = 0; i < reviveAttempts; i++) {
+          console.log(`TEST i: "${i}"`)
           const targetId = targetIds[i]
+          console.log(`TEST targetId: "${targetId}"`)
           const indexToRevive = revivableUnits.findIndex((unit) => unit._id.toString() === targetId)
           if (indexToRevive < 0) {
             const message = `Invalid target "${targetId}": Not an eligible unit in discard pile.`
@@ -284,12 +314,15 @@ export default class PlayUnitValidation {
             throw new PresentableError(message)
           }
           const unitToRevive = revivableUnits[indexToRevive]
+          console.log(`TEST unitToRevive: "${JSON.stringify(unitToRevive)}"`)
           unitsToRevive.push(unitToRevive)
           revivableUnits.splice(indexToRevive, 1)
           const revivedMedic =
             unitToRevive.effects &&
             unitToRevive.effects.some((effect) => effect.toString() === medicEffect._id.toString())
+          console.log(`TEST revivedMedic: "${revivedMedic}"`)
           const lastAttempt = i === reviveAttempts - 1
+          console.log(`TEST lastAttempt: "${lastAttempt}"`)
           if (!revivedMedic && !lastAttempt) {
             const message = `Invalid target "${targetId}": Lacks Medic effect to revive further units.`
             PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -303,16 +336,6 @@ export default class PlayUnitValidation {
           }
         }
       }
-
-      if (!targetIds) {
-        const message = `Argument "targets" required for units with "${EffectKey.Decoy}" effect.`
-        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
-        throw new PresentableError(message)
-      }
-      resolverUtil.verifyMongoIds({
-        ids: targetIds,
-        label: 'Target ID',
-      })
     }
 
     if (isWeather) {
