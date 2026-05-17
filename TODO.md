@@ -125,6 +125,7 @@ New things that should be added to the codebase.
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
   - test avenger re-mediced cannot cause duplicate avenger
+  - horizontal scrolling not working properly when lots of units in deck?
 - Better game summarization (graphs?)
   - points per round
   - time per round

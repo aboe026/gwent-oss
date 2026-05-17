@@ -10,7 +10,7 @@ import {
   useFragment,
   WeatherUnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
-import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
+import { FullUnitCards, GameDeckCardType, PlayUnitProps, UnitForPlayer } from './GameProps'
 import GameCombatRow from './GameCombatRow'
 import { HTML_CLASSES } from '@gwent/constants'
 import { useUserContext } from '../../UserContext'
@@ -20,22 +20,28 @@ import { useUserContext } from '../../UserContext'
  */
 export default function GameBattlefield({
   cardSelected,
+  deckCardsViewing,
   fullUnits,
   game,
   opponent,
   playUnitProps,
   selectedCardInHand,
+  selectedCardInDiscard,
+  selectedCardInUndrawn,
   scrollHistoryIntoView,
   self,
   setCardSelected,
   setFullUnits,
 }: {
   cardSelected: UnitForPlayer | undefined
+  deckCardsViewing: GameDeckCardType
   fullUnits: FullUnitCards | undefined
   game: GameFragment
   opponent: GamePlayerFragment
   playUnitProps: PlayUnitProps
   selectedCardInHand: boolean
+  selectedCardInUndrawn: boolean
+  selectedCardInDiscard: boolean
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   self: GamePlayerFragment
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
@@ -76,12 +82,15 @@ export default function GameBattlefield({
   )
   const sharedProps = {
     cardSelected,
+    deckCardsViewing,
     playUnitProps,
     fullUnits,
     checkAuth,
     game,
     isTurn,
     selectedCardInHand,
+    selectedCardInDiscard,
+    selectedCardInUndrawn,
     setCardSelected,
     setFullUnits,
     scrollHistoryIntoView,

@@ -50,6 +50,7 @@ import { DeckUnit as DeckUnitRaw } from '@gwent/graphql-schema/apollo-raw-typing
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import {
   FullUnitCards,
+  GameDeckCardType,
   GameDeckProps,
   GameProps,
   MoveForRound,
@@ -427,6 +428,8 @@ function ExistingGame({
   const [coinTossVisible, setCoinTossVisible] = useState(false)
   const [fullUnits, setFullUnits] = useState<FullUnitCards | undefined>()
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
+  const [deckCardsViewing, setDeckCardsViewing] = useState<GameDeckCardType>(GameDeckCardType.Hand)
+  const [deckSettingsOpen, setDeckSettingsOpen] = useState(false)
   const { game } = gameProps
   const gameErrorMessages = getErrorMessages(gameProps.error)
   const gameDeckErrorMessages = getErrorMessages(gameDeckProps.error)
@@ -444,11 +447,31 @@ function ExistingGame({
     useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.hand.map(
       (handUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, handUnit).unit).id
     ) || []
+  const undrawnUnitIds =
+    useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.undrawn.map(
+      (undrawnUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, undrawnUnit).unit).id
+    ) || []
+  const discardedUnitIds =
+    useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.discard.map(
+      (discardedUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, discardedUnit).unit).id
+    ) || []
   const selectedCardInHand = !!(
     self &&
     self.user.name === cardSelected?.playerName &&
     cardSelectedUnit &&
-    handUnitIds?.includes(cardSelectedUnit?.id)
+    handUnitIds.includes(cardSelectedUnit?.id)
+  )
+  const selectedCardInUndrawn = !!(
+    self &&
+    self.user.name === cardSelected?.playerName &&
+    cardSelectedUnit &&
+    undrawnUnitIds.includes(cardSelectedUnit?.id)
+  )
+  const selectedCardInDiscard = !!(
+    self &&
+    self.user.name === cardSelected?.playerName &&
+    cardSelectedUnit &&
+    discardedUnitIds.includes(cardSelectedUnit?.id)
   )
   const selectedIsWeather =
     cardSelectedUnit?.effects &&
@@ -662,10 +685,14 @@ function ExistingGame({
           game: game.id,
         }}
       />
-      <div id="gameContainerUpper">
+      <div
+        id="gameContainerUpper"
+        className={`game-container-upper-deck-settings-${deckSettingsOpen ? 'open' : 'closed'}`}
+      >
         <GameInfo
           cardSelected={cardSelected}
           coinTossVisible={coinTossVisible}
+          deckCardsViewing={deckCardsViewing}
           gameDeckProps={gameDeckProps}
           gameProps={gameProps}
           opponent={opponent}
@@ -673,6 +700,7 @@ function ExistingGame({
           playUnitProps={playUnitProps}
           selectedCardInHand={selectedCardInHand}
           self={self}
+          setDeckCardsViewing={setDeckCardsViewing}
           setPassConfirmationOpen={setPassConfirmationOpen}
           setCardSelected={setCardSelected}
           setFullUnits={setFullUnits}
@@ -737,11 +765,14 @@ function ExistingGame({
           ) : game.status === GameStatus.Playing ? (
             <GameBattlefield
               cardSelected={cardSelected}
+              deckCardsViewing={deckCardsViewing}
               fullUnits={fullUnits}
               game={game}
               opponent={opponent}
               playUnitProps={playUnitProps}
               selectedCardInHand={selectedCardInHand}
+              selectedCardInDiscard={selectedCardInDiscard}
+              selectedCardInUndrawn={selectedCardInUndrawn}
               scrollHistoryIntoView={scrollHistoryIntoView}
               self={self}
               setCardSelected={setCardSelected}
@@ -762,9 +793,14 @@ function ExistingGame({
           setFullUnits={setFullUnits}
         />
       </div>
-      <div id="gameContainerLower">
+      <div
+        id="gameContainerLower"
+        className={`game-section game-container-lower-deck-settings-${deckSettingsOpen ? 'open' : 'closed'}`}
+      >
         <GameHand
           cardSelected={cardSelected}
+          deckCardsViewing={deckCardsViewing}
+          deckSettingsOpen={deckSettingsOpen}
           gameStatus={game.status}
           gameDeckFragment={gameDeckProps.deck}
           isTurn={game.turn?.user.name === self.user.name}
@@ -773,6 +809,7 @@ function ExistingGame({
           selectedCardInHand={selectedCardInHand}
           self={self}
           setCardSelected={setCardSelected}
+          setDeckSettingsOpen={setDeckSettingsOpen}
           setFullUnits={setFullUnits}
         />
       </div>
