@@ -5,6 +5,7 @@ import {
   DecoyingExpected,
   E2eHelper,
   MardroemingExpected,
+  MedicingExpected,
   MoralingExpected,
   MusteringExpected,
   ScorchingExpected,
@@ -108,6 +109,7 @@ export class GameManager {
     avenging,
     spying,
     weathering,
+    medicing,
     modifier,
     weather,
     verify,
@@ -127,6 +129,7 @@ export class GameManager {
     avenging?: AvengingExpected[]
     spying?: SpyingExpected
     weathering?: WeatheringExpected[]
+    medicing?: MedicingExpected[]
     impacts?: number
     modifier?: boolean
     weather?: boolean
@@ -169,6 +172,10 @@ export class GameManager {
         target: targetId,
       })
     }
+    let nextPlayerTurn = otherPlayer.gamePlayer
+    if (otherPlayer.gamePlayer.passed || (medicing && medicing.length > 0)) {
+      nextPlayerTurn = currentPlayer.gamePlayer
+    }
     E2eHelper.playUnit({
       player: currentPlayer.gamePlayer,
       gameDeck: currentPlayer.deck,
@@ -176,13 +183,14 @@ export class GameManager {
       row: combatRow,
       hero,
       moves: this.moves[this.moves.length - 1],
-      switchTurnsWith: otherPlayer.gamePlayer.passed ? currentPlayer.gamePlayer : otherPlayer.gamePlayer,
+      switchTurnsWith: nextPlayerTurn,
       effectiveStrength,
       scorching,
       moraling,
       horning,
       mardroeming,
       mustering,
+      medicing,
       bonding,
       decoying,
       avenging,
@@ -197,6 +205,7 @@ export class GameManager {
         throw Error(`Expected hand count of "${expectedHandCount}" but got "${this.self.deck.hand.length}"`)
       }
     }
+    // TODO: account for medicing with hand to verify. Swap hand and discard? Or have new "reviving" propery on game player so it can choose correct one?
     if (this.shouldVerify || verify) {
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,

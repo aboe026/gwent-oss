@@ -430,6 +430,7 @@ function ExistingGame({
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
   const [deckCardsViewing, setDeckCardsViewing] = useState<GameDeckCardType>(GameDeckCardType.Hand)
   const [deckSettingsOpen, setDeckSettingsOpen] = useState(false)
+  // TODO: deckFilters here so can default them to no specials/heroes if reviving
   const { game } = gameProps
   const gameErrorMessages = getErrorMessages(gameProps.error)
   const gameDeckErrorMessages = getErrorMessages(gameDeckProps.error)
@@ -484,9 +485,18 @@ function ExistingGame({
   const previousGame = usePrevious(game)
   useEffect(() => {
     const self = useFragment(GamePlayerFragmentDoc, game?.players)?.find((player) => player.user.name === user?.name)
+    const previousSelf = useFragment(GamePlayerFragmentDoc, previousGame?.players)?.find(
+      (player) => player.user.name === user?.name
+    )
     if (game?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing && !self?.ready) {
       setCoinTossVisible(true)
       setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+    }
+    if (self && !previousSelf && self.reviving && deckCardsViewing === GameDeckCardType.Hand) {
+      setDeckCardsViewing(GameDeckCardType.Lost)
+    }
+    if (!self?.reviving && previousSelf?.reviving) {
+      setDeckCardsViewing(GameDeckCardType.Hand)
     }
   }, [game])
 
@@ -777,6 +787,7 @@ function ExistingGame({
               self={self}
               setCardSelected={setCardSelected}
               setFullUnits={setFullUnits}
+              setDeckCardsViewing={setDeckCardsViewing}
             />
           ) : (
             <GameSummary game={game} />

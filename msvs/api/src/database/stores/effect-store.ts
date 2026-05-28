@@ -1,4 +1,4 @@
-import { Document, Filter, ObjectId } from 'mongodb'
+import { Document, Filter, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { EffectDbObject, EffectKey } from '@gwent/graphql-schema/database-typings'
@@ -23,7 +23,7 @@ export default class EffectStore extends Store {
    */
   static async add({ ability, image, key, name }: AddEffectInput): Promise<EffectDbObject> {
     EffectStore.logger.debug(`Adding effect with name "${name}"`)
-    const effect: Document = {
+    const effect: WithoutId<EffectDbObject> = {
       ability,
       created: new Date(),
       image,

@@ -88,6 +88,7 @@ export default class GamePlayerResolver {
       leader: gameStatus === GameStatus.Decking ? undefined : leader,
       order: player.order,
       ready: player.ready,
+      reviving: player.reviving,
       rounds: await PlayerRoundResolver.fromArray({
         rounds: player.rounds,
         users: resolvedUsers,

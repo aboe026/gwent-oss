@@ -11,6 +11,7 @@ fragment GamePlayer on GamePlayer {
     ...GameLeader
   }
   ready
+  reviving
   rounds {
     ...PlayerRound
   }

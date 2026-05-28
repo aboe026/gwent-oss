@@ -34,6 +34,7 @@ export default class PlayUnitImplementation {
    * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @param config.isSpy Whether or not the new unit being played has the Spy effect.
    * @param config.isWeather Whether or not the new unit being played has the Weather effect.
+   * @param config.isMedic Whether or not the new unit being played has the Medic effect.
    * @returns The Game and GameDeck with the unit played for the user.
    * @throws {PresentableError} if known problem playing unit.
    * @throws {Error} if unforseen problem adding the user.
@@ -50,6 +51,7 @@ export default class PlayUnitImplementation {
     isDecoy,
     isSpy,
     isWeather,
+    isMedic,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
     if (!playerId) {
@@ -83,6 +85,8 @@ export default class PlayUnitImplementation {
       decoys,
       deckUnitsAddedToHand,
       weathers: weatherBattlefieldImpacts,
+      medics,
+      revived,
     } = await BattlefieldUpdates.modifyBattlefieldWithNewUnit({
       battlefieldUnits: [unit, ...roundUnits, ...existingRoundUnits],
       combat,
@@ -95,6 +99,7 @@ export default class PlayUnitImplementation {
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
     })
 
     const musterEffects = await getUnitEffects({
@@ -141,9 +146,11 @@ export default class PlayUnitImplementation {
       mardroemes,
       transformedFieldUnits,
       mardroemingFieldUnit,
+      medics,
       isWeather,
       targetId: isSpy ? targetId : undefined,
       combat,
+      revived,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

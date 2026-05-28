@@ -1,4 +1,4 @@
-import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
@@ -24,7 +24,7 @@ export default class GameStore extends Store {
     GameStore.logger.debug(`Adding game by creator "${creatorId}"`)
     const created = new Date()
     const playerIds = [creatorId, ...opponentIds]
-    const game: Document = {
+    const game: WithoutId<GameDbObject> = {
       config: {
         lives: STARTING_LIVES,
       },
@@ -34,12 +34,13 @@ export default class GameStore extends Store {
         return {
           deck: {
             discard: [],
-            from: null,
+            from: undefined,
             hand: [],
             redraws: [],
             undrawn: [],
           },
           ready: false,
+          reviving: false,
           rounds: [],
           user: new ObjectId(playerId),
         }

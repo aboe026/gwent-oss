@@ -1,5 +1,5 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
+import { ObjectId, WithoutId } from 'mongodb'
 
 import Store from './store'
 
@@ -115,14 +115,14 @@ export default class UpgradeStore extends Store {
    * @returns The attempt database document.
    */
   static async addAttempt({ version, time }: { version: number; time: Date }): Promise<AttemptDbObject> {
-    const doc = {
+    const attempt: WithoutId<AttemptDbObject> = {
       version,
       time,
     }
     if (UpgradeStore.logger.isTraceEnabled()) {
-      UpgradeStore.logger.trace(`addAttempt doc: "${JSON.stringify(doc)}"`)
+      UpgradeStore.logger.trace(`addAttempt doc: "${JSON.stringify(attempt)}"`)
     }
-    return UpgradeStore.create<AttemptDbObject>(doc)
+    return UpgradeStore.create<AttemptDbObject>(attempt)
   }
 
   /**
@@ -163,15 +163,15 @@ export default class UpgradeStore extends Store {
     start: Date
     end: Date
   }): Promise<UpgradeDbObject> {
-    const doc = {
+    const upgrade: WithoutId<UpgradeDbObject> = {
       version,
       start,
       end,
     }
     if (UpgradeStore.logger.isTraceEnabled()) {
-      UpgradeStore.logger.trace(`addUpgrade doc: "${JSON.stringify(doc)}"`)
+      UpgradeStore.logger.trace(`addUpgrade doc: "${JSON.stringify(upgrade)}"`)
     }
-    return UpgradeStore.create<UpgradeDbObject>(doc)
+    return UpgradeStore.create<UpgradeDbObject>(upgrade)
   }
 
   /**

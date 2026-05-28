@@ -225,6 +225,8 @@ type GamePlayer @entity(additionalFields: [{ path: "deck", type: "GameDeckDbObje
   order: Int @column
   "Whether or not a user has their game deck set to play the game."
   ready: Boolean! @column
+  "Whether or not the player is currently choosing a Discarded Unit to revive with a Medic."
+  reviving: Boolean! @column
   rounds: [PlayerRound!]! @column(overrideType: "Array<PlayerRoundDbObject>")
   user: User! @column(overrideType: "ObjectId")
 }

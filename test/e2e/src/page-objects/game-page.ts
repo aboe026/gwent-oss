@@ -273,7 +273,8 @@ export default class GamePage {
     if (names) {
       await t.expect(GamePage.elements.HandIcon.exists).notOk()
       const actualNames: (string | null)[] = []
-      for (let i = 0; i < names.length; i++) {
+      const actualCardsCount = await GamePage.elements.Hand.childElementCount
+      for (let i = 0; i < actualCardsCount; i++) {
         const card = await GamePage.elements.Hand.child(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
         const cardName = await card.getAttribute('title')
         const isSelected = await card.hasClass(HTML_CLASSES.ItemHighlighted)

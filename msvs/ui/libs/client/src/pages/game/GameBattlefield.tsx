@@ -32,6 +32,7 @@ export default function GameBattlefield({
   self,
   setCardSelected,
   setFullUnits,
+  setDeckCardsViewing,
 }: {
   cardSelected: UnitForPlayer | undefined
   deckCardsViewing: GameDeckCardType
@@ -46,6 +47,7 @@ export default function GameBattlefield({
   self: GamePlayerFragment
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  setDeckCardsViewing: Dispatch<SetStateAction<GameDeckCardType>>
 }) {
   const { checkAuth } = useUserContext()
   const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
@@ -94,6 +96,7 @@ export default function GameBattlefield({
     setCardSelected,
     setFullUnits,
     scrollHistoryIntoView,
+    setDeckCardsViewing,
   }
 
   return (

@@ -76,13 +76,16 @@ export default class PlayUnitValidation {
       label: 'play units',
     })
 
-    const deckUnits = player.deck.hand.filter((hand) => hand.unit.toString() === unitId)
+    const deckUnits = (player.reviving ? player.deck.discard : player.deck.hand).filter(
+      (hand) => hand.unit.toString() === unitId
+    )
+    const pile = player.reviving ? 'discard' : 'hand'
     if (deckUnits.length === 0) {
-      const message = 'Unit not in hand.'
+      const message = `Unit not in ${pile}.`
       PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     } else if (deckUnits.length > 1) {
-      const message = `Found more than 1 unit with ID "${unitId}"`
+      const message = `Found more than 1 unit with ID "${unitId}" in ${pile}`
       PlayUnitValidation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`)
       throw new PresentableError(`${message}.`)
     }
@@ -116,6 +119,7 @@ export default class PlayUnitValidation {
     const isDecoy = effects && effects.some((effect) => effect.key === EffectKey.Decoy)
     const isSpy = effects && effects.some((effect) => effect.key === EffectKey.Spy)
     const isWeather = effects && effects.some((effect) => effect.key === EffectKey.Weather)
+    const isMedic = effects && effects.some((effect) => effect.key === EffectKey.Medic)
 
     let roundUnits: UnitDbObject[] | undefined = undefined
 
@@ -227,6 +231,20 @@ export default class PlayUnitValidation {
       }
     }
 
+    // TODO: break these out into separate methods?
+    if (player.reviving) {
+      if (unit.hero) {
+        const message = `Invalid unit "${unit._id}": Cannot revive hero units.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (unit.special) {
+        const message = `Invalid unit "${unit._id}": Cannot revive special units.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+    }
+
     if (isWeather) {
       combat = undefined
     }
@@ -243,6 +261,7 @@ export default class PlayUnitValidation {
       isDecoy: !!isDecoy,
       isSpy: !!isSpy,
       isWeather: !!isWeather,
+      isMedic: !!isMedic,
       userId,
     }
   }
@@ -260,5 +279,6 @@ export interface ValidatedPlayUnit {
   isDecoy: boolean
   isSpy: boolean
   isWeather: boolean
+  isMedic: boolean
   userId: ObjectId
 }

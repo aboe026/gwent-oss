@@ -396,6 +396,7 @@ export class E2eHelper {
     moraling,
     horning,
     mustering,
+    medicing,
     bonding,
     decoying,
     avenging,
@@ -416,6 +417,7 @@ export class E2eHelper {
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
+    medicing?: MedicingExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
     avenging?: AvengingExpected[]
@@ -609,12 +611,16 @@ export class E2eHelper {
         effectKey = EffectKey.Spy
       } else if (weathering) {
         effectKey = EffectKey.Weather
+      } else if (medicing) {
+        effectKey = EffectKey.Medic
       }
       let numImpacts: number
       if (impacts !== undefined) {
         numImpacts = impacts
       } else {
-        if (decoying) {
+        if (medicing) {
+          numImpacts = medicing.length === 0 ? 0 : 1
+        } else if (decoying) {
           numImpacts = 1
         } else if (spying) {
           numImpacts = undrawnSpiedIntoHand
@@ -861,6 +867,13 @@ export interface SpyingExpected {
 export interface AvengingExpected {
   turn: GamePlayerExpected
   newUnitPlayer: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
+}
+
+export interface MedicingExpected {
+  player: GamePlayerExpected
   name: string
   row: Combat
   effectiveStrength: number

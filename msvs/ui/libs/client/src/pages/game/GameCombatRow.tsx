@@ -7,7 +7,9 @@ import {
   FieldUnitFragmentDoc,
   FragmentType,
   GameFragment,
+  GameFragmentDoc,
   GamePlayerFragment,
+  GamePlayerFragmentDoc,
   PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
   UnitEffectFragmentDoc,
@@ -42,6 +44,7 @@ export default function GameCombatRow({
   setCardSelected,
   setFullUnits,
   weather,
+  setDeckCardsViewing,
 }: {
   cardSelected: UnitForPlayer | undefined
   combat: Combat
@@ -59,6 +62,7 @@ export default function GameCombatRow({
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   weather?: boolean
+  setDeckCardsViewing: Dispatch<SetStateAction<GameDeckCardType>>
 }) {
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
@@ -262,7 +266,7 @@ export default function GameCombatRow({
               await retryCheckingAuth({
                 checkAuth,
                 method: async () => {
-                  await playUnitProps.playUnit({
+                  const response = await playUnitProps.playUnit({
                     variables: {
                       game: game.id,
                       combat: combat,
@@ -271,6 +275,13 @@ export default function GameCombatRow({
                     },
                   })
                   setCardSelected(undefined)
+                  const updatedGame = useFragment(GameFragmentDoc, response.data?.playUnit)
+                  const updatedPlayer = useFragment(GamePlayerFragmentDoc, updatedGame?.players)?.find(
+                    (gamePlayer) => gamePlayer.user.id === updatedGame?.turn?.user.id
+                  )
+                  if (updatedPlayer && updatedPlayer.reviving) {
+                    setDeckCardsViewing(GameDeckCardType.Lost)
+                  }
                 },
               })
             }

@@ -1,5 +1,5 @@
 import { CgArrowDown, CgArrowUp, CgClose, CgEye, CgEyeAlt } from 'react-icons/cg'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { IconBaseProps } from 'react-icons'
 
 import Centered from '../../components/Centered'
@@ -30,6 +30,7 @@ import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitFilters from '../../components/UnitFilters'
 import UnitGameCard from '../../components/UnitGameCard'
+import { usePrevious } from '../../util/usePrevious'
 import './GameHand.css'
 
 /**
@@ -111,6 +112,19 @@ export default function GameHand({
     onClick: () => setDeckSettingsOpen(!deckSettingsOpen),
     title: deckSettingsOpen ? 'Hide Settings' : 'View Settings',
   }
+
+  const previousSelf = usePrevious(self)
+  useEffect(() => {
+    if (self.reviving && !previousSelf?.reviving) {
+      setFilterFieldsSelected([FILTER_FIELD.Hero, FILTER_FIELD.Special])
+      setFilterFieldsReversed(true)
+      setFilterName('')
+    } else if (!self.reviving && previousSelf?.reviving) {
+      setFilterFieldsSelected([])
+      setFilterFieldsReversed(false)
+      setFilterName('')
+    }
+  }, [self])
 
   return (
     <div id="gameHandContainer">

@@ -49,9 +49,11 @@ export default class UpdateHistory {
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.targetId The potential target an effect is being applied to.
    * @param config.weathers Any potential weather units that were deployed by the new battlefield unit being played.
+   * @param config.medics Any potential medic units deployed to the battlefield.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    * @param config.isWeather Whether or not the new unit is weathering the battlefield.
    * @param config.combat The combat row the new unit is being deployed into.
+   * @param config.revived Whether or not the new unit being deployed to the battlefield was revived by a Medic.
    */
   static newUnitDeployed({
     game,
@@ -70,10 +72,12 @@ export default class UpdateHistory {
     horns,
     morales,
     weathers,
+    medics,
     musteredOrigins,
     targetId,
     isWeather,
     combat,
+    revived,
   }: {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
@@ -91,10 +95,12 @@ export default class UpdateHistory {
     horns: ImpactsByUnitId
     morales: ImpactsByUnitId
     weathers: ImpactsByUnitId
+    medics: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
     targetId: string | null | undefined
     isWeather: boolean
     combat: Combat | null | undefined
+    revived: boolean
   }) {
     const fieldUnit = GetFieldUnits.getFieldUnit({
       game,
@@ -111,6 +117,7 @@ export default class UpdateHistory {
       musters,
       scorches,
       spies,
+      medics,
       weathers
     )[deckUnit.unit.toString()]
     const updatedImpacts = UpdateHistory.updateImpactFieldUnits({
@@ -123,6 +130,15 @@ export default class UpdateHistory {
       isWeather,
       combat,
     })
+
+    if (revived) {
+      UpdateHistory.updateLastMoveImpactWithUnit({
+        game,
+        logPrefix,
+        playerId,
+        unitId: deckUnit.unit,
+      })
+    }
 
     const move: MoveUnitDbObject = {
       created: new Date(),
@@ -166,6 +182,7 @@ export default class UpdateHistory {
           morales,
           avengers,
           musters,
+          medics,
           weathers,
           origin: GameUnitOrigin.Nondeck,
           playerId,
@@ -210,6 +227,7 @@ export default class UpdateHistory {
           morales,
           musters,
           weathers,
+          medics,
           origin,
           playerId,
           reason: {
@@ -235,6 +253,7 @@ export default class UpdateHistory {
           logPrefix,
           mardroemes,
           morales,
+          medics,
           musters,
           avengers: {
             [avengerUnitId]: [avengee],
@@ -268,6 +287,7 @@ export default class UpdateHistory {
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
+   * @param config.medics Any potential medic units deployed to the battlefield.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.avengers Any potential units that were summoned to the battlefield due to avengers leaving.
@@ -290,6 +310,7 @@ export default class UpdateHistory {
     scorches = {},
     mardroemes = {},
     musters = {},
+    medics = {},
     bonds = {},
     horns = {},
     avengers = {},
@@ -310,6 +331,7 @@ export default class UpdateHistory {
     scorches?: ImpactsByUnitId
     mardroemes?: ImpactsByUnitId
     musters?: ImpactsByUnitId
+    medics?: ImpactsByUnitId
     bonds?: ImpactsByUnitId
     horns?: ImpactsByUnitId
     avengers?: ImpactsByUnitId
@@ -339,6 +361,7 @@ export default class UpdateHistory {
       morales,
       musters,
       scorches,
+      medics,
       spies,
       weathers
     )[unitId.toString()]
@@ -389,6 +412,75 @@ export default class UpdateHistory {
       player.rounds[game.round - 1].moves.push(move)
     } else {
       const message = `Could not find player "${playerId}" on game "${game._id}" to add move to`
+      UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+      throw new PresentableError(`${message}.`)
+    }
+  }
+
+  static updateLastMoveImpactWithUnit({
+    game,
+    logPrefix,
+    playerId,
+    unitId,
+  }: {
+    game: GameDbObject
+    logPrefix: string
+    playerId: ObjectId | string
+    unitId: ObjectId | string
+  }) {
+    const player = game.players.find((player) => player.user.toString() === playerId.toString())
+    if (player) {
+      const round = player.rounds[game.round - 1]
+      const move = round.moves.at(-1)
+      if (move) {
+        if (move.type === MoveType.Unit) {
+          const unitMove = move as MoveUnitDbObject
+          if (unitMove.impacts) {
+            const impact = unitMove.impacts[0]
+            if (impact) {
+              if (impact.unit) {
+                const message = `Unit already set to "${impact.unit.unit}" for last move`
+                UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+                throw new PresentableError(`${message}.`)
+              } else {
+                const fieldUnit = GetFieldUnits.getFieldUnit({
+                  game,
+                  unitId,
+                  userId: playerId,
+                })
+                if (fieldUnit) {
+                  impact.unit = {
+                    ...fieldUnit,
+                    type: GameUnitType.Field,
+                  }
+                } else {
+                  const message = `Could not find unit "${unitId}" on battlefield to update latest impact with`
+                  UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+                  throw new PresentableError(`${message}.`)
+                }
+              }
+            } else {
+              const message = `No impact found for move to add unit to`
+              UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+              throw new PresentableError(`${message}.`)
+            }
+          } else {
+            const message = `No impacts found for move to add unit to`
+            UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+            throw new PresentableError(`${message}.`)
+          }
+        } else {
+          const message = `Invalid last move type "${move.type}", expecting "${MoveType.Unit}"`
+          UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+          throw new PresentableError(`${message}.`)
+        }
+      } else {
+        const message = `Could not find last move for player "${playerId}" to update impact with unit for`
+        UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
+        throw new PresentableError(`${message}.`)
+      }
+    } else {
+      const message = `Could not find player "${playerId}" on game "${game._id}" to update impact with unit for`
       UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)
       throw new PresentableError(`${message}.`)
     }

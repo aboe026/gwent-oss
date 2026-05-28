@@ -11,6 +11,7 @@ import {
 import EffectAvenger from './effect-avenger'
 import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
+import EffectMedic from './effect-medic'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
 import EffectSpy from './effect-spy'
@@ -38,6 +39,7 @@ export default class BattlefieldUpdates {
    * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @param config.isSpy Whether or not the new unit being played has the Spy effect.
    * @param config.isWeather Whether or not the new unit being played has the Weather effect.
+   * @param config.isMedic Whether or not the new unit being played has the Medic effect.
    * @returns Any impacts the new unit has on the battlefield.
    */
   static async modifyBattlefieldWithNewUnit({
@@ -52,6 +54,7 @@ export default class BattlefieldUpdates {
     isDecoy,
     isSpy,
     isWeather,
+    isMedic,
   }: {
     battlefieldUnits: UnitDbObject[]
     combat?: Combat | null
@@ -64,6 +67,7 @@ export default class BattlefieldUpdates {
     isDecoy: boolean
     isSpy: boolean
     isWeather: boolean
+    isMedic: boolean
   }): Promise<ModificationImpacts> {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
 
@@ -153,6 +157,14 @@ export default class BattlefieldUpdates {
     if (deckUnitAddedToHand) {
       deckUnitsAddedToHand.push(deckUnitAddedToHand)
     }
+
+    const { impacts: medicImpacts, revived } = await EffectMedic.deployMedicOrReviveUnit({
+      game,
+      isMedic,
+      logPrefix,
+      newDeckUnit,
+    })
+
     return {
       avengers,
       avengedUnits,
@@ -168,6 +180,8 @@ export default class BattlefieldUpdates {
       transformedFieldUnits,
       mardroemingFieldUnit,
       weathers: weatherImpacts,
+      medics: medicImpacts,
+      revived,
     }
   }
 
@@ -249,5 +263,7 @@ interface ModificationImpacts {
   transformedUnits: UnitDbObject[]
   transformedFieldUnits: FieldUnitDbObject[]
   mardroemingFieldUnit: FieldUnitDbObject | undefined
+  medics: ImpactsByUnitId
+  revived: boolean
   weathers: ImpactsByUnitId
 }

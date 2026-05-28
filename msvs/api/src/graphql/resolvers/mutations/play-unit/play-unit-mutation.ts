@@ -30,6 +30,7 @@ export default class PlayUnitMutation {
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
       userId,
     } = await PlayUnitValidation.playUnitValidation(args, context, info)
 
@@ -49,6 +50,7 @@ export default class PlayUnitMutation {
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
       userId,
     })
 
