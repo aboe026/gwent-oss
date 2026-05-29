@@ -5,14 +5,23 @@ import {
   DecoyingExpected,
   E2eHelper,
   MardroemingExpected,
-  MedicingExpected,
   MoralingExpected,
   MusteringExpected,
   ScorchingExpected,
   SpyingExpected,
   WeatheringExpected,
 } from './e2e-helper'
-import { Combat, DeckUnit, EffectKey, FactionKey, GameDeck, GameUnitOrigin, MoveReasonType } from '@gwent/node-client'
+import {
+  Combat,
+  DeckUnit,
+  EffectKey,
+  FactionKey,
+  FieldUnit,
+  GameDeck,
+  GameUnit,
+  GameUnitOrigin,
+  MoveReasonType,
+} from '@gwent/node-client'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
 import env from './e2e-env'
@@ -28,6 +37,7 @@ import GamePage, {
 } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
+import { toTitleCase } from '@gwent/utils'
 
 export class GameManager {
   public gameId: string
@@ -110,6 +120,7 @@ export class GameManager {
     spying,
     weathering,
     medicing,
+    revivedBy,
     modifier,
     weather,
     verify,
@@ -129,7 +140,8 @@ export class GameManager {
     avenging?: AvengingExpected[]
     spying?: SpyingExpected
     weathering?: WeatheringExpected[]
-    medicing?: MedicingExpected[]
+    medicing?: boolean
+    revivedBy?: string
     impacts?: number
     modifier?: boolean
     weather?: boolean
@@ -139,7 +151,8 @@ export class GameManager {
     const currentPlayer = isSelfTurn ? this.self : this.opponent
     const otherPlayer = isSelfTurn ? this.opponent : this.self
 
-    const unitToMove = currentPlayer.deck.hand.find((unit) => unit.unit.name === unitName)
+    const pile = revivedBy ? currentPlayer.deck.discard : currentPlayer.deck.hand
+    const unitToMove = pile.find((unit) => unit.unit.name === unitName)
     if (!unitToMove) {
       throw Error(`Could not find unit "${unitName}" in hand for player "${currentPlayer.gamePlayer.name}"`)
     }
@@ -173,13 +186,13 @@ export class GameManager {
       })
     }
     let nextPlayerTurn = otherPlayer.gamePlayer
-    if (otherPlayer.gamePlayer.passed || (medicing && medicing.length > 0)) {
+    if (otherPlayer.gamePlayer.passed || medicing === true) {
       nextPlayerTurn = currentPlayer.gamePlayer
     }
     E2eHelper.playUnit({
       player: currentPlayer.gamePlayer,
       gameDeck: currentPlayer.deck,
-      deckUnit: unitToMove,
+      newDeckUnit: unitToMove,
       row: combatRow,
       hero,
       moves: this.moves[this.moves.length - 1],
@@ -191,6 +204,7 @@ export class GameManager {
       mardroeming,
       mustering,
       medicing,
+      revivedBy,
       bonding,
       decoying,
       avenging,
@@ -205,12 +219,14 @@ export class GameManager {
         throw Error(`Expected hand count of "${expectedHandCount}" but got "${this.self.deck.hand.length}"`)
       }
     }
-    // TODO: account for medicing with hand to verify. Swap hand and discard? Or have new "reviving" propery on game player so it can choose correct one?
+    if (medicing !== undefined) {
+      currentPlayer.gamePlayer.reviving = medicing === true
+    }
     if (this.shouldVerify || verify) {
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,
         self: this.self.gamePlayer,
-        hand: this.self.deck.hand,
+        hand: medicing === true ? this.self.deck.discard : this.self.deck.hand,
         round: this.round,
         moves: this.moves,
       })
@@ -236,6 +252,22 @@ export class GameManager {
       this.victors = victors
     }
 
+    E2eHelper.playPass({
+      player: currentPlayer.gamePlayer,
+      round: this.round,
+      switchTurnsWith: switchTurnsWith || otherPlayer.gamePlayer,
+      moves: this.moves[this.moves.length - 1],
+    })
+
+    if (this.self.gamePlayer.passed && this.opponent.gamePlayer.passed) {
+      await this.moveFieldUnitsToDiscard({
+        player: this.self,
+      })
+      await this.moveFieldUnitsToDiscard({
+        player: this.opponent,
+      })
+    }
+
     if (isSelfTurn && !this.apiDriven) {
       await GamePage.pass({})
     } else {
@@ -243,12 +275,6 @@ export class GameManager {
         gameId: this.gameId,
       })
     }
-    E2eHelper.playPass({
-      player: currentPlayer.gamePlayer,
-      round: this.round,
-      switchTurnsWith: switchTurnsWith || otherPlayer.gamePlayer,
-      moves: this.moves[this.moves.length - 1],
-    })
 
     if (this.self.gamePlayer.passed && this.opponent.gamePlayer.passed) {
       if (this.self.roundScores && this.opponent.roundScores) {
@@ -265,6 +291,7 @@ export class GameManager {
           losers.push(this.self.gamePlayer)
         }
       }
+
       E2eHelper.endRound({
         self: this.self.gamePlayer,
         opponent: this.opponent.gamePlayer,
@@ -313,6 +340,80 @@ export class GameManager {
         rounds: this.getRoundScores(),
       })
     }
+  }
+
+  private async moveFieldUnitsToDiscard({ player }: { player: GameManagerPlayer }) {
+    const closeUnits = player.gamePlayer.close?.units || []
+    const rangedUnits = player.gamePlayer.ranged?.units || []
+    const siegeUnits = player.gamePlayer.siege?.units || []
+    const gameUnits = await player.client.getGameUnits({
+      gameId: this.gameId,
+      playerId: (await player.client.currentUser()).id,
+    })
+    for (const unit of closeUnits) {
+      const index = this.getFieldUnitIndex({
+        name: unit.name,
+        combat: Combat.Close,
+        gameUnits,
+      })
+      const gameUnit = gameUnits[index]
+      player.deck.discard.push({
+        artStyle: gameUnit.artStyle,
+        unit: gameUnit.unit,
+      })
+      gameUnits.splice(index, 1)
+    }
+    for (const unit of rangedUnits) {
+      const index = this.getFieldUnitIndex({
+        name: unit.name,
+        combat: Combat.Close,
+        gameUnits,
+      })
+      const gameUnit = gameUnits[index]
+      player.deck.discard.push({
+        artStyle: gameUnit.artStyle,
+        unit: gameUnit.unit,
+      })
+      gameUnits.splice(index, 1)
+    }
+    for (const unit of siegeUnits) {
+      const index = this.getFieldUnitIndex({
+        name: unit.name,
+        combat: Combat.Close,
+        gameUnits,
+      })
+      const gameUnit = gameUnits[index]
+      player.deck.discard.push({
+        artStyle: gameUnit.artStyle,
+        unit: gameUnit.unit,
+      })
+      gameUnits.splice(index, 1)
+    }
+  }
+
+  private getFieldUnitIndex({
+    name,
+    combat,
+    gameUnits,
+  }: {
+    name: string
+    combat: Combat
+    gameUnits: GameUnit[]
+  }): number {
+    const index = gameUnits.findIndex((gameUnit) => {
+      if (gameUnit.unit.name === name) {
+        if (gameUnit.__typename === 'FieldUnit') {
+          const fieldUnit = gameUnit as FieldUnit
+          if (fieldUnit.row === combat) {
+            return true
+          }
+        }
+      }
+    })
+    if (index < 0) {
+      throw Error(`Could not find GameUnit for "${toTitleCase(combat)}" unit "${name}"`)
+    }
+    return index
   }
 
   async verify({

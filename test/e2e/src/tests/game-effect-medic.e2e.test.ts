@@ -1,6 +1,7 @@
 import createGameManager from '../util/game-manager'
-import { Combat, FactionKey } from '@gwent/node-client'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
+import { EffectKey, FactionKey } from '@gwent/node-client'
+import GamePage from '../page-objects/game-page'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
@@ -28,13 +29,34 @@ test.only('Medic revives only unit in discard', async (t) => {
 
   await gameManager.deploy({
     unitName: unitName2,
-    medicing: [
+    medicing: true,
+  })
+
+  // TODO: change impact unit to To Be Determined? Deciding? for medics (and Secret for spies)
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    round: gameManager.round,
+    userName: gameManager.self.gamePlayer.name,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
       {
-        name: unitName1,
-        player: gameManager.self.gamePlayer,
-        row: Combat.Close,
-        effectiveStrength: 4,
+        unitName: unitName2,
+        round: gameManager.round,
+        userName: gameManager.self.gamePlayer.name,
+        effectKey: EffectKey.Medic,
+        impacts: [
+          {
+            unitName: '',
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
       },
     ],
+  })
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    revivedBy: unitName2,
   })
 })

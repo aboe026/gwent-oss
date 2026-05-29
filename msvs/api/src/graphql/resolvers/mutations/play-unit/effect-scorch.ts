@@ -155,7 +155,10 @@ export default class EffectScorch {
   }): ImpactDbObject[] {
     if (scorchingUnit.name === 'Scorch' && player.user.toString() === turn?.toString()) {
       // the named "Scorch" card does not stay on the battlefield
-      player.deck.discard.push(scorchingDeckUnit)
+      player.deck.discard.push({
+        artStyle: scorchingDeckUnit.artStyle,
+        unit: scorchingDeckUnit.unit,
+      })
       EffectScorch.logger.trace(
         `${logPrefix} newUnit "${scorchingUnit._id}" has name "Scorch" and current player, so discarding it`
       )
@@ -241,7 +244,15 @@ export default class EffectScorch {
           unitsScorched.map((fieldUnit) => fieldUnit.unit)
         )}"`
       )
-      player.deck.discard.push(...unitsScorched)
+      player.deck.discard.push(
+        ...unitsScorched.map((unitsScorched) => {
+          const deckUnit: DeckUnitDbObject = {
+            artStyle: unitsScorched.artStyle,
+            unit: unitsScorched.unit,
+          }
+          return deckUnit
+        })
+      )
     }
 
     return unitsScorched.map((unitScorched) => {

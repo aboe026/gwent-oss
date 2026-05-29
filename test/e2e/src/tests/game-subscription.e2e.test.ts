@@ -885,7 +885,7 @@ test('Page automatically updates after unit played via API on game page', async 
   E2eHelper.playUnit({
     player: gameManager.self.gamePlayer,
     gameDeck: gameManager.self.deck,
-    deckUnit,
+    newDeckUnit: deckUnit,
     row: Combat.Close,
     switchTurnsWith: gameManager.opponent.gamePlayer,
     moves: gameManager.moves[gameManager.round - 1],
@@ -917,7 +917,7 @@ test('Page automatically updates after opponent plays unit via API on game page'
   E2eHelper.playUnit({
     player: gameManager.opponent.gamePlayer,
     gameDeck: gameManager.opponent.deck,
-    deckUnit,
+    newDeckUnit: deckUnit,
     row: Combat.Close,
     switchTurnsWith: gameManager.self.gamePlayer,
     moves: gameManager.moves[gameManager.round - 1],
@@ -964,7 +964,7 @@ test('Page automatically updates after unit played via API on games list', async
   E2eHelper.playUnit({
     player: gameManager.self.gamePlayer,
     gameDeck: gameManager.self.deck,
-    deckUnit,
+    newDeckUnit: deckUnit,
     row: Combat.Close,
     switchTurnsWith: gameManager.opponent.gamePlayer,
     moves: gameManager.moves[gameManager.round - 1],

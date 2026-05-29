@@ -8,6 +8,7 @@ import createGwentClient, {
   FactionKey,
   Game,
   GameDeck,
+  GameUnit,
   GwentClient,
   Leader,
   QueryUnitsArgs,
@@ -91,6 +92,51 @@ export default class ApiClient {
       throw Error(`Could not find unit with name "${name}" in "${JSON.stringify(units)}"`)
     }
     return unit
+  }
+
+  async getGameUnits({
+    gameId,
+    playerId,
+  }: {
+    gameId: string | ObjectId
+    playerId?: string | ObjectId
+  }): Promise<GameUnit[]> {
+    const game = await this.client.game({
+      id: gameId.toString(),
+    })
+
+    const players = playerId ? game.players.filter((player) => player.user.id === playerId.toString()) : game.players
+    if (playerId && (!players || players.length === 0)) {
+      throw Error(`Could not find player "${playerId}" on game "${gameId}"`)
+    }
+
+    const gameUnits: GameUnit[] = []
+
+    for (const player of players) {
+      const round = player.rounds[game.round - 1]
+      for (const fieldUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
+        gameUnits.push({
+          ...fieldUnit,
+          __typename: 'FieldUnit',
+        })
+      }
+      for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
+        if (modifier) {
+          gameUnits.push({
+            ...modifier,
+            __typename: 'FieldUnit',
+          })
+        }
+      }
+      for (const weather of round.weathers) {
+        gameUnits.push({
+          ...weather,
+          __typename: 'WeatherUnit',
+        })
+      }
+    }
+
+    return gameUnits
   }
 
   async getBattlefieldUnit({

@@ -237,6 +237,8 @@ function PlayerHistoryMove({
         reason = 'transformed'
       } else if (unitMove.reason.type === MoveReasonType.Summon) {
         reason = 'summoned'
+      } else if (unitMove.reason.type === MoveReasonType.Revive) {
+        reason = 'revived'
       }
       secondaryText = `${reason} ${placement}${source}`
       image = unit.images[(gameUnit?.artStyle || 1) - 1]
@@ -550,7 +552,7 @@ function renderImpacts({
                 }
               }
             }
-            const title = unitForImpact?.name || 'Unknown'
+            const title = unitForImpact?.name || (effectKey === EffectKey.Medic ? 'Determining' : 'Unknown')
             const knownUnit = unitForImpact && gameUnitForImpact
 
             return (

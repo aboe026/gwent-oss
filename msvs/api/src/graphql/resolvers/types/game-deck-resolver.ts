@@ -1,6 +1,6 @@
 import DeckResolver from './deck-resolver'
-import { DeckUnit, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from './deck-unit-resolver'
+import { GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import { GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
@@ -26,31 +26,52 @@ export default class GameDeckResolver {
     })
 
     return {
-      discard: gameDeck.discard.map(
-        (deckUnit) =>
-          deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === deckUnit.unit.toString()) as DeckUnit
-      ),
+      discard: gameDeck.discard.map((deckUnit) => {
+        const resolvedDeckUnit = deckUnits.find(
+          (potentialResolvedDeckUnit) => potentialResolvedDeckUnit.unit.id === deckUnit.unit.toString()
+        )
+        if (!resolvedDeckUnit) {
+          throw Error(`Could not resolve discarded DeckUnit "${deckUnit.unit}"`)
+        }
+        return resolvedDeckUnit
+      }),
       from:
         gameDeck.from &&
         (await DeckResolver.fromObject({
           deck: gameDeck.from,
         })),
-      hand: gameDeck.hand.map(
-        (deckUnit) =>
-          deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === deckUnit.unit.toString()) as DeckUnit
-      ),
+      hand: gameDeck.hand.map((deckUnit) => {
+        const resolvedDeckUnit = deckUnits.find(
+          (potentialResolvedDeckUnit) => potentialResolvedDeckUnit.unit.id === deckUnit.unit.toString()
+        )
+        if (!resolvedDeckUnit) {
+          throw Error(`Could not resolve hand DeckUnit "${deckUnit.unit}"`)
+        }
+        return resolvedDeckUnit
+      }),
       redraws: gameDeck.redraws.map((redraw) => {
+        const from = deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === redraw.from.unit.toString())
+        if (!from) {
+          throw Error(`Could not resolve from redraw DeckUnit "${redraw.from}`)
+        }
+        const to = deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === redraw.to.unit.toString())
+        if (!to) {
+          throw Error(`Could not resolve to redraw DeckUnit "${redraw.from}`)
+        }
         return {
-          from: deckUnits.find(
-            (resolvedDeckUnit) => resolvedDeckUnit.unit.id === redraw.from.unit.toString()
-          ) as DeckUnit,
-          to: deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === redraw.to.unit.toString()) as DeckUnit,
+          from,
+          to,
         }
       }),
-      undrawn: gameDeck.undrawn.map(
-        (deckUnit) =>
-          deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === deckUnit.unit.toString()) as DeckUnit
-      ),
+      undrawn: gameDeck.undrawn.map((deckUnit) => {
+        const resolvedDeckUnit = deckUnits.find(
+          (potentialResolvedDeckUnit) => potentialResolvedDeckUnit.unit.id === deckUnit.unit.toString()
+        )
+        if (!resolvedDeckUnit) {
+          throw Error(`Could not resolve undrawn DeckUnit "${deckUnit.unit}"`)
+        }
+        return resolvedDeckUnit
+      }),
     }
   }
 }

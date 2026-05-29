@@ -131,8 +131,9 @@ export default class UpdateHistory {
       combat,
     })
 
+    let medicingUnit: GameUnitDbObject | undefined = undefined
     if (revived) {
-      UpdateHistory.updateLastMoveImpactWithUnit({
+      medicingUnit = UpdateHistory.updateLastMoveImpactWithUnit({
         game,
         logPrefix,
         playerId,
@@ -145,7 +146,7 @@ export default class UpdateHistory {
       unit: gameUnit,
       impacts: updatedImpacts,
       reason: {
-        type: MoveReasonType.Deploy,
+        type: revived ? MoveReasonType.Revive : MoveReasonType.Deploy,
       },
       source: {
         origin: GameUnitOrigin.Hand,
@@ -154,6 +155,9 @@ export default class UpdateHistory {
     }
     if (targetId) {
       move.target = new ObjectId(targetId)
+    }
+    if (revived) {
+      move.reason.unit = medicingUnit
     }
     UpdateHistory.addMoveToPlayer({
       game,
@@ -427,7 +431,7 @@ export default class UpdateHistory {
     logPrefix: string
     playerId: ObjectId | string
     unitId: ObjectId | string
-  }) {
+  }): GameUnitDbObject {
     const player = game.players.find((player) => player.user.toString() === playerId.toString())
     if (player) {
       const round = player.rounds[game.round - 1]
@@ -453,6 +457,7 @@ export default class UpdateHistory {
                     ...fieldUnit,
                     type: GameUnitType.Field,
                   }
+                  return unitMove.unit
                 } else {
                   const message = `Could not find unit "${unitId}" on battlefield to update latest impact with`
                   UpdateHistory.logger.error(`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`)

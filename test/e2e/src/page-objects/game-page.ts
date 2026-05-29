@@ -349,6 +349,8 @@ export default class GamePage {
               action = 'transformed'
             } else if (move.reason?.type === MoveReasonType.Summon) {
               action = 'summoned'
+            } else if (move.reason?.type === MoveReasonType.Revive) {
+              action = 'revived'
             }
             if (move.targetUserName) {
               if (move.reason?.type === MoveReasonType.Summon) {
@@ -362,7 +364,7 @@ export default class GamePage {
               if (move.reason.type === MoveReasonType.Transform) {
                 description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
               }
-              if (move.reason.type !== MoveReasonType.Summon) {
+              if (move.reason.type !== MoveReasonType.Summon && move.reason.name) {
                 description += ` by ${move.reason.name}${source}`
               }
             }
@@ -1392,7 +1394,14 @@ export default class GamePage {
       totalRounds - round
     )
     const movesCount = await roundContainer.child().count
-    const reasonText = reason === MoveReasonType.Summon ? 'summoned' : 'deployed'
+    let reasonText: string
+    if (reason === MoveReasonType.Summon) {
+      reasonText = 'summoned'
+    } else if (reason === MoveReasonType.Revive) {
+      reasonText = 'revived'
+    } else {
+      reasonText = 'deployed'
+    }
     let targetText = ''
     if (targetUser) {
       if (reason === MoveReasonType.Summon) {
@@ -1687,6 +1696,7 @@ export interface GamePlayerExpected {
   ranged?: CombatRow
   siege?: CombatRow
   weathering?: string[]
+  reviving?: boolean
 }
 
 interface ImpactSelection {

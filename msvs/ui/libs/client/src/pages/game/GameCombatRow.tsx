@@ -80,7 +80,7 @@ export default function GameCombatRow({
   const validPlayer = spySelected ? !isSelf : isSelf
   const validRow =
     validPlayer &&
-    selectedCardInHand &&
+    ((selectedCardInHand && !player.reviving) || (selectedCardInDiscard && player.reviving)) &&
     cardSelectedUnit?.combats &&
     cardSelectedUnit.combats.includes(combat) &&
     !cardSelectedUnit.modifier &&
