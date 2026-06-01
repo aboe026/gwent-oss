@@ -552,7 +552,7 @@ function renderImpacts({
                 }
               }
             }
-            const title = unitForImpact?.name || (effectKey === EffectKey.Medic ? 'Determining' : 'Unknown')
+            const title = unitForImpact?.name || (effectKey === EffectKey.Medic ? 'Choosing...' : 'Secret')
             const knownUnit = unitForImpact && gameUnitForImpact
 
             return (

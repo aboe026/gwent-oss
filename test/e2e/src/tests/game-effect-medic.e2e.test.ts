@@ -8,7 +8,12 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effect Medic')
 
-test.only('Medic revives only unit in discard', async (t) => {
+test('Medic has no effect if no units in discard', async (t) => {})
+
+// TODO: Medic has no effect if only hero in discard
+// TODO: Medic has no effect if only special in discard
+
+test('Medic revives only unit in discard', async (t) => {
   const unitName1 = 'Rainfarn'
   const unitName2 = 'Etolian Auxiliary Archers'
   const gameManager = await createGameManager({
@@ -32,7 +37,6 @@ test.only('Medic revives only unit in discard', async (t) => {
     medicing: true,
   })
 
-  // TODO: change impact unit to To Be Determined? Deciding? for medics (and Secret for spies)
   await GamePage.toggleImpacts({
     unitName: unitName2,
     round: gameManager.round,
@@ -47,7 +51,7 @@ test.only('Medic revives only unit in discard', async (t) => {
         effectKey: EffectKey.Medic,
         impacts: [
           {
-            unitName: '',
+            unitName: 'Choosing...',
             username: gameManager.self.gamePlayer.name,
           },
         ],
@@ -58,5 +62,22 @@ test.only('Medic revives only unit in discard', async (t) => {
   await gameManager.deploy({
     unitName: unitName1,
     revivedBy: unitName2,
+  })
+
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        unitName: unitName2,
+        round: gameManager.round,
+        userName: gameManager.self.gamePlayer.name,
+        effectKey: EffectKey.Medic,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
   })
 })
