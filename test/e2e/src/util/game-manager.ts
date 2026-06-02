@@ -366,7 +366,7 @@ export class GameManager {
     for (const unit of rangedUnits) {
       const index = this.getFieldUnitIndex({
         name: unit.name,
-        combat: Combat.Close,
+        combat: Combat.Ranged,
         gameUnits,
       })
       const gameUnit = gameUnits[index]
@@ -379,7 +379,7 @@ export class GameManager {
     for (const unit of siegeUnits) {
       const index = this.getFieldUnitIndex({
         name: unit.name,
-        combat: Combat.Close,
+        combat: Combat.Siege,
         gameUnits,
       })
       const gameUnit = gameUnits[index]

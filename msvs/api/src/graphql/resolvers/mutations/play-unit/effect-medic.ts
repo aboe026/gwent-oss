@@ -35,7 +35,9 @@ export default class EffectMedic {
       impacts[newDeckUnit.unit.toString()] = []
 
       const revivableUnits = await UnitStore.get({
-        ids: player.deck.discard.map((discard) => discard.unit),
+        ids: player.deck.discard
+          .map((discard) => discard.unit.toString())
+          .filter((id) => id !== newDeckUnit.unit.toString()),
         specials: false,
         heroes: false,
       })

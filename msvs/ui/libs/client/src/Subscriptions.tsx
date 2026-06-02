@@ -238,11 +238,9 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
       const handed = data.data?.unitPlayedFromDeck.handed
-      const playedUnit = useFragment(
-        UnitFragmentDoc,
-        useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedFromDeck.unit)?.unit
-      )
-      if (game && playedUnit) {
+      const playedDeckUnit = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedFromDeck.unit)
+      const playedUnit = useFragment(UnitFragmentDoc, playedDeckUnit?.unit)
+      if (game && playedDeckUnit && playedUnit) {
         client.cache.updateQuery<GameDeckQuery>(
           {
             query: GameDeckDocument,
@@ -252,7 +250,16 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           },
           (previous) => {
             if (previous?.gameDeck) {
-              const newHand = previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
+              let newHand = previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
+              let newDiscard = previous.gameDeck.discard
+              if (playedUnit.name === 'Scorch') {
+                newDiscard.push(playedDeckUnit as DeckUnitRaw)
+              }
+              if (newHand.some((deckUnit) => deckUnit.unit.id === playedUnit.id)) {
+                newHand = newHand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
+              } else if (newDiscard.some((deckUnit) => deckUnit.unit.id === playedUnit.id)) {
+                newDiscard = newDiscard.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
+              }
               const currentHandIds = newHand.map((handUnit) => handUnit.unit.id)
               if (handed) {
                 for (const rehand of handed) {
@@ -266,12 +273,9 @@ export default function Subscriptions({ children }: PropsWithChildren) {
                 gameDeck: {
                   ...previous.gameDeck,
                   hand: newHand,
-                  discard:
-                    playedUnit.name === 'Scorch'
-                      ? [...previous.gameDeck.discard, playedUnit]
-                      : previous.gameDeck.discard,
+                  discard: newDiscard,
                 },
-              } as GameDeckQueryRaw
+              }
             }
           }
         )

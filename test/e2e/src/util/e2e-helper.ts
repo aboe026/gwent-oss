@@ -618,7 +618,7 @@ export class E2eHelper {
         effectKey = EffectKey.Spy
       } else if (weathering) {
         effectKey = EffectKey.Weather
-      } else if (medicing) {
+      } else if (medicing !== undefined) {
         effectKey = EffectKey.Medic
       }
       let numImpacts: number
