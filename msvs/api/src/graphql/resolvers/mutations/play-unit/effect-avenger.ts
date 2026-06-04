@@ -105,6 +105,7 @@ export default class EffectAvenger {
               EffectAvenger.logger.debug(
                 `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, summoning "${avengerName}" to the battlefield for player "${removedGameUnit.user}"`
               )
+              let origin = GameUnitOrigin.Nondeck
               const avengerUnits = await UnitStore.get({
                 names: [avengerName],
               })
@@ -120,9 +121,7 @@ export default class EffectAvenger {
                 )
                 throw Error(`${message}.`)
               }
-
               const avengerUnit = avengerUnits[0]
-              avengedUnits.push(avengerUnit)
 
               const player = game.players.find((player) => player.user.toString() === removedGameUnit.user.toString())
               if (!player) {
@@ -130,7 +129,29 @@ export default class EffectAvenger {
                 EffectAvenger.logger.error(`${logPrefix} failed: ${message}`)
                 throw Error(`${message}.`)
               }
+
+              const existingHandIndex = player.deck.hand.findIndex(
+                (deckUnit) => deckUnit.unit.toString() === avengerUnit._id.toString()
+              )
+              if (existingHandIndex >= 0) {
+                origin = GameUnitOrigin.Hand
+                player.deck.hand.splice(existingHandIndex, 1)
+              } else {
+                const existingDiscardIndex = player.deck.discard.findIndex(
+                  (deckUnit) => deckUnit.unit.toString() === avengerUnit._id.toString()
+                )
+                if (existingDiscardIndex >= 0) {
+                  origin = GameUnitOrigin.Discard
+                  player.deck.discard.splice(existingDiscardIndex, 1)
+                }
+              }
+              EffectAvenger.logger.debug(
+                `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, summoning "${avengerName}" to the battlefield for player "${removedGameUnit.user}" from "${origin}"`
+              )
+
               const playerRound = player.rounds[game.round - 1]
+              avengedUnits.push(avengerUnit)
+
               const combat = avengerUnit.combats ? avengerUnit.combats[0] : undefined
               if (!combat) {
                 const message = `Could not determine combat of avenger unit "${avengerName}" for removed game unit "${removedGameUnitId}"`
@@ -156,7 +177,7 @@ export default class EffectAvenger {
               const impact: ImpactDbObject = {
                 user: player.user,
                 source: {
-                  origin: GameUnitOrigin.Nondeck,
+                  origin,
                 },
                 unit: removedGameUnit.unit,
               }

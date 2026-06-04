@@ -881,4 +881,5 @@ export interface AvengingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+  origin?: GameUnitOrigin
 }

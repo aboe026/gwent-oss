@@ -71,9 +71,9 @@ export default class GamePlayerInfo {
       await t.expect(this.elements.TokensWon.count).eql(lives - losses, `User "${name}" has correct tokens won`)
       await t.expect(this.elements.TokensLost.count).eql(losses, `User "${name}" has correct tokens lost`)
       if (score === undefined) {
-        await t.expect(this.elements.Score.exists).notOk()
+        await t.expect(this.elements.Score.exists).notOk(`User "${name}" does not have score`)
       } else {
-        await t.expect(this.elements.Score.innerText).eql(score.toString())
+        await t.expect(this.elements.Score.innerText).eql(score.toString(), `User "${name}" has correct score`)
       }
     }
     if ([faction, leader, undrawn, hand, discards].includes(undefined)) {

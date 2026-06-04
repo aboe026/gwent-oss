@@ -37,6 +37,7 @@ import GamePage, {
 } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
+import { STARTING_HAND_SIZE } from '@gwent/constants'
 import { toTitleCase } from '@gwent/utils'
 
 export class GameManager {
@@ -325,6 +326,17 @@ export class GameManager {
             origin: GameUnitOrigin.Nondeck,
             targetUserName: avenge.newUnitPlayer.name,
           })
+          if (avenge.origin === GameUnitOrigin.Hand) {
+            avenge.newUnitPlayer.hand = (avenge.newUnitPlayer.hand || STARTING_HAND_SIZE) - 1
+            const deck =
+              avenge.newUnitPlayer.name === currentPlayer.gamePlayer.name ? currentPlayer.deck : otherPlayer.deck
+            deck.hand = deck.hand.filter((deckUnit) => deckUnit.unit.name !== avenge.name)
+          } else if (avenge.origin === GameUnitOrigin.Discard) {
+            avenge.newUnitPlayer.discard = (avenge.newUnitPlayer.discard || 0) - 1
+            const deck =
+              avenge.newUnitPlayer.name === currentPlayer.gamePlayer.name ? currentPlayer.deck : otherPlayer.deck
+            deck.discard = deck.discard.filter((deckUnit) => deckUnit.unit.name !== avenge.name)
+          }
         }
       }
     }

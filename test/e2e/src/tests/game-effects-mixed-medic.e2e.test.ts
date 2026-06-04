@@ -149,6 +149,8 @@ test('Agile unit can be revived to different combat row', async (t) => {
   })
 })
 
+// TODO: medicing BDF or Hemdall
+
 test('Bonded units can rebond after revival', async (t) => {
   const unitName1 = 'Blue Stripes Commando'
   const unitName2 = 'Dun Banner Medic'
