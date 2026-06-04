@@ -427,6 +427,7 @@ type UnitPlayedFromDeck {
   deck: GameDeck!
   game: Game!
   handed: [DeckUnit!]
+  discarded: [DeckUnit!]
   unit: DeckUnit!
 }
 

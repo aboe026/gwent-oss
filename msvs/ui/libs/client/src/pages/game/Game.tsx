@@ -233,7 +233,6 @@ export default function GamePage() {
           },
           (previous) => {
             if (previous?.gameDeck && game) {
-              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
               const battlefieldUnitIds: string[] = []
               const player = data.playUnit.players.find((player) => player.user.name === user.name)
               if (!player) {
@@ -254,16 +253,14 @@ export default function GamePage() {
                   battlefieldUnitIds.push(row.modifier.unit.id)
                 }
               }
-              const unitsAddedToHand: DeckUnitFragment[] = []
-              const handUnitPlayed = previous.gameDeck.hand.find((deckUnit) => {
+              const handUnitIndex = previous.gameDeck.hand.findIndex((deckUnit) => {
                 return deckUnit.unit.id === variables?.unit
               })
-              const discardUnitPlayed = previous.gameDeck.discard.find((deckUnit) => {
-                return deckUnit.unit.id === variables?.unit
-              })
-              let newHand = previous.gameDeck.hand
-              let newDiscard = previous.gameDeck.discard
-              if (handUnitPlayed) {
+              const newHand = [...previous.gameDeck.hand]
+              const newDiscard = [...previous.gameDeck.discard]
+
+              if (handUnitIndex >= 0) {
+                const handUnitPlayed = newHand.splice(handUnitIndex, 1)[0]
                 if (
                   handUnitPlayed?.unit.effects &&
                   handUnitPlayed.unit.effects.some((effect) => effect.key === EffectKey.Decoy)
@@ -311,20 +308,16 @@ export default function GamePage() {
                     if (!targetUnit) {
                       throw Error(`Could not find target unit "${variables?.target}" in previous game`)
                     }
-                    unitsAddedToHand.push(targetUnit)
+                    newHand.push(targetUnit as DeckUnitRaw)
                   }
-                  newHand = [
-                    ...previous.gameDeck.hand.filter(
-                      (deckUnit) =>
-                        deckUnit.unit.id !== cardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
-                    ),
-                    ...(unitsAddedToHand as DeckUnitRaw[]),
-                  ]
                 }
-              } else if (discardUnitPlayed) {
-                newDiscard = [
-                  ...previous.gameDeck.discard.filter((deckUnit) => deckUnit.unit.id !== cardSelectedUnit.id),
-                ]
+              } else {
+                const discardUnitIndex = previous.gameDeck.discard.findIndex((deckUnit) => {
+                  return deckUnit.unit.id === variables?.unit
+                })
+                if (discardUnitIndex >= 0) {
+                  newDiscard.splice(discardUnitIndex, 1)
+                }
               }
               return {
                 gameDeck: {

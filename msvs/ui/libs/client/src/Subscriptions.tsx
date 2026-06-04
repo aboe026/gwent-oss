@@ -238,6 +238,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
       const handed = data.data?.unitPlayedFromDeck.handed
+      const discarded = data.data?.unitPlayedFromDeck.discarded
       const playedDeckUnit = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedFromDeck.unit)
       const playedUnit = useFragment(UnitFragmentDoc, playedDeckUnit?.unit)
       if (game && playedDeckUnit && playedUnit) {
@@ -250,22 +251,32 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           },
           (previous) => {
             if (previous?.gameDeck) {
-              let newHand = previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
-              let newDiscard = previous.gameDeck.discard
-              if (playedUnit.name === 'Scorch') {
-                newDiscard.push(playedDeckUnit as DeckUnitRaw)
+              const newHand = [...previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)]
+              const newDiscard = [...previous.gameDeck.discard]
+              const existingHandIndex = newHand.findIndex((deckUnit) => deckUnit.unit.id === playedUnit.id)
+              if (existingHandIndex >= 0) {
+                newHand.splice(existingHandIndex, 1)
+              } else {
+                const existingDiscardIndex = newDiscard.findIndex((deckUnit) => deckUnit.unit.id === playedUnit.id)
+                if (existingDiscardIndex >= 0) {
+                  newDiscard.splice(existingDiscardIndex, 1)
+                }
               }
-              if (newHand.some((deckUnit) => deckUnit.unit.id === playedUnit.id)) {
-                newHand = newHand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
-              } else if (newDiscard.some((deckUnit) => deckUnit.unit.id === playedUnit.id)) {
-                newDiscard = newDiscard.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
-              }
-              const currentHandIds = newHand.map((handUnit) => handUnit.unit.id)
               if (handed) {
+                const currentHandIds = newHand.map((handUnit) => handUnit.unit.id)
                 for (const rehand of handed) {
                   const deckUnit = useFragment(DeckUnitFragmentDoc, rehand)
                   if (!currentHandIds.includes(useFragment(UnitFragmentDoc, deckUnit.unit).id)) {
                     newHand.push(deckUnit as DeckUnitRaw)
+                  }
+                }
+              }
+              if (discarded) {
+                const currentDiscardIds = newDiscard.map((discardUnit) => discardUnit.unit.id)
+                for (const discard of discarded) {
+                  const deckUnit = useFragment(DeckUnitFragmentDoc, discard)
+                  if (!currentDiscardIds.includes(useFragment(UnitFragmentDoc, deckUnit.unit).id)) {
+                    newDiscard.push(deckUnit as DeckUnitRaw)
                   }
                 }
               }

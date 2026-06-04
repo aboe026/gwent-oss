@@ -158,6 +158,22 @@ export class GameManager {
       throw Error(`Could not find unit "${unitName}" in hand for player "${currentPlayer.gamePlayer.name}"`)
     }
     const combatRow = combat || (unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close)
+
+    if (scorching) {
+      for (const scorchee of scorching) {
+        const fieldUnit = await currentPlayer.client.getBattlefieldUnit({
+          gameId: this.gameId,
+          combat: scorchee.row,
+          name: scorchee.name,
+        })
+        const gameDeck = scorchee.player.name === this.self.gamePlayer.name ? this.self.deck : this.opponent.deck
+        gameDeck.discard.push({
+          artStyle: 1,
+          unit: fieldUnit,
+        })
+      }
+    }
+
     if (isSelfTurn && !this.apiDriven) {
       await GamePage.moveUnit({
         unitName: unitToMove.unit.name,

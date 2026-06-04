@@ -70,6 +70,7 @@ export default class BattlefieldUpdates {
     isMedic: boolean
   }): Promise<ModificationImpacts> {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
+    const deckUnitsAddedToDiscard: DeckUnitDbObject[] = []
 
     const weatherImpacts = EffectWeather.weatherBattlefield({
       game,
@@ -87,9 +88,7 @@ export default class BattlefieldUpdates {
       newDeckUnit,
       targetId,
     })
-    if (spiedUnitsAddedToHand.length > 0) {
-      deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
-    }
+    deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
 
     const { impacts: medicImpacts, revived } = await EffectMedic.deployMedicOrReviveUnit({
       game,
@@ -108,13 +107,15 @@ export default class BattlefieldUpdates {
       reviving: revived,
     })
 
-    const scorches = EffectScorch.scorchBattlefield({
+    const { impacts: scorches, deckUnitsAddedToDiscard: scorchedUnitsAddedToDiscard } = EffectScorch.scorchBattlefield({
       battlefieldUnits,
       effects,
       game,
       logPrefix,
       newDeckUnit,
     })
+    deckUnitsAddedToDiscard.push(...scorchedUnitsAddedToDiscard)
+
     const { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
       battlefieldUnits,
       effects,
@@ -171,6 +172,7 @@ export default class BattlefieldUpdates {
       avengedUnits,
       decoys: decoyImpacts,
       deckUnitsAddedToHand,
+      deckUnitsAddedToDiscard,
       scorches,
       musters: musterImpacts,
       musteredUnits,
@@ -264,6 +266,7 @@ interface ModificationImpacts {
   avengedUnits: UnitDbObject[]
   decoys: ImpactsByUnitId
   deckUnitsAddedToHand: DeckUnitDbObject[]
+  deckUnitsAddedToDiscard: DeckUnitDbObject[]
   scorches: ImpactsByUnitId
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]

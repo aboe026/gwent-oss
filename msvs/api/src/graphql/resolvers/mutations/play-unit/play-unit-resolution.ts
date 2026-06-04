@@ -25,6 +25,7 @@ export default class PlayUnitResolution {
    * @param config.gameDeck The game deck after the unit has been played.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.handDeckUnitsAdded Any potential DeckUnits added to the players game hand.
+   * @param config.discardDeckUnitsAdded Any potential DeckUnits added to the players game discard.
    * @param config.userId The ID of the user playing the Unit.
    * @returns The Game with the unit played for the user with fields resolved.
    */
@@ -33,6 +34,7 @@ export default class PlayUnitResolution {
     game,
     gameDeck,
     handDeckUnitsAdded,
+    discardDeckUnitsAdded,
     logPrefix,
     userId,
   }: {
@@ -40,6 +42,7 @@ export default class PlayUnitResolution {
     game: GameDbObject
     gameDeck: GameDeckDbObject
     handDeckUnitsAdded: DeckUnitDbObject[]
+    discardDeckUnitsAdded: DeckUnitDbObject[]
     logPrefix: string
     userId: ObjectId
   }): Promise<Game> {
@@ -74,6 +77,9 @@ export default class PlayUnitResolution {
     const handed = await DeckUnitResolver.fromArray({
       deckUnits: handDeckUnitsAdded,
     })
+    const discarded = await DeckUnitResolver.fromArray({
+      deckUnits: discardDeckUnitsAdded,
+    })
     if (PlayUnitResolution.logger.isTraceEnabled()) {
       PlayUnitResolution.logger.trace(`${logPrefix} handed: "${JSON.stringify(handed)}"`)
     }
@@ -82,6 +88,7 @@ export default class PlayUnitResolution {
         deck: resolvedGameDeck,
         game: resolvedGame,
         handed,
+        discarded,
         unit: resolvedUnit,
       },
     } as UnitPlayedFromDeckPayload)

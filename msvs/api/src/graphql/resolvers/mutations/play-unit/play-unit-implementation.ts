@@ -84,6 +84,7 @@ export default class PlayUnitImplementation {
       avengedUnits,
       decoys,
       deckUnitsAddedToHand,
+      deckUnitsAddedToDiscard,
       weathers: weatherBattlefieldImpacts,
       medics,
       revived,
@@ -181,6 +182,7 @@ export default class PlayUnitImplementation {
       game: updatedGame,
       gameDeck: player.deck,
       handDeckUnitsAdded: deckUnitsAddedToHand,
+      discardDeckUnitsAdded: deckUnitsAddedToDiscard,
     }
   }
 }
@@ -189,4 +191,5 @@ interface ImplementedPlayUnit {
   game: GameDbObject
   gameDeck: GameDeckDbObject
   handDeckUnitsAdded: DeckUnitDbObject[]
+  discardDeckUnitsAdded: DeckUnitDbObject[]
 }

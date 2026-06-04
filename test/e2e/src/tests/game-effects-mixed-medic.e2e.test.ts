@@ -149,7 +149,97 @@ test('Agile unit can be revived to different combat row', async (t) => {
   })
 })
 
-// TODO: medicing BDF or Hemdall
+test('Avenging units can be revived', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Bovine Defense Force'
+  const unitName3 = 'Scorch'
+  const unitName4 = 'Dun Banner Medic'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName3, unitName4],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    avenging: [
+      {
+        name: unitName2,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 8,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    medicing: true,
+  })
+  await GamePage.toggleImpacts({
+    unitName: unitName4,
+    round: gameManager.round,
+    userName: gameManager.self.gamePlayer.name,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        unitName: unitName4,
+        round: gameManager.round,
+        userName: gameManager.self.gamePlayer.name,
+        effectKey: EffectKey.Medic,
+        impacts: [
+          {
+            unitName: 'Choosing...',
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    revivedBy: unitName4,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        unitName: unitName4,
+        round: gameManager.round,
+        userName: gameManager.self.gamePlayer.name,
+        effectKey: EffectKey.Medic,
+        impacts: [
+          {
+            unitName: unitName2,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+})
 
 test('Bonded units can rebond after revival', async (t) => {
   const unitName1 = 'Blue Stripes Commando'

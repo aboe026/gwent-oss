@@ -6,6 +6,9 @@ subscription UnitPlayedFromDeck {
     handed {
       ...DeckUnit
     }
+    discarded {
+      ...DeckUnit
+    }
     unit {
       ...DeckUnit
     }
