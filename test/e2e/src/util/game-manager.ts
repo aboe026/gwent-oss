@@ -161,16 +161,23 @@ export class GameManager {
 
     if (scorching) {
       for (const scorchee of scorching) {
-        const fieldUnit = await currentPlayer.client.getBattlefieldUnit({
-          gameId: this.gameId,
-          combat: scorchee.row,
-          name: scorchee.name,
-        })
+        let scorchedUnit: DeckUnit
+        if (scorchee.name === unitName && scorchee.player.name === currentPlayer.gamePlayer.name) {
+          scorchedUnit = unitToMove
+        } else {
+          const scorchedFieldUnit = await currentPlayer.client.getFieldUnit({
+            gameId: this.gameId,
+            combat: scorchee.row,
+            name: scorchee.name,
+            playerName: scorchee.player.name,
+          })
+          scorchedUnit = {
+            artStyle: scorchedFieldUnit.artStyle,
+            unit: scorchedFieldUnit.unit,
+          }
+        }
         const gameDeck = scorchee.player.name === this.self.gamePlayer.name ? this.self.deck : this.opponent.deck
-        gameDeck.discard.push({
-          artStyle: 1,
-          unit: fieldUnit,
-        })
+        gameDeck.discard.push(scorchedUnit)
       }
     }
 
@@ -187,13 +194,14 @@ export class GameManager {
     } else {
       let targetId: string | undefined = undefined
       if (decoying) {
-        const target = await currentPlayer.client.getBattlefieldUnit({
+        const target = await currentPlayer.client.getFieldUnit({
           gameId: this.gameId,
           combat: decoying.row,
           name: decoying.name,
           instance: decoying.instance,
+          playerName: decoying.player.name,
         })
-        targetId = target.id
+        targetId = target.unit.id
       }
       await currentPlayer.client.playUnit({
         gameId: this.gameId,

@@ -77,10 +77,10 @@ export default function GameHand({
       : deckCardsViewing === GameDeckCardType.Lost
         ? gameDeck?.discard
         : gameDeck?.undrawn
-  const cards = useFragment(DeckUnitFragmentDoc, deckCards) || []
+  const cards = useFragment(DeckUnitFragmentDoc, deckCards)
   const filtersActive = filterFieldsSelected.length + (filterName ? 1 : 0)
   const shouldReverseFields = filterFieldsReversed && filtersActive > 0
-  const filteredCards = cards.filter((card) =>
+  const filteredCards = (cards || []).filter((card) =>
     isFilteredIn({
       deckUnit: card,
       fieldsSelected: filterFieldsSelected,
@@ -128,7 +128,7 @@ export default function GameHand({
 
   return (
     <div id="gameHandContainer">
-      {deckSettingsOpen && (
+      {cards && deckSettingsOpen && (
         <div id="gameDeckSettings">
           <UnitFilters
             availableField={true}
@@ -252,33 +252,35 @@ export default function GameHand({
             ))
           )}
         </div>
-        <div
-          id="gameDeckSettingsOpener"
-          className={`game-deck-settings-opener-${filtersActive === 0 ? 'closed' : 'open'}`}
-          style={{ cursor: filtersActive === 0 ? 'pointer' : 'default' }}
-          onClick={() => (filtersActive === 0 ? setDeckSettingsOpen(!deckSettingsOpen) : undefined)}
-        >
-          {deckSettingsOpen ? <CgEyeAlt {...eyeIconProps} /> : <CgEye {...eyeIconProps} />}
-          {filtersActive > 0 && (
-            <>
-              <div title="Filters Active">
-                {filtersActive}/{Object.values(FILTER_FIELD).length + 1}
-              </div>
-              <CgClose
-                color={'black'}
-                className="pointable"
-                title="Clear Filters"
-                onClick={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  setFilterFieldsSelected([])
-                  setFilterName('')
-                  setFilterFieldsReversed(false)
-                }}
-              />
-            </>
-          )}
-        </div>
+        {cards && (
+          <div
+            id="gameDeckSettingsOpener"
+            className={`game-deck-settings-opener-${filtersActive === 0 ? 'closed' : 'open'}`}
+            style={{ cursor: filtersActive === 0 ? 'pointer' : 'default' }}
+            onClick={() => (filtersActive === 0 ? setDeckSettingsOpen(!deckSettingsOpen) : undefined)}
+          >
+            {deckSettingsOpen ? <CgEyeAlt {...eyeIconProps} /> : <CgEye {...eyeIconProps} />}
+            {filtersActive > 0 && (
+              <>
+                <div title="Filters Active">
+                  {filtersActive}/{Object.values(FILTER_FIELD).length + 1}
+                </div>
+                <CgClose
+                  color={'black'}
+                  className="pointable"
+                  title="Clear Filters"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    setFilterFieldsSelected([])
+                    setFilterName('')
+                    setFilterFieldsReversed(false)
+                  }}
+                />
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

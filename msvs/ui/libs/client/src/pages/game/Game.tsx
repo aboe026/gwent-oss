@@ -256,61 +256,14 @@ export default function GamePage() {
               const handUnitIndex = previous.gameDeck.hand.findIndex((deckUnit) => {
                 return deckUnit.unit.id === variables?.unit
               })
-              const newHand = [...previous.gameDeck.hand]
-              const newDiscard = [...previous.gameDeck.discard]
 
+              const newHand = [
+                // ensure units on battlefield are removed from hand (e.g. musters)
+                ...previous.gameDeck.hand.filter((deckUnit) => !battlefieldUnitIds.includes(deckUnit.unit.id)),
+              ]
+              const newDiscard = [...previous.gameDeck.discard]
               if (handUnitIndex >= 0) {
-                const handUnitPlayed = newHand.splice(handUnitIndex, 1)[0]
-                if (
-                  handUnitPlayed?.unit.effects &&
-                  handUnitPlayed.unit.effects.some((effect) => effect.key === EffectKey.Decoy)
-                ) {
-                  const previousGame = useFragment(GameFragmentDoc, gameData?.game)
-                  if (previousGame) {
-                    const previousPlayer = useFragment(GamePlayerFragmentDoc, previousGame.players).find(
-                      (player) => player.user.name === user.name
-                    )
-                    if (!previousPlayer) {
-                      throw Error(
-                        `Could not find previous player "${user.name}" among game players "${JSON.stringify(data.playUnit.players)}`
-                      )
-                    }
-                    const previousPlayerRound = useFragment(
-                      PlayerRoundFragmentDoc,
-                      previousPlayer.rounds[previousGame.round - 1]
-                    )
-                    const previousBattlefieldUnits: FieldUnitFragment[] = [
-                      ...useFragment(
-                        FieldUnitFragmentDoc,
-                        useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.close).units
-                      ),
-                      ...useFragment(
-                        FieldUnitFragmentDoc,
-                        useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.ranged).units
-                      ),
-                      ...useFragment(
-                        FieldUnitFragmentDoc,
-                        useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
-                      ),
-                    ]
-                    let targetUnit: DeckUnitFragment | undefined = undefined
-                    for (let i = 0; i < previousBattlefieldUnits.length && !targetUnit; i++) {
-                      const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
-                      const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
-                      if (previousBattlefieldUnit.id === variables?.target) {
-                        targetUnit = {
-                          __typename: 'DeckUnit',
-                          artStyle: previousBattlefieldGameUnit.artStyle,
-                          unit: previousBattlefieldUnit,
-                        }
-                      }
-                    }
-                    if (!targetUnit) {
-                      throw Error(`Could not find target unit "${variables?.target}" in previous game`)
-                    }
-                    newHand.push(targetUnit as DeckUnitRaw)
-                  }
-                }
+                newHand.splice(handUnitIndex, 1)
               } else {
                 const discardUnitIndex = previous.gameDeck.discard.findIndex((deckUnit) => {
                   return deckUnit.unit.id === variables?.unit
@@ -319,6 +272,68 @@ export default function GamePage() {
                   newDiscard.splice(discardUnitIndex, 1)
                 }
               }
+
+              // add decoyed unit to hand
+              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
+              if (
+                cardSelectedUnit.effects &&
+                cardSelectedUnit.effects.some(
+                  (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy
+                )
+              ) {
+                const previousGame = useFragment(GameFragmentDoc, gameData?.game)
+                if (previousGame) {
+                  const previousPlayer = useFragment(GamePlayerFragmentDoc, previousGame.players).find(
+                    (player) => player.user.name === user.name
+                  )
+                  if (!previousPlayer) {
+                    throw Error(
+                      `Could not find previous player "${user.name}" among game players "${JSON.stringify(data.playUnit.players)}`
+                    )
+                  }
+                  const previousPlayerRound = useFragment(
+                    PlayerRoundFragmentDoc,
+                    previousPlayer.rounds[previousGame.round - 1]
+                  )
+                  const previousBattlefieldUnits: FieldUnitFragment[] = [
+                    ...useFragment(
+                      FieldUnitFragmentDoc,
+                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.close).units
+                    ),
+                    ...useFragment(
+                      FieldUnitFragmentDoc,
+                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.ranged).units
+                    ),
+                    ...useFragment(
+                      FieldUnitFragmentDoc,
+                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
+                    ),
+                  ]
+                  let targetUnit: DeckUnitFragment | undefined = undefined
+                  for (let i = 0; i < previousBattlefieldUnits.length && !targetUnit; i++) {
+                    const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
+                    const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
+                    if (previousBattlefieldUnit.id === variables?.target) {
+                      targetUnit = {
+                        __typename: 'DeckUnit',
+                        artStyle: previousBattlefieldGameUnit.artStyle,
+                        unit: previousBattlefieldUnit,
+                      }
+                    }
+                  }
+                  if (!targetUnit) {
+                    throw Error(`Could not find target unit "${variables?.target}" in previous game`)
+                  }
+                  if (
+                    !newHand
+                      .map((handUnit) => handUnit.unit.id)
+                      .includes(useFragment(UnitFragmentDoc, targetUnit.unit).id)
+                  ) {
+                    newHand.push(targetUnit as DeckUnitRaw)
+                  }
+                }
+              }
+
               return {
                 gameDeck: {
                   ...previous.gameDeck,

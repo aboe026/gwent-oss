@@ -243,3 +243,7 @@ test('Playing all units in hand shows message to user to pass or activate leader
 
   await gameManager.deploy({ unitName: unitName10, eligibleCombats: [Combat.Close, Combat.Ranged] })
 })
+
+// TODO: test unit gets removed from draw pile when deployed
+// TODO: test unit gets added to discard pile when round ends
+// TODO: test unit gets removed from discard pile if revived

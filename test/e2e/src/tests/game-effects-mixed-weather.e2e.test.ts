@@ -254,11 +254,14 @@ test('Weather applied before mardroeme', async (t) => {
     self: true,
   })
   await FullCard.verify({
-    unit: await gameManager.self.client.getBattlefieldUnit({
-      gameId: gameManager.gameId,
-      combat: Combat.Close,
-      name: unitName3,
-    }),
+    unit: (
+      await gameManager.self.client.getFieldUnit({
+        gameId: gameManager.gameId,
+        combat: Combat.Close,
+        name: unitName3,
+        playerName: gameManager.self.gamePlayer.name,
+      })
+    ).unit,
     username: gameManager.self.gamePlayer.name,
     effectiveStrength: 1,
     effects: [

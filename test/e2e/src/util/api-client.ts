@@ -6,6 +6,7 @@ import createGwentClient, {
   DeckUnit,
   Faction,
   FactionKey,
+  FieldUnit,
   Game,
   GameDeck,
   GameUnit,
@@ -139,28 +140,26 @@ export default class ApiClient {
     return gameUnits
   }
 
-  async getBattlefieldUnit({
+  async getFieldUnit({
     gameId,
     name,
     combat,
+    playerName,
     instance = 1,
   }: {
     gameId: string | ObjectId
     name: string
     combat: Combat
+    playerName: string
     instance?: number
-  }): Promise<Unit> {
-    const user = await this.client.currentUser({})
-    if (!user) {
-      throw Error('Could not determine user for client')
-    }
+  }): Promise<FieldUnit> {
     const game = await this.client.game({
       id: gameId.toString(),
     })
 
-    const player = game.players.find((player) => player.user.id === user.id)
+    const player = game.players.find((player) => player.user.name === playerName)
     if (!player) {
-      throw Error(`Current user "${user.id}" is not a player on game "${gameId}"`)
+      throw Error(`Could not find player "${playerName}" on game "${gameId}"`)
     }
 
     const round = player.rounds[game.round - 1]
@@ -169,24 +168,24 @@ export default class ApiClient {
     if (row.modifier) {
       units.push(row.modifier)
     }
-    let unit: Unit | undefined = undefined
+    let fieldUnit: FieldUnit | undefined = undefined
     let occurrence = 0
-    for (let i = 0; i < units.length && !unit; i++) {
-      const fieldUnit = units[i]
-      if (fieldUnit.unit.name === name) {
+    for (let i = 0; i < units.length && !fieldUnit; i++) {
+      const potentialFieldUnit = units[i]
+      if (potentialFieldUnit.unit.name === name) {
         if (occurrence + 1 === instance) {
-          unit = fieldUnit.unit
+          fieldUnit = potentialFieldUnit
         } else {
           occurrence++
         }
       }
     }
-    if (!unit) {
+    if (!fieldUnit) {
       throw Error(
-        `Could not find instance "${instance}" of unit "${name}" in combat "${combat}" for game "${gameId}" for user "${user.name}"`
+        `Could not find instance "${instance}" of unit "${name}" in combat "${combat}" for game "${gameId}" for user "${playerName}"`
       )
     }
-    return unit
+    return fieldUnit
   }
 
   async addDeck({ faction, leaderName, name, unitNames }: AddDeckInput): Promise<Deck> {

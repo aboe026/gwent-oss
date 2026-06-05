@@ -123,8 +123,8 @@ Existing problems in the codebase that need to be fixed.
 New things that should be added to the codebase.
 
 - Medic
+  - ensure units pulled from undrawn (eg muster) get properly removed from it in UI
   - How to handle brought back for HistoryMove/Impact? unique per created?
-  - test avenger re-mediced cannot cause duplicate avenger
   - horizontal scrolling not working properly when lots of units in deck?
 - Better game summarization (graphs?)
   - points per round

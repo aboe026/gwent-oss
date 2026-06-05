@@ -273,9 +273,10 @@ export default class GamePage {
     if (names) {
       await t.expect(GamePage.elements.HandIcon.exists).notOk()
       const actualNames: (string | null)[] = []
-      const actualCardsCount = await GamePage.elements.Hand.childElementCount
+      const cards = GamePage.elements.Hand.find(`.${HTML_CLASSES.GameHandCardWrapper}`)
+      const actualCardsCount = await cards.count
       for (let i = 0; i < actualCardsCount; i++) {
-        const card = await GamePage.elements.Hand.child(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+        const card = await cards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
         const cardName = await card.getAttribute('title')
         const isSelected = await card.hasClass(HTML_CLASSES.ItemHighlighted)
         const isDotted = await E2eHelper.hasDottedBorder(card)
