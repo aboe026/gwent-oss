@@ -36,6 +36,7 @@ export default function GameCombatRow({
   isSelf,
   isTurn,
   player,
+  selfReviving,
   playUnitProps,
   selectedCardInHand,
   selectedCardInUndrawn,
@@ -54,6 +55,7 @@ export default function GameCombatRow({
   isSelf?: boolean
   isTurn?: boolean
   player: GamePlayerFragment
+  selfReviving?: boolean
   playUnitProps: PlayUnitProps
   selectedCardInHand: boolean
   selectedCardInUndrawn: boolean
@@ -80,7 +82,7 @@ export default function GameCombatRow({
   const validPlayer = spySelected ? !isSelf : isSelf
   const validRow =
     validPlayer &&
-    ((selectedCardInHand && !player.reviving) || (selectedCardInDiscard && player.reviving)) &&
+    ((selectedCardInHand && !player.reviving) || (selectedCardInDiscard && selfReviving)) &&
     cardSelectedUnit?.combats &&
     cardSelectedUnit.combats.includes(combat) &&
     !cardSelectedUnit.modifier &&

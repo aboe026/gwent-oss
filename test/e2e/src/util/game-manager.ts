@@ -251,7 +251,10 @@ export class GameManager {
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,
         self: this.self.gamePlayer,
-        hand: medicing === true ? this.self.deck.discard : this.self.deck.hand,
+        hand:
+          medicing === true
+            ? this.self.deck.discard.filter((deckUnit) => !deckUnit.unit.hero && !deckUnit.unit.special)
+            : this.self.deck.hand,
         round: this.round,
         moves: this.moves,
       })

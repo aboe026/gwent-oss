@@ -53,7 +53,7 @@ export default class UpdateHistory {
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    * @param config.isWeather Whether or not the new unit is weathering the battlefield.
    * @param config.combat The combat row the new unit is being deployed into.
-   * @param config.revived Whether or not the new unit being deployed to the battlefield was revived by a Medic.
+   * @param config.medicingUnit If the unit is being revived by a Medic, the medic which is reviving the unit.
    */
   static newUnitDeployed({
     game,
@@ -77,7 +77,7 @@ export default class UpdateHistory {
     targetId,
     isWeather,
     combat,
-    revived,
+    medicingUnit,
   }: {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
@@ -100,7 +100,7 @@ export default class UpdateHistory {
     targetId: string | null | undefined
     isWeather: boolean
     combat: Combat | null | undefined
-    revived: boolean
+    medicingUnit?: GameUnitDbObject | undefined
   }) {
     const fieldUnit = GetFieldUnits.getFieldUnit({
       game,
@@ -131,22 +131,12 @@ export default class UpdateHistory {
       combat,
     })
 
-    let medicingUnit: GameUnitDbObject | undefined = undefined
-    if (revived) {
-      medicingUnit = UpdateHistory.updateLastMoveImpactWithUnit({
-        game,
-        logPrefix,
-        playerId,
-        unitId: deckUnit.unit,
-      })
-    }
-
     const move: MoveUnitDbObject = {
       created: new Date(),
       unit: gameUnit,
       impacts: updatedImpacts,
       reason: {
-        type: revived ? MoveReasonType.Revive : MoveReasonType.Deploy,
+        type: medicingUnit ? MoveReasonType.Revive : MoveReasonType.Deploy,
       },
       source: {
         origin: GameUnitOrigin.Hand,
@@ -156,7 +146,7 @@ export default class UpdateHistory {
     if (targetId) {
       move.target = new ObjectId(targetId)
     }
-    if (revived) {
+    if (medicingUnit) {
       move.reason.unit = medicingUnit
     }
     UpdateHistory.addMoveToPlayer({

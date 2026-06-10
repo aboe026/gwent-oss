@@ -6,6 +6,7 @@ import {
   EffectDbObject,
   FieldUnitDbObject,
   GameDbObject,
+  GameUnitDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import EffectAvenger from './effect-avenger'
@@ -90,13 +91,6 @@ export default class BattlefieldUpdates {
     })
     deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
 
-    const { impacts: medicImpacts, revived } = await EffectMedic.deployMedicOrReviveUnit({
-      game,
-      isMedic,
-      logPrefix,
-      newDeckUnit,
-    })
-
     BattlefieldUpdates.addNewUnitToBattlefield({
       combat,
       game,
@@ -104,7 +98,15 @@ export default class BattlefieldUpdates {
       newUnit,
       weather: isWeather,
       spy: isSpy,
-      reviving: revived,
+    })
+
+    const { impacts: medicImpacts, medicingUnit } = await EffectMedic.deployMedicOrReviveUnit({
+      game,
+      isMedic,
+      isSpy,
+      targetId,
+      logPrefix,
+      newDeckUnit,
     })
 
     const { impacts: scorches, deckUnitsAddedToDiscard: scorchedUnitsAddedToDiscard } = EffectScorch.scorchBattlefield({
@@ -184,7 +186,7 @@ export default class BattlefieldUpdates {
       mardroemingFieldUnit,
       weathers: weatherImpacts,
       medics: medicImpacts,
-      revived,
+      medicingUnit,
     }
   }
 
@@ -198,7 +200,6 @@ export default class BattlefieldUpdates {
    * @param config.newUnit The new Unit being introduced to the battlefield.
    * @param config.weather Whether or not the new unit being added to the battlefield has the Weather effect.
    * @param config.spy Whether or not the new unit being added to the battlefield has the Spy effect.
-   * @param config.reviving Whether or not the new unit is being revived by a medic.
    */
   static addNewUnitToBattlefield({
     combat,
@@ -207,7 +208,6 @@ export default class BattlefieldUpdates {
     newUnit,
     weather,
     spy,
-    reviving,
   }: {
     combat?: Combat | null
     game: GameDbObject
@@ -215,12 +215,11 @@ export default class BattlefieldUpdates {
     newUnit: UnitDbObject
     weather: boolean
     spy: boolean
-    reviving: boolean
   }) {
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
       if (player.user.toString() === game.turn?.toString()) {
-        if (reviving) {
+        if (player.reviving) {
           player.deck.discard = player.deck.discard.filter(
             (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
           )
@@ -277,6 +276,6 @@ interface ModificationImpacts {
   transformedFieldUnits: FieldUnitDbObject[]
   mardroemingFieldUnit: FieldUnitDbObject | undefined
   medics: ImpactsByUnitId
-  revived: boolean
+  medicingUnit: GameUnitDbObject | undefined
   weathers: ImpactsByUnitId
 }

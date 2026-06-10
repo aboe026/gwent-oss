@@ -90,6 +90,7 @@ export default function GameBattlefield({
     checkAuth,
     game,
     isTurn,
+    selfReviving: self.reviving,
     selectedCardInHand,
     selectedCardInDiscard,
     selectedCardInUndrawn,

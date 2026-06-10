@@ -411,3 +411,5 @@ test('Medic revives medic and unit in discard', async (t) => {
     ],
   })
 })
+
+// TODO: cannot revive medic that is hero

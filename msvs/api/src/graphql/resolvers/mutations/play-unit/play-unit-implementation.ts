@@ -87,7 +87,7 @@ export default class PlayUnitImplementation {
       deckUnitsAddedToDiscard,
       weathers: weatherBattlefieldImpacts,
       medics,
-      revived,
+      medicingUnit,
     } = await BattlefieldUpdates.modifyBattlefieldWithNewUnit({
       battlefieldUnits: [unit, ...roundUnits, ...existingRoundUnits],
       combat,
@@ -151,7 +151,7 @@ export default class PlayUnitImplementation {
       isWeather,
       targetId: isSpy ? targetId : undefined,
       combat,
-      revived,
+      medicingUnit,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
