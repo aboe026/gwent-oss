@@ -211,7 +211,7 @@ export default function GameHand({
             <Centered>
               <img src="images/stats/units.png" title="Hand" className={HTML_CLASSES.GameHandIcon} />
             </Centered>
-          ) : (!cards || cards.length === 0) && isTurn ? (
+          ) : !cards || cards.length === 0 ? (
             <Centered>
               <span id={HTML_IDS.gameHandNoUnitsLeft}>{noneMessage}</span>
             </Centered>

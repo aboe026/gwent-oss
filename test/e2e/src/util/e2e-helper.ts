@@ -535,6 +535,11 @@ export class E2eHelper {
           unitName: avenge.name,
           strength: avenge.effectiveStrength,
         })
+        if (avenge.origin === GameUnitOrigin.Discard) {
+          avenge.newUnitPlayer.discard = (avenge.newUnitPlayer.discard || 0) - 1
+        } else if (avenge.origin === GameUnitOrigin.Hand) {
+          avenge.newUnitPlayer.hand = (avenge.newUnitPlayer.hand || 0) - 1
+        }
       }
     }
     if (scorching) {

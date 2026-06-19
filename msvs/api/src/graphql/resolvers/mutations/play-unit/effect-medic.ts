@@ -51,6 +51,11 @@ export default class EffectMedic {
         logPrefix,
         playerId: player.user,
         unitId: newDeckUnit.unit,
+        // When multi-opponent games implemented, need to change this to find correct opponent the spy is originally from
+        // currently this gets the opponent the revived spy is being deployed to,
+        // which may not be the same as the opponent which put the spy into the current players battlefield for them to revive.
+        // To adequately support multi-opponent, will need to keep "owner" on DeckUnit/FieldUnit/WeatherUnit
+        // so can always know who the card came from (or maybe that's just needed for spies?)
         targetId: isSpy ? targetId : undefined,
       })
     }

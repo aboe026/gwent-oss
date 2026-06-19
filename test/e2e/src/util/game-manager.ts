@@ -125,6 +125,7 @@ export class GameManager {
     modifier,
     weather,
     verify,
+    deckPartSelected,
   }: {
     unitName: string
     combat?: Combat
@@ -147,6 +148,7 @@ export class GameManager {
     modifier?: boolean
     weather?: boolean
     verify?: boolean
+    deckPartSelected?: GameUnitOrigin
   }): Promise<DeckUnit> {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
     const currentPlayer = isSelfTurn ? this.self : this.opponent
@@ -159,6 +161,13 @@ export class GameManager {
     }
     const combatRow = combat || (unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close)
 
+    if (unitToMove.unit.name === 'Scorch') {
+      const deckUnit = currentPlayer.deck.hand.find((handUnit) => handUnit.unit.name === 'Scorch')
+      if (!deckUnit) {
+        throw Error(`Could not find unit "Scorch" in hand.`)
+      }
+      currentPlayer.deck.discard.push(deckUnit)
+    }
     if (scorching) {
       for (const scorchee of scorching) {
         let scorchedUnit: DeckUnit
@@ -180,6 +189,7 @@ export class GameManager {
         gameDeck.discard.push(scorchedUnit)
       }
     }
+    const previousHandUnitIds = currentPlayer.deck.hand.map((handUnit) => handUnit.unit.id)
 
     if (isSelfTurn && !this.apiDriven) {
       await GamePage.moveUnit({
@@ -243,20 +253,42 @@ export class GameManager {
       if (this.self.deck.hand.length !== expectedHandCount) {
         throw Error(`Expected hand count of "${expectedHandCount}" but got "${this.self.deck.hand.length}"`)
       }
+      const newHandUnits = currentPlayer.deck.hand.filter((handUnit) => !previousHandUnitIds.includes(handUnit.unit.id))
+      for (const newHandUnit of newHandUnits) {
+        currentPlayer.deck.undrawn = currentPlayer.deck.undrawn.filter(
+          (deckUnit) => deckUnit.unit.id !== newHandUnit.unit.id
+        )
+      }
     }
     if (medicing !== undefined) {
       currentPlayer.gamePlayer.reviving = medicing === true
     }
+    if (avenging) {
+      for (const avenge of avenging) {
+        const deck = avenge.newUnitPlayer.name === this.self.gamePlayer.name ? this.self.deck : this.opponent.deck
+        if (avenge.origin === GameUnitOrigin.Discard) {
+          deck.discard = deck.discard.filter((discardUnit) => discardUnit.unit.name !== avenge.name)
+        } else if (avenge.origin === GameUnitOrigin.Hand) {
+          deck.hand = deck.hand.filter((handUnit) => handUnit.unit.name !== avenge.name)
+        }
+      }
+    }
     if (this.shouldVerify || verify) {
+      let hand = this.self.deck.hand
+      if (medicing === true) {
+        hand = this.self.deck.discard.filter((deckUnit) => !deckUnit.unit.hero && !deckUnit.unit.special)
+      } else if (deckPartSelected === GameUnitOrigin.Discard) {
+        hand = this.self.deck.discard
+      } else if (deckPartSelected === GameUnitOrigin.Undrawn) {
+        hand = this.self.deck.undrawn
+      }
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,
         self: this.self.gamePlayer,
-        hand:
-          medicing === true
-            ? this.self.deck.discard.filter((deckUnit) => !deckUnit.unit.hero && !deckUnit.unit.special)
-            : this.self.deck.hand,
+        hand,
         round: this.round,
         moves: this.moves,
+        deckPartSelected: deckPartSelected ? deckPartSelected : medicing ? GameUnitOrigin.Discard : GameUnitOrigin.Hand,
       })
     }
     return unitToMove
@@ -459,16 +491,30 @@ export class GameManager {
     highlightedHandCard,
     highlightedBattlefieldCard,
     highlightedHistory,
+    deckPartSelected = GameUnitOrigin.Hand,
   }: {
     highlightedHandCard?: HighlightedHandCard
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
     impacts?: HistoryImpactMoves[]
+    deckPartSelected?: GameUnitOrigin
   }) {
+    let deckPart: DeckUnit[]
+    if (deckPartSelected === GameUnitOrigin.Hand) {
+      deckPart = this.self.deck.hand
+    } else if (deckPartSelected === GameUnitOrigin.Undrawn) {
+      deckPart = this.self.deck.undrawn
+    } else if (deckPartSelected === GameUnitOrigin.Discard) {
+      deckPart = this.self.deck.discard
+    } else {
+      throw Error(
+        `Invalid deckPartShown "${deckPartSelected}", must be one of "${JSON.stringify([GameUnitOrigin.Discard, GameUnitOrigin.Hand, GameUnitOrigin.Undrawn])}"`
+      )
+    }
     await GamePage.verify({
       opponent: this.opponent.gamePlayer,
       self: this.self.gamePlayer,
-      hand: this.self.deck.hand,
+      hand: deckPart,
       moves: this.moves,
       round: this.round,
       victors: this.victors,
@@ -476,6 +522,7 @@ export class GameManager {
       highlightedHandCard,
       highlightedBattlefieldCard,
       highlightedHistory,
+      deckPartSelected,
     })
   }
 

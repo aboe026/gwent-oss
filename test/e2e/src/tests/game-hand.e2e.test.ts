@@ -1,7 +1,8 @@
 import createGameManager from '../util/game-manager'
-import { Combat, FactionKey } from '@gwent/node-client'
+import { Combat, FactionKey, GameUnitOrigin } from '@gwent/node-client'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import GamePage from '../page-objects/game-page'
+import { sortObjectArray } from '@gwent/utils'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
@@ -244,6 +245,337 @@ test('Playing all units in hand shows message to user to pass or activate leader
   await gameManager.deploy({ unitName: unitName10, eligibleCombats: [Combat.Close, Combat.Ranged] })
 })
 
-// TODO: test unit gets removed from draw pile when deployed
-// TODO: test unit gets added to discard pile when round ends
-// TODO: test unit gets removed from discard pile if revived
+test('Unit gets added to lost pile when round ends', async (t) => {
+  const unitName = 'Ves'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName],
+    },
+  })
+  await gameManager.deploy({
+    unitName,
+  })
+  await gameManager.pass({})
+
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).notContains(unitName)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Hand)
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+  })
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).contains(unitName)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+})
+
+test('Unit gets added to lost pile when scorched', async (t) => {
+  const unitName1 = 'Ves'
+  const unitName2 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+  })
+  await gameManager.pass({})
+
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).notContains(unitName2)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Hand)
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 5,
+      },
+    ],
+  })
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).contains(unitName2)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+})
+
+test('Unit gets removed from draw pile when summoned', async (t) => {
+  const unitName1 = 'Geralt of Rivia'
+  const unitName2 = 'Roach'
+
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1],
+      excludeHandUnitNames: [unitName2],
+    },
+  })
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Undrawn)
+  await t.expect(gameManager.self.deck.undrawn.map((undrawn) => undrawn.unit.name)).contains(unitName2)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Undrawn,
+  })
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Hand)
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        name: unitName2,
+        effectiveStrength: 3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Undrawn)
+  await t.expect(gameManager.self.deck.undrawn.map((undrawn) => undrawn.unit.name)).notContains(unitName2)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Undrawn,
+  })
+})
+
+test('Units get removed from undrawn pile when spying', async (t) => {
+  const unitName1 = 'Sigismund Dijkstra'
+
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1],
+      deckUnitNames: [
+        unitName1,
+        // only units without "duplicates" (i.e. all units in deck have unique names)
+        'Ballista',
+        'Cow',
+        'Dandelion',
+        'Dethmold',
+        'Dun Banner Medic',
+        'Emiel Regis Rohellec Terzieff',
+        'Kaedweni Siege Expert',
+        'Keira Metz',
+        'Olgierd Von Everec',
+        'Prince Stennis',
+        'Roach',
+        'Sabrina Glevissig',
+        'Sheldon Skaggs',
+        'Siege Tower',
+        'Siegfried of Denesle',
+        'Sile de Tansarville',
+        'Thaler',
+        'Ves',
+        'Vesemir',
+        'Villentretenmerth',
+        'Yarpen Zigrin',
+        'Zoltan Chivay',
+      ],
+    },
+  })
+  const handUnitIds = gameManager.self.deck.hand.map((handUnit) => handUnit.unit.id)
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Undrawn)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Undrawn,
+  })
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Hand)
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    spying: {
+      effectiveStrength: 4,
+      name: unitName1,
+      opponent: gameManager.opponent.gamePlayer,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+    },
+  })
+
+  const newHandUnits = sortObjectArray({
+    array: gameManager.self.deck.hand.filter((handUnit) => !handUnitIds.includes(handUnit.unit.id)),
+    sortProperties: ['unit.name', 'unit.id'],
+  })
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Undrawn)
+  await t.expect(gameManager.self.deck.undrawn.map((undrawn) => undrawn.unit.name)).notContains(newHandUnits[0].unit.id)
+  await t.expect(gameManager.self.deck.undrawn.map((undrawn) => undrawn.unit.name)).notContains(newHandUnits[1].unit.id)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Undrawn,
+  })
+})
+
+test('Unit gets removed from discard pile when revived', async (t) => {
+  const unitName1 = 'Ves'
+  const unitName2 = 'Dun Banner Medic'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+  })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+  })
+
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).contains(unitName1)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Hand)
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Siege,
+    medicing: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    revivedBy: unitName2,
+  })
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).notContains(unitName1)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+})
+
+test('Avenger summoned from discard pile gets removed from it', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Scorch'
+  const unitName3 = 'Bovine Defense Force'
+  const unitName4 = 'Dun Banner Medic'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName4],
+    },
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName2, unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    avenging: [
+      {
+        name: unitName3,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+  })
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    medicing: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+    revivedBy: unitName4,
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName4,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+        strength: 5,
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).contains(unitName3)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    avenging: [
+      {
+        name: unitName3,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+        origin: GameUnitOrigin.Discard,
+      },
+    ],
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).notContains(unitName3)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+})
+
+// avenger summoned from hand gets removed from it
+// repeat avenger tests but where avenger appears due to round end by opponent (to target different subscription to pick it up)
+// opponent scorching both his and self units only move self units to discard

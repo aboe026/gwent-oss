@@ -6,6 +6,7 @@ import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent/gr
 import EventManager from '../event-manager'
 import GameResolver from './types/game-resolver'
 import { getNestedProperty, setNestedProperty } from '@gwent/utils'
+import { PlayersToDeckUnits } from './mutations/util/players-to-deck-units'
 import { PubSubEvents } from '@gwent/constants'
 
 /**
@@ -106,7 +107,7 @@ export default class SubscriptionResolver {
             })
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+        resolve: (payload: PassPlayedPayload, args: any, ctx: Context, info: any) => {
           return SubscriptionResolver.hideImpactUnits({
             ctx,
             payload,
@@ -132,7 +133,7 @@ export default class SubscriptionResolver {
             })
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+        resolve: (payload: RoundEndedForDeckPayload, args: any, ctx: Context, info: any) => {
           return SubscriptionResolver.hideImpactUnits({
             ctx,
             payload,
@@ -159,7 +160,7 @@ export default class SubscriptionResolver {
             })
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+        resolve: (payload: UnitPlayedFromDeckPayload, args: any, ctx: Context, info: any) => {
           return SubscriptionResolver.hideImpactUnits({
             ctx,
             payload,
@@ -180,12 +181,14 @@ export default class SubscriptionResolver {
             })
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
+        resolve: (payload: IntermediateUnitPlayedOnGame, args: any, ctx: Context, info: any) => {
           return SubscriptionResolver.hideImpactUnits({
             ctx,
             payload,
             subscriptionName: 'unitPlayedOnGame',
             nestedGamePath: 'game',
+            nestedDiscardPath: 'discarded',
+            nestedUndiscardPath: 'undiscarded',
           })
         },
       },
@@ -333,6 +336,8 @@ export default class SubscriptionResolver {
    * @param config.ctx The context containing the User the Subscription will be returned to.
    * @param config.subscriptionName The name of the subscription being executed.
    * @param config.nestedGamePath The optional path of the property within the payload which contains the game.
+   * @param config.nestedDiscardPath The optional path of the property within the payload which contains the units added to the discard pile for the current player.
+   * @param config.nestedUndiscardPath The optional path of the property within the payload which contains the units removed from the discard pile for the current player.
    * @returns The payload for the subscription.
    */
   private static hideImpactUnits({
@@ -340,11 +345,15 @@ export default class SubscriptionResolver {
     ctx,
     subscriptionName,
     nestedGamePath,
+    nestedDiscardPath,
+    nestedUndiscardPath,
   }: {
     payload: any // eslint-disable-line @typescript-eslint/no-explicit-any
     ctx: Context
     subscriptionName: string
     nestedGamePath?: string
+    nestedDiscardPath?: string
+    nestedUndiscardPath?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }): any {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
@@ -385,6 +394,13 @@ export default class SubscriptionResolver {
       path: nestedProperty,
       value: maskedGame,
     })
+
+    if (nestedDiscardPath && payload[subscriptionName][nestedDiscardPath]) {
+      payload[subscriptionName][nestedDiscardPath] = payload.discarded[userId] || []
+    }
+    if (nestedUndiscardPath && payload[subscriptionName][nestedUndiscardPath]) {
+      payload[subscriptionName][nestedUndiscardPath] = payload.undiscarded[userId] || []
+    }
 
     return payload[subscriptionName]
   }
@@ -441,7 +457,13 @@ export interface UnitPlayedOnGamePayload {
   unitPlayedOnGame: {
     game: Game
     unit: DeckUnit
+    discarded: DeckUnit[]
   }
+}
+
+export interface IntermediateUnitPlayedOnGame extends UnitPlayedOnGamePayload {
+  discarded: PlayersToDeckUnits
+  undiscarded: PlayersToDeckUnits
 }
 
 export interface UnitRedrawnPayload {

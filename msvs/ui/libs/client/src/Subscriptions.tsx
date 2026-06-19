@@ -253,6 +253,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.gameDeck) {
               const newHand = [...previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)]
               const newDiscard = [...previous.gameDeck.discard]
+              const newUndrawn = [...previous.gameDeck.undrawn]
               const existingHandIndex = newHand.findIndex((deckUnit) => deckUnit.unit.id === playedUnit.id)
               if (existingHandIndex >= 0) {
                 newHand.splice(existingHandIndex, 1)
@@ -266,8 +267,13 @@ export default function Subscriptions({ children }: PropsWithChildren) {
                 const currentHandIds = newHand.map((handUnit) => handUnit.unit.id)
                 for (const rehand of handed) {
                   const deckUnit = useFragment(DeckUnitFragmentDoc, rehand)
-                  if (!currentHandIds.includes(useFragment(UnitFragmentDoc, deckUnit.unit).id)) {
+                  const rehandedUnitId = useFragment(UnitFragmentDoc, deckUnit.unit).id
+                  if (!currentHandIds.includes(rehandedUnitId)) {
                     newHand.push(deckUnit as DeckUnitRaw)
+                  }
+                  const undrawnIndex = newUndrawn.findIndex((undrawnUnit) => undrawnUnit.unit.id === rehandedUnitId)
+                  if (undrawnIndex >= 0) {
+                    newUndrawn.splice(undrawnIndex, 1)
                   }
                 }
               }
@@ -285,6 +291,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
                   ...previous.gameDeck,
                   hand: newHand,
                   discard: newDiscard,
+                  undrawn: newUndrawn,
                 },
               }
             }
@@ -297,6 +304,8 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const game = useFragment(GameFragmentDoc, data.data?.unitPlayedOnGame.game)
+      const discarded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.discarded)
+      const undiscarded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.undiscarded)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -313,6 +322,48 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             }
           }
         )
+        if ((discarded && discarded.length > 0) || (undiscarded && undiscarded.length > 0)) {
+          client.cache.updateQuery<GameDeckQuery>(
+            {
+              query: GameDeckDocument,
+              variables: {
+                game: game.id,
+              },
+            },
+            (previous) => {
+              if (previous?.gameDeck) {
+                const newDiscard = [...previous.gameDeck.discard]
+                const currentDiscardIds = newDiscard.map((discardUnit) => discardUnit.unit.id)
+
+                if (discarded && discarded.length > 0) {
+                  for (const discard of discarded) {
+                    if (!currentDiscardIds.includes(useFragment(UnitFragmentDoc, discard.unit).id)) {
+                      newDiscard.push(discard as DeckUnitRaw)
+                    }
+                  }
+                }
+
+                if (undiscarded && undiscarded.length > 0) {
+                  for (const undiscard of undiscarded) {
+                    const undiscardIndex = currentDiscardIds.findIndex(
+                      (id) => id === useFragment(UnitFragmentDoc, undiscard.unit).id
+                    )
+                    if (undiscardIndex >= 0) {
+                      newDiscard.splice(undiscardIndex, 1)
+                    }
+                  }
+                }
+
+                return {
+                  gameDeck: {
+                    ...previous.gameDeck,
+                    discard: newDiscard,
+                  },
+                }
+              }
+            }
+          )
+        }
       }
     },
   })

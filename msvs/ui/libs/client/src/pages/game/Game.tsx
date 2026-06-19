@@ -233,7 +233,7 @@ export default function GamePage() {
           },
           (previous) => {
             if (previous?.gameDeck && game) {
-              const battlefieldUnitIds: string[] = []
+              const nonSpyFieldUnitIds: string[] = []
               const player = data.playUnit.players.find((player) => player.user.name === user.name)
               if (!player) {
                 throw Error(
@@ -246,35 +246,55 @@ export default function GamePage() {
                 ...playerRound.ranged.units,
                 ...playerRound.siege.units,
               ]) {
-                battlefieldUnitIds.push(unit.unit.id)
+                if (!unit.unit.effects || !unit.unit.effects.some((effect) => effect.key === EffectKey.Spy)) {
+                  nonSpyFieldUnitIds.push(unit.unit.id)
+                }
               }
               for (const row of [playerRound.close, playerRound.ranged, playerRound.siege]) {
                 if (row.modifier) {
-                  battlefieldUnitIds.push(row.modifier.unit.id)
+                  nonSpyFieldUnitIds.push(row.modifier.unit.id)
                 }
               }
+
+              let newHand = [...previous.gameDeck.hand]
+              const newDiscard = [...previous.gameDeck.discard]
+              let newUndrawn = [...previous.gameDeck.undrawn]
+              let unitDeployed: DeckUnitFragment | undefined = undefined
+              // ensure unit just played removed from hand (or discard if being revived)
               const handUnitIndex = previous.gameDeck.hand.findIndex((deckUnit) => {
                 return deckUnit.unit.id === variables?.unit
               })
-
-              const newHand = [
-                // ensure units on battlefield are removed from hand (e.g. musters)
-                ...previous.gameDeck.hand.filter((deckUnit) => !battlefieldUnitIds.includes(deckUnit.unit.id)),
-              ]
-              const newDiscard = [...previous.gameDeck.discard]
               if (handUnitIndex >= 0) {
+                unitDeployed = newHand[handUnitIndex]
                 newHand.splice(handUnitIndex, 1)
               } else {
                 const discardUnitIndex = previous.gameDeck.discard.findIndex((deckUnit) => {
                   return deckUnit.unit.id === variables?.unit
                 })
                 if (discardUnitIndex >= 0) {
+                  unitDeployed = newDiscard[discardUnitIndex]
                   newDiscard.splice(discardUnitIndex, 1)
                 }
               }
+              // if newly deployed unit is not on the battlefield, assume discarded
+              if (unitDeployed && !nonSpyFieldUnitIds.includes(useFragment(UnitFragmentDoc, unitDeployed.unit).id)) {
+                newDiscard.push(unitDeployed as DeckUnitRaw)
+              }
+
+              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
+
+              // remove mustered units from hand and undrawn
+              if (
+                cardSelectedUnit.effects &&
+                cardSelectedUnit.effects.some(
+                  (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Muster
+                )
+              ) {
+                newHand = newHand.filter((deckUnit) => !nonSpyFieldUnitIds.includes(deckUnit.unit.id))
+                newUndrawn = newUndrawn.filter((deckUnit) => !nonSpyFieldUnitIds.includes(deckUnit.unit.id))
+              }
 
               // add decoyed unit to hand
-              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
               if (
                 cardSelectedUnit.effects &&
                 cardSelectedUnit.effects.some(
@@ -339,6 +359,7 @@ export default function GamePage() {
                   ...previous.gameDeck,
                   hand: newHand,
                   discard: newDiscard,
+                  undrawn: newUndrawn,
                 },
               }
             }
@@ -451,7 +472,6 @@ function ExistingGame({
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
   const [deckCardsViewing, setDeckCardsViewing] = useState<GameDeckCardType>(GameDeckCardType.Hand)
   const [deckSettingsOpen, setDeckSettingsOpen] = useState(false)
-  // TODO: deckFilters here so can default them to no specials/heroes if reviving
   const { game } = gameProps
   const gameErrorMessages = getErrorMessages(gameProps.error)
   const gameDeckErrorMessages = getErrorMessages(gameDeckProps.error)

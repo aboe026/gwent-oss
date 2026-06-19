@@ -627,12 +627,12 @@ function renderDeckInfo({
   deckCardsViewing: GameDeckCardType
   setDeckCardsViewing: Dispatch<SetStateAction<GameDeckCardType>>
 }) {
-  const sectionClassname = `game-player-deck-section ${isSelf ? 'game-player-deck-section-self' : ''}`
+  const sectionClassname = `${HTML_CLASSES.GamePlayerDeckSection} ${isSelf ? 'game-player-deck-section-self' : ''}`
 
   return (
     <>
       <div
-        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Draw ? 'game-player-deck-section-highlighted' : ''}`}
+        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Draw ? HTML_CLASSES.GamePlayerDeckSectionHighlighted : ''}`}
         title="Cards remaining in deck to draw"
         onClick={() => isSelf && setDeckCardsViewing(GameDeckCardType.Draw)}
       >
@@ -640,7 +640,7 @@ function renderDeckInfo({
         <span>Draw</span>
       </div>
       <div
-        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Hand ? 'game-player-deck-section-highlighted' : ''}`}
+        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Hand ? HTML_CLASSES.GamePlayerDeckSectionHighlighted : ''}`}
         title="Cards currently in hand"
         onClick={() => isSelf && setDeckCardsViewing(GameDeckCardType.Hand)}
       >
@@ -648,7 +648,7 @@ function renderDeckInfo({
         <span>Hand</span>
       </div>
       <div
-        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Lost ? 'game-player-deck-section-highlighted' : ''}`}
+        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Lost ? HTML_CLASSES.GamePlayerDeckSectionHighlighted : ''}`}
         title="Cards discarded or lost"
         onClick={() => isSelf && setDeckCardsViewing(GameDeckCardType.Lost)}
       >

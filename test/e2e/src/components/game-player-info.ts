@@ -1,6 +1,6 @@
 import { t } from 'testcafe'
 
-import { Deck, Faction, Leader } from '@gwent/node-client'
+import { Deck, Faction, GameUnitOrigin, Leader } from '@gwent/node-client'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
 
@@ -33,6 +33,20 @@ export default class GamePlayerInfo {
     return this.elements.Name.innerText
   }
 
+  async selectDeckPart(deckPart: GameUnitOrigin) {
+    if (deckPart === GameUnitOrigin.Undrawn) {
+      await t.click(this.elements.UndrawnCount.parent(`.${HTML_CLASSES.GamePlayerDeckSection}`))
+    } else if (deckPart === GameUnitOrigin.Hand) {
+      await t.click(this.elements.HandCount.parent(`.${HTML_CLASSES.GamePlayerDeckSection}`))
+    } else if (deckPart === GameUnitOrigin.Discard) {
+      await t.click(this.elements.DiscardCount.parent(`.${HTML_CLASSES.GamePlayerDeckSection}`))
+    } else {
+      throw Error(
+        `Invalid deckPart "${deckPart}", valid values are: "${JSON.stringify([GameUnitOrigin.Undrawn, GameUnitOrigin.Hand, GameUnitOrigin.Discard])}"`
+      )
+    }
+  }
+
   async verify({
     name,
     discards,
@@ -47,6 +61,7 @@ export default class GamePlayerInfo {
     turn,
     passed,
     allReady,
+    deckPartSelected,
   }: {
     name: string
     losses?: number
@@ -61,6 +76,7 @@ export default class GamePlayerInfo {
     turn?: PlayerTurn
     passed?: boolean
     allReady?: boolean
+    deckPartSelected?: GameUnitOrigin
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
     if (!allReady) {
@@ -98,12 +114,33 @@ export default class GamePlayerInfo {
       }
       if (undrawn !== undefined) {
         await t.expect(this.elements.UndrawnCount.innerText).eql(undrawn.toString())
+        await t
+          .expect(
+            await this.elements.UndrawnCount.parent(`.${HTML_CLASSES.GamePlayerDeckSection}`).hasClass(
+              HTML_CLASSES.GamePlayerDeckSectionHighlighted
+            )
+          )
+          .eql(deckPartSelected === GameUnitOrigin.Undrawn)
       }
       if (hand !== undefined) {
         await t.expect(this.elements.HandCount.innerText).eql(hand.toString())
+        await t
+          .expect(
+            await this.elements.HandCount.parent(`.${HTML_CLASSES.GamePlayerDeckSection}`).hasClass(
+              HTML_CLASSES.GamePlayerDeckSectionHighlighted
+            )
+          )
+          .eql(deckPartSelected === GameUnitOrigin.Hand)
       }
       if (discards !== undefined) {
         await t.expect(this.elements.DiscardCount.innerText).eql(discards.toString())
+        await t
+          .expect(
+            await this.elements.DiscardCount.parent(`.${HTML_CLASSES.GamePlayerDeckSection}`).hasClass(
+              HTML_CLASSES.GamePlayerDeckSectionHighlighted
+            )
+          )
+          .eql(deckPartSelected === GameUnitOrigin.Discard)
       }
       if (from !== undefined && from !== null) {
         const isoString = new Date(from.created).toISOString()

@@ -82,6 +82,7 @@ export default class EffectSpy {
       if (self) {
         const numberToMoveToHand = self.deck.undrawn.length > 2 ? 2 : self.deck.undrawn.length
         for (let i = 0; i < numberToMoveToHand; i++) {
+          // TODO: exclude hero units, they cannot be spied onto battlefield
           const index = getRandomNumber({
             min: 0,
             max: self.deck.undrawn.length - 1,

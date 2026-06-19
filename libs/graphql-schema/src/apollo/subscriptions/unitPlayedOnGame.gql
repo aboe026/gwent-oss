@@ -3,5 +3,11 @@ subscription UnitPlayedOnGame {
     game {
       ...Game
     }
+    discarded {
+      ...DeckUnit
+    }
+    undiscarded {
+      ...DeckUnit
+    }
   }
 }

@@ -193,6 +193,7 @@ export default class GamePage {
     turn,
     passed,
     allReady,
+    deckPartSelected = GameUnitOrigin.Hand,
   }: {
     name: string
     losses?: number
@@ -206,6 +207,7 @@ export default class GamePage {
     turn?: PlayerTurn
     passed?: boolean
     allReady?: boolean
+    deckPartSelected?: GameUnitOrigin
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoSelfContainer)
     await info.verify({
@@ -221,6 +223,7 @@ export default class GamePage {
       turn,
       passed,
       allReady,
+      deckPartSelected,
     })
   }
 
@@ -826,6 +829,7 @@ export default class GamePage {
     highlightedHandCard,
     highlightedBattlefieldCard,
     highlightedHistory,
+    deckPartSelected = GameUnitOrigin.Hand,
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
@@ -839,6 +843,7 @@ export default class GamePage {
     highlightedHandCard?: HighlightedHandCard
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
+    deckPartSelected?: GameUnitOrigin
   }) {
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
@@ -866,6 +871,7 @@ export default class GamePage {
       turn: self.turn,
       passed: self.passed,
       allReady: self.ready && opponent.ready,
+      deckPartSelected,
     })
     await GamePage.verifyOpponent({
       name: opponent.name,
@@ -1677,6 +1683,10 @@ export default class GamePage {
       instance,
     })
     await t.click(move.find(`.${HTML_CLASSES.GameHistoryMoveImpactContainer}`))
+  }
+
+  static async switchDeckPartSelected(deckPart: GameUnitOrigin) {
+    await new GamePlayerInfo(GamePage.elements.InfoSelfContainer).selectDeckPart(deckPart)
   }
 }
 

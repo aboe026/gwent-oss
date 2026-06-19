@@ -15,6 +15,7 @@ import {
 import GetEffectWithKey from './get-effect-with-key'
 import getRoundUnits from '../util/get-round-units'
 import { ImpactsByUnitId } from '../../resolver-util'
+import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 import UnitStore from '../../../../database/stores/unit-store'
 
 /**
@@ -49,6 +50,7 @@ export default class EffectAvenger {
   }): Promise<Avengings> {
     const avenged: ImpactsByUnitId = {}
     const avengedUnits: UnitDbObject[] = []
+    const undiscarded: PlayersToDeckUnitDbObjects = {}
 
     const avengerEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Avenger,
@@ -142,6 +144,10 @@ export default class EffectAvenger {
                 )
                 if (existingDiscardIndex >= 0) {
                   origin = GameUnitOrigin.Discard
+                  if (!undiscarded[player.user.toString()]) {
+                    undiscarded[player.user.toString()] = []
+                  }
+                  undiscarded[player.user.toString()].push(player.deck.discard[existingDiscardIndex])
                   player.deck.discard.splice(existingDiscardIndex, 1)
                 }
               }
@@ -195,6 +201,7 @@ export default class EffectAvenger {
     return {
       impacts: avenged,
       avengedUnits,
+      undiscarded,
     }
   }
 }
@@ -207,4 +214,5 @@ export interface RemovedGameUnit {
 export interface Avengings {
   impacts: ImpactsByUnitId
   avengedUnits: UnitDbObject[]
+  undiscarded: PlayersToDeckUnitDbObjects
 }

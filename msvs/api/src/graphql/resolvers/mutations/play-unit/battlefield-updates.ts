@@ -18,6 +18,7 @@ import EffectScorch from './effect-scorch'
 import EffectSpy from './effect-spy'
 import EffectWeather from './effect-weather'
 import { ImpactsByUnitId } from '../../resolver-util'
+import { PlayersToDeckUnitDbObjects, mergePlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 
 /**
  * A class for altering the units present on the battlefield due to a player move.
@@ -71,7 +72,8 @@ export default class BattlefieldUpdates {
     isMedic: boolean
   }): Promise<ModificationImpacts> {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
-    const deckUnitsAddedToDiscard: DeckUnitDbObject[] = []
+    let discards: PlayersToDeckUnitDbObjects = {}
+    let undiscards: PlayersToDeckUnitDbObjects = {}
 
     const weatherImpacts = EffectWeather.weatherBattlefield({
       game,
@@ -109,16 +111,20 @@ export default class BattlefieldUpdates {
       newDeckUnit,
     })
 
-    const { impacts: scorches, deckUnitsAddedToDiscard: scorchedUnitsAddedToDiscard } = EffectScorch.scorchBattlefield({
+    const { impacts: scorches, discards: scorchDiscards } = EffectScorch.scorchBattlefield({
       battlefieldUnits,
       effects,
       game,
       logPrefix,
       newDeckUnit,
     })
-    deckUnitsAddedToDiscard.push(...scorchedUnitsAddedToDiscard)
+    discards = mergePlayersToDeckUnitDbObjects(discards, scorchDiscards)
 
-    const { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
+    const {
+      avengedUnits,
+      impacts: avengers,
+      undiscarded: avengerUndiscards,
+    } = await EffectAvenger.avengeRemovedUnits({
       battlefieldUnits,
       effects,
       game,
@@ -132,6 +138,8 @@ export default class BattlefieldUpdates {
           }
         }),
     })
+    undiscards = mergePlayersToDeckUnitDbObjects(undiscards, avengerUndiscards)
+
     const {
       impacts: musterImpacts,
       musteredUnits,
@@ -174,7 +182,8 @@ export default class BattlefieldUpdates {
       avengedUnits,
       decoys: decoyImpacts,
       deckUnitsAddedToHand,
-      deckUnitsAddedToDiscard,
+      discards,
+      undiscards,
       scorches,
       musters: musterImpacts,
       musteredUnits,
@@ -265,7 +274,8 @@ interface ModificationImpacts {
   avengedUnits: UnitDbObject[]
   decoys: ImpactsByUnitId
   deckUnitsAddedToHand: DeckUnitDbObject[]
-  deckUnitsAddedToDiscard: DeckUnitDbObject[]
+  discards: PlayersToDeckUnitDbObjects
+  undiscards: PlayersToDeckUnitDbObjects
   scorches: ImpactsByUnitId
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]

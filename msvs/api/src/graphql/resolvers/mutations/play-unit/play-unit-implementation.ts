@@ -7,6 +7,7 @@ import GameStore from '../../../../database/stores/game-store'
 import getRoundUnits from '../util/get-round-units'
 import getUnitEffects from '../util/get-unit-effects'
 import mergeImpacts from './merge-impacts'
+import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 import PresentableError from '../../../../util/presentable-error'
 import setGameScores from '../util/set-game-scores'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
@@ -84,7 +85,8 @@ export default class PlayUnitImplementation {
       avengedUnits,
       decoys,
       deckUnitsAddedToHand,
-      deckUnitsAddedToDiscard,
+      discards,
+      undiscards,
       weathers: weatherBattlefieldImpacts,
       medics,
       medicingUnit,
@@ -182,7 +184,8 @@ export default class PlayUnitImplementation {
       game: updatedGame,
       gameDeck: player.deck,
       handDeckUnitsAdded: deckUnitsAddedToHand,
-      discardDeckUnitsAdded: deckUnitsAddedToDiscard,
+      discards,
+      undiscards,
     }
   }
 }
@@ -191,5 +194,6 @@ interface ImplementedPlayUnit {
   game: GameDbObject
   gameDeck: GameDeckDbObject
   handDeckUnitsAdded: DeckUnitDbObject[]
-  discardDeckUnitsAdded: DeckUnitDbObject[]
+  discards: PlayersToDeckUnitDbObjects
+  undiscards: PlayersToDeckUnitDbObjects
 }

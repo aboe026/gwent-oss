@@ -38,7 +38,8 @@ export default class PlayUnitMutation {
       game: updatedGame,
       gameDeck,
       handDeckUnitsAdded,
-      discardDeckUnitsAdded,
+      discards,
+      undiscards,
     } = await PlayUnitImplementation.playUnitImplementation({
       combat,
       deckUnit,
@@ -61,7 +62,8 @@ export default class PlayUnitMutation {
       gameDeck,
       logPrefix,
       handDeckUnitsAdded,
-      discardDeckUnitsAdded,
+      discards,
+      undiscards,
       userId,
     })
   }

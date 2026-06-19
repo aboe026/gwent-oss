@@ -32,6 +32,8 @@ export const HTML_CLASSES = {
   GamePlayerLeader: 'game-player-leader',
   GamePlayerLeaderImage: 'game-player-leader-image',
   GamePlayerLeaderAbility: 'game-player-leader-ability',
+  GamePlayerDeckSection: 'game-player-deck-section',
+  GamePlayerDeckSectionHighlighted: 'game-player-deck-section-highlighted',
   GamePlayerUndrawnCount: 'game-player-undrawn-count',
   GamePlayerHandCount: 'game-player-hand-count',
   GamePlayerDiscardCount: 'game-player-discard-count',

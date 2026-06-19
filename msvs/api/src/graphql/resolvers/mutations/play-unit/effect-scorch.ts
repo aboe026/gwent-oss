@@ -19,6 +19,7 @@ import GetEffectWithKey from './get-effect-with-key'
 import GetFieldUnits from '../../util/get-field-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'
 import { ImpactsByUnitId } from '../../resolver-util'
+import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 
 /**
  * A class to modify the battlefield if a scorching unit is played.
@@ -51,7 +52,7 @@ export default class EffectScorch {
     newDeckUnit: DeckUnitDbObject
   }): PotentialScorches {
     const impacts: ImpactsByUnitId = {}
-    const deckUnitsAddedToDiscard: DeckUnitDbObject[] = []
+    const discards: PlayersToDeckUnitDbObjects = {}
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
@@ -69,7 +70,10 @@ export default class EffectScorch {
         throw Error(message)
       }
       player.deck.discard.push(newDeckUnit)
-      deckUnitsAddedToDiscard.push(newDeckUnit)
+      if (!discards[player.user.toString()]) {
+        discards[player.user.toString()] = []
+      }
+      discards[player.user.toString()].push(newDeckUnit)
     }
 
     const scorchEffect = GetEffectWithKey.getEffectWithKey({
@@ -127,8 +131,11 @@ export default class EffectScorch {
 
       impacts[newDeckUnit.unit.toString()] = scorched
       for (const scorch of scorched) {
-        if (scorch.user.toString() === game.turn?.toString() && scorch.unit) {
-          deckUnitsAddedToDiscard.push({
+        if (scorch.unit) {
+          if (!discards[scorch.user.toString()]) {
+            discards[scorch.user.toString()] = []
+          }
+          discards[scorch.user.toString()].push({
             artStyle: scorch.unit.artStyle,
             unit: scorch.unit.unit,
           })
@@ -137,7 +144,7 @@ export default class EffectScorch {
     }
     return {
       impacts,
-      deckUnitsAddedToDiscard,
+      discards,
     }
   }
 
@@ -403,5 +410,5 @@ export default class EffectScorch {
 
 interface PotentialScorches {
   impacts: ImpactsByUnitId
-  deckUnitsAddedToDiscard: DeckUnitDbObject[]
+  discards: PlayersToDeckUnitDbObjects
 }
