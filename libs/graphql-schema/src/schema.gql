@@ -438,8 +438,12 @@ type UnitPlayedFromDeck {
 type UnitPlayedOnGame {
   game: Game!
   unit: DeckUnit!
+  "Units added to the discard pile due to the new unit played."
   discarded: [DeckUnit!]
+  "Units removed from the discard pile due to the new unit played."
   undiscarded: [DeckUnit!]
+  "Units removed from the hand pile due to the new unit played."
+  unhanded: [DeckUnit!]
 }
 
 input DeckUnitInput {

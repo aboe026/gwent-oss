@@ -51,6 +51,7 @@ export default class EffectAvenger {
     const avenged: ImpactsByUnitId = {}
     const avengedUnits: UnitDbObject[] = []
     const undiscarded: PlayersToDeckUnitDbObjects = {}
+    const unhanded: PlayersToDeckUnitDbObjects = {}
 
     const avengerEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Avenger,
@@ -137,6 +138,10 @@ export default class EffectAvenger {
               )
               if (existingHandIndex >= 0) {
                 origin = GameUnitOrigin.Hand
+                if (!unhanded[player.user.toString()]) {
+                  unhanded[player.user.toString()] = []
+                }
+                unhanded[player.user.toString()].push(player.deck.hand[existingHandIndex])
                 player.deck.hand.splice(existingHandIndex, 1)
               } else {
                 const existingDiscardIndex = player.deck.discard.findIndex(
@@ -202,6 +207,7 @@ export default class EffectAvenger {
       impacts: avenged,
       avengedUnits,
       undiscarded,
+      unhanded,
     }
   }
 }
@@ -215,4 +221,5 @@ export interface Avengings {
   impacts: ImpactsByUnitId
   avengedUnits: UnitDbObject[]
   undiscarded: PlayersToDeckUnitDbObjects
+  unhanded: PlayersToDeckUnitDbObjects
 }

@@ -40,6 +40,7 @@ export default class PlayUnitMutation {
       handDeckUnitsAdded,
       discards,
       undiscards,
+      unhands,
     } = await PlayUnitImplementation.playUnitImplementation({
       combat,
       deckUnit,
@@ -64,6 +65,7 @@ export default class PlayUnitMutation {
       handDeckUnitsAdded,
       discards,
       undiscards,
+      unhands,
       userId,
     })
   }

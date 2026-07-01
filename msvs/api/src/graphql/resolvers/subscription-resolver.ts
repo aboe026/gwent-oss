@@ -189,6 +189,7 @@ export default class SubscriptionResolver {
             nestedGamePath: 'game',
             nestedDiscardPath: 'discarded',
             nestedUndiscardPath: 'undiscarded',
+            nestedUnhandPath: 'unhanded',
           })
         },
       },
@@ -338,6 +339,7 @@ export default class SubscriptionResolver {
    * @param config.nestedGamePath The optional path of the property within the payload which contains the game.
    * @param config.nestedDiscardPath The optional path of the property within the payload which contains the units added to the discard pile for the current player.
    * @param config.nestedUndiscardPath The optional path of the property within the payload which contains the units removed from the discard pile for the current player.
+   * @param config.nestedUnhandPath The optional path of the property within the payload which contains the units removed from the hand pile for the current player.
    * @returns The payload for the subscription.
    */
   private static hideImpactUnits({
@@ -347,6 +349,7 @@ export default class SubscriptionResolver {
     nestedGamePath,
     nestedDiscardPath,
     nestedUndiscardPath,
+    nestedUnhandPath,
   }: {
     payload: any // eslint-disable-line @typescript-eslint/no-explicit-any
     ctx: Context
@@ -354,6 +357,7 @@ export default class SubscriptionResolver {
     nestedGamePath?: string
     nestedDiscardPath?: string
     nestedUndiscardPath?: string
+    nestedUnhandPath?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }): any {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
@@ -400,6 +404,9 @@ export default class SubscriptionResolver {
     }
     if (nestedUndiscardPath && payload[subscriptionName][nestedUndiscardPath]) {
       payload[subscriptionName][nestedUndiscardPath] = payload.undiscarded[userId] || []
+    }
+    if (nestedUnhandPath && payload[subscriptionName][nestedUnhandPath]) {
+      payload[subscriptionName][nestedUnhandPath] = payload.unhanded[userId] || []
     }
 
     return payload[subscriptionName]
@@ -458,12 +465,15 @@ export interface UnitPlayedOnGamePayload {
     game: Game
     unit: DeckUnit
     discarded: DeckUnit[]
+    undiscarded: DeckUnit[]
+    unhanded: DeckUnit[]
   }
 }
 
 export interface IntermediateUnitPlayedOnGame extends UnitPlayedOnGamePayload {
   discarded: PlayersToDeckUnits
   undiscarded: PlayersToDeckUnits
+  unhanded: PlayersToDeckUnits
 }
 
 export interface UnitRedrawnPayload {

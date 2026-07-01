@@ -7,6 +7,8 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effects Mixed Avenger')
 
+// TODO: test decoying cow does not summon avenger
+
 test('Summoned avenger can be decoyed and played again', async (t) => {
   const unitName1 = 'Cow'
   const unitName2 = 'Bovine Defense Force'

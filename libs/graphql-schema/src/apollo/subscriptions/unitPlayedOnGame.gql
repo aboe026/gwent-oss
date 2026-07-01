@@ -9,5 +9,8 @@ subscription UnitPlayedOnGame {
     undiscarded {
       ...DeckUnit
     }
+    unhanded {
+      ...DeckUnit
+    }
   }
 }

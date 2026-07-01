@@ -299,11 +299,13 @@ export class GameManager {
     switchTurnsWith,
     avenging,
     victors,
+    deckPartSelected,
   }: {
     verify?: boolean
     switchTurnsWith?: GamePlayerExpected
     avenging?: AvengingExpected[]
     victors?: string[]
+    deckPartSelected?: GameUnitOrigin
   }) {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
     const currentPlayer = isSelfTurn ? this.self : this.opponent
@@ -401,14 +403,21 @@ export class GameManager {
     }
 
     if (this.shouldVerify || verify) {
+      let hand = this.self.deck.hand
+      if (deckPartSelected === GameUnitOrigin.Discard) {
+        hand = this.self.deck.discard
+      } else if (deckPartSelected === GameUnitOrigin.Undrawn) {
+        hand = this.self.deck.undrawn
+      }
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,
         self: this.self.gamePlayer,
-        hand: this.self.deck.hand,
+        hand,
         moves: this.moves,
         round: this.round,
         victors: this.victors,
         rounds: this.getRoundScores(),
+        deckPartSelected,
       })
     }
   }

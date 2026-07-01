@@ -74,6 +74,7 @@ export default class BattlefieldUpdates {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
     let discards: PlayersToDeckUnitDbObjects = {}
     let undiscards: PlayersToDeckUnitDbObjects = {}
+    let unhands: PlayersToDeckUnitDbObjects = {}
 
     const weatherImpacts = EffectWeather.weatherBattlefield({
       game,
@@ -124,6 +125,7 @@ export default class BattlefieldUpdates {
       avengedUnits,
       impacts: avengers,
       undiscarded: avengerUndiscards,
+      unhanded: avengerUnhands,
     } = await EffectAvenger.avengeRemovedUnits({
       battlefieldUnits,
       effects,
@@ -139,6 +141,7 @@ export default class BattlefieldUpdates {
         }),
     })
     undiscards = mergePlayersToDeckUnitDbObjects(undiscards, avengerUndiscards)
+    unhands = mergePlayersToDeckUnitDbObjects(unhands, avengerUnhands)
 
     const {
       impacts: musterImpacts,
@@ -184,6 +187,7 @@ export default class BattlefieldUpdates {
       deckUnitsAddedToHand,
       discards,
       undiscards,
+      unhands,
       scorches,
       musters: musterImpacts,
       musteredUnits,
@@ -276,6 +280,7 @@ interface ModificationImpacts {
   deckUnitsAddedToHand: DeckUnitDbObject[]
   discards: PlayersToDeckUnitDbObjects
   undiscards: PlayersToDeckUnitDbObjects
+  unhands: PlayersToDeckUnitDbObjects
   scorches: ImpactsByUnitId
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]

@@ -87,6 +87,7 @@ export default class PlayUnitImplementation {
       deckUnitsAddedToHand,
       discards,
       undiscards,
+      unhands,
       weathers: weatherBattlefieldImpacts,
       medics,
       medicingUnit,
@@ -186,6 +187,7 @@ export default class PlayUnitImplementation {
       handDeckUnitsAdded: deckUnitsAddedToHand,
       discards,
       undiscards,
+      unhands,
     }
   }
 }
@@ -196,4 +198,5 @@ interface ImplementedPlayUnit {
   handDeckUnitsAdded: DeckUnitDbObject[]
   discards: PlayersToDeckUnitDbObjects
   undiscards: PlayersToDeckUnitDbObjects
+  unhands: PlayersToDeckUnitDbObjects
 }

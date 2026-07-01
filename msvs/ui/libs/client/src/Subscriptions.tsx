@@ -306,6 +306,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       const game = useFragment(GameFragmentDoc, data.data?.unitPlayedOnGame.game)
       const discarded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.discarded)
       const undiscarded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.undiscarded)
+      const unhanded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.unhanded)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -333,7 +334,9 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             (previous) => {
               if (previous?.gameDeck) {
                 const newDiscard = [...previous.gameDeck.discard]
+                const newHand = [...previous.gameDeck.hand]
                 const currentDiscardIds = newDiscard.map((discardUnit) => discardUnit.unit.id)
+                const currentHandIds = newHand.map((handUnit) => handUnit.unit.id)
 
                 if (discarded && discarded.length > 0) {
                   for (const discard of discarded) {
@@ -354,10 +357,22 @@ export default function Subscriptions({ children }: PropsWithChildren) {
                   }
                 }
 
+                if (unhanded && unhanded.length > 0) {
+                  for (const unhand of unhanded) {
+                    const unhandIndex = currentHandIds.findIndex(
+                      (id) => id === useFragment(UnitFragmentDoc, unhand.unit).id
+                    )
+                    if (unhandIndex >= 0) {
+                      newHand.splice(unhandIndex, 1)
+                    }
+                  }
+                }
+
                 return {
                   gameDeck: {
                     ...previous.gameDeck,
                     discard: newDiscard,
+                    hand: newHand,
                   },
                 }
               }

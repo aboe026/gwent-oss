@@ -475,7 +475,7 @@ test('Unit gets removed from discard pile when revived', async (t) => {
   })
 })
 
-test('Avenger summoned from discard pile gets removed from it', async (t) => {
+test('Avenger summoned from discard pile gets removed from it on scorch', async (t) => {
   const unitName1 = 'Cow'
   const unitName2 = 'Scorch'
   const unitName3 = 'Bovine Defense Force'
@@ -576,6 +576,274 @@ test('Avenger summoned from discard pile gets removed from it', async (t) => {
   })
 })
 
-// avenger summoned from hand gets removed from it
-// repeat avenger tests but where avenger appears due to round end by opponent (to target different subscription to pick it up)
-// opponent scorching both his and self units only move self units to discard
+test('Avenger summoned from discard pile gets removed from it on round end', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Scorch'
+  const unitName3 = 'Bovine Defense Force'
+  const unitName4 = 'Dun Banner Medic'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName4],
+    },
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName2, unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    avenging: [
+      {
+        name: unitName3,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    medicing: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+    revivedBy: unitName4,
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 8,
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).contains(unitName3)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+
+  await gameManager.pass({
+    avenging: [
+      {
+        name: unitName3,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+        origin: GameUnitOrigin.Discard,
+      },
+    ],
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).notContains(unitName3)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+})
+
+test('Avenger summoned from hand gets removed from it on scorch', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Letho of Gulet'
+  const unitName3 = 'Decoy'
+  const unitName4 = 'Scorch'
+  const unitName5 = 'Bovine Defense Force'
+  const unitName6 = 'Dun Banner Medic'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName3, unitName6],
+    },
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName2, unitName4, unitName4, unitName4],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.deploy({
+    unitName: unitName4,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    avenging: [
+      {
+        name: unitName5,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.deploy({
+    unitName: unitName3,
+    decoying: {
+      name: unitName5,
+      effectiveStrength: 8,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+    },
+  })
+
+  await gameManager.deploy({
+    unitName: unitName2,
+  })
+
+  await gameManager.deploy({
+    unitName: unitName6,
+    medicing: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+    revivedBy: unitName6,
+  })
+  await gameManager.deploy({
+    unitName: unitName4,
+    scorching: [
+      {
+        name: unitName6,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+        strength: 5,
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    avenging: [
+      {
+        name: unitName5,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+        origin: GameUnitOrigin.Hand,
+      },
+    ],
+  })
+})
+
+test('Avenger summoned from hand gets removed from it on round end', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Scorch'
+  const unitName3 = 'Bovine Defense Force'
+  const unitName4 = 'Dun Banner Medic'
+  const unitName5 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName4, unitName5],
+    },
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName2, unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    avenging: [
+      {
+        name: unitName3,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.deploy({
+    unitName: unitName5,
+    decoying: {
+      name: unitName3,
+      effectiveStrength: 8,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [],
+  })
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    medicing: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+    revivedBy: unitName4,
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+    avenging: [
+      {
+        name: unitName3,
+        effectiveStrength: 8,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        turn: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        origin: GameUnitOrigin.Hand,
+      },
+    ],
+  })
+})
+
+// TODO: opponent scorching both his and self units only move self units to discard

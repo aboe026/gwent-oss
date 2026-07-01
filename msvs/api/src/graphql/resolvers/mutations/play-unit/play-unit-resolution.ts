@@ -29,6 +29,7 @@ export default class PlayUnitResolution {
    * @param config.handDeckUnitsAdded Any potential DeckUnits added to the players game hand.
    * @param config.discards Any potential DeckUnits added to the discard pile for game players due to the new unit played.
    * @param config.undiscards Any potential DeckUnits removed from the discard pile for game players due to the new unit played.
+   * @param config.unhands Any potential DeckUnits removed from the hand pile for game players due to the new unit played.
    * @param config.userId The ID of the user playing the Unit.
    * @returns The Game with the unit played for the user with fields resolved.
    */
@@ -39,6 +40,7 @@ export default class PlayUnitResolution {
     handDeckUnitsAdded,
     discards,
     undiscards,
+    unhands,
     logPrefix,
     userId,
   }: {
@@ -48,6 +50,7 @@ export default class PlayUnitResolution {
     handDeckUnitsAdded: DeckUnitDbObject[]
     discards: PlayersToDeckUnitDbObjects
     undiscards: PlayersToDeckUnitDbObjects
+    unhands: PlayersToDeckUnitDbObjects
     logPrefix: string
     userId: ObjectId
   }): Promise<Game> {
@@ -74,15 +77,18 @@ export default class PlayUnitResolution {
 
     const resolvedDiscards = await PlayersToDeckUnitsResolver.fromObject(discards)
     const resolvedUndiscards = await PlayersToDeckUnitsResolver.fromObject(undiscards)
+    const resolvedUnhands = await PlayersToDeckUnitsResolver.fromObject(unhands)
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedOnGame, {
       unitPlayedOnGame: {
         game: resolvedGame,
         unit: resolvedUnit,
         discarded: [], // to be scoped by subscription user later based off "discarded: resolvedDiscards"
         undiscarded: [], // to be scoped by subscription user later based off "undiscarded: resolvedUndiscards"
+        unhanded: [], // to be scoped by subscription user later based off "unhanded: resolvedUnhands"
       },
       discarded: resolvedDiscards,
       undiscarded: resolvedUndiscards,
+      unhanded: resolvedUnhands,
     } as IntermediateUnitPlayedOnGame)
 
     const handed = await DeckUnitResolver.fromArray({
