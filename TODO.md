@@ -129,6 +129,7 @@ New things that should be added to the codebase.
   - How to handle brought back for HistoryMove/Impact? unique per created?
   - horizontal scrolling not working properly when lots of units in deck?
   - have undiscards just be unit id?
+  - can Decoy be played if no units before it?
 - Better game summarization (graphs?)
   - points per round
   - time per round
