@@ -846,4 +846,58 @@ test('Avenger summoned from hand gets removed from it on round end', async (t) =
   })
 })
 
-// TODO: opponent scorching both his and self units only move self units to discard
+test('Opponent scorching units from all players only moves self units to discard', async (t) => {
+  const unitName1 = 'Forktail'
+  const unitName2 = 'Ves'
+  const unitName3 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName2],
+    },
+    opponent: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName3],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+  })
+
+  await gameManager.initialize({})
+
+  await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).notContains(unitName2)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+        strength: 5,
+      },
+      {
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 5,
+      },
+    ],
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+
+  await t.expect(gameManager.self.deck.discard.map((undrawn) => undrawn.unit.name)).contains(unitName2)
+  await gameManager.verify({
+    deckPartSelected: GameUnitOrigin.Discard,
+  })
+})
