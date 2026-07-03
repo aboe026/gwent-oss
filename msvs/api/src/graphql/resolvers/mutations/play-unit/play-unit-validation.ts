@@ -8,6 +8,7 @@ import {
   EffectDbObject,
   EffectKey,
   GameDbObject,
+  GamePlayerDbObject,
   GameStatus,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -121,8 +122,6 @@ export default class PlayUnitValidation {
     const isWeather = effects && effects.some((effect) => effect.key === EffectKey.Weather)
     const isMedic = effects && effects.some((effect) => effect.key === EffectKey.Medic)
 
-    let roundUnits: UnitDbObject[] | undefined = undefined
-
     if (!isDecoy && !isWeather) {
       if (unit.combats && unit.combats.length > 1 && !combat) {
         const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
@@ -148,6 +147,74 @@ export default class PlayUnitValidation {
         throw new PresentableError(message)
       }
     }
+
+    const { combat: decoyCombat, roundUnits } = await PlayUnitValidation.validateDecoy({
+      combat,
+      game,
+      isDecoy,
+      logPrefix,
+      resolverUtil,
+      targetId,
+      unit,
+      userId,
+    })
+    combat = decoyCombat
+
+    targetId = PlayUnitValidation.validateSpy({
+      game,
+      isSpy,
+      logPrefix,
+      resolverUtil,
+      targetId,
+      userId,
+    })
+
+    PlayUnitValidation.validateMedic({
+      logPrefix,
+      player,
+      unit,
+    })
+
+    return {
+      combat: isWeather ? undefined : combat,
+      deckUnit,
+      game,
+      logPrefix,
+      unit,
+      targetId,
+      roundUnits,
+      effects,
+      isDecoy: !!isDecoy,
+      isSpy: !!isSpy,
+      isWeather: !!isWeather,
+      isMedic: !!isMedic,
+      userId,
+    }
+  }
+
+  private static async validateDecoy({
+    combat,
+    game,
+    isDecoy,
+    targetId,
+    logPrefix,
+    resolverUtil,
+    unit,
+    userId,
+  }: {
+    combat: Combat | undefined | null
+    game: GameDbObject
+    isDecoy: boolean | undefined
+    targetId: string | undefined | null
+    logPrefix: string
+    resolverUtil: ResolverUtil
+    unit: UnitDbObject
+    userId: ObjectId
+  }): Promise<{
+    roundUnits: UnitDbObject[] | undefined
+    combat: Combat | undefined | null
+  }> {
+    let roundUnits: UnitDbObject[] | undefined = undefined
 
     if (isDecoy) {
       if (!targetId) {
@@ -201,6 +268,27 @@ export default class PlayUnitValidation {
       combat = fieldUnit.row as Combat
     }
 
+    return {
+      roundUnits,
+      combat,
+    }
+  }
+
+  private static validateSpy({
+    game,
+    isSpy,
+    logPrefix,
+    resolverUtil,
+    targetId,
+    userId,
+  }: {
+    game: GameDbObject
+    isSpy: boolean | undefined
+    logPrefix: string
+    resolverUtil: ResolverUtil
+    targetId: string | undefined | null
+    userId: ObjectId
+  }): string | undefined | null {
     if (isSpy) {
       const opponents = game.players.filter((player) => player.user.toString() !== userId.toString())
       if (!targetId) {
@@ -231,7 +319,18 @@ export default class PlayUnitValidation {
       }
     }
 
-    // TODO: break these out into separate methods?
+    return targetId
+  }
+
+  private static validateMedic({
+    player,
+    unit,
+    logPrefix,
+  }: {
+    player: GamePlayerDbObject
+    unit: UnitDbObject
+    logPrefix: string
+  }) {
     if (player.reviving) {
       if (unit.hero) {
         const message = `Invalid unit "${unit._id}": Cannot revive hero units.`
@@ -243,26 +342,6 @@ export default class PlayUnitValidation {
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
-    }
-
-    if (isWeather) {
-      combat = undefined
-    }
-
-    return {
-      combat,
-      deckUnit,
-      game,
-      logPrefix,
-      unit,
-      targetId,
-      roundUnits,
-      effects,
-      isDecoy: !!isDecoy,
-      isSpy: !!isSpy,
-      isWeather: !!isWeather,
-      isMedic: !!isMedic,
-      userId,
     }
   }
 }

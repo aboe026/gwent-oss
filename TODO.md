@@ -64,6 +64,7 @@ Existing problems in the codebase that need to be fixed.
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
 - potentially use `.disableConcurrency` for TestCafe fixtures?
   - `Session Expiry`? To set `SESSION_TIMEOUT_SECONDS` account setting in database. But that would slow things down considerably.
+- fix scrolling for game hand/undrawn/lost when lots of cards (why do they extend past viewport?)
 - use apollo data masking
   - ran into issue with returning empty objects (because some fragments not having ids ?)
 - enter key does not create game in UI?
@@ -125,9 +126,7 @@ Existing problems in the codebase that need to be fixed.
 New things that should be added to the codebase.
 
 - Medic
-  - ensure units pulled from undrawn (eg muster) get properly removed from it in UI
   - How to handle brought back for HistoryMove/Impact? unique per created?
-  - horizontal scrolling not working properly when lots of units in deck?
   - have undiscards just be unit id?
   - can Decoy be played if no units before it?
 - Better game summarization (graphs?)

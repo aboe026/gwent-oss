@@ -7,7 +7,34 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effects Mixed Avenger')
 
-// TODO: test decoying cow does not summon avenger
+test('Cannot summon avenger by decoying', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Ranged,
+      effectiveStrength: 0,
+    },
+  })
+})
 
 test('Summoned avenger can be decoyed and played again', async (t) => {
   const unitName1 = 'Cow'
