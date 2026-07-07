@@ -670,6 +670,7 @@ export default class TestUtil {
           ready: false,
           rounds: [],
           user: creator ? new ObjectId(creator) : new ObjectId(),
+          reviving: false,
         },
         {
           deck: {
@@ -681,6 +682,7 @@ export default class TestUtil {
           ready: false,
           rounds: [],
           user: new ObjectId(),
+          reviving: false,
         },
       ],
       round,
@@ -751,6 +753,7 @@ export default class TestUtil {
           ready: false,
           rounds: [],
           user: TestUtil.getUser({}),
+          reviving: false,
         },
       ],
       round,
@@ -1020,12 +1023,14 @@ export default class TestUtil {
     rounds = [],
     order,
     user,
+    reviving = false,
   }: {
     deck?: GameDeckDbObject
     ready?: boolean
     rounds?: PlayerRoundDbObject[]
     order?: number
     user?: ObjectId | string
+    reviving?: boolean
   }): GamePlayerDbObject {
     return {
       deck,
@@ -1033,6 +1038,7 @@ export default class TestUtil {
       rounds,
       order,
       user: user ? new ObjectId(user) : new ObjectId(),
+      reviving: reviving,
     }
   }
 
@@ -1042,12 +1048,14 @@ export default class TestUtil {
     faction,
     leader,
     rounds = [],
+    reviving = false,
   }: {
     ready?: boolean
     user?: User
     faction?: Faction
     leader?: Leader
     rounds?: PlayerRound[]
+    reviving?: boolean
   }): GamePlayer {
     return {
       ready,
@@ -1055,6 +1063,7 @@ export default class TestUtil {
       user: user || TestUtil.getUser({}),
       faction,
       leader,
+      reviving,
     }
   }
 

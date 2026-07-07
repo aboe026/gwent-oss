@@ -20,6 +20,19 @@ import UnitStore from '../../../../database/stores/unit-store'
 export default class EffectMedic {
   private static logger = getLogger('EffectAvenger')
 
+  /**
+   * Deploys medics to the battlefield and sets it into revival state if eligible, or revives eligible discarded units.
+   *
+   * @param config The configuration used to deploy the medic or revive the discarded unit.
+   * @param config.game The game the unit is being played on.
+   * @param config.newDeckUnit The new DeckUnit being deployned to the field.
+   * @param config.isMedic Whether or not the new unit being deployed to the field has the Medic effect.
+   * @param config.isSpy Whether or not the new unit being deployed to the field has the Spy effect.
+   * @param config.targetId A potential target for the new unit being deployed to the field, such as an opponent for a Spy.
+   * @param config.logPrefix What to prepend log statements with.
+   *
+   * @returns Potential medicing unit and impacts from it.
+   */
   static async deployMedicOrReviveUnit({
     game,
     newDeckUnit,
@@ -90,6 +103,18 @@ export default class EffectMedic {
     }
   }
 
+  /**
+   * Updates the last move for the player with the unit it is reviving to ensure history is preserved correctly.
+   *
+   * @param config The configuration used to update the last history Move Impact.
+   * @param config.game The game containing the last move to update.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.playerId The ID of the player who should have their last move impact updated.
+   * @param config.unitId The ID of the unit being revived to be set as the impact of the last Move.
+   * @param config.targetId The potential ID of the opponent a Spy is targeting.
+   *
+   * @returns The Medic on the field which has had its history move impact updated.
+   */
   private static updateLastMoveImpactWithUnit({
     game,
     logPrefix,

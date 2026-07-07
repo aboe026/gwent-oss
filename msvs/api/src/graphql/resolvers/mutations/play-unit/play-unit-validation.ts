@@ -342,6 +342,7 @@ export default class PlayUnitValidation {
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
+      // TODO: verify unit is in current players discard
     }
   }
 }
