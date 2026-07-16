@@ -6,6 +6,7 @@ import {
   DeckUnitDbObject,
   FieldUnitDbObject,
   GameDbObject,
+  GameUnitDbObject,
   GameUnitOrigin,
   ImpactDbObject,
   UnitDbObject,
@@ -14,11 +15,13 @@ import deepClone from '../util/deep-clone'
 import EffectAvenger from '../../src/graphql/resolvers/mutations/play-unit/effect-avenger'
 import EffectDecoy from '../../src/graphql/resolvers/mutations/play-unit/effect-decoy'
 import EffectMardroeme from '../../src/graphql/resolvers/mutations/play-unit/effect-mardroeme'
+import EffectMedic from '../../src/graphql/resolvers/mutations/play-unit/effect-medic'
 import EffectMuster, { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import EffectScorch from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import EffectSpy from '../../src/graphql/resolvers/mutations/play-unit/effect-spy'
 import EffectWeather from '../../src/graphql/resolvers/mutations/play-unit/effect-weather'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
+import { PlayersToDeckUnitDbObjects } from '../../src/graphql/resolvers/mutations/util/players-to-deck-units'
 import TestUtil from '../util/test-util'
 
 describe('battlefield-updates', () => {
@@ -4042,16 +4045,24 @@ async function testModifyBattlefieldWithNewUnit({
   isMedic = false,
   avengedUnits = [],
   avengerImpacts = {},
+  avengerUndiscarded = {},
+  avengerUnhanded = {},
   musterImpacts = {},
   musteredUnits = [],
   musteredOrigins = {},
+  medicImpacts = {},
+  medicingUnit,
   scorchImpacts = {},
+  scorchDiscards = {},
   mardroemeImpacts = {},
   mardroemeTransformedFieldUnits = [],
   mardroemeTransformedUnits = [],
   mardroemingFieldUnit,
   decoyImpacts = {},
   deckUnitAddedToHand,
+  discards = {},
+  undiscards = {},
+  unhands = {},
   weatherImpacts = {},
   spyImpacts = {},
   spiedUnitsAddedToHand = [],
@@ -4064,16 +4075,24 @@ async function testModifyBattlefieldWithNewUnit({
   isMedic?: boolean
   avengedUnits?: UnitDbObject[]
   avengerImpacts?: ImpactsByUnitId
+  avengerUndiscarded?: PlayersToDeckUnitDbObjects
+  avengerUnhanded?: PlayersToDeckUnitDbObjects
   musterImpacts?: ImpactsByUnitId
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
+  medicImpacts?: ImpactsByUnitId
+  medicingUnit?: GameUnitDbObject | undefined
   scorchImpacts?: ImpactsByUnitId
+  scorchDiscards?: PlayersToDeckUnitDbObjects
   mardroemeImpacts?: ImpactsByUnitId
   mardroemeTransformedUnits?: UnitDbObject[]
   mardroemeTransformedFieldUnits?: FieldUnitDbObject[]
   mardroemingFieldUnit?: FieldUnitDbObject
   decoyImpacts?: ImpactsByUnitId
   deckUnitAddedToHand?: DeckUnitDbObject
+  discards?: PlayersToDeckUnitDbObjects
+  undiscards?: PlayersToDeckUnitDbObjects
+  unhands?: PlayersToDeckUnitDbObjects
   weatherImpacts?: ImpactsByUnitId
   spyImpacts?: ImpactsByUnitId
   spiedUnitsAddedToHand?: DeckUnitDbObject[]
@@ -4091,10 +4110,19 @@ async function testModifyBattlefieldWithNewUnit({
     impacts: spyImpacts,
   })
   const addNewUnitToBattlefieldSpy = jest.spyOn(BattlefieldUpdates, 'addNewUnitToBattlefield').mockReturnValue()
-  const scorchBattlefieldSpy = jest.spyOn(EffectScorch, 'scorchBattlefield').mockReturnValue(scorchImpacts)
+  const medicBattlefieldSpy = jest.spyOn(EffectMedic, 'deployMedicOrReviveUnit').mockResolvedValue({
+    impacts: medicImpacts,
+    medicingUnit,
+  })
+  const scorchBattlefieldSpy = jest.spyOn(EffectScorch, 'scorchBattlefield').mockReturnValue({
+    impacts: scorchImpacts,
+    discards: scorchDiscards,
+  })
   const avengeRemovedUnitsSpy = jest.spyOn(EffectAvenger, 'avengeRemovedUnits').mockResolvedValue({
     avengedUnits: avengedUnits,
     impacts: avengerImpacts,
+    undiscarded: avengerUndiscarded,
+    unhanded: avengerUnhanded,
   })
   const musterBattlefieldSpy = jest.spyOn(EffectMuster, 'musterBattlefield').mockResolvedValue({
     impacts: musterImpacts,
@@ -4149,6 +4177,11 @@ async function testModifyBattlefieldWithNewUnit({
     decoys: decoyImpacts,
     deckUnitsAddedToHand: expectedDeckUnitsAddedToHand,
     weathers: weatherImpacts,
+    medics: medicImpacts,
+    medicingUnit,
+    undiscards,
+    unhands,
+    discards,
   })
 
   expect(addNewUnitToBattlefieldSpy.mock.calls).toEqual([
@@ -4160,6 +4193,18 @@ async function testModifyBattlefieldWithNewUnit({
         newUnit,
         weather: isWeather,
         spy: isSpy,
+      },
+    ],
+  ])
+  expect(medicBattlefieldSpy.mock.calls).toEqual([
+    [
+      {
+        game,
+        isMedic,
+        isSpy,
+        targetId,
+        logPrefix,
+        newDeckUnit,
       },
     ],
   ])
