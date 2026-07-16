@@ -1,4 +1,4 @@
-import { Document, FindOptions, ObjectId } from 'mongodb'
+import { FindOptions, ObjectId } from 'mongodb'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
 import LeaderStore, { GetLeadersInput } from '../../src/database/stores/leader-store'
@@ -265,7 +265,7 @@ async function testGet({
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
-  const options: FindOptions<Document> = {
+  const options: FindOptions = {
     collation: {
       locale: 'en',
     },

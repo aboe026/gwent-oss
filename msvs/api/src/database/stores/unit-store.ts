@@ -167,7 +167,7 @@ export default class UnitStore extends Store {
 export interface AddUnitInput {
   combats: Combat[]
   deckable?: boolean
-  dlc: ObjectId | string | null
+  dlc: ObjectId | string | undefined | null
   effects: (string | ObjectId)[]
   faction: string | ObjectId
   hero?: boolean

@@ -4039,6 +4039,7 @@ async function testModifyBattlefieldWithNewUnit({
   isDecoy = false,
   isSpy = false,
   isWeather = false,
+  isMedic = false,
   avengedUnits = [],
   avengerImpacts = {},
   musterImpacts = {},
@@ -4060,6 +4061,7 @@ async function testModifyBattlefieldWithNewUnit({
   isDecoy?: boolean
   isSpy?: boolean
   isWeather?: boolean
+  isMedic?: boolean
   avengedUnits?: UnitDbObject[]
   avengerImpacts?: ImpactsByUnitId
   musterImpacts?: ImpactsByUnitId
@@ -4130,6 +4132,7 @@ async function testModifyBattlefieldWithNewUnit({
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
     })
   ).resolves.toEqual({
     avengedUnits,

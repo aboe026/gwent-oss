@@ -1035,10 +1035,10 @@ export default class TestUtil {
     return {
       deck,
       ready,
+      reviving: reviving,
       rounds,
       order,
       user: user ? new ObjectId(user) : new ObjectId(),
-      reviving: reviving,
     }
   }
 

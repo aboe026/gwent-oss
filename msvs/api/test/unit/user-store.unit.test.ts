@@ -453,7 +453,7 @@ async function testGetByNames({
   traceEnabled,
 }: {
   name?: string
-  options?: FindOptions<Document>
+  options?: FindOptions
   readResponse: UserDbObject[]
   debugEnabled?: boolean
   traceEnabled?: boolean

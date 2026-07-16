@@ -1,12 +1,12 @@
-# Game Card Flow
+# Game Unit Lifecycle
 
-The potential lifecycle routes of a Unit during a game.
+The potential lifecycle routes of a Unit during a Game.
 
 Dotted lines denote opponent actions.
 
 ```mermaid
 ---
-title: Node with text
+title: Game Unit Lifecycle
 ---
 flowchart TB
   subgraph Self

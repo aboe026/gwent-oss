@@ -118,14 +118,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[0].close.units,
+              discard: origGame.players[0].rounds[0].close.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[0].close.units,
+              discard: origGame.players[1].rounds[0].close.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -166,14 +176,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[0].close.modifier],
+              discard: [origGame.players[0].rounds[0].close.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[0].close.modifier],
+              discard: [origGame.players[1].rounds[0].close.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -214,14 +234,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[0].ranged.units,
+              discard: origGame.players[0].rounds[0].ranged.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[0].ranged.units,
+              discard: origGame.players[1].rounds[0].ranged.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -262,14 +292,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[0].ranged.modifier],
+              discard: [origGame.players[0].rounds[0].ranged.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[0].ranged.modifier],
+              discard: [origGame.players[1].rounds[0].ranged.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -310,14 +350,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[0].siege.units,
+              discard: origGame.players[0].rounds[0].siege.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[0].siege.units,
+              discard: origGame.players[1].rounds[0].siege.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -358,14 +408,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[0].siege.modifier],
+              discard: [origGame.players[0].rounds[0].siege.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[0].siege.modifier],
+              discard: [origGame.players[1].rounds[0].siege.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -456,14 +516,30 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[0].close.units[0], origGame.players[0].rounds[0].ranged.units[0]],
+              discard: [
+                origGame.players[0].rounds[0].close.units[0],
+                origGame.players[0].rounds[0].ranged.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[0].close.units[0], origGame.players[1].rounds[0].ranged.units[0]],
+              discard: [
+                origGame.players[1].rounds[0].close.units[0],
+                origGame.players[1].rounds[0].ranged.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -510,14 +586,28 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[0].close.units[0], origGame.players[0].rounds[0].siege.units[0]],
+              discard: [origGame.players[0].rounds[0].close.units[0], origGame.players[0].rounds[0].siege.units[0]].map(
+                (unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }
+              ),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[0].close.units[0], origGame.players[1].rounds[0].siege.units[0]],
+              discard: [origGame.players[1].rounds[0].close.units[0], origGame.players[1].rounds[0].siege.units[0]].map(
+                (unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }
+              ),
             },
           },
         ],
@@ -564,14 +654,30 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[0].ranged.units[0], origGame.players[0].rounds[0].siege.units[0]],
+              discard: [
+                origGame.players[0].rounds[0].ranged.units[0],
+                origGame.players[0].rounds[0].siege.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[1].rounds[0].ranged.units[0], origGame.players[1].rounds[0].siege.units[0]],
+              discard: [
+                origGame.players[1].rounds[0].ranged.units[0],
+                origGame.players[1].rounds[0].siege.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -628,7 +734,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[0].rounds[0].close.units[0],
                 origGame.players[0].rounds[0].ranged.units[0],
                 origGame.players[0].rounds[0].siege.units[0],
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
@@ -639,7 +750,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[1].rounds[0].close.units[0],
                 origGame.players[1].rounds[0].ranged.units[0],
                 origGame.players[1].rounds[0].siege.units[0],
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -696,7 +812,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[0].rounds[0].close.modifier,
                 origGame.players[0].rounds[0].ranged.modifier,
                 origGame.players[0].rounds[0].siege.modifier,
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
@@ -707,7 +828,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[1].rounds[0].close.modifier,
                 origGame.players[1].rounds[0].ranged.modifier,
                 origGame.players[1].rounds[0].siege.modifier,
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -813,12 +939,19 @@ describe('clear-battlefield-units', () => {
               discard: [
                 origGame.players[0].deck.discard[0],
                 origGame.players[0].deck.discard[1],
-                origGame.players[0].rounds[0].close.units[0],
-                origGame.players[0].rounds[0].close.units[1],
-                origGame.players[0].rounds[0].ranged.units[0],
-                origGame.players[0].rounds[0].ranged.units[1],
-                origGame.players[0].rounds[0].siege.units[0],
-                origGame.players[0].rounds[0].siege.units[1],
+                ...[
+                  origGame.players[0].rounds[0].close.units[0],
+                  origGame.players[0].rounds[0].close.units[1],
+                  origGame.players[0].rounds[0].ranged.units[0],
+                  origGame.players[0].rounds[0].ranged.units[1],
+                  origGame.players[0].rounds[0].siege.units[0],
+                  origGame.players[0].rounds[0].siege.units[1],
+                ].map((unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }),
               ],
             },
           },
@@ -829,12 +962,19 @@ describe('clear-battlefield-units', () => {
               discard: [
                 origGame.players[1].deck.discard[0],
                 origGame.players[1].deck.discard[1],
-                origGame.players[1].rounds[0].close.units[0],
-                origGame.players[1].rounds[0].close.units[1],
-                origGame.players[1].rounds[0].ranged.units[0],
-                origGame.players[1].rounds[0].ranged.units[1],
-                origGame.players[1].rounds[0].siege.units[0],
-                origGame.players[1].rounds[0].siege.units[1],
+                ...[
+                  origGame.players[1].rounds[0].close.units[0],
+                  origGame.players[1].rounds[0].close.units[1],
+                  origGame.players[1].rounds[0].ranged.units[0],
+                  origGame.players[1].rounds[0].ranged.units[1],
+                  origGame.players[1].rounds[0].siege.units[0],
+                  origGame.players[1].rounds[0].siege.units[1],
+                ].map((unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }),
               ],
             },
           },
@@ -959,14 +1099,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[1].close.units,
+              discard: origGame.players[0].rounds[1].close.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[1].close.units,
+              discard: origGame.players[1].rounds[1].close.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1009,14 +1159,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[1].close.modifier],
+              discard: [origGame.players[0].rounds[1].close.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[1].close.modifier],
+              discard: [origGame.players[1].rounds[1].close.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -1059,14 +1219,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[1].ranged.units,
+              discard: origGame.players[0].rounds[1].ranged.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[1].ranged.units,
+              discard: origGame.players[1].rounds[1].ranged.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1109,14 +1279,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[1].ranged.modifier],
+              discard: [origGame.players[0].rounds[1].ranged.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[1].ranged.modifier],
+              discard: [origGame.players[1].rounds[1].ranged.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -1159,14 +1339,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[1].siege.units,
+              discard: origGame.players[0].rounds[1].siege.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[1].siege.units,
+              discard: origGame.players[1].rounds[1].siege.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1209,14 +1399,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[1].siege.modifier],
+              discard: [origGame.players[0].rounds[1].siege.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[1].siege.modifier],
+              discard: [origGame.players[1].rounds[1].siege.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -1311,14 +1511,30 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[1].close.units[0], origGame.players[0].rounds[1].ranged.units[0]],
+              discard: [
+                origGame.players[0].rounds[1].close.units[0],
+                origGame.players[0].rounds[1].ranged.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[1].close.units[0], origGame.players[1].rounds[1].ranged.units[0]],
+              discard: [
+                origGame.players[1].rounds[1].close.units[0],
+                origGame.players[1].rounds[1].ranged.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1367,14 +1583,28 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[1].close.units[0], origGame.players[0].rounds[1].siege.units[0]],
+              discard: [origGame.players[0].rounds[1].close.units[0], origGame.players[0].rounds[1].siege.units[0]].map(
+                (unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }
+              ),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[1].close.units[0], origGame.players[1].rounds[1].siege.units[0]],
+              discard: [origGame.players[1].rounds[1].close.units[0], origGame.players[1].rounds[1].siege.units[0]].map(
+                (unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }
+              ),
             },
           },
         ],
@@ -1423,14 +1653,30 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[1].ranged.units[0], origGame.players[0].rounds[1].siege.units[0]],
+              discard: [
+                origGame.players[0].rounds[1].ranged.units[0],
+                origGame.players[0].rounds[1].siege.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[1].rounds[1].ranged.units[0], origGame.players[1].rounds[1].siege.units[0]],
+              discard: [
+                origGame.players[1].rounds[1].ranged.units[0],
+                origGame.players[1].rounds[1].siege.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1489,7 +1735,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[0].rounds[1].close.units[0],
                 origGame.players[0].rounds[1].ranged.units[0],
                 origGame.players[0].rounds[1].siege.units[0],
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
@@ -1500,7 +1751,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[1].rounds[1].close.units[0],
                 origGame.players[1].rounds[1].ranged.units[0],
                 origGame.players[1].rounds[1].siege.units[0],
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1559,7 +1815,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[0].rounds[1].close.modifier,
                 origGame.players[0].rounds[1].ranged.modifier,
                 origGame.players[0].rounds[1].siege.modifier,
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
@@ -1570,7 +1831,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[1].rounds[1].close.modifier,
                 origGame.players[1].rounds[1].ranged.modifier,
                 origGame.players[1].rounds[1].siege.modifier,
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -1680,12 +1946,19 @@ describe('clear-battlefield-units', () => {
               discard: [
                 origGame.players[0].deck.discard[0],
                 origGame.players[0].deck.discard[1],
-                origGame.players[0].rounds[1].close.units[0],
-                origGame.players[0].rounds[1].close.units[1],
-                origGame.players[0].rounds[1].ranged.units[0],
-                origGame.players[0].rounds[1].ranged.units[1],
-                origGame.players[0].rounds[1].siege.units[0],
-                origGame.players[0].rounds[1].siege.units[1],
+                ...[
+                  origGame.players[0].rounds[1].close.units[0],
+                  origGame.players[0].rounds[1].close.units[1],
+                  origGame.players[0].rounds[1].ranged.units[0],
+                  origGame.players[0].rounds[1].ranged.units[1],
+                  origGame.players[0].rounds[1].siege.units[0],
+                  origGame.players[0].rounds[1].siege.units[1],
+                ].map((unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }),
               ],
             },
           },
@@ -1696,12 +1969,19 @@ describe('clear-battlefield-units', () => {
               discard: [
                 origGame.players[1].deck.discard[0],
                 origGame.players[1].deck.discard[1],
-                origGame.players[1].rounds[1].close.units[0],
-                origGame.players[1].rounds[1].close.units[1],
-                origGame.players[1].rounds[1].ranged.units[0],
-                origGame.players[1].rounds[1].ranged.units[1],
-                origGame.players[1].rounds[1].siege.units[0],
-                origGame.players[1].rounds[1].siege.units[1],
+                ...[
+                  origGame.players[1].rounds[1].close.units[0],
+                  origGame.players[1].rounds[1].close.units[1],
+                  origGame.players[1].rounds[1].ranged.units[0],
+                  origGame.players[1].rounds[1].ranged.units[1],
+                  origGame.players[1].rounds[1].siege.units[0],
+                  origGame.players[1].rounds[1].siege.units[1],
+                ].map((unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }),
               ],
             },
           },
@@ -1828,14 +2108,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[2].close.units,
+              discard: origGame.players[0].rounds[2].close.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[2].close.units,
+              discard: origGame.players[1].rounds[2].close.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1880,14 +2170,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[2].close.modifier],
+              discard: [origGame.players[0].rounds[2].close.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[2].close.modifier],
+              discard: [origGame.players[1].rounds[2].close.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -1932,14 +2232,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[2].ranged.units,
+              discard: origGame.players[0].rounds[2].ranged.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[2].ranged.units,
+              discard: origGame.players[1].rounds[2].ranged.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -1984,14 +2294,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[2].ranged.modifier],
+              discard: [origGame.players[0].rounds[2].ranged.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[2].ranged.modifier],
+              discard: [origGame.players[1].rounds[2].ranged.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -2036,14 +2356,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: origGame.players[0].rounds[2].siege.units,
+              discard: origGame.players[0].rounds[2].siege.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: origGame.players[1].rounds[2].siege.units,
+              discard: origGame.players[1].rounds[2].siege.units.map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -2088,14 +2418,24 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[2].siege.modifier],
+              discard: [origGame.players[0].rounds[2].siege.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[2].siege.modifier],
+              discard: [origGame.players[1].rounds[2].siege.modifier].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -2194,14 +2534,30 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[2].close.units[0], origGame.players[0].rounds[2].ranged.units[0]],
+              discard: [
+                origGame.players[0].rounds[2].close.units[0],
+                origGame.players[0].rounds[2].ranged.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[2].close.units[0], origGame.players[1].rounds[2].ranged.units[0]],
+              discard: [
+                origGame.players[1].rounds[2].close.units[0],
+                origGame.players[1].rounds[2].ranged.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -2252,14 +2608,28 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[2].close.units[0], origGame.players[0].rounds[2].siege.units[0]],
+              discard: [origGame.players[0].rounds[2].close.units[0], origGame.players[0].rounds[2].siege.units[0]].map(
+                (unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }
+              ),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[1].deck,
-              discard: [origGame.players[1].rounds[2].close.units[0], origGame.players[1].rounds[2].siege.units[0]],
+              discard: [origGame.players[1].rounds[2].close.units[0], origGame.players[1].rounds[2].siege.units[0]].map(
+                (unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }
+              ),
             },
           },
         ],
@@ -2310,14 +2680,30 @@ describe('clear-battlefield-units', () => {
             ...origGame.players[0],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[0].rounds[2].ranged.units[0], origGame.players[0].rounds[2].siege.units[0]],
+              discard: [
+                origGame.players[0].rounds[2].ranged.units[0],
+                origGame.players[0].rounds[2].siege.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
             ...origGame.players[1],
             deck: {
               ...origGame.players[0].deck,
-              discard: [origGame.players[1].rounds[2].ranged.units[0], origGame.players[1].rounds[2].siege.units[0]],
+              discard: [
+                origGame.players[1].rounds[2].ranged.units[0],
+                origGame.players[1].rounds[2].siege.units[0],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -2378,7 +2764,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[0].rounds[2].close.units[0],
                 origGame.players[0].rounds[2].ranged.units[0],
                 origGame.players[0].rounds[2].siege.units[0],
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
           {
@@ -2389,7 +2780,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[1].rounds[2].close.units[0],
                 origGame.players[1].rounds[2].ranged.units[0],
                 origGame.players[1].rounds[2].siege.units[0],
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit.artStyle,
+                  unit: unit.unit,
+                }
+              }),
             },
           },
         ],
@@ -2450,7 +2846,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[0].rounds[2].close.modifier,
                 origGame.players[0].rounds[2].ranged.modifier,
                 origGame.players[0].rounds[2].siege.modifier,
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
           {
@@ -2461,7 +2862,12 @@ describe('clear-battlefield-units', () => {
                 origGame.players[1].rounds[2].close.modifier,
                 origGame.players[1].rounds[2].ranged.modifier,
                 origGame.players[1].rounds[2].siege.modifier,
-              ],
+              ].map((unit) => {
+                return {
+                  artStyle: unit?.artStyle,
+                  unit: unit?.unit,
+                }
+              }),
             },
           },
         ],
@@ -2575,12 +2981,19 @@ describe('clear-battlefield-units', () => {
               discard: [
                 origGame.players[0].deck.discard[0],
                 origGame.players[0].deck.discard[1],
-                origGame.players[0].rounds[2].close.units[0],
-                origGame.players[0].rounds[2].close.units[1],
-                origGame.players[0].rounds[2].ranged.units[0],
-                origGame.players[0].rounds[2].ranged.units[1],
-                origGame.players[0].rounds[2].siege.units[0],
-                origGame.players[0].rounds[2].siege.units[1],
+                ...[
+                  origGame.players[0].rounds[2].close.units[0],
+                  origGame.players[0].rounds[2].close.units[1],
+                  origGame.players[0].rounds[2].ranged.units[0],
+                  origGame.players[0].rounds[2].ranged.units[1],
+                  origGame.players[0].rounds[2].siege.units[0],
+                  origGame.players[0].rounds[2].siege.units[1],
+                ].map((unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }),
               ],
             },
           },
@@ -2591,12 +3004,19 @@ describe('clear-battlefield-units', () => {
               discard: [
                 origGame.players[1].deck.discard[0],
                 origGame.players[1].deck.discard[1],
-                origGame.players[1].rounds[2].close.units[0],
-                origGame.players[1].rounds[2].close.units[1],
-                origGame.players[1].rounds[2].ranged.units[0],
-                origGame.players[1].rounds[2].ranged.units[1],
-                origGame.players[1].rounds[2].siege.units[0],
-                origGame.players[1].rounds[2].siege.units[1],
+                ...[
+                  origGame.players[1].rounds[2].close.units[0],
+                  origGame.players[1].rounds[2].close.units[1],
+                  origGame.players[1].rounds[2].ranged.units[0],
+                  origGame.players[1].rounds[2].ranged.units[1],
+                  origGame.players[1].rounds[2].siege.units[0],
+                  origGame.players[1].rounds[2].siege.units[1],
+                ].map((unit) => {
+                  return {
+                    artStyle: unit.artStyle,
+                    unit: unit.unit,
+                  }
+                }),
               ],
             },
           },

@@ -1,12 +1,17 @@
-import { Document, FindOptions, ObjectId } from 'mongodb'
+import { FindOptions, ObjectId } from 'mongodb'
 
 import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import UnitStore, { GetUnitsInput } from '../../src/database/stores/unit-store'
 
 describe('unit-store', () => {
   describe('add', () => {
-    it('calls to create', async () => {
+    it('calls to create without dlc', async () => {
       await testAdd({})
+    })
+    it('calls to create with dlc', async () => {
+      await testAdd({
+        dlc: true,
+      })
     })
     it('calls to create with trace enabled', async () => {
       await testAdd({
@@ -113,6 +118,50 @@ describe('unit-store', () => {
           name: {
             $in: names,
           },
+        },
+      })
+    })
+    it('calls to read if specials true', async () => {
+      const specials = true
+      await testGet({
+        input: {
+          specials,
+        },
+        expectedFilter: {
+          special: specials,
+        },
+      })
+    })
+    it('calls to read if specials false', async () => {
+      const specials = false
+      await testGet({
+        input: {
+          specials,
+        },
+        expectedFilter: {
+          special: specials,
+        },
+      })
+    })
+    it('calls to read if heroes true', async () => {
+      const heroes = true
+      await testGet({
+        input: {
+          heroes,
+        },
+        expectedFilter: {
+          hero: heroes,
+        },
+      })
+    })
+    it('calls to read if heroes false', async () => {
+      const heroes = false
+      await testGet({
+        input: {
+          heroes,
+        },
+        expectedFilter: {
+          hero: heroes,
         },
       })
     })
@@ -228,11 +277,11 @@ describe('unit-store', () => {
   })
 })
 
-async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
+async function testAdd({ dlc, traceEnabled }: { dlc?: boolean; traceEnabled?: boolean }) {
   const combats = [Combat.Close]
   const created = new Date()
   const deckable = true
-  const dlc = new ObjectId()
+  const dlcId = dlc ? new ObjectId() : undefined
   const effectPrefix = ''
   const effects = [new ObjectId()]
   const faction = new ObjectId()
@@ -249,7 +298,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     combats,
     created,
     deckable,
-    dlc,
+    dlc: dlcId,
     effectPrefix,
     effects,
     faction,
@@ -278,7 +327,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     UnitStore.add({
       combats,
       deckable,
-      dlc,
+      dlc: dlcId?.toString(),
       effectPrefix,
       effects,
       faction,
@@ -300,7 +349,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
         combats,
         created,
         deckable,
-        dlc,
+        dlc: dlcId,
         effectPrefix,
         effects,
         faction,
@@ -368,7 +417,7 @@ async function testGet({
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
-  const options: FindOptions<Document> = {
+  const options: FindOptions = {
     collation: {
       locale: 'en',
     },

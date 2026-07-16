@@ -120,7 +120,7 @@ async function testAddGame({
     players: [creatorId, ...opponentIds].map((playerId) =>
       TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
-          from: null as any,
+          from: undefined,
         }),
         user: playerId,
       })
