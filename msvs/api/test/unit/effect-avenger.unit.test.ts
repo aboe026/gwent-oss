@@ -153,11 +153,6 @@ describe('effect-avenger', () => {
           ],
         ],
         errorCalls: [[`${logPrefix} failed: ${message}`]],
-        debugCalls: [
-          [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
-          ],
-        ],
       })
     })
     it('throws error if multiple units found for avenging unit', async () => {
@@ -219,11 +214,6 @@ describe('effect-avenger', () => {
         errorCalls: [
           [`${logPrefix} failed: ${message}, avengerUnits: "${JSON.stringify([avengerUnit, avengerUnit])}"`],
         ],
-        debugCalls: [
-          [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
-          ],
-        ],
       })
     })
     it('throws error if removed game unit user not player on game', async () => {
@@ -284,11 +274,6 @@ describe('effect-avenger', () => {
           ],
         ],
         errorCalls: [[`${logPrefix} failed: ${message}`]],
-        debugCalls: [
-          [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${userId}"`,
-          ],
-        ],
       })
     })
     it('throws error if avenging unit does not have combat', async () => {
@@ -349,7 +334,7 @@ describe('effect-avenger', () => {
         errorCalls: [[`${logPrefix} failed: ${message}, avengerUnit: "${JSON.stringify(avengerUnit)}"`]],
         debugCalls: [
           [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Nondeck}"`,
           ],
         ],
       })
@@ -389,6 +374,8 @@ describe('effect-avenger', () => {
         expected: {
           avengedUnits: [],
           impacts: {},
+          undiscarded: {},
+          unhanded: {},
         },
       })
     })
@@ -424,6 +411,8 @@ describe('effect-avenger', () => {
         expected: {
           avengedUnits: [],
           impacts: {},
+          undiscarded: {},
+          unhanded: {},
         },
       })
     })
@@ -462,6 +451,8 @@ describe('effect-avenger', () => {
         expected: {
           avengedUnits: [],
           impacts: {},
+          undiscarded: {},
+          unhanded: {},
         },
       })
     })
@@ -506,6 +497,8 @@ describe('effect-avenger', () => {
         expected: {
           avengedUnits: [],
           impacts: {},
+          undiscarded: {},
+          unhanded: {},
         },
         getRoundUnitsCalls: [
           [
@@ -523,7 +516,7 @@ describe('effect-avenger', () => {
         ],
       })
     })
-    it('returns impact for single avenging unit with close combat', async () => {
+    it('returns impact for single avenging unit from nondeck with close combat', async () => {
       const game = TestUtil.getDbGame({
         round: 1,
         players: [
@@ -574,6 +567,8 @@ describe('effect-avenger', () => {
               }),
             ],
           },
+          undiscarded: {},
+          unhanded: {},
         },
         updatedGame: {
           ...deepClone(game),
@@ -615,12 +610,226 @@ describe('effect-avenger', () => {
         ],
         debugCalls: [
           [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Nondeck}"`,
           ],
         ],
       })
     })
-    it('returns impact for single avenging unit with ranged combat', async () => {
+    it('returns impact for single avenging unit from hand with close combat', async () => {
+      const avengeEffect = TestUtil.getDbEffect({
+        key: EffectKey.Avenger,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [avengeEffect._id],
+        effectPrefix: 'Hemdall',
+      })
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit._id,
+      })
+      const avengerUnit = TestUtil.getDbUnit({
+        name: 'Hemdall',
+        combats: [Combat.Close],
+      })
+      const handUnit = TestUtil.getDbDeckUnit({
+        id: avengerUnit._id,
+      })
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [handUnit],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+      })
+      await testAvengeRemovedUnits({
+        game,
+        battlefieldUnits: [unit],
+        logPrefix,
+        removedGameUnits: [
+          {
+            unit: gameUnit,
+            user: game.players[0].user,
+          },
+        ],
+        getEffectWithKeyResponse: avengeEffect,
+        unitStoreGetResponse: [avengerUnit],
+        expected: {
+          avengedUnits: [avengerUnit],
+          impacts: {
+            [avengerUnit._id.toString()]: [
+              TestUtil.getDbImpact({
+                unit: gameUnit,
+                user: game.players[0].user,
+                source: {
+                  origin: GameUnitOrigin.Hand,
+                },
+              }),
+            ],
+          },
+          undiscarded: {},
+          unhanded: {
+            [game.players[0].user.toString()]: [handUnit],
+          },
+        },
+        updatedGame: {
+          ...deepClone(game),
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  close: {
+                    ...game.players[0].rounds[0].close,
+                    units: [
+                      TestUtil.getDbFieldUnit({
+                        id: avengerUnit._id,
+                      }),
+                    ],
+                  },
+                },
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        getRoundUnitsCalls: [
+          [
+            {
+              game,
+              units: [unit],
+              playerId: game.players[0].user,
+            },
+          ],
+        ],
+        unitStoreGetCalls: [
+          [
+            {
+              names: [avengerUnit.name],
+            },
+          ],
+        ],
+        debugCalls: [
+          [
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Hand}"`,
+          ],
+        ],
+      })
+    })
+    it('returns impact for single avenging unit from discard with close combat', async () => {
+      const avengeEffect = TestUtil.getDbEffect({
+        key: EffectKey.Avenger,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [avengeEffect._id],
+        effectPrefix: 'Hemdall',
+      })
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit._id,
+      })
+      const avengerUnit = TestUtil.getDbUnit({
+        name: 'Hemdall',
+        combats: [Combat.Close],
+      })
+      const discardUnit = TestUtil.getDbDeckUnit({
+        id: avengerUnit._id,
+      })
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [discardUnit],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+      })
+      await testAvengeRemovedUnits({
+        game,
+        battlefieldUnits: [unit],
+        logPrefix,
+        removedGameUnits: [
+          {
+            unit: gameUnit,
+            user: game.players[0].user,
+          },
+        ],
+        getEffectWithKeyResponse: avengeEffect,
+        unitStoreGetResponse: [avengerUnit],
+        expected: {
+          avengedUnits: [avengerUnit],
+          impacts: {
+            [avengerUnit._id.toString()]: [
+              TestUtil.getDbImpact({
+                unit: gameUnit,
+                user: game.players[0].user,
+                source: {
+                  origin: GameUnitOrigin.Discard,
+                },
+              }),
+            ],
+          },
+          undiscarded: {
+            [game.players[0].user.toString()]: [discardUnit],
+          },
+          unhanded: {},
+        },
+        updatedGame: {
+          ...deepClone(game),
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  close: {
+                    ...game.players[0].rounds[0].close,
+                    units: [
+                      TestUtil.getDbFieldUnit({
+                        id: avengerUnit._id,
+                      }),
+                    ],
+                  },
+                },
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        getRoundUnitsCalls: [
+          [
+            {
+              game,
+              units: [unit],
+              playerId: game.players[0].user,
+            },
+          ],
+        ],
+        unitStoreGetCalls: [
+          [
+            {
+              names: [avengerUnit.name],
+            },
+          ],
+        ],
+        debugCalls: [
+          [
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Discard}"`,
+          ],
+        ],
+      })
+    })
+    it('returns impact for single avenging unit from nondeck with ranged combat', async () => {
       const game = TestUtil.getDbGame({
         round: 1,
         players: [
@@ -671,6 +880,8 @@ describe('effect-avenger', () => {
               }),
             ],
           },
+          undiscarded: {},
+          unhanded: {},
         },
         updatedGame: {
           ...deepClone(game),
@@ -713,12 +924,228 @@ describe('effect-avenger', () => {
         ],
         debugCalls: [
           [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Nondeck}"`,
           ],
         ],
       })
     })
-    it('returns impact for single avenging unit with siege combat', async () => {
+    it('returns impact for single avenging unit from hand with ranged combat', async () => {
+      const avengeEffect = TestUtil.getDbEffect({
+        key: EffectKey.Avenger,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [avengeEffect._id],
+        effectPrefix: 'Hemdall',
+      })
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit._id,
+      })
+      const avengerUnit = TestUtil.getDbUnit({
+        name: 'Hemdall',
+        combats: [Combat.Ranged],
+      })
+      const handUnit = TestUtil.getDbDeckUnit({
+        id: avengerUnit._id,
+      })
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [handUnit],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+      })
+      await testAvengeRemovedUnits({
+        game,
+        battlefieldUnits: [unit],
+        logPrefix,
+        removedGameUnits: [
+          {
+            unit: gameUnit,
+            user: game.players[0].user,
+          },
+        ],
+        getEffectWithKeyResponse: avengeEffect,
+        unitStoreGetResponse: [avengerUnit],
+        expected: {
+          avengedUnits: [avengerUnit],
+          impacts: {
+            [avengerUnit._id.toString()]: [
+              TestUtil.getDbImpact({
+                unit: gameUnit,
+                user: game.players[0].user,
+                source: {
+                  origin: GameUnitOrigin.Hand,
+                },
+              }),
+            ],
+          },
+          undiscarded: {},
+          unhanded: {
+            [game.players[0].user.toString()]: [handUnit],
+          },
+        },
+        updatedGame: {
+          ...deepClone(game),
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  ranged: {
+                    ...game.players[0].rounds[0].ranged,
+                    units: [
+                      TestUtil.getDbFieldUnit({
+                        id: avengerUnit._id,
+                        row: Combat.Ranged,
+                      }),
+                    ],
+                  },
+                },
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        getRoundUnitsCalls: [
+          [
+            {
+              game,
+              units: [unit],
+              playerId: game.players[0].user,
+            },
+          ],
+        ],
+        unitStoreGetCalls: [
+          [
+            {
+              names: [avengerUnit.name],
+            },
+          ],
+        ],
+        debugCalls: [
+          [
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Hand}"`,
+          ],
+        ],
+      })
+    })
+    it('returns impact for single avenging unit from discard with ranged combat', async () => {
+      const avengeEffect = TestUtil.getDbEffect({
+        key: EffectKey.Avenger,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [avengeEffect._id],
+        effectPrefix: 'Hemdall',
+      })
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit._id,
+      })
+      const avengerUnit = TestUtil.getDbUnit({
+        name: 'Hemdall',
+        combats: [Combat.Ranged],
+      })
+      const discardUnit = TestUtil.getDbDeckUnit({
+        id: avengerUnit._id,
+      })
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [discardUnit],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+      })
+      await testAvengeRemovedUnits({
+        game,
+        battlefieldUnits: [unit],
+        logPrefix,
+        removedGameUnits: [
+          {
+            unit: gameUnit,
+            user: game.players[0].user,
+          },
+        ],
+        getEffectWithKeyResponse: avengeEffect,
+        unitStoreGetResponse: [avengerUnit],
+        expected: {
+          avengedUnits: [avengerUnit],
+          impacts: {
+            [avengerUnit._id.toString()]: [
+              TestUtil.getDbImpact({
+                unit: gameUnit,
+                user: game.players[0].user,
+                source: {
+                  origin: GameUnitOrigin.Discard,
+                },
+              }),
+            ],
+          },
+          undiscarded: {
+            [game.players[0].user.toString()]: [discardUnit],
+          },
+          unhanded: {},
+        },
+        updatedGame: {
+          ...deepClone(game),
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  ranged: {
+                    ...game.players[0].rounds[0].ranged,
+                    units: [
+                      TestUtil.getDbFieldUnit({
+                        id: avengerUnit._id,
+                        row: Combat.Ranged,
+                      }),
+                    ],
+                  },
+                },
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        getRoundUnitsCalls: [
+          [
+            {
+              game,
+              units: [unit],
+              playerId: game.players[0].user,
+            },
+          ],
+        ],
+        unitStoreGetCalls: [
+          [
+            {
+              names: [avengerUnit.name],
+            },
+          ],
+        ],
+        debugCalls: [
+          [
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Discard}"`,
+          ],
+        ],
+      })
+    })
+    it('returns impact for single avenging unit from nondeck with siege combat', async () => {
       const game = TestUtil.getDbGame({
         round: 1,
         players: [
@@ -769,6 +1196,8 @@ describe('effect-avenger', () => {
               }),
             ],
           },
+          undiscarded: {},
+          unhanded: {},
         },
         updatedGame: {
           ...deepClone(game),
@@ -811,12 +1240,228 @@ describe('effect-avenger', () => {
         ],
         debugCalls: [
           [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Nondeck}"`,
           ],
         ],
       })
     })
-    it('returns impact for multiple avenging units', async () => {
+    it('returns impact for single avenging unit from hand with siege combat', async () => {
+      const avengeEffect = TestUtil.getDbEffect({
+        key: EffectKey.Avenger,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [avengeEffect._id],
+        effectPrefix: 'Hemdall',
+      })
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit._id,
+      })
+      const avengerUnit = TestUtil.getDbUnit({
+        name: 'Hemdall',
+        combats: [Combat.Siege],
+      })
+      const handUnit = TestUtil.getDbDeckUnit({
+        id: avengerUnit._id,
+      })
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              hand: [handUnit],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+      })
+      await testAvengeRemovedUnits({
+        game,
+        battlefieldUnits: [unit],
+        logPrefix,
+        removedGameUnits: [
+          {
+            unit: gameUnit,
+            user: game.players[0].user,
+          },
+        ],
+        getEffectWithKeyResponse: avengeEffect,
+        unitStoreGetResponse: [avengerUnit],
+        expected: {
+          avengedUnits: [avengerUnit],
+          impacts: {
+            [avengerUnit._id.toString()]: [
+              TestUtil.getDbImpact({
+                unit: gameUnit,
+                user: game.players[0].user,
+                source: {
+                  origin: GameUnitOrigin.Hand,
+                },
+              }),
+            ],
+          },
+          undiscarded: {},
+          unhanded: {
+            [game.players[0].user.toString()]: [handUnit],
+          },
+        },
+        updatedGame: {
+          ...deepClone(game),
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  siege: {
+                    ...game.players[0].rounds[0].siege,
+                    units: [
+                      TestUtil.getDbFieldUnit({
+                        id: avengerUnit._id,
+                        row: Combat.Siege,
+                      }),
+                    ],
+                  },
+                },
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        getRoundUnitsCalls: [
+          [
+            {
+              game,
+              units: [unit],
+              playerId: game.players[0].user,
+            },
+          ],
+        ],
+        unitStoreGetCalls: [
+          [
+            {
+              names: [avengerUnit.name],
+            },
+          ],
+        ],
+        debugCalls: [
+          [
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Hand}"`,
+          ],
+        ],
+      })
+    })
+    it('returns impact for single avenging unit from discard with siege combat', async () => {
+      const avengeEffect = TestUtil.getDbEffect({
+        key: EffectKey.Avenger,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [avengeEffect._id],
+        effectPrefix: 'Hemdall',
+      })
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit._id,
+      })
+      const avengerUnit = TestUtil.getDbUnit({
+        name: 'Hemdall',
+        combats: [Combat.Siege],
+      })
+      const discardUnit = TestUtil.getDbDeckUnit({
+        id: avengerUnit._id,
+      })
+      const game = TestUtil.getDbGame({
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [discardUnit],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+      })
+      await testAvengeRemovedUnits({
+        game,
+        battlefieldUnits: [unit],
+        logPrefix,
+        removedGameUnits: [
+          {
+            unit: gameUnit,
+            user: game.players[0].user,
+          },
+        ],
+        getEffectWithKeyResponse: avengeEffect,
+        unitStoreGetResponse: [avengerUnit],
+        expected: {
+          avengedUnits: [avengerUnit],
+          impacts: {
+            [avengerUnit._id.toString()]: [
+              TestUtil.getDbImpact({
+                unit: gameUnit,
+                user: game.players[0].user,
+                source: {
+                  origin: GameUnitOrigin.Discard,
+                },
+              }),
+            ],
+          },
+          undiscarded: {
+            [game.players[0].user.toString()]: [discardUnit],
+          },
+          unhanded: {},
+        },
+        updatedGame: {
+          ...deepClone(game),
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                {
+                  ...game.players[0].rounds[0],
+                  siege: {
+                    ...game.players[0].rounds[0].siege,
+                    units: [
+                      TestUtil.getDbFieldUnit({
+                        id: avengerUnit._id,
+                        row: Combat.Siege,
+                      }),
+                    ],
+                  },
+                },
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        getRoundUnitsCalls: [
+          [
+            {
+              game,
+              units: [unit],
+              playerId: game.players[0].user,
+            },
+          ],
+        ],
+        unitStoreGetCalls: [
+          [
+            {
+              names: [avengerUnit.name],
+            },
+          ],
+        ],
+        debugCalls: [
+          [
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Discard}"`,
+          ],
+        ],
+      })
+    })
+    it('returns impact for multiple avenging units from nondeck', async () => {
       const game = TestUtil.getDbGame({
         round: 1,
         players: [
@@ -881,6 +1526,8 @@ describe('effect-avenger', () => {
               }),
             ],
           },
+          undiscarded: {},
+          unhanded: {},
         },
         updatedGame: {
           ...deepClone(game),
@@ -949,10 +1596,10 @@ describe('effect-avenger', () => {
         ],
         debugCalls: [
           [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Nondeck}"`,
           ],
           [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[1].user}"`,
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[1].user}" from "${GameUnitOrigin.Nondeck}"`,
           ],
         ],
       })
@@ -1009,6 +1656,8 @@ describe('effect-avenger', () => {
               }),
             ],
           },
+          undiscarded: {},
+          unhanded: {},
         },
         updatedGame: {
           ...deepClone(game),
@@ -1050,7 +1699,7 @@ describe('effect-avenger', () => {
         ],
         debugCalls: [
           [
-            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}"`,
+            `${logPrefix} removed unit "${unit.name}" has avenger effect, summoning "${avengerUnit.name}" to the battlefield for player "${game.players[0].user}" from "${GameUnitOrigin.Nondeck}"`,
           ],
         ],
         traceEnabled: true,

@@ -17,8 +17,7 @@ import deepClone from '../util/deep-clone'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import GetStrongestNonHeroUnitIds from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-unit-ids'
-import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
-import ScorchBattelfield from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
+import ScorchBattelfield, { PotentialScorches } from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import TestUtil from '../util/test-util'
 
 describe('effect-scorch', () => {
@@ -79,7 +78,10 @@ describe('effect-scorch', () => {
         }),
         scorchEffect,
         game,
-        expected: {},
+        expected: {
+          discards: {},
+          impacts: {},
+        },
       })
     })
     it('calls to scorchPlayer if newDeckUnit has scorch effect with no scorchScope and first player', () => {
@@ -112,7 +114,10 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [],
+          discards: {},
+          impacts: {
+            [newDeckUnit.unit.toString()]: [],
+          },
         },
       })
     })
@@ -146,7 +151,10 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [],
+          discards: {},
+          impacts: {
+            [newDeckUnit.unit.toString()]: [],
+          },
         },
       })
     })
@@ -182,7 +190,10 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [],
+          discards: {},
+          impacts: {
+            [newDeckUnit.unit.toString()]: [],
+          },
         },
       })
     })
@@ -218,7 +229,10 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [],
+          discards: {},
+          impacts: {
+            [newDeckUnit.unit.toString()]: [],
+          },
         },
       })
     })
@@ -259,7 +273,16 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [impact1],
+          discards: {
+            [game.players[0].user.toString()]: [
+              TestUtil.getDbDeckUnit({
+                id: impact1.unit?.unit,
+              }),
+            ],
+          },
+          impacts: {
+            [newDeckUnit.unit.toString()]: [impact1],
+          },
         },
       })
     })
@@ -304,7 +327,19 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [impact1, impact2],
+          discards: {
+            [game.players[0].user.toString()]: [
+              TestUtil.getDbDeckUnit({
+                id: impact1.unit?.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: impact2.unit?.unit,
+              }),
+            ],
+          },
+          impacts: {
+            [newDeckUnit.unit.toString()]: [impact1, impact2],
+          },
         },
       })
     })
@@ -349,7 +384,19 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [impact1, impact2],
+          discards: {
+            [game.players[0].user.toString()]: [
+              TestUtil.getDbDeckUnit({
+                id: impact1.unit.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: impact2.unit.unit,
+              }),
+            ],
+          },
+          impacts: {
+            [newDeckUnit.unit.toString()]: [impact1, impact2],
+          },
         },
       })
     })
@@ -405,7 +452,25 @@ describe('effect-scorch', () => {
           ],
         ],
         expected: {
-          [newDeckUnit.unit.toString()]: [impact1, impact2, impact3, impact4],
+          discards: {
+            [game.players[0].user.toString()]: [
+              TestUtil.getDbDeckUnit({
+                id: impact1.unit.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: impact2.unit.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: impact3.unit.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: impact4.unit.unit,
+              }),
+            ],
+          },
+          impacts: {
+            [newDeckUnit.unit.toString()]: [impact1, impact2, impact3, impact4],
+          },
         },
       })
     })
@@ -440,168 +505,88 @@ describe('effect-scorch', () => {
         ],
         traceEnabled: true,
         expected: {
-          [newDeckUnit.unit.toString()]: [],
+          discards: {},
+          impacts: {
+            [newDeckUnit.unit.toString()]: [],
+          },
         },
       })
     })
   })
   describe('scorchPlayer', () => {
     const logPrefix = 'log-prefix'
-    describe('scorchingUnit', () => {
-      it('does not move scorchingDeckUnit to discard if name is Scorch and not turn', () => {
-        const player = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const scorchingUnit = TestUtil.getDbUnit({
-          name: 'Scorch',
-        })
-        const scorchingDeckUnit = TestUtil.getDbDeckUnit({
-          id: scorchingUnit._id,
-        })
-        testScorchPlayer({
-          logPrefix,
-          player,
-          scorchingDeckUnit,
-          scorchingUnit,
-          turn: new ObjectId(),
-          callScorchUnitsForPlayer: true,
-        })
+    it('calls to scorchUnitsForPlayer if scorchingUnit has no scorchScope and turn', () => {
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
       })
-      it('does not move scorchingDeckUnit to discard if name is not Scorch and turn', () => {
-        const player = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const scorchingUnit = TestUtil.getDbUnit({})
-        const scorchingDeckUnit = TestUtil.getDbDeckUnit({
-          id: scorchingUnit._id,
-        })
-        testScorchPlayer({
-          logPrefix,
-          player,
-          scorchingDeckUnit,
-          scorchingUnit,
-          turn: player.user,
-          callScorchUnitsForPlayer: true,
-        })
-      })
-      it('moves scorchingDeckUnit to discard if name is Scorch and turn', () => {
-        const player = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const scorchingUnit = TestUtil.getDbUnit({
-          name: 'Scorch',
-        })
-        const scorchingDeckUnit = TestUtil.getDbDeckUnit({
-          id: scorchingUnit._id,
-        })
-        const origPlayer = deepClone(player)
-        testScorchPlayer({
-          logPrefix,
-          player,
-          scorchingDeckUnit,
-          scorchingUnit,
-          turn: player.user,
-          callScorchUnitsForPlayer: true,
-          changedPlayer: {
-            ...origPlayer,
-            deck: {
-              ...origPlayer.deck,
-              discard: [scorchingDeckUnit],
-            },
+      const scorchingUnit = TestUtil.getDbUnit({})
+      testScorchPlayer({
+        logPrefix,
+        player,
+        scorchingUnit,
+        turn: player.user,
+        impacts: [
+          {
+            unit: TestUtil.getDbGameUnit({}),
+            user: new ObjectId(),
           },
-        })
+        ],
+        callScorchUnitsForPlayer: true,
       })
     })
-    describe('scorchablePlayer', () => {
-      it('calls to scorchUnitsForPlayer if scorchingUnit has no scorchScope and turn', () => {
-        const player = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const scorchingUnit = TestUtil.getDbUnit({})
-        const scorchingDeckUnit = TestUtil.getDbDeckUnit({
-          id: scorchingUnit._id,
-        })
-        testScorchPlayer({
-          logPrefix,
-          player,
-          scorchingDeckUnit,
-          scorchingUnit,
-          turn: player.user,
-          impacts: [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: new ObjectId(),
-            },
-          ],
-          callScorchUnitsForPlayer: true,
-        })
+    it('calls to scorchUnitsForPlayer if scorchingUnit has no scorchScope and not turn', () => {
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
       })
-      it('calls to scorchUnitsForPlayer if scorchingUnit has no scorchScope and not turn', () => {
-        const player = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const scorchingUnit = TestUtil.getDbUnit({})
-        const scorchingDeckUnit = TestUtil.getDbDeckUnit({
-          id: scorchingUnit._id,
-        })
-        testScorchPlayer({
-          logPrefix,
-          player,
-          scorchingDeckUnit,
-          scorchingUnit,
-          turn: new ObjectId(),
-          impacts: [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: new ObjectId(),
-            },
-          ],
-          callScorchUnitsForPlayer: true,
-        })
+      const scorchingUnit = TestUtil.getDbUnit({})
+      testScorchPlayer({
+        logPrefix,
+        player,
+        scorchingUnit,
+        turn: new ObjectId(),
+        impacts: [
+          {
+            unit: TestUtil.getDbGameUnit({}),
+            user: new ObjectId(),
+          },
+        ],
+        callScorchUnitsForPlayer: true,
       })
-      it('calls to scorchUnitsForPlayer if scorchingUnit has scorchScope and not turn', () => {
-        const player = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const scorchingUnit = TestUtil.getDbUnit({
-          scorchScope: Combat.Close,
-        })
-        const scorchingDeckUnit = TestUtil.getDbDeckUnit({
-          id: scorchingUnit._id,
-        })
-        testScorchPlayer({
-          logPrefix,
-          player,
-          scorchingDeckUnit,
-          scorchingUnit,
-          turn: new ObjectId(),
-          impacts: [
-            {
-              unit: TestUtil.getDbGameUnit({}),
-              user: new ObjectId(),
-            },
-          ],
-          callScorchUnitsForPlayer: true,
-        })
+    })
+    it('calls to scorchUnitsForPlayer if scorchingUnit has scorchScope and not turn', () => {
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
       })
-      it('does not call to scorchUnitsForPlayer if scorchingUnit has scorchScope and turn', () => {
-        const player = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const scorchingUnit = TestUtil.getDbUnit({
-          scorchScope: Combat.Close,
-        })
-        const scorchingDeckUnit = TestUtil.getDbDeckUnit({
-          id: scorchingUnit._id,
-        })
-        testScorchPlayer({
-          logPrefix,
-          player,
-          scorchingDeckUnit,
-          scorchingUnit,
-          turn: player.user,
-          callScorchUnitsForPlayer: false,
-        })
+      const scorchingUnit = TestUtil.getDbUnit({
+        scorchScope: Combat.Close,
+      })
+      testScorchPlayer({
+        logPrefix,
+        player,
+        scorchingUnit,
+        turn: new ObjectId(),
+        impacts: [
+          {
+            unit: TestUtil.getDbGameUnit({}),
+            user: new ObjectId(),
+          },
+        ],
+        callScorchUnitsForPlayer: true,
+      })
+    })
+    it('does not call to scorchUnitsForPlayer if scorchingUnit has scorchScope and turn', () => {
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        scorchScope: Combat.Close,
+      })
+      testScorchPlayer({
+        logPrefix,
+        player,
+        scorchingUnit,
+        turn: player.user,
+        callScorchUnitsForPlayer: false,
       })
     })
   })
@@ -724,7 +709,11 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -766,7 +755,11 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -808,7 +801,11 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -854,7 +851,14 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch1, fieldUnitToScorch2],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch1.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch2.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -909,7 +913,14 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch1, fieldUnitToScorch2],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch1.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch2.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -964,7 +975,14 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch1, fieldUnitToScorch2],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch1.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch2.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -1029,7 +1047,17 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch1, fieldUnitToScorch2, fieldUnitToScorch3],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch1.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch2.unit,
+              }),
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch3.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -1085,7 +1113,11 @@ describe('effect-scorch', () => {
           ...origPlayer,
           deck: {
             ...origPlayer.deck,
-            discard: [fieldUnitToScorch],
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: fieldUnitToScorch.unit,
+              }),
+            ],
           },
         },
         expected: [
@@ -1501,7 +1533,7 @@ function testScorchBattlefield({
   game: GameDbObject
   newDeckUnit: DeckUnitDbObject
   scorchPlayerResponses?: ImpactDbObject[][]
-  expected: ImpactsByUnitId | Error
+  expected: PotentialScorches | Error
   getFieldUnitsCalls?: any[][]
   errorCalls?: string[][]
   traceEnabled?: boolean
@@ -1602,7 +1634,6 @@ function testScorchBattlefield({
             turn: game.turn,
             logPrefix: `${logPrefix} player "${player.user}"`,
             scorchingUnit: newUnit,
-            scorchingDeckUnit: newDeckUnit,
             strongestUnitIdsOnBattlefield: strongestFieldUnits.map((fieldUnit) => fieldUnit.unit.toString()),
           },
         ])
@@ -1642,7 +1673,6 @@ function testScorchPlayer({
   turn,
   logPrefix,
   scorchingUnit,
-  scorchingDeckUnit,
   changedPlayer,
   impacts = [],
   callScorchUnitsForPlayer,
@@ -1651,7 +1681,6 @@ function testScorchPlayer({
   turn: ObjectId | undefined
   logPrefix: string
   scorchingUnit: UnitDbObject
-  scorchingDeckUnit: DeckUnitDbObject
   changedPlayer?: GamePlayerDbObject
   impacts?: ImpactDbObject[]
   callScorchUnitsForPlayer: boolean
@@ -1672,7 +1701,6 @@ function testScorchPlayer({
       logPrefix,
       player,
       round,
-      scorchingDeckUnit,
       scorchingUnit,
       strongestUnitIdsOnBattlefield,
       turn,

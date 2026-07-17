@@ -408,7 +408,7 @@ export default class EffectScorch {
   }
 }
 
-interface PotentialScorches {
+export interface PotentialScorches {
   impacts: ImpactsByUnitId
   discards: PlayersToDeckUnitDbObjects
 }

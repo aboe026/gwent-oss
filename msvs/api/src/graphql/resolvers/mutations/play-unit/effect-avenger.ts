@@ -105,9 +105,6 @@ export default class EffectAvenger {
                 `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, but "${avengerName}" already on the battlefield`
               )
             } else {
-              EffectAvenger.logger.debug(
-                `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, summoning "${avengerName}" to the battlefield for player "${removedGameUnit.user}"`
-              )
               let origin = GameUnitOrigin.Nondeck
               const avengerUnits = await UnitStore.get({
                 names: [avengerName],
@@ -138,10 +135,7 @@ export default class EffectAvenger {
               )
               if (existingHandIndex >= 0) {
                 origin = GameUnitOrigin.Hand
-                if (!unhanded[player.user.toString()]) {
-                  unhanded[player.user.toString()] = []
-                }
-                unhanded[player.user.toString()].push(player.deck.hand[existingHandIndex])
+                unhanded[player.user.toString()] = [player.deck.hand[existingHandIndex]]
                 player.deck.hand.splice(existingHandIndex, 1)
               } else {
                 const existingDiscardIndex = player.deck.discard.findIndex(
@@ -149,10 +143,7 @@ export default class EffectAvenger {
                 )
                 if (existingDiscardIndex >= 0) {
                   origin = GameUnitOrigin.Discard
-                  if (!undiscarded[player.user.toString()]) {
-                    undiscarded[player.user.toString()] = []
-                  }
-                  undiscarded[player.user.toString()].push(player.deck.discard[existingDiscardIndex])
+                  undiscarded[player.user.toString()] = [player.deck.discard[existingDiscardIndex]]
                   player.deck.discard.splice(existingDiscardIndex, 1)
                 }
               }

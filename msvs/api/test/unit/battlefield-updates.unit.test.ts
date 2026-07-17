@@ -99,6 +99,8 @@ describe('battlefield-updates', () => {
     })
     it('returns single impact for scorch', () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const playerId = new ObjectId().toString()
+      const discard = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -111,10 +113,22 @@ describe('battlefield-updates', () => {
         scorchImpacts: {
           [newDeckUnit.unit.toString()]: impacts,
         },
+        scorchDiscards: {
+          [playerId]: [discard],
+        },
+        discards: {
+          [playerId]: [discard],
+        },
       })
     })
     it('returns multiple impacts for scorch', async () => {
       const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const playerId1 = new ObjectId().toString()
+      const playerId2 = new ObjectId().toString()
+      const discard1 = TestUtil.getDbDeckUnit({})
+      const discard2 = TestUtil.getDbDeckUnit({})
+      const discard3 = TestUtil.getDbDeckUnit({})
+      const discard4 = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -131,6 +145,31 @@ describe('battlefield-updates', () => {
         scorchImpacts: {
           [newDeckUnit.unit.toString()]: impacts,
         },
+        scorchDiscards: {
+          [playerId1]: [discard1, discard2],
+          [playerId2]: [discard3, discard4],
+        },
+        discards: {
+          [playerId1]: [discard1, discard2],
+          [playerId2]: [discard3, discard4],
+        },
+      })
+    })
+    it('returns single impact for medic', () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      testModifyBattlefieldWithNewUnit({
+        newDeckUnit,
+        newUnit: TestUtil.getDbUnit({}),
+        medicImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
+        medicingUnit: TestUtil.getDbGameUnit({}),
       })
     })
     it('returns single impact for avenger', () => {
@@ -143,6 +182,9 @@ describe('battlefield-updates', () => {
           user: new ObjectId(),
         },
       ]
+      const playerId = new ObjectId().toString()
+      const undiscard = TestUtil.getDbDeckUnit({})
+      const unhanded = TestUtil.getDbDeckUnit({})
       testModifyBattlefieldWithNewUnit({
         newDeckUnit,
         newUnit: TestUtil.getDbUnit({}),
@@ -158,6 +200,18 @@ describe('battlefield-updates', () => {
           [newDeckUnit.unit.toString()]: impacts,
         },
         avengedUnits: [avengerUnit],
+        avengerUndiscarded: {
+          [playerId]: [undiscard],
+        },
+        avengerUnhanded: {
+          [playerId]: [unhanded],
+        },
+        undiscards: {
+          [playerId]: [undiscard],
+        },
+        unhands: {
+          [playerId]: [unhanded],
+        },
       })
     })
     it('returns multiple impacts for avengers', () => {
@@ -176,6 +230,16 @@ describe('battlefield-updates', () => {
           user: new ObjectId(),
         },
       ]
+      const playerId1 = new ObjectId().toString()
+      const playerId2 = new ObjectId().toString()
+      const undiscard1 = TestUtil.getDbDeckUnit({})
+      const undiscard2 = TestUtil.getDbDeckUnit({})
+      const undiscard3 = TestUtil.getDbDeckUnit({})
+      const undiscard4 = TestUtil.getDbDeckUnit({})
+      const unhanded1 = TestUtil.getDbDeckUnit({})
+      const unhanded2 = TestUtil.getDbDeckUnit({})
+      const unhanded3 = TestUtil.getDbDeckUnit({})
+      const unhanded4 = TestUtil.getDbDeckUnit({})
       testModifyBattlefieldWithNewUnit({
         newDeckUnit,
         newUnit: TestUtil.getDbUnit({}),
@@ -195,6 +259,22 @@ describe('battlefield-updates', () => {
           [newDeckUnit.unit.toString()]: impacts,
         },
         avengedUnits: [avengerUnit1, avengerUnit2],
+        avengerUndiscarded: {
+          [playerId1]: [undiscard1, undiscard2],
+          [playerId2]: [undiscard3, undiscard4],
+        },
+        avengerUnhanded: {
+          [playerId1]: [unhanded1, unhanded2],
+          [playerId2]: [unhanded3, unhanded4],
+        },
+        undiscards: {
+          [playerId1]: [undiscard1, undiscard2],
+          [playerId2]: [undiscard3, undiscard4],
+        },
+        unhands: {
+          [playerId1]: [unhanded1, unhanded2],
+          [playerId2]: [unhanded3, unhanded4],
+        },
       })
     })
     it('returns single impact for mardroeme', async () => {
@@ -505,6 +585,65 @@ describe('battlefield-updates', () => {
                 deck: {
                   ...origGame.players[0].deck,
                   hand: [],
+                },
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
                 },
                 rounds: [
                   {
@@ -850,6 +989,73 @@ describe('battlefield-updates', () => {
                 deck: {
                   ...origGame.players[0].deck,
                   hand: [origGame.players[0].deck.hand[0]],
+                },
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        origGame.players[0].rounds[0].close.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbFieldUnit({})],
+                }),
+              }),
+            ],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [origGame.players[0].deck.discard[0]],
                 },
                 rounds: [
                   {
@@ -1228,6 +1434,66 @@ describe('battlefield-updates', () => {
             expected,
           })
         })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
+                },
+                rounds: [
+                  origGame.players[0].rounds[0],
+                  {
+                    ...origGame.players[0].rounds[1],
+                    close: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
         it('removes from hand and adds it to modifier for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({
@@ -1530,6 +1796,65 @@ describe('battlefield-updates', () => {
                 deck: {
                   ...origGame.players[0].deck,
                   hand: [],
+                },
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
                 },
                 rounds: [
                   {
@@ -1875,6 +2200,73 @@ describe('battlefield-updates', () => {
                 deck: {
                   ...origGame.players[0].deck,
                   hand: [origGame.players[0].deck.hand[0]],
+                },
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        origGame.players[0].rounds[0].ranged.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbFieldUnit({})],
+                }),
+              }),
+            ],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [origGame.players[0].deck.discard[0]],
                 },
                 rounds: [
                   {
@@ -2253,6 +2645,66 @@ describe('battlefield-updates', () => {
             expected,
           })
         })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
+                },
+                rounds: [
+                  origGame.players[0].rounds[0],
+                  {
+                    ...origGame.players[0].rounds[1],
+                    ranged: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
         it('removes from hand and adds it to modifier for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({
@@ -2555,6 +3007,65 @@ describe('battlefield-updates', () => {
                 deck: {
                   ...origGame.players[0].deck,
                   hand: [],
+                },
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
                 },
                 rounds: [
                   {
@@ -2900,6 +3411,73 @@ describe('battlefield-updates', () => {
                 deck: {
                   ...origGame.players[0].deck,
                   hand: [origGame.players[0].deck.hand[0]],
+                },
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        origGame.players[0].rounds[0].siege.units[0],
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbFieldUnit({})],
+                }),
+              }),
+            ],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [origGame.players[0].deck.discard[0]],
                 },
                 rounds: [
                   {
@@ -3278,6 +3856,66 @@ describe('battlefield-updates', () => {
             expected,
           })
         })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
+                },
+                rounds: [
+                  origGame.players[0].rounds[0],
+                  {
+                    ...origGame.players[0].rounds[1],
+                    siege: TestUtil.getDbPlayerCombatRow({
+                      units: [
+                        TestUtil.getDbFieldUnit({
+                          artStyle: newDeckUnit.artStyle,
+                          id: newDeckUnit.unit,
+                          row: combat,
+                        }),
+                      ],
+                    }),
+                  },
+                ],
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
         it('removes from hand and adds it to modifier for round for first player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({
@@ -3594,6 +4232,51 @@ describe('battlefield-updates', () => {
             expected,
           })
         })
+        it('removes from discard and does not add it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
+                },
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
         it('removes from hand and adds it to row for round for second player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -3797,6 +4480,59 @@ describe('battlefield-updates', () => {
             expected,
           })
         })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({}),
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [TestUtil.getDbFieldUnit({})],
+                }),
+              }),
+            ],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 1,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [origGame.players[0].deck.discard[0]],
+                },
+                rounds: origGame.players[0].rounds,
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
         it('removes from hand and adds it to row for round for second player', () => {
           const newDeckUnit = TestUtil.getDbDeckUnit({})
           const newUnit = TestUtil.getDbUnit({})
@@ -3971,6 +4707,52 @@ describe('battlefield-updates', () => {
                 deck: {
                   ...origGame.players[0].deck,
                   hand: [],
+                },
+                rounds: origGame.players[0].rounds,
+              },
+              origGame.players[1],
+            ],
+          }
+
+          testAddNewUnitToBattlefield({
+            combat,
+            game,
+            newDeckUnit,
+            newUnit,
+            expected,
+          })
+        })
+        it('removes from discard and adds it to row for round for first player when reviving', () => {
+          const newDeckUnit = TestUtil.getDbDeckUnit({})
+          const newUnit = TestUtil.getDbUnit({})
+          const self = TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              discard: [
+                TestUtil.getDbDeckUnit({
+                  id: newDeckUnit.unit,
+                }),
+              ],
+            }),
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          })
+          const opponent = TestUtil.getDbGamePlayer({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+          const game = TestUtil.getDbGame({
+            players: [self, opponent],
+            round: 2,
+            turn: self.user,
+          })
+          const origGame = deepClone(game)
+          const expected = {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                deck: {
+                  ...origGame.players[0].deck,
+                  discard: [],
                 },
                 rounds: origGame.players[0].rounds,
               },
