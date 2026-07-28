@@ -7,7 +7,7 @@ import EventManager from '../../../event-manager'
 import { Game } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../../types/game-deck-resolver'
 import GameResolver from '../../types/game-resolver'
-import { IntermediateUnitPlayedOnGame, UnitPlayedFromDeckPayload } from '../../subscription-resolver'
+import { UnitPlayedFromDeckPayload } from '../../subscription-resolver'
 import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 import PlayersToDeckUnitsResolver from '../../types/players-to-deck-units-resolver'
 import { PubSubEvents } from '@gwent/constants'
@@ -82,14 +82,11 @@ export default class PlayUnitResolution {
       unitPlayedOnGame: {
         game: resolvedGame,
         unit: resolvedUnit,
-        discarded: [], // to be scoped by subscription user later based off "discarded: resolvedDiscards"
-        undiscarded: [], // to be scoped by subscription user later based off "undiscarded: resolvedUndiscards"
-        unhanded: [], // to be scoped by subscription user later based off "unhanded: resolvedUnhands"
+        discarded: resolvedDiscards,
+        undiscarded: resolvedUndiscards,
+        unhanded: resolvedUnhands,
       },
-      discarded: resolvedDiscards,
-      undiscarded: resolvedUndiscards,
-      unhanded: resolvedUnhands,
-    } as IntermediateUnitPlayedOnGame)
+    })
 
     const handed = await DeckUnitResolver.fromArray({
       deckUnits: handDeckUnitsAdded,

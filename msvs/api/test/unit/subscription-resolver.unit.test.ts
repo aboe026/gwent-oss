@@ -29,7 +29,7 @@ describe('subscription-resolver', () => {
       const asyncIteratorSpy = jest.spyOn(EventManager.pubsub, 'asyncIterableIterator').mockReturnValue('' as any)
       const filterDeckOwnerSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckOwner').mockResolvedValue('')
       const filterPlayerOnGameSpy = jest.spyOn(SubscriptionResolver as any, 'filterPlayerOnGame').mockResolvedValue('')
-      const hideImpactUnitsSpy = jest.spyOn(SubscriptionResolver as any, 'hideImpactUnits').mockReturnValue({})
+      const scopeToUserSpy = jest.spyOn(SubscriptionResolver as any, 'scopeToUser').mockReturnValue({})
       const result = SubscriptionResolver.getResolvers()
       expect(result).toEqual({
         deckAdded: {
@@ -319,7 +319,7 @@ describe('subscription-resolver', () => {
             },
           ],
         ])
-        expect(hideImpactUnitsSpy.mock.calls).toEqual([
+        expect(scopeToUserSpy.mock.calls).toEqual([
           [
             {
               ctx: context,
@@ -516,13 +516,13 @@ describe('subscription-resolver', () => {
       })
     })
   })
-  describe('hideImpactUnits', () => {
+  describe('scopeToUser', () => {
     it('throws error if no user on context', () => {
       const payload = {
         testSubscriptionName: TestUtil.getGame({}),
       }
       const message = `Could not find user in context for subscription "testSubscriptionName"`
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {},
         },
@@ -537,7 +537,7 @@ describe('subscription-resolver', () => {
         testSubscriptionName: undefined,
       }
       const message = `Could not find game in payload for subscription "testSubscriptionName"`
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {
             user: TestUtil.getDbUser({}),
@@ -551,7 +551,7 @@ describe('subscription-resolver', () => {
     })
     it('returns masked game if no errors without nestedGamePath', () => {
       const maskedGame = TestUtil.getGame({})
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {
             user: TestUtil.getDbUser({}),
@@ -567,7 +567,7 @@ describe('subscription-resolver', () => {
     })
     it('returns masked game if no errors with nestedGamePath', () => {
       const maskedGame = TestUtil.getGame({})
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {
             user: TestUtil.getDbUser({}),
@@ -598,7 +598,7 @@ describe('subscription-resolver', () => {
         },
       }
       const maskedGame = TestUtil.getGame({})
-      testHideImpactUnits({
+      testScopeToUser({
         ctx,
         payload,
         subscriptionName: 'testSubscriptionName',
@@ -609,9 +609,9 @@ describe('subscription-resolver', () => {
         },
         traceEnabled: true,
         traceCalls: [
-          [`testSubscriptionName hideImpactUnits payload: "${JSON.stringify(payload)}"`],
-          [`testSubscriptionName hideImpactUnits ctx: "${JSON.stringify(ctx)}"`],
-          [`testSubscriptionName hideImpactUnits nestedGamePath: "testNestedGamePath"`],
+          [`testSubscriptionName scopeToUser payload: "${JSON.stringify(payload)}"`],
+          [`testSubscriptionName scopeToUser ctx: "${JSON.stringify(ctx)}"`],
+          [`testSubscriptionName scopeToUser nestedGamePath: "testNestedGamePath"`],
         ],
       })
     })
@@ -790,7 +790,7 @@ function testFilterPlayerOnGame({
   )
 }
 
-function testHideImpactUnits({
+function testScopeToUser({
   payload,
   ctx,
   subscriptionName,
@@ -828,7 +828,7 @@ function testHideImpactUnits({
 
   if (expected instanceof Error) {
     expect(() =>
-      SubscriptionResolver['hideImpactUnits']({
+      SubscriptionResolver['scopeToUser']({
         ctx,
         payload,
         subscriptionName,
@@ -837,7 +837,7 @@ function testHideImpactUnits({
     ).toThrow(expected)
   } else {
     expect(
-      SubscriptionResolver['hideImpactUnits']({
+      SubscriptionResolver['scopeToUser']({
         ctx,
         payload,
         subscriptionName,

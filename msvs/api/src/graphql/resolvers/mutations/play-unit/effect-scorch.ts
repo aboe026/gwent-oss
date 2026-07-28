@@ -70,10 +70,7 @@ export default class EffectScorch {
         throw Error(message)
       }
       player.deck.discard.push(newDeckUnit)
-      if (!discards[player.user.toString()]) {
-        discards[player.user.toString()] = []
-      }
-      discards[player.user.toString()].push(newDeckUnit)
+      discards[player.user.toString()] = [newDeckUnit]
     }
 
     const scorchEffect = GetEffectWithKey.getEffectWithKey({

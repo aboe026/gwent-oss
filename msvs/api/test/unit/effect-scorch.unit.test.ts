@@ -54,6 +54,40 @@ describe('effect-scorch', () => {
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
+    it('throws error if player not found on game', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+        name: 'Scorch',
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: new ObjectId(),
+        round: 1,
+      })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
+      const message = `Could not find player "${game.turn}" on game for scorching new deck unit "${newDeckUnit.unit}".`
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit,
+        scorchEffect,
+        game,
+        scorchPlayerResponses: [[impact1], []],
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
     it('does not call to scorchPlayer if newDeckUnit does not have scorch effect', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
@@ -471,6 +505,115 @@ describe('effect-scorch', () => {
           impacts: {
             [newDeckUnit.unit.toString()]: [impact1, impact2, impact3, impact4],
           },
+        },
+      })
+    })
+    it('does not add to discards if scorch does not have unit', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
+      const impact1: ImpactDbObject = {
+        user: self.user,
+      }
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit,
+        scorchEffect,
+        game,
+        scorchPlayerResponses: [[impact1], []],
+        getFieldUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              rounds: [game.players[1].rounds[game.round - 1]],
+            },
+          ],
+        ],
+        expected: {
+          discards: {},
+          impacts: {
+            [newDeckUnit.unit.toString()]: [impact1],
+          },
+        },
+      })
+    })
+    it('moves to discard if unit named Scorch', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+        name: 'Scorch',
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
+      const newDeckUnit = TestUtil.getDbDeckUnit({
+        id: unit._id,
+      })
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: self.user,
+      }
+      const origGame = deepClone(game)
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit,
+        scorchEffect,
+        game,
+        scorchPlayerResponses: [[impact1], []],
+        getFieldUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              rounds: [game.players[1].rounds[game.round - 1]],
+            },
+          ],
+        ],
+        expected: {
+          discards: {
+            [game.players[0].user.toString()]: [
+              newDeckUnit,
+              TestUtil.getDbDeckUnit({
+                id: impact1.unit?.unit,
+              }),
+            ],
+          },
+          impacts: {
+            [newDeckUnit.unit.toString()]: [impact1],
+          },
+        },
+        updatedGame: {
+          ...origGame,
+          players: [
+            {
+              ...origGame.players[0],
+              deck: {
+                ...origGame.players[0].deck,
+                discard: [newDeckUnit],
+              },
+            },
+            origGame.players[1],
+          ],
         },
       })
     })
@@ -1523,6 +1666,7 @@ function testScorchBattlefield({
   newDeckUnit,
   scorchPlayerResponses,
   expected,
+  updatedGame,
   getFieldUnitsCalls = [],
   errorCalls = [],
   traceEnabled,
@@ -1534,6 +1678,7 @@ function testScorchBattlefield({
   newDeckUnit: DeckUnitDbObject
   scorchPlayerResponses?: ImpactDbObject[][]
   expected: PotentialScorches | Error
+  updatedGame?: GameDbObject
   getFieldUnitsCalls?: any[][]
   errorCalls?: string[][]
   traceEnabled?: boolean
@@ -1573,6 +1718,7 @@ function testScorchBattlefield({
       }
     }
   }
+  updatedGame = updatedGame || deepClone(game)
 
   if (expected instanceof Error) {
     expect(() =>
@@ -1594,6 +1740,7 @@ function testScorchBattlefield({
         newDeckUnit,
       })
     ).toEqual(expected)
+    expect(game).toEqual(updatedGame)
   }
 
   expect(getEffectWithKeySpy.mock.calls).toEqual(

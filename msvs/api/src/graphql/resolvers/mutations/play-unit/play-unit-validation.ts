@@ -117,26 +117,18 @@ export default class PlayUnitValidation {
         ids: unit.effects,
       })
     }
-    const isDecoy = effects && effects.some((effect) => effect.key === EffectKey.Decoy)
-    const isSpy = effects && effects.some((effect) => effect.key === EffectKey.Spy)
-    const isWeather = effects && effects.some((effect) => effect.key === EffectKey.Weather)
-    const isMedic = effects && effects.some((effect) => effect.key === EffectKey.Medic)
+    const isDecoy = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Decoy))
+    const isSpy = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Spy))
+    const isWeather = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Weather))
+    const isMedic = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Medic))
 
-    if (!isDecoy && !isWeather) {
-      if (unit.combats && unit.combats.length > 1 && !combat) {
-        const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
-        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
-        throw new PresentableError(message)
-      }
-      if (unit.combats && unit.combats.length > 0 && combat && !unit.combats.includes(combat)) {
-        const message = `Combat "${combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
-        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
-        throw new PresentableError(message)
-      }
-      if (unit.combats && unit.combats.length === 1 && !combat) {
-        combat = unit.combats[0] as Combat
-      }
-    }
+    combat = PlayUnitValidation.validateCombat({
+      combat,
+      isDecoy,
+      isWeather,
+      logPrefix,
+      unit,
+    })
 
     if (unit.modifier) {
       const round = player.rounds[game.round - 1]
@@ -192,6 +184,64 @@ export default class PlayUnitValidation {
     }
   }
 
+  /**
+   * Validates inputs for Combat.
+   *
+   * @param config The configuration used to validate the Combat.
+   * @param config.combat The Combat row the unit is for.
+   * @param config.isDecoy Whether or not the unit being played is a Decoy.
+   * @param config.isWeather Whether or not the unit being played is has the Weather effect.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.unit The new Unit being played.
+   * @returns The combat row the decoy is being deployed to as well as all the Unit database objects on the battlefield.
+   */
+  private static validateCombat({
+    isDecoy,
+    isWeather,
+    unit,
+    combat,
+    logPrefix,
+  }: {
+    isDecoy: boolean
+    isWeather: boolean
+    unit: UnitDbObject
+    combat: Combat | null | undefined
+    logPrefix: string
+  }): Combat | null | undefined {
+    if (!isDecoy && !isWeather) {
+      if (unit.combats && unit.combats.length > 1 && !combat) {
+        const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (unit.combats && unit.combats.length > 0 && combat && !unit.combats.includes(combat)) {
+        const message = `Combat "${combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (unit.combats && unit.combats.length === 1 && !combat) {
+        return unit.combats[0] as Combat
+      }
+    }
+    if (combat) {
+      return combat
+    }
+  }
+
+  /**
+   * Validates inputs if playing a Decoy.
+   *
+   * @param config The configuration used to perform the validation.
+   * @param config.combat The Combat row the potential decoy is for.
+   * @param config.game The game the potential Decoy is being played on.
+   * @param config.isDecoy Whether or not the unit being played is a Decoy.
+   * @param config.targetId The TargetId for the decoy that is supplied by the user.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.resolverUtil The object used to perform common resolution tasks.
+   * @param config.unit The new Unit being played.
+   * @param config.userId The ID of the user performing the move.
+   * @returns The combat row the decoy is being deployed to as well as all the Unit database objects on the battlefield.
+   */
   private static async validateDecoy({
     combat,
     game,
@@ -274,6 +324,18 @@ export default class PlayUnitValidation {
     }
   }
 
+  /**
+   * Validates inputs if playing a Spy.
+   *
+   * @param config The configuration used to perform the validation.
+   * @param config.game The game the potential Spy is being played on.
+   * @param config.isSpy Whether or not the unit being played is a Spy.
+   * @param config.targetId The TargetId for the Spy that is supplied by the user.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.resolverUtil The object used to perform common resolution tasks.
+   * @param config.userId The ID of the user performing the move.
+   * @returns The ID of the opponent being targeted for spying on.
+   */
   private static validateSpy({
     game,
     isSpy,
@@ -322,6 +384,14 @@ export default class PlayUnitValidation {
     return targetId
   }
 
+  /**
+   * Validates inputs if playing a Medic.
+   *
+   * @param config The configuration used to perform the validation.
+   * @param config.player The Player that is playing the Medic.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.unit The new Unit being played.
+   */
   private static validateMedic({
     player,
     unit,
@@ -342,7 +412,11 @@ export default class PlayUnitValidation {
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
-      // TODO: verify unit is in current players discard
+      if (!player.deck.discard.some((discard) => discard.unit.toString() === unit._id.toString())) {
+        const message = `Invalid unit "${unit._id}": Can only revive from the discard pile.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
     }
   }
 }
