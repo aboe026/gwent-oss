@@ -6,8 +6,18 @@ import TestUtil from '../util/test-util'
 
 describe('faction-store', () => {
   describe('add', () => {
-    it('calls to create', async () => {
+    it('calls to create without dlc', async () => {
       await testAdd({})
+    })
+    it('calls to create with string dlc', async () => {
+      await testAdd({
+        dlc: new ObjectId().toString(),
+      })
+    })
+    it('calls to create with ObjectId dlc', async () => {
+      await testAdd({
+        dlc: new ObjectId(),
+      })
     })
     it('calls to create with trace enabled', async () => {
       await testAdd({
@@ -207,10 +217,9 @@ describe('faction-store', () => {
   })
 })
 
-async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
+async function testAdd({ dlc = null, traceEnabled }: { dlc?: ObjectId | string | null; traceEnabled?: boolean }) {
   const ability = 'ability'
   const created = new Date()
-  const dlc = new ObjectId()
   const image = 'image'
   const key = FactionKey.Monsters
   const name = 'name'
@@ -273,7 +282,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
       {
         ability,
         created,
-        dlc,
+        dlc: dlc ? new ObjectId(dlc) : undefined,
         image,
         key,
         name,
@@ -284,7 +293,13 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   expect(dateSpy.mock.calls).toEqual([[]])
   expect(debugSpy.mock.calls).toEqual([[`Adding faction with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`Adding faction: "${JSON.stringify({ ability, created, dlc, image, key, name, stats })}"`]] : []
+    traceEnabled
+      ? [
+          [
+            `Adding faction: "${JSON.stringify({ ability, created, dlc: dlc ? new ObjectId(dlc) : undefined, image, key, name, stats })}"`,
+          ],
+        ]
+      : []
   )
 }
 

@@ -1,5 +1,5 @@
-import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
 
 export interface PlayersToDeckUnitDbObjects {
   [playerId: string]: DeckUnitDbObject[]

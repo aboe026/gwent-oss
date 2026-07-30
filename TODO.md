@@ -25,6 +25,7 @@ Existing problems in the codebase that need to be fixed.
   - figlet: just have hard-coded banner text for startup
   - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
+- refactor units tests to utilize dynamic looping instead of enumerating them explicitly
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
 - have Impact.unit field be "required" (never null) in database typings? (mapping?)

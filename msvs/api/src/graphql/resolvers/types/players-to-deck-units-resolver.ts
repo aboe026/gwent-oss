@@ -15,7 +15,9 @@ export default class PlayersToDeckUnitsResolver {
    * @param playersToDeckUnitsDbObjects The PlayersToDeckUnitDbObjects to have their DeckUnits resolved.
    * @returns The PlayersToDeckUnitDbObjects with their DeckUnits resolved.
    */
-  static async fromObject(playersToDeckUnitsDbObjects: PlayersToDeckUnitDbObjects): Promise<PlayersToDeckUnits> {
+  static async fromObject(
+    playersToDeckUnitsDbObjects: PlayersToDeckUnitDbObjects | undefined
+  ): Promise<PlayersToDeckUnits> {
     const resolvedPlayersToDeckUnits: PlayersToDeckUnits = {}
 
     if (playersToDeckUnitsDbObjects) {

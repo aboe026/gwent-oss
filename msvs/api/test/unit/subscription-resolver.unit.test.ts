@@ -169,6 +169,9 @@ describe('subscription-resolver', () => {
           unitPlayedOnGame: {
             game: TestUtil.getGame({}),
             unit: TestUtil.getDeckUnit({}),
+            discarded: [TestUtil.getDeckUnit({})],
+            undiscarded: [TestUtil.getDeckUnit({})],
+            unhanded: [TestUtil.getDeckUnit({})],
           },
         }
         const unitRedrawnPayload: UnitRedrawnPayload = {
@@ -349,6 +352,9 @@ describe('subscription-resolver', () => {
               payload: unitPlayedOnGamePayload,
               subscriptionName: 'unitPlayedOnGame',
               nestedGamePath: 'game',
+              nestedDiscardPath: 'discarded',
+              nestedUndiscardPath: 'undiscarded',
+              nestedUnhandPath: 'unhanded',
             },
           ],
         ])
@@ -586,6 +592,91 @@ describe('subscription-resolver', () => {
         },
       })
     })
+    it('returns masked game if no errors with nested deck paths if nothing for user', () => {
+      const maskedGame = TestUtil.getGame({})
+      const userId = new ObjectId().toString()
+      testScopeToUser({
+        ctx: {
+          session: {
+            user: TestUtil.getDbUser({
+              id: userId,
+            }),
+          },
+        },
+        payload: {
+          testSubscriptionName: {
+            testNestedGamePath: TestUtil.getGame({}),
+            discarded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+            undiscarded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+            unhanded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+          },
+        },
+        subscriptionName: 'testSubscriptionName',
+        nestedGamePath: 'testNestedGamePath',
+        nestedDiscardPath: 'discarded',
+        nestedUndiscardPath: 'undiscarded',
+        nestedUnhandPath: 'unhanded',
+        maskedGame,
+        expected: {
+          testNestedGamePath: maskedGame,
+          discarded: [],
+          undiscarded: [],
+          unhanded: [],
+        },
+      })
+    })
+    it('returns masked game if no errors with nested deck paths filtering to user', () => {
+      const maskedGame = TestUtil.getGame({})
+      const userId = new ObjectId().toString()
+      const deckUnit1 = TestUtil.getDeckUnit({})
+      const deckUnit2 = TestUtil.getDeckUnit({})
+      const deckUnit3 = TestUtil.getDeckUnit({})
+      testScopeToUser({
+        ctx: {
+          session: {
+            user: TestUtil.getDbUser({
+              id: userId,
+            }),
+          },
+        },
+        payload: {
+          testSubscriptionName: {
+            testNestedGamePath: TestUtil.getGame({}),
+            discarded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+              [userId]: [deckUnit1],
+            },
+            undiscarded: {
+              [userId]: [deckUnit2],
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+            unhanded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+              [userId]: [deckUnit3],
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+          },
+        },
+        subscriptionName: 'testSubscriptionName',
+        nestedGamePath: 'testNestedGamePath',
+        nestedDiscardPath: 'discarded',
+        nestedUndiscardPath: 'undiscarded',
+        nestedUnhandPath: 'unhanded',
+        maskedGame,
+        expected: {
+          testNestedGamePath: maskedGame,
+          discarded: [deckUnit1],
+          undiscarded: [deckUnit2],
+          unhanded: [deckUnit3],
+        },
+      })
+    })
     it('logs to trace if enabled', () => {
       const ctx = {
         session: {
@@ -795,6 +886,9 @@ function testScopeToUser({
   ctx,
   subscriptionName,
   nestedGamePath,
+  nestedDiscardPath,
+  nestedUndiscardPath,
+  nestedUnhandPath,
   maskedGame,
   expected,
   traceEnabled,
@@ -805,6 +899,9 @@ function testScopeToUser({
   ctx: Context
   subscriptionName: string
   nestedGamePath?: string
+  nestedDiscardPath?: string
+  nestedUndiscardPath?: string
+  nestedUnhandPath?: string
   maskedGame?: Game
   expected?: any | Error
   traceEnabled?: boolean
@@ -833,6 +930,9 @@ function testScopeToUser({
         payload,
         subscriptionName,
         nestedGamePath,
+        nestedDiscardPath,
+        nestedUndiscardPath,
+        nestedUnhandPath,
       })
     ).toThrow(expected)
   } else {
@@ -842,6 +942,9 @@ function testScopeToUser({
         payload,
         subscriptionName,
         nestedGamePath,
+        nestedDiscardPath,
+        nestedUndiscardPath,
+        nestedUnhandPath,
       })
     ).toEqual(expected)
   }

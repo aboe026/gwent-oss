@@ -6,13 +6,20 @@ import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
+  FieldUnitDbObject,
+  GameDbObject,
+  GamePlayerDbObject,
   GameStatus,
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import EffectStore from '../../src/database/stores/effect-store'
+import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
+import * as getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
-import PlayUnitValidation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-validation'
+import PlayUnitValidation, {
+  ValidatedDecoy,
+} from '../../src/graphql/resolvers/mutations/play-unit/play-unit-validation'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
@@ -728,6 +735,369 @@ describe('play-unit-validation', () => {
       })
     })
   })
+  describe('validateDecoy', () => {
+    const logPrefix = 'log-prefix'
+    it('throws error if no targetId', async () => {
+      const message = `Argument "target" required for units with "${EffectKey.Decoy}" effect.`
+      await testValidateDecoy({
+        logPrefix,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if cannot find field unit with targetId', async () => {
+      const targetId = new ObjectId().toString()
+      const userId = new ObjectId()
+      const message = `Target "${targetId}" does not exist on the battlefield for player "${userId}".`
+      await testValidateDecoy({
+        logPrefix,
+        targetId,
+        userId,
+        getFieldUnitResponse: null,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if cannot find target in round units', async () => {
+      const targetId = new ObjectId().toString()
+      const message = `Could not find Unit for target "${targetId}".`
+      await testValidateDecoy({
+        targetId,
+        logPrefix,
+        getFieldUnitResponse: TestUtil.getDbFieldUnit({
+          row: Combat.Close,
+        }),
+        getRoundUnitsResponse: [],
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if target is hero', async () => {
+      const targetId = new ObjectId().toString()
+      const roundUnits = [
+        TestUtil.getDbUnit({
+          id: targetId,
+          hero: true,
+        }),
+      ]
+      const message = `Invalid decoy target "${targetId}": Cannot be hero.`
+      await testValidateDecoy({
+        targetId,
+        logPrefix,
+        getFieldUnitResponse: TestUtil.getDbFieldUnit({
+          row: Combat.Close,
+        }),
+        getRoundUnitsResponse: roundUnits,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if target is special', async () => {
+      const targetId = new ObjectId().toString()
+      const roundUnits = [
+        TestUtil.getDbUnit({
+          id: targetId,
+          special: true,
+        }),
+      ]
+      const message = `Invalid decoy target "${targetId}": Cannot be special.`
+      await testValidateDecoy({
+        targetId,
+        logPrefix,
+        getFieldUnitResponse: TestUtil.getDbFieldUnit({
+          row: Combat.Close,
+        }),
+        getRoundUnitsResponse: roundUnits,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if combat does not match field unit row', async () => {
+      const targetId = new ObjectId().toString()
+      const roundUnits = [
+        TestUtil.getDbUnit({
+          id: targetId,
+        }),
+      ]
+      const message = `Invalid combat "${Combat.Close}": Target "${targetId}" is in row "${Combat.Ranged}".`
+      await testValidateDecoy({
+        targetId,
+        logPrefix,
+        combat: Combat.Close,
+        getFieldUnitResponse: TestUtil.getDbFieldUnit({
+          row: Combat.Ranged,
+        }),
+        getRoundUnitsResponse: roundUnits,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('returns nothing if not decoy', async () => {
+      await testValidateDecoy({
+        isDecoy: false,
+        logPrefix,
+        expected: {
+          combat: undefined,
+          roundUnits: undefined,
+        },
+      })
+    })
+    it('returns roundUnits and row as combat if none specified and decoy', async () => {
+      const targetId = new ObjectId().toString()
+      const roundUnits = [
+        TestUtil.getDbUnit({
+          id: targetId,
+        }),
+      ]
+      await testValidateDecoy({
+        targetId,
+        logPrefix,
+        getFieldUnitResponse: TestUtil.getDbFieldUnit({
+          row: Combat.Close,
+        }),
+        getRoundUnitsResponse: roundUnits,
+        expected: {
+          combat: Combat.Close,
+          roundUnits,
+        },
+      })
+    })
+  })
+  describe('validateSpy', () => {
+    const logPrefix = 'log-prefix'
+    it('throws error if multiple opponents and targetId not specified', () => {
+      const userId = new ObjectId()
+      const message = `Argument "target" required for units with "${EffectKey.Spy}" effect and game with multiple opponents.`
+      testValidateSpy({
+        logPrefix,
+        game: TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+            TestUtil.getDbGamePlayer({}),
+            TestUtil.getDbGamePlayer({}),
+          ],
+        }),
+        userId,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error targetId is same as userId', () => {
+      const userId = new ObjectId()
+      const targetId = new ObjectId().toString()
+      const message = `Invalid spy target "${userId}": Cannot be self, must be an opponent.`
+      testValidateSpy({
+        logPrefix,
+        game: TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+            TestUtil.getDbGamePlayer({
+              user: targetId,
+            }),
+          ],
+        }),
+        userId,
+        targetId: userId.toString(),
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error targetId is not a player on the game', () => {
+      const userId = new ObjectId()
+      const targetId = new ObjectId().toString()
+      const message = `Invalid spy target "${targetId}": Could not find that opponent on game.`
+      testValidateSpy({
+        logPrefix,
+        game: TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+            TestUtil.getDbGamePlayer({}),
+          ],
+        }),
+        userId,
+        targetId,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('returns targetId if not spy', () => {
+      const userId = new ObjectId()
+      testValidateSpy({
+        logPrefix,
+        game: TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+            TestUtil.getDbGamePlayer({}),
+            TestUtil.getDbGamePlayer({}),
+          ],
+        }),
+        userId,
+        isSpy: false,
+        expected: undefined,
+      })
+    })
+    it('returns targetId if none specified and only one opponent', () => {
+      const userId = new ObjectId()
+      const targetId = new ObjectId().toString()
+      testValidateSpy({
+        logPrefix,
+        game: TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+            TestUtil.getDbGamePlayer({
+              user: targetId,
+            }),
+          ],
+        }),
+        userId,
+        expected: targetId,
+      })
+    })
+    it('returns targetId if specified and only one opponent', () => {
+      const userId = new ObjectId()
+      const targetId = new ObjectId().toString()
+      testValidateSpy({
+        logPrefix,
+        game: TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+            TestUtil.getDbGamePlayer({
+              user: targetId,
+            }),
+          ],
+        }),
+        userId,
+        targetId,
+        expected: targetId,
+      })
+    })
+    it('returns targetId if specified and more than one opponent', () => {
+      const userId = new ObjectId()
+      const targetId = new ObjectId().toString()
+      testValidateSpy({
+        logPrefix,
+        game: TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+            TestUtil.getDbGamePlayer({
+              user: targetId,
+            }),
+            TestUtil.getDbGamePlayer({}),
+          ],
+        }),
+        userId,
+        targetId,
+        expected: targetId,
+      })
+    })
+  })
+  describe('validateMedic', () => {
+    const logPrefix = 'log-prefix'
+    it('throws error if unit is hero', () => {
+      const unit = TestUtil.getDbUnit({
+        hero: true,
+      })
+      const message = `Invalid unit "${unit._id}": Cannot revive hero units.`
+      testValidateMedic({
+        logPrefix,
+        player: TestUtil.getDbGamePlayer({
+          reviving: true,
+          deck: TestUtil.getDbGameDeck({
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: unit._id,
+              }),
+            ],
+          }),
+        }),
+        unit,
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if unit is special', () => {
+      const unit = TestUtil.getDbUnit({
+        special: true,
+      })
+      const message = `Invalid unit "${unit._id}": Cannot revive special units.`
+      testValidateMedic({
+        logPrefix,
+        player: TestUtil.getDbGamePlayer({
+          reviving: true,
+          deck: TestUtil.getDbGameDeck({
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: unit._id,
+              }),
+            ],
+          }),
+        }),
+        unit,
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if unit not in discard', () => {
+      const unit = TestUtil.getDbUnit({})
+      const message = `Invalid unit "${unit._id}": Can only revive from the discard pile.`
+      testValidateMedic({
+        logPrefix,
+        player: TestUtil.getDbGamePlayer({
+          reviving: true,
+        }),
+        unit,
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('does nothing if player not reviving', () => {
+      const unit = TestUtil.getDbUnit({})
+      testValidateMedic({
+        logPrefix,
+        player: TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: unit._id,
+              }),
+            ],
+          }),
+        }),
+        unit,
+      })
+    })
+    it('does not throw error if valid revival', () => {
+      const unit = TestUtil.getDbUnit({})
+      testValidateMedic({
+        logPrefix,
+        player: TestUtil.getDbGamePlayer({
+          reviving: true,
+          deck: TestUtil.getDbGameDeck({
+            discard: [
+              TestUtil.getDbDeckUnit({
+                id: unit._id,
+              }),
+            ],
+          }),
+        }),
+        unit,
+      })
+    })
+  })
 })
 
 async function testPlayUnitValidation({
@@ -1072,6 +1442,188 @@ function testValidateCombat({
         unit,
       })
     ).toEqual(expected)
+  }
+
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+}
+
+async function testValidateDecoy({
+  combat,
+  isDecoy = true,
+  targetId,
+  logPrefix,
+  userId = new ObjectId(),
+  getFieldUnitResponse = undefined,
+  getRoundUnitsResponse,
+  expected,
+  warnCalls = [],
+  errorCalls = [],
+}: {
+  combat?: Combat | undefined | null
+  isDecoy?: boolean
+  targetId?: string | undefined | null
+  logPrefix: string
+  userId?: ObjectId
+  getFieldUnitResponse?: FieldUnitDbObject | undefined | null
+  getRoundUnitsResponse?: UnitDbObject[]
+  expected: ValidatedDecoy | Error
+  warnCalls?: string[][]
+  errorCalls?: string[][]
+}) {
+  const game = TestUtil.getDbGame({})
+  const unit = TestUtil.getDbUnit({})
+  const resolverUtil = new ResolverUtil({
+    logger: PlayUnitValidation['logger'],
+    logPrefix,
+  })
+
+  const getFieldUnitSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit')
+  if (getFieldUnitResponse !== undefined) {
+    getFieldUnitSpy.mockReturnValue(getFieldUnitResponse === null ? undefined : getFieldUnitResponse)
+  }
+  const getRoundUnitsSpy = jest.spyOn(getRoundUnits, 'default')
+  if (getRoundUnitsResponse) {
+    getRoundUnitsSpy.mockResolvedValue(getRoundUnitsResponse)
+  }
+  const warnSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  PlayUnitValidation['logger'] = {
+    warn: warnSpy,
+    error: errorSpy,
+  } as any
+
+  const promise = PlayUnitValidation['validateDecoy']({
+    combat,
+    game,
+    isDecoy,
+    logPrefix,
+    resolverUtil,
+    targetId,
+    unit,
+    userId,
+  })
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
+
+  expect(getFieldUnitSpy.mock.calls).toEqual(
+    getFieldUnitResponse === undefined
+      ? []
+      : [
+          [
+            {
+              game,
+              unitId: targetId,
+              userId,
+            },
+          ],
+        ]
+  )
+  expect(getRoundUnitsSpy.mock.calls).toEqual(
+    getRoundUnitsResponse
+      ? [
+          [
+            {
+              game,
+              unitBeingPlayed: unit,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+function testValidateSpy({
+  game,
+  isSpy = true,
+  logPrefix,
+  targetId,
+  userId,
+  expected,
+  warnCalls = [],
+}: {
+  game: GameDbObject
+  isSpy?: boolean
+  logPrefix: string
+  targetId?: string | undefined | null
+  userId: ObjectId
+  expected: string | undefined | null | Error
+  warnCalls?: string[][]
+}) {
+  const resolverUtil = new ResolverUtil({
+    logger: PlayUnitValidation['logger'],
+    logPrefix,
+  })
+  const warnSpy = jest.fn().mockImplementation()
+  PlayUnitValidation['logger'] = {
+    warn: warnSpy,
+  } as any
+
+  if (expected instanceof Error) {
+    expect(() =>
+      PlayUnitValidation['validateSpy']({
+        game,
+        isSpy,
+        logPrefix,
+        resolverUtil,
+        targetId,
+        userId,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      PlayUnitValidation['validateSpy']({
+        game,
+        isSpy,
+        logPrefix,
+        resolverUtil,
+        targetId,
+        userId,
+      })
+    ).toEqual(expected)
+  }
+
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+}
+
+function testValidateMedic({
+  player,
+  unit,
+  logPrefix,
+  error,
+  warnCalls = [],
+}: {
+  player: GamePlayerDbObject
+  unit: UnitDbObject
+  logPrefix: string
+  error?: Error
+  warnCalls?: string[][]
+}) {
+  const warnSpy = jest.fn().mockImplementation()
+  PlayUnitValidation['logger'] = {
+    warn: warnSpy,
+  } as any
+
+  if (error) {
+    expect(() =>
+      PlayUnitValidation['validateMedic']({
+        logPrefix,
+        player,
+        unit,
+      })
+    ).toThrow(error)
+  } else {
+    expect(
+      PlayUnitValidation['validateMedic']({
+        logPrefix,
+        player,
+        unit,
+      })
+    ).toEqual(undefined)
   }
 
   expect(warnSpy.mock.calls).toEqual(warnCalls)

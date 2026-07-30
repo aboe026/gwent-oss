@@ -176,10 +176,10 @@ export default class PlayUnitValidation {
       targetId,
       roundUnits,
       effects,
-      isDecoy: !!isDecoy,
-      isSpy: !!isSpy,
-      isWeather: !!isWeather,
-      isMedic: !!isMedic,
+      isDecoy: isDecoy,
+      isSpy: isSpy,
+      isWeather: isWeather,
+      isMedic: isMedic,
       userId,
     }
   }
@@ -254,16 +254,13 @@ export default class PlayUnitValidation {
   }: {
     combat: Combat | undefined | null
     game: GameDbObject
-    isDecoy: boolean | undefined
+    isDecoy: boolean
     targetId: string | undefined | null
     logPrefix: string
     resolverUtil: ResolverUtil
     unit: UnitDbObject
     userId: ObjectId
-  }): Promise<{
-    roundUnits: UnitDbObject[] | undefined
-    combat: Combat | undefined | null
-  }> {
+  }): Promise<ValidatedDecoy> {
     let roundUnits: UnitDbObject[] | undefined = undefined
 
     if (isDecoy) {
@@ -294,7 +291,7 @@ export default class PlayUnitValidation {
         game,
         unitBeingPlayed: unit,
       })
-      const target = roundUnits.find((unit) => unit._id.toString() === targetId)
+      const target = roundUnits.find((roundUnit) => roundUnit._id.toString() === targetId)
       if (!target) {
         const message = `Could not find Unit for target "${targetId}".`
         PlayUnitValidation.logger.error(`${logPrefix} failed: ${message}`)
@@ -345,7 +342,7 @@ export default class PlayUnitValidation {
     userId,
   }: {
     game: GameDbObject
-    isSpy: boolean | undefined
+    isSpy: boolean
     logPrefix: string
     resolverUtil: ResolverUtil
     targetId: string | undefined | null
@@ -435,4 +432,9 @@ export interface ValidatedPlayUnit {
   isWeather: boolean
   isMedic: boolean
   userId: ObjectId
+}
+
+export interface ValidatedDecoy {
+  roundUnits: UnitDbObject[] | undefined
+  combat: Combat | undefined | null
 }

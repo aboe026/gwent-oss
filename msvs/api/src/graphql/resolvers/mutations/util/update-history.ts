@@ -411,6 +411,16 @@ export default class UpdateHistory {
     }
   }
 
+  /**
+   * Updates the impact of the latest move for a player with the given unit.
+   *
+   * @param config The configuration used to update the move impact.
+   * @param config.game The game containing the move impact to update.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.playerId The player on the game to update the move impact for.
+   * @param config.unitId The Unit to set on the impact for the latest move of the game player.
+   * @returns The unit on the move containing the impact that was updated (i.e. the Medic responsible for the revival).
+   */
   static updateLastMoveImpactWithUnit({
     game,
     logPrefix,

@@ -188,6 +188,30 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
+    it('calls addMoveToPlayer once with medic impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testNewUnitDeployed({
+        deckUnit,
+        medics: {
+          [deckUnit.unit.toString()]: [impact],
+        },
+        logPrefix,
+        targetId: new ObjectId().toString(),
+        expectedImpacts: [impact],
+      })
+    })
+    it('sets move reason unit if medicingUnit', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      testNewUnitDeployed({
+        deckUnit,
+        medicingUnit: TestUtil.getDbGameUnit({}),
+        logPrefix,
+      })
+    })
     it('calls addMoveToPlayer once with weather impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
@@ -1367,7 +1391,380 @@ describe('update-history', () => {
       })
     })
   })
-  describe('getMoveTestUtil.getDbGameUnit', () => {
+  describe('updateLastMoveImpactWithUnit', () => {
+    const logPrefix = 'log-prefix'
+    describe('invalid', () => {
+      it('throws error if player not on game', () => {
+        const playerId = new ObjectId()
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [TestUtil.getDbGamePlayer({})],
+        })
+        const message = `Could not find player "${playerId}" on game "${game._id}" to update impact with unit for`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if no move for player', () => {
+        const playerId = new ObjectId()
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [],
+                }),
+              ],
+            }),
+          ],
+        })
+        const message = `Could not find last move for player "${playerId}" to update impact with unit for`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if move type is Pass', () => {
+        const playerId = new ObjectId()
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Pass,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const message = `Invalid last move type "${MoveType.Pass}", expecting "${MoveType.Unit}"`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if move type is Leader', () => {
+        const playerId = new ObjectId()
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Leader,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const message = `Invalid last move type "${MoveType.Leader}", expecting "${MoveType.Unit}"`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if no impacts', () => {
+        const playerId = new ObjectId()
+        const gameUnit = TestUtil.getDbGameUnit({})
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: gameUnit,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const message = `No impacts found for move to add unit to`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if impacts empty', () => {
+        const playerId = new ObjectId()
+        const gameUnit = TestUtil.getDbGameUnit({})
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: gameUnit,
+                      impacts: [],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const message = `No impact found for move to add unit to`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if impact already has unit set', () => {
+        const playerId = new ObjectId()
+        const gameUnit = TestUtil.getDbGameUnit({})
+        const impactUnit = TestUtil.getDbGameUnit({})
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: gameUnit,
+                      impacts: [
+                        TestUtil.getDbImpact({
+                          unit: impactUnit,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const message = `Unit already set to "${impactUnit.unit}" for last move`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if unit not found on field', () => {
+        const playerId = new ObjectId()
+        const gameUnit = TestUtil.getDbGameUnit({})
+        const fieldUnit = TestUtil.getDbFieldUnit({})
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: gameUnit,
+                      impacts: [
+                        TestUtil.getDbImpact({
+                          unit: null,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const message = `Could not find unit "${fieldUnit.unit}" on battlefield to update latest impact with`
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          unitId: fieldUnit.unit,
+          getFieldUnitResponse: null,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, game: "${JSON.stringify(game)}"`]],
+        })
+      })
+    })
+    describe('valid', () => {
+      it('updates impact and returns move unit if valid with only single move', () => {
+        const playerId = new ObjectId()
+        const gameUnit = TestUtil.getDbGameUnit({})
+        const fieldUnit = TestUtil.getDbFieldUnit({})
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: gameUnit,
+                      impacts: [
+                        TestUtil.getDbImpact({
+                          unit: null,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const origGame = deepClone(game)
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          unitId: fieldUnit.unit,
+          getFieldUnitResponse: fieldUnit,
+          expected: gameUnit,
+          updatedGame: {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    moves: [
+                      {
+                        ...origGame.players[0].rounds[0].moves[0],
+                        impacts: [
+                          {
+                            ...(
+                              (origGame.players[0].rounds[0].moves[0] as MoveUnitDbObject).impacts as ImpactDbObject[]
+                            )[0],
+                            unit: {
+                              ...fieldUnit,
+                              type: GameUnitType.Field,
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        })
+      })
+      it('updates impact and returns move unit if valid out of many moves', () => {
+        const playerId = new ObjectId()
+        const gameUnit = TestUtil.getDbGameUnit({})
+        const fieldUnit = TestUtil.getDbFieldUnit({})
+        const game = TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: playerId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                    }),
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: gameUnit,
+                      impacts: [
+                        TestUtil.getDbImpact({
+                          unit: null,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        })
+        const origGame = deepClone(game)
+        testUpdateLastMoveImpactWithUnit({
+          logPrefix,
+          game,
+          playerId,
+          unitId: fieldUnit.unit,
+          getFieldUnitResponse: fieldUnit,
+          expected: gameUnit,
+          updatedGame: {
+            ...origGame,
+            players: [
+              {
+                ...origGame.players[0],
+                rounds: [
+                  {
+                    ...origGame.players[0].rounds[0],
+                    moves: [
+                      origGame.players[0].rounds[0].moves[0],
+                      {
+                        ...origGame.players[0].rounds[0].moves[1],
+                        impacts: [
+                          {
+                            ...(
+                              (origGame.players[0].rounds[0].moves[1] as MoveUnitDbObject).impacts as ImpactDbObject[]
+                            )[0],
+                            unit: {
+                              ...fieldUnit,
+                              type: GameUnitType.Field,
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        })
+      })
+    })
+  })
+  describe('getMoveGameUnit', () => {
     it('returns Deck type if not weather or row', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       testGetMoveGameUnit({
@@ -1616,9 +2013,11 @@ function testNewUnitDeployed({
   decoys = {},
   weathers = {},
   spies = {},
+  medics = {},
   musteredOrigins,
   transformedFieldUnits,
   mardroemingFieldUnit,
+  medicingUnit,
   targetId,
   logPrefix,
   error,
@@ -1638,9 +2037,11 @@ function testNewUnitDeployed({
   decoys?: ImpactsByUnitId
   weathers?: ImpactsByUnitId
   spies?: ImpactsByUnitId
+  medics?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
   transformedFieldUnits?: FieldUnitDbObject[]
   mardroemingFieldUnit?: FieldUnitDbObject
+  medicingUnit?: GameUnitDbObject | undefined
   targetId?: string
   logPrefix: string
   error?: Error
@@ -1670,7 +2071,7 @@ function testNewUnitDeployed({
     unit: gameUnit,
     impacts: updatedImpacts,
     reason: {
-      type: MoveReasonType.Deploy,
+      type: medicingUnit ? MoveReasonType.Revive : MoveReasonType.Deploy,
     },
     source: {
       origin: GameUnitOrigin.Hand,
@@ -1679,6 +2080,9 @@ function testNewUnitDeployed({
   }
   if (targetId) {
     move.target = new ObjectId(targetId)
+  }
+  if (medicingUnit) {
+    move.reason.unit = medicingUnit
   }
   const addMoveToPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToPlayer').mockImplementation()
   const getFieldUnitDbObjectSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit').mockReturnValueOnce(fieldUnit)
@@ -1701,6 +2105,7 @@ function testNewUnitDeployed({
             morales,
             musters,
             spies,
+            medics,
             origin: musteredOrigins && musteredOrigins[muster.unit.unit.toString()],
             playerId,
             reason: {
@@ -1730,6 +2135,7 @@ function testNewUnitDeployed({
           morales,
           musters,
           spies,
+          medics,
           origin: GameUnitOrigin.Nondeck,
           playerId,
           reason: {
@@ -1758,6 +2164,7 @@ function testNewUnitDeployed({
           horns,
           decoys,
           spies,
+          medics,
           logPrefix,
           mardroemes,
           morales,
@@ -1805,8 +2212,10 @@ function testNewUnitDeployed({
         horns,
         mardroemes,
         spies,
+        medics,
         transformedFieldUnits,
         mardroemingFieldUnit,
+        medicingUnit,
         targetId,
         isWeather,
       })
@@ -1830,8 +2239,10 @@ function testNewUnitDeployed({
         horns,
         mardroemes,
         spies,
+        medics,
         transformedFieldUnits,
         mardroemingFieldUnit,
+        medicingUnit,
         targetId,
         isWeather,
       })
@@ -2053,6 +2464,71 @@ function testAddMoveToPlayer({
     expect(game).toEqual(updatedGame)
   }
 
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+function testUpdateLastMoveImpactWithUnit({
+  game,
+  logPrefix,
+  playerId,
+  unitId = new ObjectId(),
+  getFieldUnitResponse,
+  expected,
+  updatedGame,
+  errorCalls = [],
+}: {
+  game: GameDbObject
+  logPrefix: string
+  playerId: ObjectId | string
+  unitId?: ObjectId | string
+  getFieldUnitResponse?: FieldUnitDbObject | undefined | null
+  expected: GameUnitDbObject | Error
+  updatedGame?: GameDbObject
+  errorCalls?: string[][]
+}) {
+  const getFieldUnitSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit')
+  if (getFieldUnitResponse !== undefined) {
+    getFieldUnitSpy.mockReturnValue(getFieldUnitResponse === null ? undefined : getFieldUnitResponse)
+  }
+  const errorSpy = jest.fn().mockImplementation()
+  UpdateHistory['logger'] = {
+    error: errorSpy,
+  } as any
+
+  if (expected instanceof Error) {
+    expect(() =>
+      UpdateHistory['updateLastMoveImpactWithUnit']({
+        game,
+        logPrefix,
+        playerId,
+        unitId,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      UpdateHistory['updateLastMoveImpactWithUnit']({
+        game,
+        logPrefix,
+        playerId,
+        unitId,
+      })
+    ).toEqual(expected)
+  }
+  expect(game).toEqual(updatedGame || game)
+
+  expect(getFieldUnitSpy.mock.calls).toEqual(
+    getFieldUnitResponse === undefined
+      ? []
+      : [
+          [
+            {
+              game,
+              unitId,
+              userId: playerId,
+            },
+          ],
+        ]
+  )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 

@@ -168,6 +168,30 @@ describe('set-next-turn-for-current-round', () => {
         ],
       })
     })
+    it('keeps current player if they are reviving', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [TestUtil.getDbPlayerRound({})],
+        reviving: true,
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testSetNextTurnForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+          turn: player1.user,
+        }),
+        logPrefix,
+        expected: player1.user,
+        debugCalls: [
+          [`${logPrefix} player "${player1.user}" needs to revive a unit, so keeping them as the current player.`],
+        ],
+      })
+    })
   })
   describe('round 2', () => {
     it('returns second player in turn order when first players turn and second player has not passed', () => {

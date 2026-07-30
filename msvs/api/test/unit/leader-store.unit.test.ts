@@ -6,8 +6,18 @@ import TestUtil from '../util/test-util'
 
 describe('leader-store', () => {
   describe('add', () => {
-    it('calls to create', async () => {
+    it('calls to create without dlc', async () => {
       await testAdd({})
+    })
+    it('calls to create with string dlc', async () => {
+      await testAdd({
+        dlc: new ObjectId().toString(),
+      })
+    })
+    it('calls to create with ObjectId dlc', async () => {
+      await testAdd({
+        dlc: new ObjectId(),
+      })
     })
     it('calls to create with trace enabled', async () => {
       await testAdd({
@@ -186,10 +196,9 @@ describe('leader-store', () => {
   })
 })
 
-async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
+async function testAdd({ dlc = null, traceEnabled }: { dlc?: ObjectId | string | null; traceEnabled?: boolean }) {
   const ability = 'ability'
   const created = new Date()
-  const dlc = new ObjectId()
   const faction = new ObjectId()
   const image = 'image'
   const name = 'name'
@@ -197,7 +206,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   const expected: LeaderDbObject = {
     ability,
     created,
-    dlc,
+    dlc: dlc ? new ObjectId(dlc) : undefined,
     faction,
     _id: new ObjectId(),
     image,
@@ -230,7 +239,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
       {
         ability,
         created,
-        dlc,
+        dlc: dlc ? new ObjectId(dlc) : undefined,
         faction,
         image,
         name,
@@ -241,7 +250,13 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   expect(dateSpy.mock.calls).toEqual([[]])
   expect(debugSpy.mock.calls).toEqual([[`Adding leader with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`Adding leader: "${JSON.stringify({ ability, created, dlc, faction, image, name, quote })}"`]] : []
+    traceEnabled
+      ? [
+          [
+            `Adding leader: "${JSON.stringify({ ability, created, dlc: dlc ? new ObjectId(dlc) : undefined, faction, image, name, quote })}"`,
+          ],
+        ]
+      : []
   )
 }
 
