@@ -255,7 +255,163 @@ describe('effect-medic', () => {
         errors: [new GraphQLError(`Invalid unit "${unitSelf1.unit.id}": Cannot revive special units.`)],
       })
     })
-    // TODO: ensure cannot medic unit from Hand or Undrawn
+    it('throws error if attempting to revive unit from hand', async () => {
+      const unitName1 = 'Ves'
+      const unitName2 = medicUnitName
+      const unitName3 = 'Siegfried of Denesle'
+      await ensureUnitsInHand({
+        gameId: game.id,
+        userId: self.id,
+        mongoConnectionString: funcEnv.MONGO_URL,
+        mongoDatabaseName: funcEnv.MONGO_DB,
+        unitNames: [unitName1, unitName2, unitName3],
+      })
+
+      const gameDeckSelf = await getGameDeck({
+        gameId: game.id,
+        userId: self.id,
+      })
+
+      const unitSelf1 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName1)
+      if (!unitSelf1) {
+        throw Error(`Could not find unit "${unitName1}" in hand`)
+      }
+
+      await playUnit({
+        gameId: game.id,
+        unitId: unitSelf1.unit.id,
+        combat: Combat.Close,
+        userId: self.id,
+      })
+      gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
+
+      await playPass({
+        gameId: game.id,
+        userId: opponent.id,
+      })
+
+      await playPass({
+        gameId: game.id,
+        userId: self.id,
+      })
+
+      const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName2)
+      if (!unitSelf2) {
+        throw Error(`Could not find unit "${unitName2}" in hand`)
+      }
+
+      await playUnit({
+        gameId: game.id,
+        userId: self.id,
+        unitId: unitSelf2.unit.id,
+      })
+
+      const unitSelf3 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName3)
+      if (!unitSelf3) {
+        throw Error(`Could not find unit "${unitName3}" in hand`)
+      }
+
+      await expect(
+        graphql({
+          schema,
+          source: `mutation {
+            playUnit(
+              game: "${game.id}"
+              unit: "${unitSelf3.unit.id}"
+            ) {
+              ${getGameFragment()}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: TestUtil.getDbUserFromUser(self),
+            },
+          },
+        })
+      ).resolves.toEqual({
+        data: null,
+        errors: [new GraphQLError(`Unit not in discard.`)],
+      })
+    })
+    it('throws error if attempting to revive unit from undrawn', async () => {
+      const unitName1 = 'Ves'
+      const unitName2 = medicUnitName
+      const unitName3 = 'Siegfried of Denesle'
+      await ensureUnitsInHand({
+        gameId: game.id,
+        userId: self.id,
+        mongoConnectionString: funcEnv.MONGO_URL,
+        mongoDatabaseName: funcEnv.MONGO_DB,
+        unitNames: [unitName1, unitName2],
+        excludeNames: [unitName3],
+      })
+
+      const gameDeckSelf = await getGameDeck({
+        gameId: game.id,
+        userId: self.id,
+      })
+
+      const unitSelf1 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName1)
+      if (!unitSelf1) {
+        throw Error(`Could not find unit "${unitName1}" in hand`)
+      }
+
+      await playUnit({
+        gameId: game.id,
+        unitId: unitSelf1.unit.id,
+        combat: Combat.Close,
+        userId: self.id,
+      })
+      gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
+
+      await playPass({
+        gameId: game.id,
+        userId: opponent.id,
+      })
+
+      await playPass({
+        gameId: game.id,
+        userId: self.id,
+      })
+
+      const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName2)
+      if (!unitSelf2) {
+        throw Error(`Could not find unit "${unitName2}" in hand`)
+      }
+
+      await playUnit({
+        gameId: game.id,
+        userId: self.id,
+        unitId: unitSelf2.unit.id,
+      })
+
+      const unitSelf3 = gameDeckSelf.undrawn.find((undrawn) => undrawn.unit.name === unitName3)
+      if (!unitSelf3) {
+        throw Error(`Could not find unit "${unitName3}" in undrawn`)
+      }
+
+      await expect(
+        graphql({
+          schema,
+          source: `mutation {
+            playUnit(
+              game: "${game.id}"
+              unit: "${unitSelf3.unit.id}"
+            ) {
+              ${getGameFragment()}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: TestUtil.getDbUserFromUser(self),
+            },
+          },
+        })
+      ).resolves.toEqual({
+        data: null,
+        errors: [new GraphQLError(`Unit not in discard.`)],
+      })
+    })
   })
   describe('valid', () => {
     it('medic does not trigger revival if no eligible units', async () => {

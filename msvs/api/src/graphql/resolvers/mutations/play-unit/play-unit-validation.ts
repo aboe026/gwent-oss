@@ -130,16 +130,13 @@ export default class PlayUnitValidation {
       unit,
     })
 
-    // TODO: split into separate helper method
-    if (unit.modifier) {
-      const round = player.rounds[game.round - 1]
-      const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege
-      if (row.modifier) {
-        const message = `Modifier for row "${combat}" already set as unit "${row.modifier.unit}".`
-        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
-        throw new PresentableError(message)
-      }
-    }
+    PlayUnitValidation.validateModifier({
+      combat,
+      game,
+      logPrefix,
+      player,
+      unit,
+    })
 
     const { combat: decoyCombat, roundUnits } = await PlayUnitValidation.validateDecoy({
       combat,
@@ -226,6 +223,40 @@ export default class PlayUnitValidation {
     }
     if (combat) {
       return combat
+    }
+  }
+
+  /**
+   * Validates inputs if playing a combat row modifier.
+   *
+   * @param config The configuration used to validate the potential modifier.
+   * @param config.game The Game the potential modifier is being played on.
+   * @param config.player The Player that is playing the potential modifier.
+   * @param config.unit The Unit which is potentially a combat row modifier.
+   * @param config.combat The Combat row the potential modifier is being deployed to.
+   * @param config.logPrefix What to prepend log statements with.
+   */
+  private static validateModifier({
+    game,
+    player,
+    unit,
+    combat,
+    logPrefix,
+  }: {
+    game: GameDbObject
+    player: GamePlayerDbObject
+    unit: UnitDbObject
+    combat: Combat | null | undefined
+    logPrefix: string
+  }) {
+    if (unit.modifier) {
+      const round = player.rounds[game.round - 1]
+      const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege
+      if (row.modifier) {
+        const message = `Modifier for row "${combat}" already set as unit "${row.modifier.unit}".`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
     }
   }
 
@@ -407,11 +438,6 @@ export default class PlayUnitValidation {
       }
       if (unit.special) {
         const message = `Invalid unit "${unit._id}": Cannot revive special units.`
-        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
-        throw new PresentableError(message)
-      }
-      if (!player.deck.discard.some((discard) => discard.unit.toString() === unit._id.toString())) {
-        const message = `Invalid unit "${unit._id}": Can only revive from the discard pile.`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }

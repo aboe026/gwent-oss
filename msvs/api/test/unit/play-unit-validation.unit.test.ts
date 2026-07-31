@@ -236,132 +236,6 @@ describe('play-unit-validation', () => {
           errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([unit, unit])}"`]],
         })
       })
-      it('throws error if modifier already set for close', async () => {
-        const combat = Combat.Close
-        const deckUnit = TestUtil.getDbDeckUnit({})
-        const unit = TestUtil.getDbUnit({
-          id: deckUnit.unit,
-          combats: [combat],
-          modifier: true,
-        })
-        const existingModifier = TestUtil.getDbFieldUnit({})
-        const game = TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                hand: [deckUnit],
-              }),
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: TestUtil.getDbPlayerCombatRow({
-                    modifier: existingModifier,
-                  }),
-                }),
-              ],
-            }),
-          ],
-        })
-        const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-        const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
-        await testPlayUnitValidation({
-          isAuthenticatedResponse: user,
-          isGamePlayerResponse: {
-            game,
-            player: game.players[0],
-          },
-          unitId: deckUnit.unit.toString(),
-          validateCombatResponse: combat,
-          units: [unit],
-          logPrefix,
-          expectedError: Error(message),
-          warnCalls: [[`${logPrefix} failed: ${message}`]],
-        })
-      })
-      it('throws error if modifier already set for ranged', async () => {
-        const combat = Combat.Ranged
-        const deckUnit = TestUtil.getDbDeckUnit({})
-        const unit = TestUtil.getDbUnit({
-          id: deckUnit.unit,
-          combats: [combat],
-          modifier: true,
-        })
-        const existingModifier = TestUtil.getDbFieldUnit({})
-        const game = TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                hand: [deckUnit],
-              }),
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  ranged: TestUtil.getDbPlayerCombatRow({
-                    modifier: existingModifier,
-                  }),
-                }),
-              ],
-            }),
-          ],
-        })
-        const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-        const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
-        await testPlayUnitValidation({
-          isAuthenticatedResponse: user,
-          isGamePlayerResponse: {
-            game,
-            player: game.players[0],
-          },
-          unitId: deckUnit.unit.toString(),
-          validateCombatResponse: combat,
-          units: [unit],
-          logPrefix,
-          expectedError: Error(message),
-          warnCalls: [[`${logPrefix} failed: ${message}`]],
-        })
-      })
-      it('throws error if modifier already set for siege', async () => {
-        const combat = Combat.Siege
-        const deckUnit = TestUtil.getDbDeckUnit({})
-        const unit = TestUtil.getDbUnit({
-          id: deckUnit.unit,
-          combats: [combat],
-          modifier: true,
-        })
-        const existingModifier = TestUtil.getDbFieldUnit({})
-        const game = TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                hand: [deckUnit],
-              }),
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  siege: TestUtil.getDbPlayerCombatRow({
-                    modifier: existingModifier,
-                  }),
-                }),
-              ],
-            }),
-          ],
-        })
-        const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-        const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
-        await testPlayUnitValidation({
-          isAuthenticatedResponse: user,
-          isGamePlayerResponse: {
-            game,
-            player: game.players[0],
-          },
-          unitId: deckUnit.unit.toString(),
-          validateCombatResponse: combat,
-          units: [unit],
-          logPrefix,
-          expectedError: Error(message),
-          warnCalls: [[`${logPrefix} failed: ${message}`]],
-        })
-      })
     })
     describe('valid', () => {
       it('returns objects if no errors and no combat specified for unit with no combat', async () => {
@@ -732,6 +606,251 @@ describe('play-unit-validation', () => {
         isWeather: true,
         combat: Combat.Ranged,
         expected: Combat.Ranged,
+      })
+    })
+  })
+  describe('validateModifier', () => {
+    const logPrefix = 'log-prefix'
+    it('throws error if modifier already set for close', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const modifier = TestUtil.getDbFieldUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: TestUtil.getDbPlayerCombatRow({
+              modifier,
+            }),
+          }),
+        ],
+      })
+      const message = `Modifier for row "${Combat.Close}" already set as unit "${modifier.unit}".`
+      testValidateModifier({
+        combat: Combat.Close,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if modifier already set for ranged', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const modifier = TestUtil.getDbFieldUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            ranged: TestUtil.getDbPlayerCombatRow({
+              modifier,
+            }),
+          }),
+        ],
+      })
+      const message = `Modifier for row "${Combat.Ranged}" already set as unit "${modifier.unit}".`
+      testValidateModifier({
+        combat: Combat.Ranged,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if modifier already set for siege', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const modifier = TestUtil.getDbFieldUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            siege: TestUtil.getDbPlayerCombatRow({
+              modifier,
+            }),
+          }),
+        ],
+      })
+      const message = `Modifier for row "${Combat.Siege}" already set as unit "${modifier.unit}".`
+      testValidateModifier({
+        combat: Combat.Siege,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('does nothing if not modifier', () => {
+      const unit = TestUtil.getDbUnit({})
+      const modifier = TestUtil.getDbFieldUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: TestUtil.getDbPlayerCombatRow({
+              modifier,
+            }),
+          }),
+        ],
+      })
+      testValidateModifier({
+        combat: Combat.Close,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+      })
+    })
+    it('does not throw error for close modifier with none others set', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testValidateModifier({
+        combat: Combat.Close,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+      })
+    })
+    it('does not throw error for ranged modifier with none others set', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testValidateModifier({
+        combat: Combat.Ranged,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+      })
+    })
+    it('does not throw error for siege modifier with none others set', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testValidateModifier({
+        combat: Combat.Siege,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+      })
+    })
+    it('does not throw error for close modifier with all others set', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            ranged: TestUtil.getDbPlayerCombatRow({
+              modifier: TestUtil.getDbFieldUnit({}),
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
+              modifier: TestUtil.getDbFieldUnit({}),
+            }),
+          }),
+        ],
+      })
+      testValidateModifier({
+        combat: Combat.Close,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+      })
+    })
+    it('does not throw error for ranged modifier with all others set', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: TestUtil.getDbPlayerCombatRow({
+              modifier: TestUtil.getDbFieldUnit({}),
+            }),
+            siege: TestUtil.getDbPlayerCombatRow({
+              modifier: TestUtil.getDbFieldUnit({}),
+            }),
+          }),
+        ],
+      })
+      testValidateModifier({
+        combat: Combat.Ranged,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
+      })
+    })
+    it('does not throw error for siege modifier with all others set', () => {
+      const unit = TestUtil.getDbUnit({
+        modifier: true,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: TestUtil.getDbPlayerCombatRow({
+              modifier: TestUtil.getDbFieldUnit({}),
+            }),
+            ranged: TestUtil.getDbPlayerCombatRow({
+              modifier: TestUtil.getDbFieldUnit({}),
+            }),
+          }),
+        ],
+      })
+      testValidateModifier({
+        combat: Combat.Siege,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+        }),
+        logPrefix,
+        player,
+        unit,
       })
     })
   })
@@ -1442,6 +1561,53 @@ function testValidateCombat({
         unit,
       })
     ).toEqual(expected)
+  }
+
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+}
+
+function testValidateModifier({
+  game,
+  player,
+  unit,
+  combat,
+  logPrefix,
+  error,
+  warnCalls = [],
+}: {
+  game: GameDbObject
+  player: GamePlayerDbObject
+  unit: UnitDbObject
+  combat: Combat | null | undefined
+  logPrefix: string
+  error?: Error
+  warnCalls?: string[][]
+}) {
+  const warnSpy = jest.fn().mockImplementation()
+  PlayUnitValidation['logger'] = {
+    warn: warnSpy,
+  } as any
+
+  if (error) {
+    expect(() =>
+      PlayUnitValidation['validateModifier']({
+        combat,
+        game,
+        logPrefix,
+        player,
+        unit,
+      })
+    ).toThrow(error)
+  } else {
+    expect(
+      PlayUnitValidation['validateModifier']({
+        combat,
+        game,
+        logPrefix,
+        player,
+        unit,
+      })
+    ).toEqual(undefined)
   }
 
   expect(warnSpy.mock.calls).toEqual(warnCalls)
