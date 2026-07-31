@@ -10,6 +10,7 @@ import {
   DecksQuery,
   DeckSetDocument,
   DeckUnitFragmentDoc,
+  DeckUnitRemovedFragmentDoc,
   GameAddedDocument,
   GameDeckDocument,
   GameDeckQuery,
@@ -305,8 +306,8 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const game = useFragment(GameFragmentDoc, data.data?.unitPlayedOnGame.game)
       const discarded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.discarded)
-      const undiscarded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.undiscarded)
-      const unhanded = useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedOnGame.unhanded)
+      const undiscarded = useFragment(DeckUnitRemovedFragmentDoc, data.data?.unitPlayedOnGame.undiscarded)
+      const unhanded = useFragment(DeckUnitRemovedFragmentDoc, data.data?.unitPlayedOnGame.unhanded)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -348,9 +349,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
 
                 if (undiscarded && undiscarded.length > 0) {
                   for (const undiscard of undiscarded) {
-                    const undiscardIndex = currentDiscardIds.findIndex(
-                      (id) => id === useFragment(UnitFragmentDoc, undiscard.unit).id
-                    )
+                    const undiscardIndex = currentDiscardIds.findIndex((id) => id === undiscard.unit.id)
                     if (undiscardIndex >= 0) {
                       newDiscard.splice(undiscardIndex, 1)
                     }
@@ -359,9 +358,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
 
                 if (unhanded && unhanded.length > 0) {
                   for (const unhand of unhanded) {
-                    const unhandIndex = currentHandIds.findIndex(
-                      (id) => id === useFragment(UnitFragmentDoc, unhand.unit).id
-                    )
+                    const unhandIndex = currentHandIds.findIndex((id) => id === unhand.unit.id)
                     if (unhandIndex >= 0) {
                       newHand.splice(unhandIndex, 1)
                     }

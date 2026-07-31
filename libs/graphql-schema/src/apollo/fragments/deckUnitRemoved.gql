@@ -1,0 +1,5 @@
+fragment DeckUnitRemoved on DeckUnit {
+  unit {
+    id
+  }
+}

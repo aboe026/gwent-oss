@@ -564,7 +564,6 @@ export class E2eHelper {
         instances: decoying.instance,
       })
       decoying.player.hand = (decoying.player.hand || 0) + 1
-      // TODO: move this to gameManager? Or put other things in game mangager (eg scorches) in helper too?
       gameDeck.hand.push({
         artStyle: 1,
         unit: {

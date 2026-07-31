@@ -15,13 +15,13 @@ import PresentableError from '../../../../util/presentable-error'
 import UnitStore from '../../../../database/stores/unit-store'
 
 /**
- * A class to modify the battlefield if a medic unit is played or reviving a unit.
+ * A class to modify the battlefield if a medic unit is played or a unit is being revived.
  */
 export default class EffectMedic {
   private static logger = getLogger('EffectAvenger')
 
   /**
-   * Deploys medics to the battlefield and sets it into revival state if eligible, or revives eligible discarded units.
+   * Deploys medics to the battlefield and sets it into revival state if eligible, or revives an eligible discarded unit.
    *
    * @param config The configuration used to deploy the medic or revive the discarded unit.
    * @param config.game The game the unit is being played on.

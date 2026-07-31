@@ -7,10 +7,10 @@ import EventManager from '../../../event-manager'
 import { Game } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../../types/game-deck-resolver'
 import GameResolver from '../../types/game-resolver'
-import { UnitPlayedFromDeckPayload } from '../../subscription-resolver'
 import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 import PlayersToDeckUnitsResolver from '../../types/players-to-deck-units-resolver'
 import { PubSubEvents } from '@gwent/constants'
+import { UnitPlayedFromDeckPayload } from '../../subscription-resolver'
 
 /**
  * A class for resolving the playUnit GraphQL Mutation.

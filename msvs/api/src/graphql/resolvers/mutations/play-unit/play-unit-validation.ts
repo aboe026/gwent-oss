@@ -130,6 +130,7 @@ export default class PlayUnitValidation {
       unit,
     })
 
+    // TODO: split into separate helper method
     if (unit.modifier) {
       const round = player.rounds[game.round - 1]
       const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege

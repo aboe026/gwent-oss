@@ -87,7 +87,7 @@ enum GameDeckStatus {
 }
 
 enum MoveReasonType {
-  "Deployment by a game player to field."
+  "Deployed by a game player to field."
   DEPLOY
   "Mustered when matching Muster unit added to field."
   MUSTER

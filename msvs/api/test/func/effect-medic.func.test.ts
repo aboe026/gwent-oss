@@ -255,6 +255,7 @@ describe('effect-medic', () => {
         errors: [new GraphQLError(`Invalid unit "${unitSelf1.unit.id}": Cannot revive special units.`)],
       })
     })
+    // TODO: ensure cannot medic unit from Hand or Undrawn
   })
   describe('valid', () => {
     it('medic does not trigger revival if no eligible units', async () => {

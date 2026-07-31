@@ -9,9 +9,6 @@ subscription UnitPlayedFromDeck {
     discarded {
       ...DeckUnit
     }
-    undiscarded {
-      ...DeckUnit
-    }
     unit {
       ...DeckUnit
     }

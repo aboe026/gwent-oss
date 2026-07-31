@@ -7,10 +7,10 @@ subscription UnitPlayedOnGame {
       ...DeckUnit
     }
     undiscarded {
-      ...DeckUnit
+      ...DeckUnitRemoved
     }
     unhanded {
-      ...DeckUnit
+      ...DeckUnitRemoved
     }
   }
 }
