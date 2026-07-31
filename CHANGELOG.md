@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.0 - 2026-07-31
+
+### Added
+
+- Medic effect ([#60](https://github.com/aboe026/gwent/pull/60)) (Adam Boe)
+
 ## 0.23.1 - 2026-05-06
 
 ### Fixed
