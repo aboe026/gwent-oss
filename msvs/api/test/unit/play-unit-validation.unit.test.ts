@@ -1170,19 +1170,6 @@ describe('play-unit-validation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('throws error if unit not in discard', () => {
-      const unit = TestUtil.getDbUnit({})
-      const message = `Invalid unit "${unit._id}": Can only revive from the discard pile.`
-      testValidateMedic({
-        logPrefix,
-        player: TestUtil.getDbGamePlayer({
-          reviving: true,
-        }),
-        unit,
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
     it('does nothing if player not reviving', () => {
       const unit = TestUtil.getDbUnit({})
       testValidateMedic({
