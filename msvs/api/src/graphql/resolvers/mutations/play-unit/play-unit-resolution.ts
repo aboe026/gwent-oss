@@ -7,8 +7,10 @@ import EventManager from '../../../event-manager'
 import { Game } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../../types/game-deck-resolver'
 import GameResolver from '../../types/game-resolver'
+import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
+import PlayersToDeckUnitsResolver from '../../types/players-to-deck-units-resolver'
 import { PubSubEvents } from '@gwent/constants'
-import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../../subscription-resolver'
+import { UnitPlayedFromDeckPayload } from '../../subscription-resolver'
 
 /**
  * A class for resolving the playUnit GraphQL Mutation.
@@ -25,6 +27,9 @@ export default class PlayUnitResolution {
    * @param config.gameDeck The game deck after the unit has been played.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.handDeckUnitsAdded Any potential DeckUnits added to the players game hand.
+   * @param config.discards Any potential DeckUnits added to the discard pile for game players due to the new unit played.
+   * @param config.undiscards Any potential DeckUnits removed from the discard pile for game players due to the new unit played.
+   * @param config.unhands Any potential DeckUnits removed from the hand pile for game players due to the new unit played.
    * @param config.userId The ID of the user playing the Unit.
    * @returns The Game with the unit played for the user with fields resolved.
    */
@@ -33,6 +38,9 @@ export default class PlayUnitResolution {
     game,
     gameDeck,
     handDeckUnitsAdded,
+    discards,
+    undiscards,
+    unhands,
     logPrefix,
     userId,
   }: {
@@ -40,6 +48,9 @@ export default class PlayUnitResolution {
     game: GameDbObject
     gameDeck: GameDeckDbObject
     handDeckUnitsAdded: DeckUnitDbObject[]
+    discards: PlayersToDeckUnitDbObjects
+    undiscards: PlayersToDeckUnitDbObjects
+    unhands: PlayersToDeckUnitDbObjects
     logPrefix: string
     userId: ObjectId
   }): Promise<Game> {
@@ -64,12 +75,18 @@ export default class PlayUnitResolution {
       PlayUnitResolution.logger.trace(`${logPrefix} resolvedGameDeck: "${JSON.stringify(resolvedGameDeck)}"`)
     }
 
+    const resolvedDiscards = await PlayersToDeckUnitsResolver.fromObject(discards)
+    const resolvedUndiscards = await PlayersToDeckUnitsResolver.fromObject(undiscards)
+    const resolvedUnhands = await PlayersToDeckUnitsResolver.fromObject(unhands)
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedOnGame, {
       unitPlayedOnGame: {
         game: resolvedGame,
         unit: resolvedUnit,
+        discarded: resolvedDiscards,
+        undiscarded: resolvedUndiscards,
+        unhanded: resolvedUnhands,
       },
-    } as UnitPlayedOnGamePayload)
+    })
 
     const handed = await DeckUnitResolver.fromArray({
       deckUnits: handDeckUnitsAdded,
@@ -77,11 +94,25 @@ export default class PlayUnitResolution {
     if (PlayUnitResolution.logger.isTraceEnabled()) {
       PlayUnitResolution.logger.trace(`${logPrefix} handed: "${JSON.stringify(handed)}"`)
     }
+    const discarded = await DeckUnitResolver.fromArray({
+      deckUnits: discards[userId.toString()] || [],
+    })
+    if (PlayUnitResolution.logger.isTraceEnabled()) {
+      PlayUnitResolution.logger.trace(`${logPrefix} discarded: "${JSON.stringify(discarded)}"`)
+    }
+    const undiscarded = await DeckUnitResolver.fromArray({
+      deckUnits: undiscards[userId.toString()] || [],
+    })
+    if (PlayUnitResolution.logger.isTraceEnabled()) {
+      PlayUnitResolution.logger.trace(`${logPrefix} undiscarded: "${JSON.stringify(undiscarded)}"`)
+    }
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedFromDeck, {
       unitPlayedFromDeck: {
         deck: resolvedGameDeck,
         game: resolvedGame,
         handed,
+        discarded,
+        undiscarded,
         unit: resolvedUnit,
       },
     } as UnitPlayedFromDeckPayload)

@@ -1,4 +1,4 @@
-import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
@@ -26,10 +26,10 @@ export default class LeaderStore extends Store {
    */
   static async add({ ability, dlc, faction, image, name, quote }: AddLeaderInput): Promise<LeaderDbObject> {
     LeaderStore.logger.debug(`Adding leader with name "${name}"`)
-    const leader: Document = {
+    const leader: WithoutId<LeaderDbObject> = {
       ability,
       created: new Date(),
-      dlc: dlc && new ObjectId(dlc),
+      dlc: dlc ? new ObjectId(dlc) : undefined,
       faction: new ObjectId(faction),
       image,
       name,

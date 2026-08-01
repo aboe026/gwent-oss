@@ -15,6 +15,7 @@ import {
 import GetEffectWithKey from './get-effect-with-key'
 import getRoundUnits from '../util/get-round-units'
 import { ImpactsByUnitId } from '../../resolver-util'
+import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 import UnitStore from '../../../../database/stores/unit-store'
 
 /**
@@ -49,6 +50,8 @@ export default class EffectAvenger {
   }): Promise<Avengings> {
     const avenged: ImpactsByUnitId = {}
     const avengedUnits: UnitDbObject[] = []
+    const undiscarded: PlayersToDeckUnitDbObjects = {}
+    const unhanded: PlayersToDeckUnitDbObjects = {}
 
     const avengerEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Avenger,
@@ -102,9 +105,7 @@ export default class EffectAvenger {
                 `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, but "${avengerName}" already on the battlefield`
               )
             } else {
-              EffectAvenger.logger.debug(
-                `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, summoning "${avengerName}" to the battlefield for player "${removedGameUnit.user}"`
-              )
+              let origin = GameUnitOrigin.Nondeck
               const avengerUnits = await UnitStore.get({
                 names: [avengerName],
               })
@@ -120,9 +121,7 @@ export default class EffectAvenger {
                 )
                 throw Error(`${message}.`)
               }
-
               const avengerUnit = avengerUnits[0]
-              avengedUnits.push(avengerUnit)
 
               const player = game.players.find((player) => player.user.toString() === removedGameUnit.user.toString())
               if (!player) {
@@ -130,7 +129,31 @@ export default class EffectAvenger {
                 EffectAvenger.logger.error(`${logPrefix} failed: ${message}`)
                 throw Error(`${message}.`)
               }
+
+              const existingHandIndex = player.deck.hand.findIndex(
+                (deckUnit) => deckUnit.unit.toString() === avengerUnit._id.toString()
+              )
+              if (existingHandIndex >= 0) {
+                origin = GameUnitOrigin.Hand
+                unhanded[player.user.toString()] = [player.deck.hand[existingHandIndex]]
+                player.deck.hand.splice(existingHandIndex, 1)
+              } else {
+                const existingDiscardIndex = player.deck.discard.findIndex(
+                  (deckUnit) => deckUnit.unit.toString() === avengerUnit._id.toString()
+                )
+                if (existingDiscardIndex >= 0) {
+                  origin = GameUnitOrigin.Discard
+                  undiscarded[player.user.toString()] = [player.deck.discard[existingDiscardIndex]]
+                  player.deck.discard.splice(existingDiscardIndex, 1)
+                }
+              }
+              EffectAvenger.logger.debug(
+                `${logPrefix} removed unit "${removedUnit.name}" has avenger effect, summoning "${avengerName}" to the battlefield for player "${removedGameUnit.user}" from "${origin}"`
+              )
+
               const playerRound = player.rounds[game.round - 1]
+              avengedUnits.push(avengerUnit)
+
               const combat = avengerUnit.combats ? avengerUnit.combats[0] : undefined
               if (!combat) {
                 const message = `Could not determine combat of avenger unit "${avengerName}" for removed game unit "${removedGameUnitId}"`
@@ -156,7 +179,7 @@ export default class EffectAvenger {
               const impact: ImpactDbObject = {
                 user: player.user,
                 source: {
-                  origin: GameUnitOrigin.Nondeck,
+                  origin,
                 },
                 unit: removedGameUnit.unit,
               }
@@ -174,6 +197,8 @@ export default class EffectAvenger {
     return {
       impacts: avenged,
       avengedUnits,
+      undiscarded,
+      unhanded,
     }
   }
 }
@@ -186,4 +211,6 @@ export interface RemovedGameUnit {
 export interface Avengings {
   impacts: ImpactsByUnitId
   avengedUnits: UnitDbObject[]
+  undiscarded: PlayersToDeckUnitDbObjects
+  unhanded: PlayersToDeckUnitDbObjects
 }

@@ -8,6 +8,7 @@ import {
   EffectDbObject,
   EffectKey,
   GameDbObject,
+  GamePlayerDbObject,
   GameStatus,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -76,13 +77,16 @@ export default class PlayUnitValidation {
       label: 'play units',
     })
 
-    const deckUnits = player.deck.hand.filter((hand) => hand.unit.toString() === unitId)
+    const deckUnits = (player.reviving ? player.deck.discard : player.deck.hand).filter(
+      (hand) => hand.unit.toString() === unitId
+    )
+    const pile = player.reviving ? 'discard' : 'hand'
     if (deckUnits.length === 0) {
-      const message = 'Unit not in hand.'
+      const message = `Unit not in ${pile}.`
       PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     } else if (deckUnits.length > 1) {
-      const message = `Found more than 1 unit with ID "${unitId}"`
+      const message = `Found more than 1 unit with ID "${unitId}" in ${pile}`
       PlayUnitValidation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`)
       throw new PresentableError(`${message}.`)
     }
@@ -113,12 +117,95 @@ export default class PlayUnitValidation {
         ids: unit.effects,
       })
     }
-    const isDecoy = effects && effects.some((effect) => effect.key === EffectKey.Decoy)
-    const isSpy = effects && effects.some((effect) => effect.key === EffectKey.Spy)
-    const isWeather = effects && effects.some((effect) => effect.key === EffectKey.Weather)
+    const isDecoy = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Decoy))
+    const isSpy = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Spy))
+    const isWeather = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Weather))
+    const isMedic = Boolean(effects && effects.some((effect) => effect.key === EffectKey.Medic))
 
-    let roundUnits: UnitDbObject[] | undefined = undefined
+    combat = PlayUnitValidation.validateCombat({
+      combat,
+      isDecoy,
+      isWeather,
+      logPrefix,
+      unit,
+    })
 
+    PlayUnitValidation.validateModifier({
+      combat,
+      game,
+      logPrefix,
+      player,
+      unit,
+    })
+
+    const { combat: decoyCombat, roundUnits } = await PlayUnitValidation.validateDecoy({
+      combat,
+      game,
+      isDecoy,
+      logPrefix,
+      resolverUtil,
+      targetId,
+      unit,
+      userId,
+    })
+    combat = decoyCombat
+
+    targetId = PlayUnitValidation.validateSpy({
+      game,
+      isSpy,
+      logPrefix,
+      resolverUtil,
+      targetId,
+      userId,
+    })
+
+    PlayUnitValidation.validateMedic({
+      logPrefix,
+      player,
+      unit,
+    })
+
+    return {
+      combat: isWeather ? undefined : combat,
+      deckUnit,
+      game,
+      logPrefix,
+      unit,
+      targetId,
+      roundUnits,
+      effects,
+      isDecoy: isDecoy,
+      isSpy: isSpy,
+      isWeather: isWeather,
+      isMedic: isMedic,
+      userId,
+    }
+  }
+
+  /**
+   * Validates inputs for Combat.
+   *
+   * @param config The configuration used to validate the Combat.
+   * @param config.combat The Combat row the unit is for.
+   * @param config.isDecoy Whether or not the unit being played is a Decoy.
+   * @param config.isWeather Whether or not the unit being played is has the Weather effect.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.unit The new Unit being played.
+   * @returns The combat row the decoy is being deployed to as well as all the Unit database objects on the battlefield.
+   */
+  private static validateCombat({
+    isDecoy,
+    isWeather,
+    unit,
+    combat,
+    logPrefix,
+  }: {
+    isDecoy: boolean
+    isWeather: boolean
+    unit: UnitDbObject
+    combat: Combat | null | undefined
+    logPrefix: string
+  }): Combat | null | undefined {
     if (!isDecoy && !isWeather) {
       if (unit.combats && unit.combats.length > 1 && !combat) {
         const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
@@ -131,10 +218,37 @@ export default class PlayUnitValidation {
         throw new PresentableError(message)
       }
       if (unit.combats && unit.combats.length === 1 && !combat) {
-        combat = unit.combats[0] as Combat
+        return unit.combats[0] as Combat
       }
     }
+    if (combat) {
+      return combat
+    }
+  }
 
+  /**
+   * Validates inputs if playing a combat row modifier.
+   *
+   * @param config The configuration used to validate the potential modifier.
+   * @param config.game The Game the potential modifier is being played on.
+   * @param config.player The Player that is playing the potential modifier.
+   * @param config.unit The Unit which is potentially a combat row modifier.
+   * @param config.combat The Combat row the potential modifier is being deployed to.
+   * @param config.logPrefix What to prepend log statements with.
+   */
+  private static validateModifier({
+    game,
+    player,
+    unit,
+    combat,
+    logPrefix,
+  }: {
+    game: GameDbObject
+    player: GamePlayerDbObject
+    unit: UnitDbObject
+    combat: Combat | null | undefined
+    logPrefix: string
+  }) {
     if (unit.modifier) {
       const round = player.rounds[game.round - 1]
       const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege
@@ -144,6 +258,42 @@ export default class PlayUnitValidation {
         throw new PresentableError(message)
       }
     }
+  }
+
+  /**
+   * Validates inputs if playing a Decoy.
+   *
+   * @param config The configuration used to perform the validation.
+   * @param config.combat The Combat row the potential decoy is for.
+   * @param config.game The game the potential Decoy is being played on.
+   * @param config.isDecoy Whether or not the unit being played is a Decoy.
+   * @param config.targetId The TargetId for the decoy that is supplied by the user.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.resolverUtil The object used to perform common resolution tasks.
+   * @param config.unit The new Unit being played.
+   * @param config.userId The ID of the user performing the move.
+   * @returns The combat row the decoy is being deployed to as well as all the Unit database objects on the battlefield.
+   */
+  private static async validateDecoy({
+    combat,
+    game,
+    isDecoy,
+    targetId,
+    logPrefix,
+    resolverUtil,
+    unit,
+    userId,
+  }: {
+    combat: Combat | undefined | null
+    game: GameDbObject
+    isDecoy: boolean
+    targetId: string | undefined | null
+    logPrefix: string
+    resolverUtil: ResolverUtil
+    unit: UnitDbObject
+    userId: ObjectId
+  }): Promise<ValidatedDecoy> {
+    let roundUnits: UnitDbObject[] | undefined = undefined
 
     if (isDecoy) {
       if (!targetId) {
@@ -173,7 +323,7 @@ export default class PlayUnitValidation {
         game,
         unitBeingPlayed: unit,
       })
-      const target = roundUnits.find((unit) => unit._id.toString() === targetId)
+      const target = roundUnits.find((roundUnit) => roundUnit._id.toString() === targetId)
       if (!target) {
         const message = `Could not find Unit for target "${targetId}".`
         PlayUnitValidation.logger.error(`${logPrefix} failed: ${message}`)
@@ -197,6 +347,39 @@ export default class PlayUnitValidation {
       combat = fieldUnit.row as Combat
     }
 
+    return {
+      roundUnits,
+      combat,
+    }
+  }
+
+  /**
+   * Validates inputs if playing a Spy.
+   *
+   * @param config The configuration used to perform the validation.
+   * @param config.game The game the potential Spy is being played on.
+   * @param config.isSpy Whether or not the unit being played is a Spy.
+   * @param config.targetId The TargetId for the Spy that is supplied by the user.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.resolverUtil The object used to perform common resolution tasks.
+   * @param config.userId The ID of the user performing the move.
+   * @returns The ID of the opponent being targeted for spying on.
+   */
+  private static validateSpy({
+    game,
+    isSpy,
+    logPrefix,
+    resolverUtil,
+    targetId,
+    userId,
+  }: {
+    game: GameDbObject
+    isSpy: boolean
+    logPrefix: string
+    resolverUtil: ResolverUtil
+    targetId: string | undefined | null
+    userId: ObjectId
+  }): string | undefined | null {
     if (isSpy) {
       const opponents = game.players.filter((player) => player.user.toString() !== userId.toString())
       if (!targetId) {
@@ -227,23 +410,37 @@ export default class PlayUnitValidation {
       }
     }
 
-    if (isWeather) {
-      combat = undefined
-    }
+    return targetId
+  }
 
-    return {
-      combat,
-      deckUnit,
-      game,
-      logPrefix,
-      unit,
-      targetId,
-      roundUnits,
-      effects,
-      isDecoy: !!isDecoy,
-      isSpy: !!isSpy,
-      isWeather: !!isWeather,
-      userId,
+  /**
+   * Validates inputs if playing a Medic.
+   *
+   * @param config The configuration used to perform the validation.
+   * @param config.player The Player that is playing the Medic.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.unit The new Unit being played.
+   */
+  private static validateMedic({
+    player,
+    unit,
+    logPrefix,
+  }: {
+    player: GamePlayerDbObject
+    unit: UnitDbObject
+    logPrefix: string
+  }) {
+    if (player.reviving) {
+      if (unit.hero) {
+        const message = `Invalid unit "${unit._id}": Cannot revive hero units.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (unit.special) {
+        const message = `Invalid unit "${unit._id}": Cannot revive special units.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
     }
   }
 }
@@ -260,5 +457,11 @@ export interface ValidatedPlayUnit {
   isDecoy: boolean
   isSpy: boolean
   isWeather: boolean
+  isMedic: boolean
   userId: ObjectId
+}
+
+export interface ValidatedDecoy {
+  roundUnits: UnitDbObject[] | undefined
+  combat: Combat | undefined | null
 }

@@ -2,7 +2,7 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
-import clearBattlefieldUnits from './clear-battlefield-units'
+import DiscardRoundUnits from './discard-round-units'
 import EffectAvenger from '../play-unit/effect-avenger'
 import { GameDbObject, GameUnitOrigin, MovePassDbObject, MoveReasonType } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
@@ -61,7 +61,7 @@ export default class PlayPassImplementation {
         game,
         logPrefix,
       })
-      clearBattlefieldUnits(game)
+      DiscardRoundUnits.discardRoundUnits(game)
 
       const gameOver = IsGameOver.isGameOver({
         game,

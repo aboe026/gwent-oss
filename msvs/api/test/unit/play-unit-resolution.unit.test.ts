@@ -4,6 +4,11 @@ import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolv
 import EventManager from '../../src/graphql/event-manager'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
+import {
+  PlayersToDeckUnitDbObjects,
+  PlayersToDeckUnits,
+} from '../../src/graphql/resolvers/mutations/util/players-to-deck-units'
+import PlayersToDeckUnitsResolver from '../../src/graphql/resolvers/types/players-to-deck-units-resolver'
 import PlayUnitResolution from '../../src/graphql/resolvers/mutations/play-unit/play-unit-resolution'
 import { PubSubEvents } from '@gwent/constants'
 import TestUtil from '../util/test-util'
@@ -12,6 +17,18 @@ describe('play-unit-resolution', () => {
   it('returns objects', async () => {
     await testPlayUnitResolution({})
   })
+  it('resolves discarded and undiscards for user', async () => {
+    const userId = new ObjectId()
+    await testPlayUnitResolution({
+      userId,
+      discards: {
+        [userId.toString()]: [TestUtil.getDbDeckUnit({})],
+      },
+      undiscards: {
+        [userId.toString()]: [TestUtil.getDbDeckUnit({})],
+      },
+    })
+  })
   it('logs to trace if enabled', async () => {
     await testPlayUnitResolution({
       traceEnabled: true,
@@ -19,9 +36,20 @@ describe('play-unit-resolution', () => {
   })
 })
 
-async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean }) {
+async function testPlayUnitResolution({
+  userId = new ObjectId(),
+  discards = {},
+  undiscards = {},
+  unhands = {},
+  traceEnabled,
+}: {
+  userId?: ObjectId
+  discards?: PlayersToDeckUnitDbObjects
+  undiscards?: PlayersToDeckUnitDbObjects
+  unhands?: PlayersToDeckUnitDbObjects
+  traceEnabled?: boolean
+}) {
   const logPrefix = 'log-prefix'
-  const userId = new ObjectId()
   const game = TestUtil.getDbGame({})
   const deckUnit = TestUtil.getDbDeckUnit({})
   const gameDeck = TestUtil.getDbGameDeck({})
@@ -34,11 +62,31 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
     deckUnit,
   })
   const resolvedHanded = [TestUtil.getDeckUnit({})]
+  const resolvedDiscarded = [TestUtil.getDeckUnit({})]
+  const resolvedUndiscarded = [TestUtil.getDeckUnit({})]
   const resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
+  const resolvedDiscards: PlayersToDeckUnits = {
+    [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+  }
+  const resolvedUndiscards: PlayersToDeckUnits = {
+    [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+  }
+  const resolvedUnhands: PlayersToDeckUnits = {
+    [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+  }
   const gameResolverFromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
   const deckUnitResolverFromObjectSpy = jest.spyOn(DeckUnitResolver, 'fromObject').mockResolvedValue(resolvedDeckUnit)
   const gameDeckResolverFromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(resolvedGameDeck)
-  const deckUnitFromArraySpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(resolvedHanded)
+  const playersToDeckUnitsSpy = jest
+    .spyOn(PlayersToDeckUnitsResolver, 'fromObject')
+    .mockResolvedValueOnce(resolvedDiscards)
+    .mockResolvedValueOnce(resolvedUndiscards)
+    .mockResolvedValueOnce(resolvedUnhands)
+  const deckUnitFromArraySpy = jest
+    .spyOn(DeckUnitResolver, 'fromArray')
+    .mockResolvedValueOnce(resolvedHanded)
+    .mockResolvedValueOnce(resolvedDiscarded)
+    .mockResolvedValueOnce(resolvedUndiscarded)
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const traceSpy = jest.fn().mockImplementation()
@@ -55,6 +103,9 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
       logPrefix,
       handDeckUnitsAdded: handed,
       userId,
+      discards,
+      undiscards,
+      unhands,
     })
   ).resolves.toEqual(maskedGame)
 
@@ -79,10 +130,21 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
       },
     ],
   ])
+  expect(playersToDeckUnitsSpy.mock.calls).toEqual([[discards], [undiscards], [unhands]])
   expect(deckUnitFromArraySpy.mock.calls).toEqual([
     [
       {
         deckUnits: handed,
+      },
+    ],
+    [
+      {
+        deckUnits: discards[userId.toString()] || [],
+      },
+    ],
+    [
+      {
+        deckUnits: undiscards[userId.toString()] || [],
       },
     ],
   ])
@@ -93,6 +155,9 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
         unitPlayedOnGame: {
           game: resolvedGame,
           unit: resolvedDeckUnit,
+          discarded: resolvedDiscards,
+          undiscarded: resolvedUndiscards,
+          unhanded: resolvedUnhands,
         },
       },
     ],
@@ -104,6 +169,8 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
           game: resolvedGame,
           unit: resolvedDeckUnit,
           handed: resolvedHanded,
+          discarded: resolvedDiscarded,
+          undiscarded: resolvedUndiscarded,
         },
       },
     ],
@@ -123,6 +190,8 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
           [`${logPrefix} resolvedUnit: "${JSON.stringify(resolvedDeckUnit)}"`],
           [`${logPrefix} resolvedGameDeck: "${JSON.stringify(resolvedGameDeck)}"`],
           [`${logPrefix} handed: "${JSON.stringify(resolvedHanded)}"`],
+          [`${logPrefix} discarded: "${JSON.stringify(resolvedDiscarded)}"`],
+          [`${logPrefix} undiscarded: "${JSON.stringify(resolvedUndiscarded)}"`],
         ]
       : []
   )

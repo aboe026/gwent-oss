@@ -165,3 +165,9 @@ export interface MoveForRound {
   round: number
   playerMoves: PlayerMove[]
 }
+
+export enum GameDeckCardType {
+  Hand = 'hand',
+  Lost = 'lost',
+  Draw = 'draw',
+}

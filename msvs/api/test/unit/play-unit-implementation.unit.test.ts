@@ -10,6 +10,7 @@ import {
   FieldUnitDbObject,
   GameDbObject,
   GameDeckDbObject,
+  GameUnitDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -318,6 +319,36 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes medic impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const fieldUnit = TestUtil.getDbFieldUnit({})
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnit),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      medics: {
+        [fieldUnit.unit.toString()]: impacts,
+      },
+      isMedic: true,
+      medicingUnit: TestUtil.getDbGameUnit({}),
+      expectedGameDeck: player.deck,
+    })
+  })
   it('passes decoy impacts to move', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -470,6 +501,7 @@ async function testPlayUnitImplementation({
   isDecoy = false,
   isSpy = false,
   isWeather = false,
+  isMedic = false,
   avengers = {},
   avengedUnits = [],
   scorches = {},
@@ -477,11 +509,13 @@ async function testPlayUnitImplementation({
   musteredUnits = [],
   musteredOrigins = {},
   mardroemes = {},
+  medics = {},
   battlefieldWeathers = {},
   scoreWeathers = {},
   transformedUnits = [],
   transformedFieldUnits = [],
   mardroemingFieldUnit,
+  medicingUnit,
   bonds = {},
   horns = {},
   morales = {},
@@ -503,6 +537,7 @@ async function testPlayUnitImplementation({
   isDecoy?: boolean
   isSpy?: boolean
   isWeather?: boolean
+  isMedic?: boolean
   avengers?: ImpactsByUnitId
   avengedUnits?: UnitDbObject[]
   scorches?: ImpactsByUnitId
@@ -510,11 +545,13 @@ async function testPlayUnitImplementation({
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
   mardroemes?: ImpactsByUnitId
+  medics?: ImpactsByUnitId
   battlefieldWeathers?: ImpactsByUnitId
   scoreWeathers?: ImpactsByUnitId
   transformedUnits?: UnitDbObject[]
   transformedFieldUnits?: FieldUnitDbObject[]
   mardroemingFieldUnit?: FieldUnitDbObject
+  medicingUnit?: GameUnitDbObject
   bonds?: ImpactsByUnitId
   horns?: ImpactsByUnitId
   morales?: ImpactsByUnitId
@@ -547,6 +584,15 @@ async function testPlayUnitImplementation({
   const mardroemeEffect = TestUtil.getDbEffect({
     key: EffectKey.Mardroeme,
   })
+  const discards = {
+    [new ObjectId().toString()]: [TestUtil.getDbDeckUnit({})],
+  }
+  const undiscards = {
+    [new ObjectId().toString()]: [TestUtil.getDbDeckUnit({})],
+  }
+  const unhands = {
+    [new ObjectId().toString()]: [TestUtil.getDbDeckUnit({})],
+  }
   const getRoundUnitsSpy = jest.spyOn(getRoundUnits, 'default').mockResolvedValue(units)
   const getUnitEffectsSpy = jest
     .spyOn(getUnitEffects, 'default')
@@ -570,6 +616,11 @@ async function testPlayUnitImplementation({
       decoys,
       deckUnitsAddedToHand,
       spies,
+      discards,
+      undiscards,
+      unhands,
+      medicingUnit,
+      medics,
     })
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
@@ -605,6 +656,7 @@ async function testPlayUnitImplementation({
     isDecoy,
     isSpy,
     isWeather,
+    isMedic,
     userId: new ObjectId(),
   })
   if (error) {
@@ -614,6 +666,9 @@ async function testPlayUnitImplementation({
       game: updatedGame,
       gameDeck: expectedGameDeck,
       handDeckUnitsAdded: deckUnitsAddedToHand,
+      discards,
+      undiscards,
+      unhands,
     })
   }
 
@@ -669,6 +724,7 @@ async function testPlayUnitImplementation({
               isDecoy,
               isSpy,
               isWeather,
+              isMedic,
             },
           ],
         ]
@@ -717,6 +773,8 @@ async function testPlayUnitImplementation({
               mardroemingFieldUnit,
               weathers: Object.keys(battlefieldWeathers).length > 0 ? battlefieldWeathers : scoreWeathers,
               isWeather,
+              medicingUnit,
+              medics,
             },
           ],
         ]

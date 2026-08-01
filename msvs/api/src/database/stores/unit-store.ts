@@ -1,4 +1,4 @@
-import { Document, Filter, FilterOperators, FindOptions, ObjectId } from 'mongodb'
+import { Document, Filter, FilterOperators, FindOptions, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
@@ -50,11 +50,11 @@ export default class UnitStore extends Store {
     strength,
   }: AddUnitInput): Promise<UnitDbObject> {
     UnitStore.logger.debug(`Adding unit with name "${name}"`)
-    const unit: Document = {
+    const unit: WithoutId<UnitDbObject> = {
       combats,
       created: new Date(),
-      deckable,
-      dlc: dlc && new ObjectId(dlc),
+      deckable: !!deckable,
+      dlc: dlc ? new ObjectId(dlc) : undefined,
       effectPrefix,
       effects: effects.map((effectId) => new ObjectId(effectId)),
       faction: new ObjectId(faction),
@@ -84,6 +84,8 @@ export default class UnitStore extends Store {
    * @param options.ignoreIds List of ObjectIds to ignore in the database.
    * @param options.namePrefix Scope units to those whose name start with the given string.
    * @param options.names Scope units to those which have the exact names.
+   * @param options.specials Scope units to those that are special or not. Leave undefined to get either.
+   * @param options.heroes Scope units to those that are heroes or not. Leave undefined to get either.
    * @param options.limit The number of Units to limit results to.
    * @returns Units matching criteria.
    */
@@ -93,6 +95,8 @@ export default class UnitStore extends Store {
     ids,
     namePrefix,
     names,
+    specials,
+    heroes,
     ignoreIds,
     limit,
   }: GetUnitsInput): Promise<UnitDbObject[]> {
@@ -124,6 +128,12 @@ export default class UnitStore extends Store {
       filter.name = {
         $in: names,
       }
+    }
+    if (specials !== undefined) {
+      filter.special = specials
+    }
+    if (heroes !== undefined) {
+      filter.hero = heroes
     }
     if (ignoreIds) {
       if (!filter._id) {
@@ -157,7 +167,7 @@ export default class UnitStore extends Store {
 export interface AddUnitInput {
   combats: Combat[]
   deckable?: boolean
-  dlc: ObjectId | string | null
+  dlc: ObjectId | string | undefined | null
   effects: (string | ObjectId)[]
   faction: string | ObjectId
   hero?: boolean
@@ -179,5 +189,7 @@ export interface GetUnitsInput {
   ignoreIds?: (string | ObjectId)[]
   namePrefix?: string
   names?: string[]
+  specials?: boolean
+  heroes?: boolean
   limit?: number
 }

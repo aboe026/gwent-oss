@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
-import * as clearBattlefieldUnits from '../../src/graphql/resolvers/mutations/play-pass/clear-battlefield-units'
+import DiscardRoundUnits from '../../src/graphql/resolvers/mutations/play-pass/discard-round-units'
 import EffectAvenger from '../../src/graphql/resolvers/mutations/play-unit/effect-avenger'
 import GameStore from '../../src/database/stores/game-store'
 import { GameUnitOrigin, MoveReasonType } from '@gwent/graphql-schema/database-typings'
@@ -123,7 +123,7 @@ async function testPlayPassImplementation({
   const addMoveToPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToPlayer').mockImplementation()
   const isRoundOverSpy = jest.spyOn(IsRoundOver, 'isRoundOver').mockReturnValue(roundOver)
   const setRoundResultsSpy = jest.spyOn(SetRoundResults, 'setRoundResults').mockImplementation()
-  const clearBattlefieldUnitsSpy = jest.spyOn(clearBattlefieldUnits, 'default').mockImplementation()
+  const discardRoundUnitsSpy = jest.spyOn(DiscardRoundUnits, 'discardRoundUnits').mockImplementation()
   const isGameOverSpy = jest.spyOn(IsGameOver, 'isGameOver').mockReturnValue(gameOver)
   const setGameVictorsSpy = jest.spyOn(SetGameVictors, 'setGameVictors').mockImplementation()
   const setTurnForNextRoundSpy = jest.spyOn(SetTurnForNextRound, 'setTurnForNextRound').mockImplementation()
@@ -187,7 +187,7 @@ async function testPlayPassImplementation({
         ]
       : []
   )
-  expect(clearBattlefieldUnitsSpy.mock.calls).toEqual(roundOver ? [[game]] : [])
+  expect(discardRoundUnitsSpy.mock.calls).toEqual(roundOver ? [[game]] : [])
   expect(isGameOverSpy.mock.calls).toEqual(
     roundOver
       ? [
@@ -303,6 +303,8 @@ async function testSummonAvengers({ avengers }: { avengers?: ImpactsByUnitId }) 
     avengeRemovedUnitsSpy.mockResolvedValue({
       avengedUnits,
       impacts: avengers,
+      undiscarded: {},
+      unhanded: {},
     })
   }
   const newUnitIndirectSpy = jest.spyOn(UpdateHistory, 'newUnitIndirect').mockImplementation()

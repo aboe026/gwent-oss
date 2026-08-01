@@ -87,15 +87,15 @@ enum GameDeckStatus {
 }
 
 enum MoveReasonType {
-  "Deployment by a game player to the battlefield."
+  "Deployed by a game player to field."
   DEPLOY
-  "Mustered when matching Muster unit added to battlefield."
+  "Mustered when matching Muster unit added to field."
   MUSTER
-  "Revived by Medic added to battlefield."
+  "Revived by Medic added to field."
   REVIVE
-  "Summoned when matching Avenger unit removed from battlefield."
+  "Summoned when matching Avenger unit removed from field."
   SUMMON
-  "Transformed when Mardroeme unit added to battlefield row."
+  "Transformed by Mardroeme unit in field row."
   TRANSFORM
 }
 
@@ -104,7 +104,7 @@ enum GameUnitOrigin {
   HAND
   "Unit came from the users Lost pile."
   Discard
-  "Unit came from an opponent placing it on their battlefield."
+  "Unit came from an opponent placing it on their field."
   OPPONENT
   "Unit came from the users Draw pile."
   UNDRAWN
@@ -225,6 +225,8 @@ type GamePlayer @entity(additionalFields: [{ path: "deck", type: "GameDeckDbObje
   order: Int @column
   "Whether or not a user has their game deck set to play the game."
   ready: Boolean! @column
+  "Whether or not the player is currently choosing a Discarded Unit to revive with a Medic."
+  reviving: Boolean! @column
   rounds: [PlayerRound!]! @column(overrideType: "Array<PlayerRoundDbObject>")
   user: User! @column(overrideType: "ObjectId")
 }
@@ -424,13 +426,24 @@ type RoundEndedForDeck {
 type UnitPlayedFromDeck {
   deck: GameDeck!
   game: Game!
+  "Units added to the hand pile due to the new unit played."
   handed: [DeckUnit!]
+  "Units added to the discard pile due to the new unit played."
+  discarded: [DeckUnit!]
+  "Units removed from the discard pile due to the new unit played."
+  undiscarded: [DeckUnit!]
   unit: DeckUnit!
 }
 
 type UnitPlayedOnGame {
   game: Game!
   unit: DeckUnit!
+  "Units added to the discard pile due to the new unit played."
+  discarded: [DeckUnit!]
+  "Units removed from the discard pile due to the new unit played."
+  undiscarded: [DeckUnit!]
+  "Units removed from the hand pile due to the new unit played."
+  unhanded: [DeckUnit!]
 }
 
 input DeckUnitInput {

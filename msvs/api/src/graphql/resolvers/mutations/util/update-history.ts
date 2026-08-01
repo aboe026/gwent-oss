@@ -49,9 +49,11 @@ export default class UpdateHistory {
    * @param config.spies Any potential units that were spied by the new battlefield unit being played.
    * @param config.targetId The potential target an effect is being applied to.
    * @param config.weathers Any potential weather units that were deployed by the new battlefield unit being played.
+   * @param config.medics Any potential medic units deployed to the battlefield.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    * @param config.isWeather Whether or not the new unit is weathering the battlefield.
    * @param config.combat The combat row the new unit is being deployed into.
+   * @param config.medicingUnit If the unit is being revived by a Medic, the medic which is reviving the unit.
    */
   static newUnitDeployed({
     game,
@@ -70,10 +72,12 @@ export default class UpdateHistory {
     horns,
     morales,
     weathers,
+    medics,
     musteredOrigins,
     targetId,
     isWeather,
     combat,
+    medicingUnit,
   }: {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
@@ -91,10 +95,12 @@ export default class UpdateHistory {
     horns: ImpactsByUnitId
     morales: ImpactsByUnitId
     weathers: ImpactsByUnitId
+    medics: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
     targetId: string | null | undefined
     isWeather: boolean
     combat: Combat | null | undefined
+    medicingUnit?: GameUnitDbObject | undefined
   }) {
     const fieldUnit = GetFieldUnits.getFieldUnit({
       game,
@@ -111,6 +117,7 @@ export default class UpdateHistory {
       musters,
       scorches,
       spies,
+      medics,
       weathers
     )[deckUnit.unit.toString()]
     const updatedImpacts = UpdateHistory.updateImpactFieldUnits({
@@ -129,7 +136,7 @@ export default class UpdateHistory {
       unit: gameUnit,
       impacts: updatedImpacts,
       reason: {
-        type: MoveReasonType.Deploy,
+        type: medicingUnit ? MoveReasonType.Revive : MoveReasonType.Deploy,
       },
       source: {
         origin: GameUnitOrigin.Hand,
@@ -138,6 +145,9 @@ export default class UpdateHistory {
     }
     if (targetId) {
       move.target = new ObjectId(targetId)
+    }
+    if (medicingUnit) {
+      move.reason.unit = medicingUnit
     }
     UpdateHistory.addMoveToPlayer({
       game,
@@ -166,6 +176,7 @@ export default class UpdateHistory {
           morales,
           avengers,
           musters,
+          medics,
           weathers,
           origin: GameUnitOrigin.Nondeck,
           playerId,
@@ -210,6 +221,7 @@ export default class UpdateHistory {
           morales,
           musters,
           weathers,
+          medics,
           origin,
           playerId,
           reason: {
@@ -235,6 +247,7 @@ export default class UpdateHistory {
           logPrefix,
           mardroemes,
           morales,
+          medics,
           musters,
           avengers: {
             [avengerUnitId]: [avengee],
@@ -268,6 +281,7 @@ export default class UpdateHistory {
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
+   * @param config.medics Any potential medic units deployed to the battlefield.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.avengers Any potential units that were summoned to the battlefield due to avengers leaving.
@@ -290,6 +304,7 @@ export default class UpdateHistory {
     scorches = {},
     mardroemes = {},
     musters = {},
+    medics = {},
     bonds = {},
     horns = {},
     avengers = {},
@@ -310,6 +325,7 @@ export default class UpdateHistory {
     scorches?: ImpactsByUnitId
     mardroemes?: ImpactsByUnitId
     musters?: ImpactsByUnitId
+    medics?: ImpactsByUnitId
     bonds?: ImpactsByUnitId
     horns?: ImpactsByUnitId
     avengers?: ImpactsByUnitId
@@ -339,6 +355,7 @@ export default class UpdateHistory {
       morales,
       musters,
       scorches,
+      medics,
       spies,
       weathers
     )[unitId.toString()]

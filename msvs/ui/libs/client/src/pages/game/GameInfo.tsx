@@ -22,7 +22,7 @@ import {
   UnitEffectFragmentDoc,
   WeatherUnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
-import { FullUnitCards, GameDeckProps, GameProps, PlayUnitProps, UnitForPlayer } from './GameProps'
+import { FullUnitCards, GameDeckCardType, GameDeckProps, GameProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
 import { retryCheckingAuth } from '../../util/error-util'
@@ -36,6 +36,7 @@ import './GameInfo.css'
 export default function GameInfo({
   cardSelected,
   coinTossVisible,
+  deckCardsViewing,
   gameProps,
   gameDeckProps,
   opponent,
@@ -43,12 +44,14 @@ export default function GameInfo({
   playUnitProps,
   selectedCardInHand,
   self,
+  setDeckCardsViewing,
   setPassConfirmationOpen,
   setCardSelected,
   setFullUnits,
   scrollHistoryIntoView,
 }: {
   coinTossVisible: boolean
+  deckCardsViewing: GameDeckCardType
   gameDeckProps: GameDeckProps
   gameProps: GameProps
   cardSelected: UnitForPlayer | undefined
@@ -57,6 +60,7 @@ export default function GameInfo({
   playUnitProps: PlayUnitProps
   selectedCardInHand: boolean
   self: GamePlayerFragment
+  setDeckCardsViewing: Dispatch<SetStateAction<GameDeckCardType>>
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
@@ -65,6 +69,8 @@ export default function GameInfo({
   const sharedProps = {
     cardSelected,
     coinTossVisible,
+    deckCardsViewing,
+    setDeckCardsViewing,
     setPassConfirmationOpen,
     playUnitLoading: playUnitProps.loading,
     playPassLoading,
@@ -277,6 +283,7 @@ function renderSharedInfo({
 function renderPlayerInfo({
   cardSelected,
   coinTossVisible,
+  deckCardsViewing,
   deckName,
   deckUpdated,
   discard,
@@ -289,11 +296,13 @@ function renderPlayerInfo({
   player,
   playPassLoading,
   playUnitLoading,
+  setDeckCardsViewing,
   setPassConfirmationOpen,
   undrawn,
 }: {
   cardSelected: UnitForPlayer | undefined
   coinTossVisible: boolean
+  deckCardsViewing: GameDeckCardType
   deckName?: string
   deckUpdated?: Date
   discard?: number
@@ -306,6 +315,7 @@ function renderPlayerInfo({
   player: GamePlayerFragment
   playPassLoading: boolean
   playUnitLoading: boolean
+  setDeckCardsViewing: Dispatch<SetStateAction<GameDeckCardType>>
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
   undrawn?: number
 }) {
@@ -363,8 +373,11 @@ function renderPlayerInfo({
         <>
           <div className="game-deck-section">
             {renderDeckInfo({
+              deckCardsViewing,
               discard,
               hand,
+              isSelf,
+              setDeckCardsViewing,
               undrawn,
             })}
           </div>
@@ -599,18 +612,46 @@ function renderLeader({ leader }: { leader?: GameLeaderFragment | null }) {
 /**
  * Information about the units in the Game for a player, and whether they have been drawn, are in hand, or have been lost.
  */
-function renderDeckInfo({ discard, hand, undrawn }: { discard?: number; hand?: number; undrawn?: number }) {
+function renderDeckInfo({
+  discard,
+  hand,
+  undrawn,
+  isSelf,
+  deckCardsViewing,
+  setDeckCardsViewing,
+}: {
+  discard?: number
+  hand?: number
+  undrawn?: number
+  isSelf: boolean
+  deckCardsViewing: GameDeckCardType
+  setDeckCardsViewing: Dispatch<SetStateAction<GameDeckCardType>>
+}) {
+  const sectionClassname = `${HTML_CLASSES.GamePlayerDeckSection} ${isSelf ? 'game-player-deck-section-self' : ''}`
+
   return (
     <>
-      <div className="game-player-deck-section" title="Cards remaining in deck to draw">
+      <div
+        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Draw ? HTML_CLASSES.GamePlayerDeckSectionHighlighted : ''}`}
+        title="Cards remaining in deck to draw"
+        onClick={() => isSelf && setDeckCardsViewing(GameDeckCardType.Draw)}
+      >
         <span className={HTML_CLASSES.GamePlayerUndrawnCount}>{undrawn}</span>
         <span>Draw</span>
       </div>
-      <div className="game-player-deck-section" title="Cards currently in hand">
+      <div
+        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Hand ? HTML_CLASSES.GamePlayerDeckSectionHighlighted : ''}`}
+        title="Cards currently in hand"
+        onClick={() => isSelf && setDeckCardsViewing(GameDeckCardType.Hand)}
+      >
         <span className={HTML_CLASSES.GamePlayerHandCount}>{hand}</span>
         <span>Hand</span>
       </div>
-      <div className="game-player-deck-section" title="Cards discarded or lost">
+      <div
+        className={`${sectionClassname} ${isSelf && deckCardsViewing === GameDeckCardType.Lost ? HTML_CLASSES.GamePlayerDeckSectionHighlighted : ''}`}
+        title="Cards discarded or lost"
+        onClick={() => isSelf && setDeckCardsViewing(GameDeckCardType.Lost)}
+      >
         <span className={HTML_CLASSES.GamePlayerDiscardCount}>{discard}</span>
         <span>Lost</span>
       </div>

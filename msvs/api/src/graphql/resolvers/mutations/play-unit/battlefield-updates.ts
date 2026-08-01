@@ -6,16 +6,19 @@ import {
   EffectDbObject,
   FieldUnitDbObject,
   GameDbObject,
+  GameUnitDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import EffectAvenger from './effect-avenger'
 import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
+import EffectMedic from './effect-medic'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
 import EffectSpy from './effect-spy'
 import EffectWeather from './effect-weather'
 import { ImpactsByUnitId } from '../../resolver-util'
+import { PlayersToDeckUnitDbObjects, mergePlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 
 /**
  * A class for altering the units present on the battlefield due to a player move.
@@ -38,6 +41,7 @@ export default class BattlefieldUpdates {
    * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @param config.isSpy Whether or not the new unit being played has the Spy effect.
    * @param config.isWeather Whether or not the new unit being played has the Weather effect.
+   * @param config.isMedic Whether or not the new unit being played has the Medic effect.
    * @returns Any impacts the new unit has on the battlefield.
    */
   static async modifyBattlefieldWithNewUnit({
@@ -52,6 +56,7 @@ export default class BattlefieldUpdates {
     isDecoy,
     isSpy,
     isWeather,
+    isMedic,
   }: {
     battlefieldUnits: UnitDbObject[]
     combat?: Combat | null
@@ -64,8 +69,12 @@ export default class BattlefieldUpdates {
     isDecoy: boolean
     isSpy: boolean
     isWeather: boolean
+    isMedic: boolean
   }): Promise<ModificationImpacts> {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
+    let discards: PlayersToDeckUnitDbObjects = {}
+    let undiscards: PlayersToDeckUnitDbObjects = {}
+    let unhands: PlayersToDeckUnitDbObjects = {}
 
     const weatherImpacts = EffectWeather.weatherBattlefield({
       game,
@@ -83,9 +92,7 @@ export default class BattlefieldUpdates {
       newDeckUnit,
       targetId,
     })
-    if (spiedUnitsAddedToHand.length > 0) {
-      deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
-    }
+    deckUnitsAddedToHand.push(...spiedUnitsAddedToHand)
 
     BattlefieldUpdates.addNewUnitToBattlefield({
       combat,
@@ -96,14 +103,30 @@ export default class BattlefieldUpdates {
       spy: isSpy,
     })
 
-    const scorches = EffectScorch.scorchBattlefield({
+    const { impacts: medicImpacts, medicingUnit } = await EffectMedic.deployMedicOrReviveUnit({
+      game,
+      isMedic,
+      isSpy,
+      targetId,
+      logPrefix,
+      newDeckUnit,
+    })
+
+    const { impacts: scorches, discards: scorchDiscards } = EffectScorch.scorchBattlefield({
       battlefieldUnits,
       effects,
       game,
       logPrefix,
       newDeckUnit,
     })
-    const { avengedUnits, impacts: avengers } = await EffectAvenger.avengeRemovedUnits({
+    discards = mergePlayersToDeckUnitDbObjects(discards, scorchDiscards)
+
+    const {
+      avengedUnits,
+      impacts: avengers,
+      undiscarded: avengerUndiscards,
+      unhanded: avengerUnhands,
+    } = await EffectAvenger.avengeRemovedUnits({
       battlefieldUnits,
       effects,
       game,
@@ -117,6 +140,9 @@ export default class BattlefieldUpdates {
           }
         }),
     })
+    undiscards = mergePlayersToDeckUnitDbObjects(undiscards, avengerUndiscards)
+    unhands = mergePlayersToDeckUnitDbObjects(unhands, avengerUnhands)
+
     const {
       impacts: musterImpacts,
       musteredUnits,
@@ -153,11 +179,15 @@ export default class BattlefieldUpdates {
     if (deckUnitAddedToHand) {
       deckUnitsAddedToHand.push(deckUnitAddedToHand)
     }
+
     return {
       avengers,
       avengedUnits,
       decoys: decoyImpacts,
       deckUnitsAddedToHand,
+      discards,
+      undiscards,
+      unhands,
       scorches,
       musters: musterImpacts,
       musteredUnits,
@@ -168,6 +198,8 @@ export default class BattlefieldUpdates {
       transformedFieldUnits,
       mardroemingFieldUnit,
       weathers: weatherImpacts,
+      medics: medicImpacts,
+      medicingUnit,
     }
   }
 
@@ -200,9 +232,15 @@ export default class BattlefieldUpdates {
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
       if (player.user.toString() === game.turn?.toString()) {
-        player.deck.hand = player.deck.hand.filter(
-          (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
-        )
+        if (player.reviving) {
+          player.deck.discard = player.deck.discard.filter(
+            (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
+          )
+        } else {
+          player.deck.hand = player.deck.hand.filter(
+            (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
+          )
+        }
         if (!weather && !spy && combat) {
           const fieldUnit: FieldUnitDbObject = {
             ...newDeckUnit,
@@ -240,6 +278,9 @@ interface ModificationImpacts {
   avengedUnits: UnitDbObject[]
   decoys: ImpactsByUnitId
   deckUnitsAddedToHand: DeckUnitDbObject[]
+  discards: PlayersToDeckUnitDbObjects
+  undiscards: PlayersToDeckUnitDbObjects
+  unhands: PlayersToDeckUnitDbObjects
   scorches: ImpactsByUnitId
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]
@@ -249,5 +290,7 @@ interface ModificationImpacts {
   transformedUnits: UnitDbObject[]
   transformedFieldUnits: FieldUnitDbObject[]
   mardroemingFieldUnit: FieldUnitDbObject | undefined
+  medics: ImpactsByUnitId
+  medicingUnit: GameUnitDbObject | undefined
   weathers: ImpactsByUnitId
 }

@@ -50,6 +50,7 @@ import { DeckUnit as DeckUnitRaw } from '@gwent/graphql-schema/apollo-raw-typing
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import {
   FullUnitCards,
+  GameDeckCardType,
   GameDeckProps,
   GameProps,
   MoveForRound,
@@ -232,8 +233,7 @@ export default function GamePage() {
           },
           (previous) => {
             if (previous?.gameDeck && game) {
-              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
-              const battlefieldUnitIds: string[] = []
+              const nonSpyFieldUnitIds: string[] = []
               const player = data.playUnit.players.find((player) => player.user.name === user.name)
               if (!player) {
                 throw Error(
@@ -246,20 +246,60 @@ export default function GamePage() {
                 ...playerRound.ranged.units,
                 ...playerRound.siege.units,
               ]) {
-                battlefieldUnitIds.push(unit.unit.id)
+                if (!unit.unit.effects || !unit.unit.effects.some((effect) => effect.key === EffectKey.Spy)) {
+                  nonSpyFieldUnitIds.push(unit.unit.id)
+                }
               }
               for (const row of [playerRound.close, playerRound.ranged, playerRound.siege]) {
                 if (row.modifier) {
-                  battlefieldUnitIds.push(row.modifier.unit.id)
+                  nonSpyFieldUnitIds.push(row.modifier.unit.id)
                 }
               }
-              const unitsAddedToHand: DeckUnitFragment[] = []
-              const unitPlayed = previous.gameDeck.hand.find((deckUnit) => {
+
+              let newHand = [...previous.gameDeck.hand]
+              const newDiscard = [...previous.gameDeck.discard]
+              let newUndrawn = [...previous.gameDeck.undrawn]
+              let unitDeployed: DeckUnitFragment | undefined = undefined
+              // ensure unit just played removed from hand (or discard if being revived)
+              const handUnitIndex = previous.gameDeck.hand.findIndex((deckUnit) => {
                 return deckUnit.unit.id === variables?.unit
               })
+              if (handUnitIndex >= 0) {
+                unitDeployed = newHand[handUnitIndex]
+                newHand.splice(handUnitIndex, 1)
+              } else {
+                const discardUnitIndex = previous.gameDeck.discard.findIndex((deckUnit) => {
+                  return deckUnit.unit.id === variables?.unit
+                })
+                if (discardUnitIndex >= 0) {
+                  unitDeployed = newDiscard[discardUnitIndex]
+                  newDiscard.splice(discardUnitIndex, 1)
+                }
+              }
+              // if newly deployed unit is not on the battlefield, assume discarded
+              if (unitDeployed && !nonSpyFieldUnitIds.includes(useFragment(UnitFragmentDoc, unitDeployed.unit).id)) {
+                newDiscard.push(unitDeployed as DeckUnitRaw)
+              }
+
+              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
+
+              // remove mustered units from hand and undrawn
               if (
-                unitPlayed?.unit.effects &&
-                unitPlayed.unit.effects.some((effect) => effect.key === EffectKey.Decoy)
+                cardSelectedUnit.effects &&
+                cardSelectedUnit.effects.some(
+                  (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Muster
+                )
+              ) {
+                newHand = newHand.filter((deckUnit) => !nonSpyFieldUnitIds.includes(deckUnit.unit.id))
+                newUndrawn = newUndrawn.filter((deckUnit) => !nonSpyFieldUnitIds.includes(deckUnit.unit.id))
+              }
+
+              // add decoyed unit to hand
+              if (
+                cardSelectedUnit.effects &&
+                cardSelectedUnit.effects.some(
+                  (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy
+                )
               ) {
                 const previousGame = useFragment(GameFragmentDoc, gameData?.game)
                 if (previousGame) {
@@ -304,19 +344,22 @@ export default function GamePage() {
                   if (!targetUnit) {
                     throw Error(`Could not find target unit "${variables?.target}" in previous game`)
                   }
-                  unitsAddedToHand.push(targetUnit)
+                  if (
+                    !newHand
+                      .map((handUnit) => handUnit.unit.id)
+                      .includes(useFragment(UnitFragmentDoc, targetUnit.unit).id)
+                  ) {
+                    newHand.push(targetUnit as DeckUnitRaw)
+                  }
                 }
               }
+
               return {
                 gameDeck: {
                   ...previous.gameDeck,
-                  hand: [
-                    ...previous.gameDeck.hand.filter(
-                      (deckUnit) =>
-                        deckUnit.unit.id !== cardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
-                    ),
-                    ...(unitsAddedToHand as DeckUnitRaw[]),
-                  ],
+                  hand: newHand,
+                  discard: newDiscard,
+                  undrawn: newUndrawn,
                 },
               }
             }
@@ -427,6 +470,8 @@ function ExistingGame({
   const [coinTossVisible, setCoinTossVisible] = useState(false)
   const [fullUnits, setFullUnits] = useState<FullUnitCards | undefined>()
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
+  const [deckCardsViewing, setDeckCardsViewing] = useState<GameDeckCardType>(GameDeckCardType.Hand)
+  const [deckSettingsOpen, setDeckSettingsOpen] = useState(false)
   const { game } = gameProps
   const gameErrorMessages = getErrorMessages(gameProps.error)
   const gameDeckErrorMessages = getErrorMessages(gameDeckProps.error)
@@ -444,11 +489,31 @@ function ExistingGame({
     useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.hand.map(
       (handUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, handUnit).unit).id
     ) || []
+  const undrawnUnitIds =
+    useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.undrawn.map(
+      (undrawnUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, undrawnUnit).unit).id
+    ) || []
+  const discardedUnitIds =
+    useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.discard.map(
+      (discardedUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, discardedUnit).unit).id
+    ) || []
   const selectedCardInHand = !!(
     self &&
     self.user.name === cardSelected?.playerName &&
     cardSelectedUnit &&
-    handUnitIds?.includes(cardSelectedUnit?.id)
+    handUnitIds.includes(cardSelectedUnit?.id)
+  )
+  const selectedCardInUndrawn = !!(
+    self &&
+    self.user.name === cardSelected?.playerName &&
+    cardSelectedUnit &&
+    undrawnUnitIds.includes(cardSelectedUnit?.id)
+  )
+  const selectedCardInDiscard = !!(
+    self &&
+    self.user.name === cardSelected?.playerName &&
+    cardSelectedUnit &&
+    discardedUnitIds.includes(cardSelectedUnit?.id)
   )
   const selectedIsWeather =
     cardSelectedUnit?.effects &&
@@ -461,9 +526,18 @@ function ExistingGame({
   const previousGame = usePrevious(game)
   useEffect(() => {
     const self = useFragment(GamePlayerFragmentDoc, game?.players)?.find((player) => player.user.name === user?.name)
+    const previousSelf = useFragment(GamePlayerFragmentDoc, previousGame?.players)?.find(
+      (player) => player.user.name === user?.name
+    )
     if (game?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing && !self?.ready) {
       setCoinTossVisible(true)
       setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+    }
+    if (self && !previousSelf && self.reviving && deckCardsViewing === GameDeckCardType.Hand) {
+      setDeckCardsViewing(GameDeckCardType.Lost)
+    }
+    if (!self?.reviving && previousSelf?.reviving) {
+      setDeckCardsViewing(GameDeckCardType.Hand)
     }
   }, [game])
 
@@ -662,10 +736,14 @@ function ExistingGame({
           game: game.id,
         }}
       />
-      <div id="gameContainerUpper">
+      <div
+        id="gameContainerUpper"
+        className={`game-container-upper-deck-settings-${deckSettingsOpen ? 'open' : 'closed'}`}
+      >
         <GameInfo
           cardSelected={cardSelected}
           coinTossVisible={coinTossVisible}
+          deckCardsViewing={deckCardsViewing}
           gameDeckProps={gameDeckProps}
           gameProps={gameProps}
           opponent={opponent}
@@ -673,6 +751,7 @@ function ExistingGame({
           playUnitProps={playUnitProps}
           selectedCardInHand={selectedCardInHand}
           self={self}
+          setDeckCardsViewing={setDeckCardsViewing}
           setPassConfirmationOpen={setPassConfirmationOpen}
           setCardSelected={setCardSelected}
           setFullUnits={setFullUnits}
@@ -737,15 +816,19 @@ function ExistingGame({
           ) : game.status === GameStatus.Playing ? (
             <GameBattlefield
               cardSelected={cardSelected}
+              deckCardsViewing={deckCardsViewing}
               fullUnits={fullUnits}
               game={game}
               opponent={opponent}
               playUnitProps={playUnitProps}
               selectedCardInHand={selectedCardInHand}
+              selectedCardInDiscard={selectedCardInDiscard}
+              selectedCardInUndrawn={selectedCardInUndrawn}
               scrollHistoryIntoView={scrollHistoryIntoView}
               self={self}
               setCardSelected={setCardSelected}
               setFullUnits={setFullUnits}
+              setDeckCardsViewing={setDeckCardsViewing}
             />
           ) : (
             <GameSummary game={game} />
@@ -762,9 +845,14 @@ function ExistingGame({
           setFullUnits={setFullUnits}
         />
       </div>
-      <div id="gameContainerLower">
+      <div
+        id="gameContainerLower"
+        className={`game-section game-container-lower-deck-settings-${deckSettingsOpen ? 'open' : 'closed'}`}
+      >
         <GameHand
           cardSelected={cardSelected}
+          deckCardsViewing={deckCardsViewing}
+          deckSettingsOpen={deckSettingsOpen}
           gameStatus={game.status}
           gameDeckFragment={gameDeckProps.deck}
           isTurn={game.turn?.user.name === self.user.name}
@@ -773,6 +861,7 @@ function ExistingGame({
           selectedCardInHand={selectedCardInHand}
           self={self}
           setCardSelected={setCardSelected}
+          setDeckSettingsOpen={setDeckSettingsOpen}
           setFullUnits={setFullUnits}
         />
       </div>

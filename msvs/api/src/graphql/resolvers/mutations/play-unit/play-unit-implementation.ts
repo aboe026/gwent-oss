@@ -7,6 +7,7 @@ import GameStore from '../../../../database/stores/game-store'
 import getRoundUnits from '../util/get-round-units'
 import getUnitEffects from '../util/get-unit-effects'
 import mergeImpacts from './merge-impacts'
+import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 import PresentableError from '../../../../util/presentable-error'
 import setGameScores from '../util/set-game-scores'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
@@ -34,6 +35,7 @@ export default class PlayUnitImplementation {
    * @param config.isDecoy Whether or not the new unit being played has the Decoy effect.
    * @param config.isSpy Whether or not the new unit being played has the Spy effect.
    * @param config.isWeather Whether or not the new unit being played has the Weather effect.
+   * @param config.isMedic Whether or not the new unit being played has the Medic effect.
    * @returns The Game and GameDeck with the unit played for the user.
    * @throws {PresentableError} if known problem playing unit.
    * @throws {Error} if unforseen problem adding the user.
@@ -50,6 +52,7 @@ export default class PlayUnitImplementation {
     isDecoy,
     isSpy,
     isWeather,
+    isMedic,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
     if (!playerId) {
@@ -82,7 +85,12 @@ export default class PlayUnitImplementation {
       avengedUnits,
       decoys,
       deckUnitsAddedToHand,
+      discards,
+      undiscards,
+      unhands,
       weathers: weatherBattlefieldImpacts,
+      medics,
+      medicingUnit,
     } = await BattlefieldUpdates.modifyBattlefieldWithNewUnit({
       battlefieldUnits: [unit, ...roundUnits, ...existingRoundUnits],
       combat,
@@ -95,6 +103,7 @@ export default class PlayUnitImplementation {
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
     })
 
     const musterEffects = await getUnitEffects({
@@ -141,9 +150,11 @@ export default class PlayUnitImplementation {
       mardroemes,
       transformedFieldUnits,
       mardroemingFieldUnit,
+      medics,
       isWeather,
       targetId: isSpy ? targetId : undefined,
       combat,
+      medicingUnit,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
@@ -174,6 +185,9 @@ export default class PlayUnitImplementation {
       game: updatedGame,
       gameDeck: player.deck,
       handDeckUnitsAdded: deckUnitsAddedToHand,
+      discards,
+      undiscards,
+      unhands,
     }
   }
 }
@@ -182,4 +196,7 @@ interface ImplementedPlayUnit {
   game: GameDbObject
   gameDeck: GameDeckDbObject
   handDeckUnitsAdded: DeckUnitDbObject[]
+  discards: PlayersToDeckUnitDbObjects
+  undiscards: PlayersToDeckUnitDbObjects
+  unhands: PlayersToDeckUnitDbObjects
 }

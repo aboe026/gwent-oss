@@ -1,6 +1,11 @@
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  FieldUnitDbObject,
+  GameDbObject,
+  UnitDbObject,
+  WeatherUnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import UnitStore from '../../../../database/stores/unit-store'
 
 /**
@@ -27,45 +32,46 @@ export default async function getRoundUnits({
   playerId?: ObjectId
   round?: number
 }): Promise<UnitDbObject[]> {
-  const unitIds: string[] = []
-
-  const existingUnitIds: string[] = []
-  if (unitBeingPlayed) {
-    existingUnitIds.push(unitBeingPlayed._id.toString())
-  }
-  if (units) {
-    existingUnitIds.push(...units.map((unit) => unit._id.toString()))
-  }
-
+  const unitIdsToRetrieve: string[] = []
   const gameRound = round === undefined ? game.round - 1 : round
+  const roundUnits: UnitDbObject[] = []
+
   for (const player of game.players) {
     if (!playerId || player.user.toString() === playerId.toString()) {
       const round = player.rounds[gameRound]
-      for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
-        if (!unitIds.includes(rowUnit.unit.toString()) && !existingUnitIds.includes(rowUnit.unit.toString())) {
-          unitIds.push(rowUnit.unit.toString())
-        }
-      }
+      const gameUnits: (FieldUnitDbObject | WeatherUnitDbObject)[] = [
+        ...round.close.units,
+        ...round.ranged.units,
+        ...round.siege.units,
+        ...round.weathers,
+      ]
       for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
-        if (
-          modifier &&
-          !unitIds.includes(modifier.unit.toString()) &&
-          !existingUnitIds.includes(modifier.unit.toString())
-        ) {
-          unitIds.push(modifier.unit.toString())
+        if (modifier) {
+          gameUnits.push(modifier)
         }
       }
-      for (const weather of round.weathers) {
-        if (!unitIds.includes(weather.unit.toString()) && !existingUnitIds.includes(weather.unit.toString())) {
-          unitIds.push(weather.unit.toString())
+
+      for (const gameUnit of gameUnits) {
+        if (gameUnit.unit.toString() === unitBeingPlayed?._id.toString()) {
+          roundUnits.push(unitBeingPlayed)
+        } else {
+          const unitsIndex = (units || []).findIndex((unit) => unit._id.toString() === gameUnit.unit.toString())
+          if (units && unitsIndex >= 0) {
+            roundUnits.push(units[unitsIndex])
+          } else if (!unitIdsToRetrieve.includes(gameUnit.unit.toString())) {
+            unitIdsToRetrieve.push(gameUnit.unit.toString())
+          }
         }
       }
     }
   }
 
-  return unitIds.length > 0
-    ? UnitStore.get({
-        ids: unitIds,
-      })
-    : []
+  if (unitIdsToRetrieve.length > 0) {
+    roundUnits.push(
+      ...(await UnitStore.get({
+        ids: unitIdsToRetrieve,
+      }))
+    )
+  }
+  return roundUnits
 }

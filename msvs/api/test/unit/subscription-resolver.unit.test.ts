@@ -29,7 +29,7 @@ describe('subscription-resolver', () => {
       const asyncIteratorSpy = jest.spyOn(EventManager.pubsub, 'asyncIterableIterator').mockReturnValue('' as any)
       const filterDeckOwnerSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckOwner').mockResolvedValue('')
       const filterPlayerOnGameSpy = jest.spyOn(SubscriptionResolver as any, 'filterPlayerOnGame').mockResolvedValue('')
-      const hideImpactUnitsSpy = jest.spyOn(SubscriptionResolver as any, 'hideImpactUnits').mockReturnValue({})
+      const scopeToUserSpy = jest.spyOn(SubscriptionResolver as any, 'scopeToUser').mockReturnValue({})
       const result = SubscriptionResolver.getResolvers()
       expect(result).toEqual({
         deckAdded: {
@@ -169,6 +169,9 @@ describe('subscription-resolver', () => {
           unitPlayedOnGame: {
             game: TestUtil.getGame({}),
             unit: TestUtil.getDeckUnit({}),
+            discarded: [TestUtil.getDeckUnit({})],
+            undiscarded: [TestUtil.getDeckUnit({})],
+            unhanded: [TestUtil.getDeckUnit({})],
           },
         }
         const unitRedrawnPayload: UnitRedrawnPayload = {
@@ -319,7 +322,7 @@ describe('subscription-resolver', () => {
             },
           ],
         ])
-        expect(hideImpactUnitsSpy.mock.calls).toEqual([
+        expect(scopeToUserSpy.mock.calls).toEqual([
           [
             {
               ctx: context,
@@ -349,6 +352,9 @@ describe('subscription-resolver', () => {
               payload: unitPlayedOnGamePayload,
               subscriptionName: 'unitPlayedOnGame',
               nestedGamePath: 'game',
+              nestedDiscardPath: 'discarded',
+              nestedUndiscardPath: 'undiscarded',
+              nestedUnhandPath: 'unhanded',
             },
           ],
         ])
@@ -516,13 +522,13 @@ describe('subscription-resolver', () => {
       })
     })
   })
-  describe('hideImpactUnits', () => {
+  describe('scopeToUser', () => {
     it('throws error if no user on context', () => {
       const payload = {
         testSubscriptionName: TestUtil.getGame({}),
       }
       const message = `Could not find user in context for subscription "testSubscriptionName"`
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {},
         },
@@ -537,7 +543,7 @@ describe('subscription-resolver', () => {
         testSubscriptionName: undefined,
       }
       const message = `Could not find game in payload for subscription "testSubscriptionName"`
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {
             user: TestUtil.getDbUser({}),
@@ -551,7 +557,7 @@ describe('subscription-resolver', () => {
     })
     it('returns masked game if no errors without nestedGamePath', () => {
       const maskedGame = TestUtil.getGame({})
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {
             user: TestUtil.getDbUser({}),
@@ -567,7 +573,7 @@ describe('subscription-resolver', () => {
     })
     it('returns masked game if no errors with nestedGamePath', () => {
       const maskedGame = TestUtil.getGame({})
-      testHideImpactUnits({
+      testScopeToUser({
         ctx: {
           session: {
             user: TestUtil.getDbUser({}),
@@ -586,6 +592,91 @@ describe('subscription-resolver', () => {
         },
       })
     })
+    it('returns masked game if no errors with nested deck paths if nothing for user', () => {
+      const maskedGame = TestUtil.getGame({})
+      const userId = new ObjectId().toString()
+      testScopeToUser({
+        ctx: {
+          session: {
+            user: TestUtil.getDbUser({
+              id: userId,
+            }),
+          },
+        },
+        payload: {
+          testSubscriptionName: {
+            testNestedGamePath: TestUtil.getGame({}),
+            discarded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+            undiscarded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+            unhanded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+          },
+        },
+        subscriptionName: 'testSubscriptionName',
+        nestedGamePath: 'testNestedGamePath',
+        nestedDiscardPath: 'discarded',
+        nestedUndiscardPath: 'undiscarded',
+        nestedUnhandPath: 'unhanded',
+        maskedGame,
+        expected: {
+          testNestedGamePath: maskedGame,
+          discarded: [],
+          undiscarded: [],
+          unhanded: [],
+        },
+      })
+    })
+    it('returns masked game if no errors with nested deck paths filtering to user', () => {
+      const maskedGame = TestUtil.getGame({})
+      const userId = new ObjectId().toString()
+      const deckUnit1 = TestUtil.getDeckUnit({})
+      const deckUnit2 = TestUtil.getDeckUnit({})
+      const deckUnit3 = TestUtil.getDeckUnit({})
+      testScopeToUser({
+        ctx: {
+          session: {
+            user: TestUtil.getDbUser({
+              id: userId,
+            }),
+          },
+        },
+        payload: {
+          testSubscriptionName: {
+            testNestedGamePath: TestUtil.getGame({}),
+            discarded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+              [userId]: [deckUnit1],
+            },
+            undiscarded: {
+              [userId]: [deckUnit2],
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+            unhanded: {
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+              [userId]: [deckUnit3],
+              [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
+            },
+          },
+        },
+        subscriptionName: 'testSubscriptionName',
+        nestedGamePath: 'testNestedGamePath',
+        nestedDiscardPath: 'discarded',
+        nestedUndiscardPath: 'undiscarded',
+        nestedUnhandPath: 'unhanded',
+        maskedGame,
+        expected: {
+          testNestedGamePath: maskedGame,
+          discarded: [deckUnit1],
+          undiscarded: [deckUnit2],
+          unhanded: [deckUnit3],
+        },
+      })
+    })
     it('logs to trace if enabled', () => {
       const ctx = {
         session: {
@@ -598,7 +689,7 @@ describe('subscription-resolver', () => {
         },
       }
       const maskedGame = TestUtil.getGame({})
-      testHideImpactUnits({
+      testScopeToUser({
         ctx,
         payload,
         subscriptionName: 'testSubscriptionName',
@@ -609,9 +700,9 @@ describe('subscription-resolver', () => {
         },
         traceEnabled: true,
         traceCalls: [
-          [`testSubscriptionName hideImpactUnits payload: "${JSON.stringify(payload)}"`],
-          [`testSubscriptionName hideImpactUnits ctx: "${JSON.stringify(ctx)}"`],
-          [`testSubscriptionName hideImpactUnits nestedGamePath: "testNestedGamePath"`],
+          [`testSubscriptionName scopeToUser payload: "${JSON.stringify(payload)}"`],
+          [`testSubscriptionName scopeToUser ctx: "${JSON.stringify(ctx)}"`],
+          [`testSubscriptionName scopeToUser nestedGamePath: "testNestedGamePath"`],
         ],
       })
     })
@@ -790,11 +881,14 @@ function testFilterPlayerOnGame({
   )
 }
 
-function testHideImpactUnits({
+function testScopeToUser({
   payload,
   ctx,
   subscriptionName,
   nestedGamePath,
+  nestedDiscardPath,
+  nestedUndiscardPath,
+  nestedUnhandPath,
   maskedGame,
   expected,
   traceEnabled,
@@ -805,6 +899,9 @@ function testHideImpactUnits({
   ctx: Context
   subscriptionName: string
   nestedGamePath?: string
+  nestedDiscardPath?: string
+  nestedUndiscardPath?: string
+  nestedUnhandPath?: string
   maskedGame?: Game
   expected?: any | Error
   traceEnabled?: boolean
@@ -828,20 +925,26 @@ function testHideImpactUnits({
 
   if (expected instanceof Error) {
     expect(() =>
-      SubscriptionResolver['hideImpactUnits']({
+      SubscriptionResolver['scopeToUser']({
         ctx,
         payload,
         subscriptionName,
         nestedGamePath,
+        nestedDiscardPath,
+        nestedUndiscardPath,
+        nestedUnhandPath,
       })
     ).toThrow(expected)
   } else {
     expect(
-      SubscriptionResolver['hideImpactUnits']({
+      SubscriptionResolver['scopeToUser']({
         ctx,
         payload,
         subscriptionName,
         nestedGamePath,
+        nestedDiscardPath,
+        nestedUndiscardPath,
+        nestedUnhandPath,
       })
     ).toEqual(expected)
   }

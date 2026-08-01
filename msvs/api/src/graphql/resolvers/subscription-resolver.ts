@@ -106,8 +106,8 @@ export default class SubscriptionResolver {
             })
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
-          return SubscriptionResolver.hideImpactUnits({
+        resolve: (payload: PassPlayedPayload, args: any, ctx: Context, info: any) => {
+          return SubscriptionResolver.scopeToUser({
             ctx,
             payload,
             subscriptionName: 'passPlayed',
@@ -132,8 +132,8 @@ export default class SubscriptionResolver {
             })
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
-          return SubscriptionResolver.hideImpactUnits({
+        resolve: (payload: RoundEndedForDeckPayload, args: any, ctx: Context, info: any) => {
+          return SubscriptionResolver.scopeToUser({
             ctx,
             payload,
             subscriptionName: 'roundEndedForDeck',
@@ -159,8 +159,8 @@ export default class SubscriptionResolver {
             })
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
-          return SubscriptionResolver.hideImpactUnits({
+        resolve: (payload: UnitPlayedFromDeckPayload, args: any, ctx: Context, info: any) => {
+          return SubscriptionResolver.scopeToUser({
             ctx,
             payload,
             subscriptionName: 'unitPlayedFromDeck',
@@ -181,11 +181,14 @@ export default class SubscriptionResolver {
         ),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
         resolve: (payload: UnitPlayedOnGamePayload, args: any, ctx: Context, info: any) => {
-          return SubscriptionResolver.hideImpactUnits({
+          return SubscriptionResolver.scopeToUser({
             ctx,
             payload,
             subscriptionName: 'unitPlayedOnGame',
             nestedGamePath: 'game',
+            nestedDiscardPath: 'discarded',
+            nestedUndiscardPath: 'undiscarded',
+            nestedUnhandPath: 'unhanded',
           })
         },
       },
@@ -326,31 +329,40 @@ export default class SubscriptionResolver {
   }
 
   /**
-   * Hides the Units of Impacts for opponents on a subscription payload for a game.
+   * Scopes returned objects to the user listening (e.g. hides the spied Units on Impacts for opponents, the units discarded/undiscarded/unhanded).
    *
    * @param config The configuration used to hide the Impact Units for Opponents.
    * @param config.payload The payload to be returned to the Subscription.
    * @param config.ctx The context containing the User the Subscription will be returned to.
    * @param config.subscriptionName The name of the subscription being executed.
    * @param config.nestedGamePath The optional path of the property within the payload which contains the game.
+   * @param config.nestedDiscardPath The optional path of the property within the payload which contains the units added to the discard pile for the current player.
+   * @param config.nestedUndiscardPath The optional path of the property within the payload which contains the units removed from the discard pile for the current player.
+   * @param config.nestedUnhandPath The optional path of the property within the payload which contains the units removed from the hand pile for the current player.
    * @returns The payload for the subscription.
    */
-  private static hideImpactUnits({
+  private static scopeToUser({
     payload,
     ctx,
     subscriptionName,
     nestedGamePath,
+    nestedDiscardPath,
+    nestedUndiscardPath,
+    nestedUnhandPath,
   }: {
     payload: any // eslint-disable-line @typescript-eslint/no-explicit-any
     ctx: Context
     subscriptionName: string
     nestedGamePath?: string
+    nestedDiscardPath?: string
+    nestedUndiscardPath?: string
+    nestedUnhandPath?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }): any {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
-      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits payload: "${JSON.stringify(payload)}"`)
-      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits ctx: "${JSON.stringify(ctx)}"`)
-      SubscriptionResolver.logger.trace(`${subscriptionName} hideImpactUnits nestedGamePath: "${nestedGamePath}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} scopeToUser payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} scopeToUser ctx: "${JSON.stringify(ctx)}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} scopeToUser nestedGamePath: "${nestedGamePath}"`)
     }
     const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`
     const userId = ctx.session?.user?._id.toString()
@@ -385,6 +397,16 @@ export default class SubscriptionResolver {
       path: nestedProperty,
       value: maskedGame,
     })
+
+    if (nestedDiscardPath && payload[subscriptionName][nestedDiscardPath]) {
+      payload[subscriptionName][nestedDiscardPath] = payload[subscriptionName][nestedDiscardPath][userId] || []
+    }
+    if (nestedUndiscardPath && payload[subscriptionName][nestedUndiscardPath]) {
+      payload[subscriptionName][nestedUndiscardPath] = payload[subscriptionName][nestedUndiscardPath][userId] || []
+    }
+    if (nestedUnhandPath && payload[subscriptionName][nestedUnhandPath]) {
+      payload[subscriptionName][nestedUnhandPath] = payload[subscriptionName][nestedUnhandPath][userId] || []
+    }
 
     return payload[subscriptionName]
   }
@@ -441,6 +463,9 @@ export interface UnitPlayedOnGamePayload {
   unitPlayedOnGame: {
     game: Game
     unit: DeckUnit
+    discarded: DeckUnit[]
+    undiscarded: DeckUnit[]
+    unhanded: DeckUnit[]
   }
 }
 

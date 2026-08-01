@@ -7,7 +7,9 @@ import {
   FieldUnitFragmentDoc,
   FragmentType,
   GameFragment,
+  GameFragmentDoc,
   GamePlayerFragment,
+  GamePlayerFragmentDoc,
   PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
   UnitEffectFragmentDoc,
@@ -16,7 +18,7 @@ import {
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
-import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
+import { FullUnitCards, GameDeckCardType, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
@@ -28,31 +30,41 @@ import { useUserContext } from '../../UserContext'
 export default function GameCombatRow({
   cardSelected,
   combat,
+  deckCardsViewing,
   fullUnits,
   game,
   isSelf,
   isTurn,
   player,
+  selfReviving,
   playUnitProps,
   selectedCardInHand,
+  selectedCardInUndrawn,
+  selectedCardInDiscard,
   scrollHistoryIntoView,
   setCardSelected,
   setFullUnits,
   weather,
+  setDeckCardsViewing,
 }: {
   cardSelected: UnitForPlayer | undefined
   combat: Combat
+  deckCardsViewing: GameDeckCardType
   fullUnits: FullUnitCards | undefined
   game: GameFragment
   isSelf?: boolean
   isTurn?: boolean
   player: GamePlayerFragment
+  selfReviving?: boolean
   playUnitProps: PlayUnitProps
   selectedCardInHand: boolean
+  selectedCardInUndrawn: boolean
+  selectedCardInDiscard: boolean
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   weather?: boolean
+  setDeckCardsViewing: Dispatch<SetStateAction<GameDeckCardType>>
 }) {
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
@@ -70,7 +82,7 @@ export default function GameCombatRow({
   const validPlayer = spySelected ? !isSelf : isSelf
   const validRow =
     validPlayer &&
-    selectedCardInHand &&
+    ((selectedCardInHand && !player.reviving) || (selectedCardInDiscard && selfReviving)) &&
     cardSelectedUnit?.combats &&
     cardSelectedUnit.combats.includes(combat) &&
     !cardSelectedUnit.modifier &&
@@ -94,13 +106,21 @@ export default function GameCombatRow({
           }
         } else if (invalidRow) {
           description = `${cardSelectedUnit.name} is not eligible to fight in ${titledCombat} combat`
+        } else if (selectedCardInDiscard && deckCardsViewing === GameDeckCardType.Lost) {
+          description = 'Cannot deploy units from Lost pile, only Hand pile'
+        } else if (selectedCardInUndrawn && deckCardsViewing === GameDeckCardType.Draw) {
+          description = 'Cannot deploy units from Draw pile, only Hand pile'
         }
       }
     } else if (spySelected) {
       if (validRow) {
         description = `Place here for ${cardSelectedUnit.name} to spy on your opponent in ${titledCombat} combat`
-      } else {
+      } else if (invalidRow) {
         description = `${cardSelectedUnit.name} is not eligible to fight in ${titledCombat} combat`
+      } else if (selectedCardInDiscard && deckCardsViewing === GameDeckCardType.Lost) {
+        description = 'Cannot deploy units from Lost pile, only Hand pile'
+      } else if (selectedCardInUndrawn && deckCardsViewing === GameDeckCardType.Draw) {
+        description = 'Cannot deploy units from Draw pile, only Hand pile'
       }
     } else {
       description = `${cardSelectedUnit.name} cannot fight for your opponent`
@@ -123,31 +143,39 @@ export default function GameCombatRow({
   const validModifier = isSelf && !modifier && cardSelectedUnit?.modifier && selectedCardInHand
   const invalidModifier =
     (cardSelectedUnit?.modifier && modifier && selectedCardInHand) || (cardSelectedUnit && !cardSelectedUnit.modifier)
-  if (!weatherSelected && selectedCardInHand) {
-    if (isSelf) {
-      if (cardSelectedUnit) {
-        if (modifier) {
-          modifierTitle = `Modifier already set to ${cardSelectedUnit.name} for ${titledCombat} combat row`
-          modifierStyle.cursor = 'not-allowed'
-        } else {
-          if (cardSelectedUnit.modifier) {
-            modifierClass = HTML_CLASSES.ItemHighlighted
-            if (isTurn) {
-              modifierTitle = `Place here for ${cardSelectedUnit.name} to modify the ${titledCombat} combat row`
-              modifierStyle.cursor = 'pointer'
+  if (!weatherSelected) {
+    if (selectedCardInHand) {
+      if (isSelf) {
+        if (cardSelectedUnit) {
+          if (modifier) {
+            modifierTitle = `Modifier already set to ${cardSelectedUnit.name} for ${titledCombat} combat row`
+            modifierStyle.cursor = 'not-allowed'
+          } else {
+            if (cardSelectedUnit.modifier) {
+              modifierClass = HTML_CLASSES.ItemHighlighted
+              if (isTurn) {
+                modifierTitle = `Place here for ${cardSelectedUnit.name} to modify the ${titledCombat} combat row`
+                modifierStyle.cursor = 'pointer'
+              } else {
+                modifierTitle = 'It is not your turn to play'
+                modifierStyle.borderStyle = 'dotted'
+                modifierStyle.cursor = 'not-allowed'
+              }
             } else {
-              modifierTitle = 'It is not your turn to play'
-              modifierStyle.borderStyle = 'dotted'
+              modifierTitle = `${cardSelectedUnit.name} is not a combat row modifier`
               modifierStyle.cursor = 'not-allowed'
             }
-          } else {
-            modifierTitle = `${cardSelectedUnit.name} is not a combat row modifier`
-            modifierStyle.cursor = 'not-allowed'
           }
         }
+      } else if (cardSelectedUnit) {
+        modifierTitle = `${cardSelectedUnit.name} cannot fight for your opponent`
+        modifierStyle.cursor = 'not-allowed'
       }
-    } else if (cardSelectedUnit) {
-      modifierTitle = `${cardSelectedUnit.name} cannot fight for your opponent`
+    } else if (selectedCardInDiscard && deckCardsViewing === GameDeckCardType.Lost) {
+      modifierTitle = 'Cannot deploy units from Lost pile, only Hand pile'
+      modifierStyle.cursor = 'not-allowed'
+    } else if (selectedCardInUndrawn && deckCardsViewing === GameDeckCardType.Draw) {
+      modifierTitle = 'Cannot deploy units from Draw pile, only Hand pile'
       modifierStyle.cursor = 'not-allowed'
     }
   }
@@ -240,7 +268,7 @@ export default function GameCombatRow({
               await retryCheckingAuth({
                 checkAuth,
                 method: async () => {
-                  await playUnitProps.playUnit({
+                  const response = await playUnitProps.playUnit({
                     variables: {
                       game: game.id,
                       combat: combat,
@@ -249,6 +277,13 @@ export default function GameCombatRow({
                     },
                   })
                   setCardSelected(undefined)
+                  const updatedGame = useFragment(GameFragmentDoc, response.data?.playUnit)
+                  const updatedPlayer = useFragment(GamePlayerFragmentDoc, updatedGame?.players)?.find(
+                    (gamePlayer) => gamePlayer.user.id === updatedGame?.turn?.user.id
+                  )
+                  if (updatedPlayer && updatedPlayer.reviving) {
+                    setDeckCardsViewing(GameDeckCardType.Lost)
+                  }
                 },
               })
             }

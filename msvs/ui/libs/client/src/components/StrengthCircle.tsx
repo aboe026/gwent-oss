@@ -22,7 +22,7 @@ export default function StrengthCircle({
   const weatherSymbol = getWeatherImage(unit)
 
   let strengthCircleContainerClassModifier = ''
-  if (effectHighlight && effectiveStrength && unit.strength) {
+  if (effectHighlight && effectiveStrength && unit.strength !== undefined && unit.strength !== null) {
     if (unit.hero) {
       strengthCircleContainerClassModifier = HTML_CLASSES.GameUnitStrengthCircleHero
     } else if (effectiveStrength !== unit.strength) {
@@ -32,13 +32,13 @@ export default function StrengthCircle({
     }
   }
   return (
-    (unit.strength !== null || weatherSymbol) && (
+    ((unit.strength !== null && unit.strength !== undefined) || weatherSymbol) && (
       <div style={{ height: size, width: size, ...style }} className="strength-circle-container-background">
         <div
           style={{ height: size, width: size, ...style }}
           className={`${HTML_CLASSES.GameUnitStrengthCircleContainer} ${strengthCircleContainerClassModifier}`}
         >
-          {unit.strength !== null && (
+          {unit.strength !== null && unit.strength !== undefined && (
             <>
               {unit.hero && !ignoreHero && (
                 <img

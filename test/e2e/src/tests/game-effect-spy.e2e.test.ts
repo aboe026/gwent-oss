@@ -152,11 +152,11 @@ test('Spy does not show opponents handed units in impacts', async (t) => {
         userName: gameManager.opponent.gamePlayer.name,
         impacts: [
           {
-            unitName: 'Unknown',
+            unitName: 'Secret',
             username: gameManager.opponent.gamePlayer.name,
           },
           {
-            unitName: 'Unknown',
+            unitName: 'Secret',
             username: gameManager.opponent.gamePlayer.name,
           },
         ],

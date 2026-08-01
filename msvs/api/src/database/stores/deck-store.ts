@@ -1,4 +1,4 @@
-import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, WithoutId } from 'mongodb'
 
 import { DeckDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
 import { getLogger } from 'log4js'
@@ -25,7 +25,7 @@ export default class DeckStore extends Store {
    */
   static async add({ factionId, leaderId, name, stats, units, userId }: AddDeckInput): Promise<DeckDbObject> {
     DeckStore.logger.debug(`Adding deck named "${name}" for user "${userId}"`)
-    const deck: Document = {
+    const deck: WithoutId<DeckDbObject> = {
       created: new Date(),
       faction: new ObjectId(factionId),
       leader: new ObjectId(leaderId),

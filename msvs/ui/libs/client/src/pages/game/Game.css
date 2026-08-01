@@ -11,13 +11,11 @@
 #gameContainerUpper {
   display: flex;
   gap: 10px;
-  height: 80%;
   width: 100%;
 }
 
 #gameContainerLower {
   width: 100%;
-  height: 20%;
   overflow: hidden;
 }
 
@@ -61,20 +59,6 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: -100%;
-}
-
-#gameHandContainer {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-#gameHand {
-  display: flex;
-  height: calc(100% - 20px);
-  width: calc(100% - 20px);
-  justify-content: center;
-  padding: 10px;
 }
 
 #gameDeckOverlay {
@@ -176,6 +160,22 @@ th {
   padding: 10px;
   gap: 20px;
   overflow-y: auto;
+}
+
+.game-container-upper-deck-settings-closed {
+  height: 80%;
+}
+
+.game-container-upper-deck-settings-open {
+  height: calc(80% - 100px);
+}
+
+.game-container-lower-deck-settings-closed {
+  height: 20%;
+}
+
+.game-container-lower-deck-settings-open {
+  height: calc(20% + 100px);
 }
 
 .game-edge-container {
@@ -541,6 +541,17 @@ th {
   padding-bottom: 5px;
 }
 
+.game-player-deck-section-highlighted {
+  border-style: solid;
+  border-color: dimgray;
+  margin-left: -2px;
+  margin-right: -2px;
+}
+
+.game-player-deck-section-self {
+  cursor: pointer;
+}
+
 .game-deck-container {
   flex-direction: column;
   gap: 10px;
@@ -561,41 +572,8 @@ th {
   text-overflow: ellipsis;
 }
 
-.game-hand-icon {
-  width: 50px;
-  opacity: 50%;
-}
-
 .game-battlefield-icon {
   width: 85px;
-  opacity: 50%;
-}
-
-.game-hand-card-wrapper {
-  position: relative;
-  display: flex;
-  height: 100%;
-  min-width: 20px;
-  padding-right: 10px;
-}
-
-.game-hand-card-wrapper:last-child {
-  margin-right: -18px;
-}
-
-.game-hand-card-wrapper:last-child,
-.game-hand-card-wrapper:hover,
-.game-hand-card-wrapper-selected {
-  min-width: 120px;
-}
-
-.game-hand-card-wrapper-not-selected {
-  position: absolute;
-  background-color: gray;
-  aspect-ratio: 309 / 444;
-  cursor: pointer;
-  height: 100%;
-  border-radius: 10px;
   opacity: 50%;
 }
 

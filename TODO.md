@@ -25,6 +25,7 @@ Existing problems in the codebase that need to be fixed.
   - figlet: just have hard-coded banner text for startup
   - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
+- refactor units tests to utilize dynamic looping instead of enumerating them explicitly
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
 - have Impact.unit field be "required" (never null) in database typings? (mapping?)
@@ -44,6 +45,7 @@ Existing problems in the codebase that need to be fixed.
 - have node-client export class instead of function (attempted to but lost typings)
 - restrict/filter subscriptions to just active game?
 - use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
+- How to handle multiple spies in hand (e.g. decoying opponents spy into hand when already have same one in hand)? add "owner" property to GameUnit types?
 - improve UX around game player info (username, score, rounds, passed)
 - message to clear filters in DeckEditor when filter shows none
 - shared component for card "accordion" container
@@ -63,6 +65,7 @@ Existing problems in the codebase that need to be fixed.
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
 - potentially use `.disableConcurrency` for TestCafe fixtures?
   - `Session Expiry`? To set `SESSION_TIMEOUT_SECONDS` account setting in database. But that would slow things down considerably.
+- fix scrolling for game hand/undrawn/lost when lots of cards (why do they extend past viewport?)
 - use apollo data masking
   - ran into issue with returning empty objects (because some fragments not having ids ?)
 - enter key does not create game in UI?
@@ -74,6 +77,7 @@ Existing problems in the codebase that need to be fixed.
 - stop subscription reconnect attempts if auth times out
   - show login dialog?
 - Remove @map directive for ID types?
+- have playUnit mutation return more than just game, but info on deck changes (e.g. handed, discarded, fielded)
 - Switch DeckUnit to be same as Unit but single image instead of array
   - Have Unit interface with following implementations:
     - AvailableUnit
@@ -122,9 +126,6 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- Medic
-  - How to handle brought back for HistoryMove/Impact? unique per created?
-  - test avenger re-mediced cannot cause duplicate avenger
 - Better game summarization (graphs?)
   - points per round
   - time per round

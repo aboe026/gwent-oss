@@ -19,6 +19,7 @@ import GetEffectWithKey from './get-effect-with-key'
 import GetFieldUnits from '../../util/get-field-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'
 import { ImpactsByUnitId } from '../../resolver-util'
+import { PlayersToDeckUnitDbObjects } from '../util/players-to-deck-units'
 
 /**
  * A class to modify the battlefield if a scorching unit is played.
@@ -49,8 +50,9 @@ export default class EffectScorch {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
-  }): ImpactsByUnitId {
+  }): PotentialScorches {
     const impacts: ImpactsByUnitId = {}
+    const discards: PlayersToDeckUnitDbObjects = {}
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
@@ -59,6 +61,16 @@ export default class EffectScorch {
     }
     if (EffectScorch.logger.isTraceEnabled()) {
       EffectScorch.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
+    }
+    if (newUnit.name === 'Scorch') {
+      const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
+      if (!player) {
+        const message = `Could not find player "${game.turn}" on game for scorching new deck unit "${newDeckUnit.unit}".`
+        EffectScorch.logger.error(`${logPrefix} failed: ${message}`)
+        throw Error(message)
+      }
+      player.deck.discard.push(newDeckUnit)
+      discards[player.user.toString()] = [newDeckUnit]
     }
 
     const scorchEffect = GetEffectWithKey.getEffectWithKey({
@@ -108,7 +120,6 @@ export default class EffectScorch {
             round: game.round,
             turn: game.turn,
             logPrefix: `${logPrefix} player "${player.user}"`,
-            scorchingDeckUnit: newDeckUnit,
             scorchingUnit: newUnit,
             strongestUnitIdsOnBattlefield: strongestUnitIds,
           })
@@ -116,8 +127,22 @@ export default class EffectScorch {
       }
 
       impacts[newDeckUnit.unit.toString()] = scorched
+      for (const scorch of scorched) {
+        if (scorch.unit) {
+          if (!discards[scorch.user.toString()]) {
+            discards[scorch.user.toString()] = []
+          }
+          discards[scorch.user.toString()].push({
+            artStyle: scorch.unit.artStyle,
+            unit: scorch.unit.unit,
+          })
+        }
+      }
     }
-    return impacts
+    return {
+      impacts,
+      discards,
+    }
   }
 
   /**
@@ -130,7 +155,6 @@ export default class EffectScorch {
    * @param config.turn Whose turn it currently is in the game and is playing a scorching unit.
    * @param config.logPrefix What to prepend log output statements with.
    * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
-   * @param config.scorchingDeckUnit The DeckUnit being deployed to the battlefield with a scorching effect.
    * @param config.strongestUnitIdsOnBattlefield A list of the strongest units across the entire battlefield which may be used to determine which of the players units should be scorched.
    * @returns The impacts of any units scorched.
    */
@@ -141,7 +165,6 @@ export default class EffectScorch {
     turn,
     logPrefix,
     scorchingUnit,
-    scorchingDeckUnit,
     strongestUnitIdsOnBattlefield,
   }: {
     battlefieldUnits: UnitDbObject[]
@@ -150,17 +173,8 @@ export default class EffectScorch {
     turn: ObjectId | undefined
     logPrefix: string
     scorchingUnit: UnitDbObject
-    scorchingDeckUnit: DeckUnitDbObject
     strongestUnitIdsOnBattlefield: string[]
   }): ImpactDbObject[] {
-    if (scorchingUnit.name === 'Scorch' && player.user.toString() === turn?.toString()) {
-      // the named "Scorch" card does not stay on the battlefield
-      player.deck.discard.push(scorchingDeckUnit)
-      EffectScorch.logger.trace(
-        `${logPrefix} newUnit "${scorchingUnit._id}" has name "Scorch" and current player, so discarding it`
-      )
-    }
-
     // if no scorch scope, anyone can be effected/scorched
     // if scorch scope, only opponents (players who are not the current game turn player) can be effected/scorched
     const scorchablePlayer = !scorchingUnit.scorchScope || player.user.toString() !== turn?.toString()
@@ -241,7 +255,15 @@ export default class EffectScorch {
           unitsScorched.map((fieldUnit) => fieldUnit.unit)
         )}"`
       )
-      player.deck.discard.push(...unitsScorched)
+      player.deck.discard.push(
+        ...unitsScorched.map((unitsScorched) => {
+          const deckUnit: DeckUnitDbObject = {
+            artStyle: unitsScorched.artStyle,
+            unit: unitsScorched.unit,
+          }
+          return deckUnit
+        })
+      )
     }
 
     return unitsScorched.map((unitScorched) => {
@@ -381,4 +403,9 @@ export default class EffectScorch {
 
     return unitsScorched
   }
+}
+
+export interface PotentialScorches {
+  impacts: ImpactsByUnitId
+  discards: PlayersToDeckUnitDbObjects
 }

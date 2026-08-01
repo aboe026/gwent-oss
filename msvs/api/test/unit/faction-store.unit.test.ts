@@ -6,8 +6,18 @@ import TestUtil from '../util/test-util'
 
 describe('faction-store', () => {
   describe('add', () => {
-    it('calls to create', async () => {
+    it('calls to create without dlc', async () => {
       await testAdd({})
+    })
+    it('calls to create with string dlc', async () => {
+      await testAdd({
+        dlc: new ObjectId().toString(),
+      })
+    })
+    it('calls to create with ObjectId dlc', async () => {
+      await testAdd({
+        dlc: new ObjectId(),
+      })
     })
     it('calls to create with trace enabled', async () => {
       await testAdd({
@@ -207,13 +217,36 @@ describe('faction-store', () => {
   })
 })
 
-async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
+async function testAdd({ dlc = null, traceEnabled }: { dlc?: ObjectId | string | null; traceEnabled?: boolean }) {
   const ability = 'ability'
   const created = new Date()
-  const dlc = new ObjectId()
   const image = 'image'
   const key = FactionKey.Monsters
   const name = 'name'
+  const stats = {
+    agile: 0,
+    avenger: 0,
+    berserker: 0,
+    bond: 0,
+    close: 0,
+    decoy: 0,
+    heroes: 0,
+    horn: 0,
+    mardroeme: 0,
+    medic: 0,
+    morale: 0,
+    muster: 0,
+    ranged: 0,
+    scorch: 0,
+    siege: 0,
+    specials: 0,
+    spy: 0,
+    strengthAverage: 0,
+    strengths: 0,
+    strengthTotal: 0,
+    units: 0,
+    weather: 0,
+  }
   const expected: FactionDbObject = {
     _id: new ObjectId(),
     created,
@@ -222,6 +255,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     image,
     key,
     name,
+    stats,
   } as any
   const createSpy = jest.spyOn(FactionStore as any, 'create').mockResolvedValue(expected)
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
@@ -248,17 +282,24 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
       {
         ability,
         created,
-        dlc,
+        dlc: dlc ? new ObjectId(dlc) : undefined,
         image,
         key,
         name,
+        stats,
       },
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
   expect(debugSpy.mock.calls).toEqual([[`Adding faction with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`Adding faction: "${JSON.stringify({ ability, created, dlc, image, key, name })}"`]] : []
+    traceEnabled
+      ? [
+          [
+            `Adding faction: "${JSON.stringify({ ability, created, dlc: dlc ? new ObjectId(dlc) : undefined, image, key, name, stats })}"`,
+          ],
+        ]
+      : []
   )
 }
 

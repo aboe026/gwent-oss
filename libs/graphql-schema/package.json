@@ -1,6 +1,6 @@
 {
   "name": "@gwent/graphql-schema",
-  "version": "0.23.1",
+  "version": "0.24.0",
   "author": "Adam Boe",
   "description": "Schema definitions for GraphQL API",
   "main": "build/src/index.js",
@@ -30,6 +30,7 @@
     "./deck-filter": "./build/src/deck-filter.js",
     "./decks-filter": "./build/src/decks-filter.js",
     "./games-filter": "./build/src/games-filter.js",
+    "./game-units-filter": "./build/src/game-units-filter.js",
     "./apollo-typings": "./build/generated/apollo/index.js",
     "./apollo-raw-typings": "./build/generated/apollo/raw-types.js",
     "./apollo-possible-typings": "./build/generated/apollo/fragment-types.js",

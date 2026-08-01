@@ -1,4 +1,4 @@
-import { Document, Filter, ObjectId } from 'mongodb'
+import { Document, Filter, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { DlcDbObject, DlcKey } from '@gwent/graphql-schema/database-typings'
@@ -22,7 +22,7 @@ export default class DlcStore extends Store {
    */
   static async add({ image, key, name }: AddDlcInput): Promise<DlcDbObject> {
     DlcStore.logger.debug(`Adding DLC with name "${name}"`)
-    const dlc: Document = {
+    const dlc: WithoutId<DlcDbObject> = {
       created: new Date(),
       image,
       key,

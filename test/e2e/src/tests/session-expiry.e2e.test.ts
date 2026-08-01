@@ -911,7 +911,7 @@ test('Play unit after session expires', async (t) => {
   E2eHelper.playUnit({
     player: gameManager.self.gamePlayer,
     gameDeck: gameManager.self.deck,
-    deckUnit: gameManager.getHandUnit({
+    newDeckUnit: gameManager.getHandUnit({
       name: unitName,
     }),
     row: Combat.Close,
@@ -950,7 +950,7 @@ test('Play Scorch after session expires', async (t) => {
   E2eHelper.playUnit({
     player: gameManager.self.gamePlayer,
     gameDeck: gameManager.self.deck,
-    deckUnit: gameManager.getHandUnit({
+    newDeckUnit: gameManager.getHandUnit({
       name: unitName2,
     }),
     switchTurnsWith: gameManager.opponent.gamePlayer,

@@ -384,7 +384,7 @@ export class E2eHelper {
 
   static playUnit({
     player,
-    deckUnit,
+    newDeckUnit,
     effectiveStrength,
     row,
     hero,
@@ -396,6 +396,8 @@ export class E2eHelper {
     moraling,
     horning,
     mustering,
+    medicing,
+    revivedBy,
     bonding,
     decoying,
     avenging,
@@ -404,7 +406,7 @@ export class E2eHelper {
     impacts,
   }: {
     player: GamePlayerExpected
-    deckUnit: DeckUnit
+    newDeckUnit: DeckUnit
     effectiveStrength?: number
     row?: Combat
     hero?: boolean
@@ -416,6 +418,8 @@ export class E2eHelper {
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
+    medicing?: boolean
+    revivedBy?: string
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
     avenging?: AvengingExpected[]
@@ -423,24 +427,29 @@ export class E2eHelper {
     weathering?: WeatheringExpected[]
     impacts?: number
   }) {
-    const strength = effectiveStrength || deckUnit.unit.strength || 0
+    const strength = effectiveStrength || newDeckUnit.unit.strength || 0
     let undrawnSpiedIntoHand = 0
     if (!row) {
-      row = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
+      row = newDeckUnit.unit.combats ? newDeckUnit.unit.combats[0] : Combat.Close
     }
-    player.hand = (player.hand || STARTING_HAND_SIZE) - 1
-    gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
-    if (deckUnit.unit.name === 'Scorch') {
+    if (revivedBy) {
+      player.discard = (player.discard || 0) - 1
+      gameDeck.discard = gameDeck.discard.filter((deckUnit) => deckUnit.unit.id !== newDeckUnit.unit.id)
+    } else {
+      player.hand = (player.hand || STARTING_HAND_SIZE) - 1
+      gameDeck.hand = gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== newDeckUnit.unit.id)
+    }
+    if (newDeckUnit.unit.name === 'Scorch') {
       player.discard = (player.discard || 0) + 1
-    } else if (weathering && deckUnit.unit.name !== 'Clear Weather') {
+    } else if (weathering && newDeckUnit.unit.name !== 'Clear Weather') {
       E2eHelper.addWeatherToGamePlayer({
         player,
-        unitName: deckUnit.unit.name,
+        unitName: newDeckUnit.unit.name,
       })
     } else if (!spying) {
       E2eHelper.addUnitToGamePlayer({
         player,
-        unitName: deckUnit.unit.name,
+        unitName: newDeckUnit.unit.name,
         row,
         strength,
         hero,
@@ -526,6 +535,11 @@ export class E2eHelper {
           unitName: avenge.name,
           strength: avenge.effectiveStrength,
         })
+        if (avenge.origin === GameUnitOrigin.Discard) {
+          avenge.newUnitPlayer.discard = (avenge.newUnitPlayer.discard || 0) - 1
+        } else if (avenge.origin === GameUnitOrigin.Hand) {
+          avenge.newUnitPlayer.hand = (avenge.newUnitPlayer.hand || 0) - 1
+        }
       }
     }
     if (scorching) {
@@ -609,12 +623,16 @@ export class E2eHelper {
         effectKey = EffectKey.Spy
       } else if (weathering) {
         effectKey = EffectKey.Weather
+      } else if (medicing !== undefined) {
+        effectKey = EffectKey.Medic
       }
       let numImpacts: number
       if (impacts !== undefined) {
         numImpacts = impacts
       } else {
-        if (decoying) {
+        if (medicing !== undefined) {
+          numImpacts = medicing === true ? 1 : 0
+        } else if (decoying) {
           numImpacts = 1
         } else if (spying) {
           numImpacts = undrawnSpiedIntoHand
@@ -625,7 +643,7 @@ export class E2eHelper {
       }
       moves.push({
         userName: player.name,
-        unitName: deckUnit.unit.name,
+        unitName: newDeckUnit.unit.name,
         combatRow: weathering ? undefined : row,
         impacts:
           effectKey && impacts !== -1
@@ -635,6 +653,10 @@ export class E2eHelper {
               }
             : undefined,
         targetUserName: spying ? spying.opponent.name : undefined,
+        reason: {
+          type: revivedBy ? MoveReasonType.Revive : MoveReasonType.Deploy,
+          name: revivedBy || '',
+        },
       })
     }
     if (moves && mustering) {
@@ -644,7 +666,7 @@ export class E2eHelper {
           unitName: muster.name,
           combatRow: muster.row,
           reason: {
-            name: deckUnit.unit.name,
+            name: newDeckUnit.unit.name,
             type: MoveReasonType.Muster,
           },
           impacts: muster.impact
@@ -664,7 +686,7 @@ export class E2eHelper {
           unitName: mardroeme.name,
           combatRow: mardroeme.row,
           reason: {
-            name: mardroeme.reason || deckUnit.unit.name,
+            name: mardroeme.reason || newDeckUnit.unit.name,
             type: MoveReasonType.Transform,
           },
           impacts: mardroeme.impact
@@ -864,4 +886,5 @@ export interface AvengingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+  origin?: GameUnitOrigin
 }

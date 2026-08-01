@@ -64,6 +64,16 @@ async function testPlayUnitMutation({
   const resolvedGame = TestUtil.getGameFromDbGame({
     game: updatedGame,
   })
+  const roundUnits = [TestUtil.getDbUnit({})]
+  const discards = {
+    [new ObjectId().toString()]: [TestUtil.getDbDeckUnit({})],
+  }
+  const undiscards = {
+    [new ObjectId().toString()]: [TestUtil.getDbDeckUnit({})],
+  }
+  const unhands = {
+    [new ObjectId().toString()]: [TestUtil.getDbDeckUnit({})],
+  }
   const args: MutationPlayUnitArgs = {
     game: game._id.toString(),
     unit: unit._id.toString(),
@@ -84,7 +94,9 @@ async function testPlayUnitMutation({
       isDecoy: true,
       isSpy: true,
       isWeather: true,
+      isMedic: true,
       userId: user._id,
+      roundUnits,
     })
   }
   const implementationSpy = jest.spyOn(PlayUnitImplementation, 'playUnitImplementation')
@@ -95,6 +107,9 @@ async function testPlayUnitMutation({
       game: updatedGame,
       gameDeck,
       handDeckUnitsAdded: [handDeckUnitAdded],
+      discards,
+      undiscards,
+      unhands,
     })
   }
   const resolutionSpy = jest.spyOn(PlayUnitResolution, 'playUnitResolution')
@@ -128,7 +143,9 @@ async function testPlayUnitMutation({
               isDecoy: true,
               isSpy: true,
               isWeather: true,
+              isMedic: true,
               userId: user._id,
+              roundUnits,
             },
           ],
         ]
@@ -145,6 +162,9 @@ async function testPlayUnitMutation({
               logPrefix,
               handDeckUnitsAdded: [handDeckUnitAdded],
               userId: user._id,
+              discards,
+              undiscards,
+              unhands,
             },
           ],
         ]

@@ -1,4 +1,4 @@
-import { Document, Filter, ObjectId, UpdateFilter } from 'mongodb'
+import { Document, Filter, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { FactionDbObject, FactionKey, UnitStats } from '@gwent/graphql-schema/database-typings'
@@ -25,13 +25,38 @@ export default class FactionStore extends Store {
    */
   static async add({ ability, dlc, image, key, name }: AddFactionInput): Promise<FactionDbObject> {
     FactionStore.logger.debug(`Adding faction with name "${name}"`)
-    const faction: Document = {
+    const faction: WithoutId<FactionDbObject> = {
       ability,
       created: new Date(),
-      dlc: dlc && new ObjectId(dlc),
+      dlc: dlc ? new ObjectId(dlc) : undefined,
       image,
       key,
       name,
+      // stat values to be updated after creation
+      stats: {
+        agile: 0,
+        avenger: 0,
+        berserker: 0,
+        bond: 0,
+        close: 0,
+        decoy: 0,
+        heroes: 0,
+        horn: 0,
+        mardroeme: 0,
+        medic: 0,
+        morale: 0,
+        muster: 0,
+        ranged: 0,
+        scorch: 0,
+        siege: 0,
+        specials: 0,
+        spy: 0,
+        strengthAverage: 0,
+        strengths: 0,
+        strengthTotal: 0,
+        units: 0,
+        weather: 0,
+      },
     }
     if (FactionStore.logger.isTraceEnabled()) {
       FactionStore.logger.trace(`Adding faction: "${JSON.stringify(faction)}"`)

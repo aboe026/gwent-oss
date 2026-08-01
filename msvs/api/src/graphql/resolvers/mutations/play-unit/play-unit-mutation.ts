@@ -30,6 +30,7 @@ export default class PlayUnitMutation {
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
       userId,
     } = await PlayUnitValidation.playUnitValidation(args, context, info)
 
@@ -37,6 +38,9 @@ export default class PlayUnitMutation {
       game: updatedGame,
       gameDeck,
       handDeckUnitsAdded,
+      discards,
+      undiscards,
+      unhands,
     } = await PlayUnitImplementation.playUnitImplementation({
       combat,
       deckUnit,
@@ -49,6 +53,7 @@ export default class PlayUnitMutation {
       isDecoy,
       isSpy,
       isWeather,
+      isMedic,
       userId,
     })
 
@@ -58,6 +63,9 @@ export default class PlayUnitMutation {
       gameDeck,
       logPrefix,
       handDeckUnitsAdded,
+      discards,
+      undiscards,
+      unhands,
       userId,
     })
   }

@@ -158,6 +158,7 @@ describe('game-player-resolver', () => {
         gameStatus: GameStatus.Ordering,
         player: TestUtil.getDbGamePlayer({
           ready: true,
+          reviving: true,
           user: user1.id,
           deck: TestUtil.getDbGameDeck({
             from: TestUtil.getDbDeck({
@@ -641,6 +642,7 @@ async function testResolveFromObject({
       leader: gameStatus === GameStatus.Decking ? undefined : leader || resolvedLeader,
       order: player.order,
       ready: player.ready,
+      reviving: player.reviving,
       rounds: [],
       user,
     })

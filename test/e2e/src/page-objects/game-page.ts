@@ -193,6 +193,7 @@ export default class GamePage {
     turn,
     passed,
     allReady,
+    deckPartSelected = GameUnitOrigin.Hand,
   }: {
     name: string
     losses?: number
@@ -206,6 +207,7 @@ export default class GamePage {
     turn?: PlayerTurn
     passed?: boolean
     allReady?: boolean
+    deckPartSelected?: GameUnitOrigin
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoSelfContainer)
     await info.verify({
@@ -221,6 +223,7 @@ export default class GamePage {
       turn,
       passed,
       allReady,
+      deckPartSelected,
     })
   }
 
@@ -273,8 +276,10 @@ export default class GamePage {
     if (names) {
       await t.expect(GamePage.elements.HandIcon.exists).notOk()
       const actualNames: (string | null)[] = []
-      for (let i = 0; i < names.length; i++) {
-        const card = await GamePage.elements.Hand.child(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+      const cards = GamePage.elements.Hand.find(`.${HTML_CLASSES.GameHandCardWrapper}`)
+      const actualCardsCount = await cards.count
+      for (let i = 0; i < actualCardsCount; i++) {
+        const card = await cards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
         const cardName = await card.getAttribute('title')
         const isSelected = await card.hasClass(HTML_CLASSES.ItemHighlighted)
         const isDotted = await E2eHelper.hasDottedBorder(card)
@@ -348,6 +353,8 @@ export default class GamePage {
               action = 'transformed'
             } else if (move.reason?.type === MoveReasonType.Summon) {
               action = 'summoned'
+            } else if (move.reason?.type === MoveReasonType.Revive) {
+              action = 'revived'
             }
             if (move.targetUserName) {
               if (move.reason?.type === MoveReasonType.Summon) {
@@ -361,7 +368,7 @@ export default class GamePage {
               if (move.reason.type === MoveReasonType.Transform) {
                 description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
               }
-              if (move.reason.type !== MoveReasonType.Summon) {
+              if (move.reason.type !== MoveReasonType.Summon && move.reason.name) {
                 description += ` by ${move.reason.name}${source}`
               }
             }
@@ -822,6 +829,7 @@ export default class GamePage {
     highlightedHandCard,
     highlightedBattlefieldCard,
     highlightedHistory,
+    deckPartSelected = GameUnitOrigin.Hand,
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
@@ -835,6 +843,7 @@ export default class GamePage {
     highlightedHandCard?: HighlightedHandCard
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
+    deckPartSelected?: GameUnitOrigin
   }) {
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
@@ -862,6 +871,7 @@ export default class GamePage {
       turn: self.turn,
       passed: self.passed,
       allReady: self.ready && opponent.ready,
+      deckPartSelected,
     })
     await GamePage.verifyOpponent({
       name: opponent.name,
@@ -1391,7 +1401,14 @@ export default class GamePage {
       totalRounds - round
     )
     const movesCount = await roundContainer.child().count
-    const reasonText = reason === MoveReasonType.Summon ? 'summoned' : 'deployed'
+    let reasonText: string
+    if (reason === MoveReasonType.Summon) {
+      reasonText = 'summoned'
+    } else if (reason === MoveReasonType.Revive) {
+      reasonText = 'revived'
+    } else {
+      reasonText = 'deployed'
+    }
     let targetText = ''
     if (targetUser) {
       if (reason === MoveReasonType.Summon) {
@@ -1667,6 +1684,10 @@ export default class GamePage {
     })
     await t.click(move.find(`.${HTML_CLASSES.GameHistoryMoveImpactContainer}`))
   }
+
+  static async switchDeckPartSelected(deckPart: GameUnitOrigin) {
+    await new GamePlayerInfo(GamePage.elements.InfoSelfContainer).selectDeckPart(deckPart)
+  }
 }
 
 export interface GamePlayerExpected {
@@ -1686,6 +1707,7 @@ export interface GamePlayerExpected {
   ranged?: CombatRow
   siege?: CombatRow
   weathering?: string[]
+  reviving?: boolean
 }
 
 interface ImpactSelection {

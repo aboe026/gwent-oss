@@ -188,6 +188,30 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
+    it('calls addMoveToPlayer once with medic impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testNewUnitDeployed({
+        deckUnit,
+        medics: {
+          [deckUnit.unit.toString()]: [impact],
+        },
+        logPrefix,
+        targetId: new ObjectId().toString(),
+        expectedImpacts: [impact],
+      })
+    })
+    it('sets move reason unit if medicingUnit', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      testNewUnitDeployed({
+        deckUnit,
+        medicingUnit: TestUtil.getDbGameUnit({}),
+        logPrefix,
+      })
+    })
     it('calls addMoveToPlayer once with weather impact', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       const impact: ImpactDbObject = {
@@ -1367,7 +1391,7 @@ describe('update-history', () => {
       })
     })
   })
-  describe('getMoveTestUtil.getDbGameUnit', () => {
+  describe('getMoveGameUnit', () => {
     it('returns Deck type if not weather or row', () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       testGetMoveGameUnit({
@@ -1616,9 +1640,11 @@ function testNewUnitDeployed({
   decoys = {},
   weathers = {},
   spies = {},
+  medics = {},
   musteredOrigins,
   transformedFieldUnits,
   mardroemingFieldUnit,
+  medicingUnit,
   targetId,
   logPrefix,
   error,
@@ -1638,9 +1664,11 @@ function testNewUnitDeployed({
   decoys?: ImpactsByUnitId
   weathers?: ImpactsByUnitId
   spies?: ImpactsByUnitId
+  medics?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
   transformedFieldUnits?: FieldUnitDbObject[]
   mardroemingFieldUnit?: FieldUnitDbObject
+  medicingUnit?: GameUnitDbObject | undefined
   targetId?: string
   logPrefix: string
   error?: Error
@@ -1670,7 +1698,7 @@ function testNewUnitDeployed({
     unit: gameUnit,
     impacts: updatedImpacts,
     reason: {
-      type: MoveReasonType.Deploy,
+      type: medicingUnit ? MoveReasonType.Revive : MoveReasonType.Deploy,
     },
     source: {
       origin: GameUnitOrigin.Hand,
@@ -1679,6 +1707,9 @@ function testNewUnitDeployed({
   }
   if (targetId) {
     move.target = new ObjectId(targetId)
+  }
+  if (medicingUnit) {
+    move.reason.unit = medicingUnit
   }
   const addMoveToPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToPlayer').mockImplementation()
   const getFieldUnitDbObjectSpy = jest.spyOn(GetFieldUnits, 'getFieldUnit').mockReturnValueOnce(fieldUnit)
@@ -1701,6 +1732,7 @@ function testNewUnitDeployed({
             morales,
             musters,
             spies,
+            medics,
             origin: musteredOrigins && musteredOrigins[muster.unit.unit.toString()],
             playerId,
             reason: {
@@ -1730,6 +1762,7 @@ function testNewUnitDeployed({
           morales,
           musters,
           spies,
+          medics,
           origin: GameUnitOrigin.Nondeck,
           playerId,
           reason: {
@@ -1758,6 +1791,7 @@ function testNewUnitDeployed({
           horns,
           decoys,
           spies,
+          medics,
           logPrefix,
           mardroemes,
           morales,
@@ -1805,8 +1839,10 @@ function testNewUnitDeployed({
         horns,
         mardroemes,
         spies,
+        medics,
         transformedFieldUnits,
         mardroemingFieldUnit,
+        medicingUnit,
         targetId,
         isWeather,
       })
@@ -1830,8 +1866,10 @@ function testNewUnitDeployed({
         horns,
         mardroemes,
         spies,
+        medics,
         transformedFieldUnits,
         mardroemingFieldUnit,
+        medicingUnit,
         targetId,
         isWeather,
       })
