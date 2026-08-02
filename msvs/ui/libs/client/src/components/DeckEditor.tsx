@@ -698,13 +698,11 @@ function renderUnits({
           const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
           return unit.faction.key === FactionKey.Neutral
         }),
-        ...(factionUnitsData.units || []).map(
-          (unit): DeckUnitFragment => ({
-            artStyle: 1,
-            unit,
-            __typename: 'DeckUnit',
-          })
-        ),
+        ...(factionUnitsData.units || []).map((unit): DeckUnitFragment => ({
+          artStyle: 1,
+          unit,
+          __typename: 'DeckUnit',
+        })),
       ])
     }
   }, [factionUnitsData, setDeckUnits])
