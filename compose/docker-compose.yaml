@@ -1,6 +1,6 @@
 services:
   database:
-    image: mongo:8.2.7
+    image: mongo:8.3.7
 
   api:
     image: gwent-api
