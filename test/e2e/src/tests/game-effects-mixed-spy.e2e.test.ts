@@ -7,7 +7,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effects Mixed Spy')
 
-test.only('Decoyed spy can be played again', async (t) => {
+test('Decoyed spy can be played again', async (t) => {
   const unitName1 = 'Prince Stennis'
   const unitName2 = 'Decoy'
   const gameManager = await createGameManager({
