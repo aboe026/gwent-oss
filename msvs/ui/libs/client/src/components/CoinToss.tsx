@@ -1,4 +1,4 @@
-import { HTML_CLASSES } from '@gwent/constants'
+import { HTML_CLASSES } from '@gwent-oss/constants'
 import './CoinToss.css'
 
 /**

@@ -22,8 +22,8 @@ import {
   GameStatus,
   RoundResult,
   User,
-} from '@gwent/graphql-schema/resolver-typings'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+} from '@gwent-oss/graphql-schema/resolver-typings'
+import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import {
   expectizeGame,
   expectizeGamePlayer,

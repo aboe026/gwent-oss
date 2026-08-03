@@ -19,14 +19,14 @@ import {
   FactionStatsQuery,
   InputMaybe,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import DeckRow, { Action } from './DeckRow'
-import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
+import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent-oss/graphql-schema/decks-filter'
 import getEnumFromString from '../util/get-faction-key-from-string'
 import { getErrorMessages } from '../util/error-util'
-import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent-oss/constants'
 import LoadingSpinner from '../components/LoadingSpinner'
-import { sortObjectArray } from '@gwent/utils'
+import { sortObjectArray } from '@gwent-oss/utils'
 import { useAuthRetry } from '../AuthRetry'
 import './DeckList.css'
 

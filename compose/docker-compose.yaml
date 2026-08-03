@@ -3,7 +3,7 @@ services:
     image: mongo:8.3.7
 
   api:
-    image: gwent-api
+    image: gwent-oss-api
     build:
       context: ../
       dockerfile: msvs/api/Dockerfile
@@ -15,7 +15,7 @@ services:
       - CORS_ORIGIN=https://${HOST_NAME}
 
   ui:
-    image: gwent-ui
+    image: gwent-oss-ui
     build:
       context: ../
       dockerfile: msvs/ui/Dockerfile

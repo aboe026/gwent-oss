@@ -1,7 +1,7 @@
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
 import resolvers from './resolvers/resolvers'
-import { typeDefs } from '@gwent/graphql-schema'
+import { typeDefs } from '@gwent-oss/graphql-schema'
 
 /**
  * The executable GraphQL schema.

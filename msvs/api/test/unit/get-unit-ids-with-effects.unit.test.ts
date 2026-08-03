@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { EffectDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { EffectDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import getUnitIdsWithEffect from '../../src/graphql/resolvers/mutations/play-unit/get-unit-ids-with-effect'
 import TestUtil from '../util/test-util'
 

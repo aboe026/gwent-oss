@@ -1,4 +1,4 @@
-import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, RoundResult } from '@gwent-oss/graphql-schema/database-typings'
 import IsGameOver from '../../src/graphql/resolvers/mutations/play-pass/is-game-over'
 import TestUtil from '../util/test-util'
 

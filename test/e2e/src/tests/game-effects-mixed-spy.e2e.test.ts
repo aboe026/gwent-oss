@@ -1,4 +1,4 @@
-import { Combat, FactionKey } from '@gwent/node-client'
+import { Combat, FactionKey } from '@gwent-oss/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 
@@ -7,7 +7,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effects Mixed Spy')
 
-test('Decoyed spy can be played again', async (t) => {
+test.only('Decoyed spy can be played again', async (t) => {
   const unitName1 = 'Prince Stennis'
   const unitName2 = 'Decoy'
   const gameManager = await createGameManager({

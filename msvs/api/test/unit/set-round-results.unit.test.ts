@@ -1,5 +1,5 @@
 import deepClone from '../util/deep-clone'
-import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, RoundResult } from '@gwent-oss/graphql-schema/database-typings'
 import SetRoundResults from '../../src/graphql/resolvers/mutations/play-pass/set-round-results'
 import TestUtil from '../util/test-util'
 

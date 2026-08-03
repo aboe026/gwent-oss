@@ -4,7 +4,7 @@ import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
-import { GameStatus } from '@gwent/node-client'
+import { GameStatus } from '@gwent-oss/node-client'
 import LoginPage from '../page-objects/login-page'
 import HomePage from '../page-objects/home-page'
 

@@ -1,8 +1,8 @@
 import DeckUnitResolver from './deck-unit-resolver'
-import { FieldUnitDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { FieldUnitDbObject, GameUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import FieldUnitResolver from './field-unit-resolver'
-import { GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { GameUnitType } from '@gwent/graphql-schema'
+import { GameUnit, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
+import { GameUnitType } from '@gwent-oss/graphql-schema'
 import UnitResolver from './unit-resolver'
 import WeatherUnitResolver from './weather-unit-resolver'
 

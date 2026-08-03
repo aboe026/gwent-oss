@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { MAX_REDRAWS } from '@gwent/constants'
-import { MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameStatus, UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { MAX_REDRAWS } from '@gwent-oss/constants'
+import { MutationRedrawArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import RedrawValidation, { ValidatedRedraw } from '../../src/graphql/resolvers/mutations/redraw/redraw-validation'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'

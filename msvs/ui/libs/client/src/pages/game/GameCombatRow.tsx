@@ -16,11 +16,11 @@ import {
   UnitFragment,
   UnitFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import { FullUnitCards, GameDeckCardType, PlayUnitProps, UnitForPlayer } from './GameProps'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { sortObjectArray, toTitleCase } from '@gwent/utils'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
+import { sortObjectArray, toTitleCase } from '@gwent-oss/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../UserContext'
 

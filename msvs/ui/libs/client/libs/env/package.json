@@ -1,5 +1,5 @@
 {
-  "name": "@gwent/client-env",
+  "name": "@gwent-oss/client-env",
   "version": "0.24.1",
   "author": "Adam Boe",
   "description": "Client-side runtime dynamic environment variables",

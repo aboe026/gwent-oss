@@ -6,7 +6,7 @@ import { SessionData } from 'express-session'
 import { signedCookie } from 'cookie-parser'
 
 import env from '../env'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class for handling authentication for WebSockets.

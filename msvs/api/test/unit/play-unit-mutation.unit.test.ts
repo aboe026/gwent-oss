@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
-import { Context } from '@gwent/graphql-schema/context'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, MutationPlayUnitArgs } from '@gwent-oss/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
 import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-mutation'
 import PlayUnitResolution from '../../src/graphql/resolvers/mutations/play-unit/play-unit-resolution'

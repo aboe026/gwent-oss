@@ -1,5 +1,5 @@
-import { Context } from '@gwent/graphql-schema/context'
-import { GameDeck, MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameDeck, MutationSetDeckArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import SetDeckImplementation from './set-deck-implementation'
 import SetDeckResolution from './set-deck-resolution'

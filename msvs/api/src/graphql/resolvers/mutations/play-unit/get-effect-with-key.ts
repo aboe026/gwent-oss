@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import { EffectDbObject, EffectKey } from '@gwent/graphql-schema/database-typings'
+import { EffectDbObject, EffectKey } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class for retrieving an effect with a specific key from a list of effect database objects.

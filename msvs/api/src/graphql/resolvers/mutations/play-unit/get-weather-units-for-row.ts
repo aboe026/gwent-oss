@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Combat, GameDbObject, UnitDbObject, WeatherUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, GameDbObject, UnitDbObject, WeatherUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import PresentableError from '../../../../util/presentable-error'
 
 /**

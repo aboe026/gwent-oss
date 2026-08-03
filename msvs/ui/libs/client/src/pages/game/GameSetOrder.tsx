@@ -9,9 +9,9 @@ import {
   GamePlayerFragment,
   GamePlayerFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { SetOrderProps } from './GameProps'

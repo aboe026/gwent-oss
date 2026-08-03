@@ -20,9 +20,9 @@ import {
   GamePlayer,
   GameStatus,
   User,
-} from '@gwent/graphql-schema/resolver-typings'
-import { EFFECT_OPERATOR } from '@gwent/constants'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+} from '@gwent-oss/graphql-schema/resolver-typings'
+import { EFFECT_OPERATOR } from '@gwent-oss/constants'
+import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'

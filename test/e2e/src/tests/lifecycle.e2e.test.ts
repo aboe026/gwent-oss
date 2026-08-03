@@ -1,12 +1,12 @@
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
-import { Combat, FactionKey, GameStatus } from '@gwent/node-client'
+import { Combat, FactionKey, GameStatus } from '@gwent-oss/node-client'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import env from '../util/e2e-env'
 import { GameManager } from '../util/game-manager'
 import GamePage, { GamePlayerExpected } from '../page-objects/game-page'
@@ -16,7 +16,7 @@ import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()

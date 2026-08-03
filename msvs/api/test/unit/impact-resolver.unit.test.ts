@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
-import { GameUnit, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
-import { GameUnitOrigin, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameUnit, Impact, Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { GameUnitOrigin, ImpactDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import ImpactResolver from '../../src/graphql/resolvers/types/impact-resolver'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'

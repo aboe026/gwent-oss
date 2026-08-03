@@ -1,6 +1,6 @@
 import { MongoClient, ObjectId } from 'mongodb'
 
-import { GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * Retrieves the desired game from the database.

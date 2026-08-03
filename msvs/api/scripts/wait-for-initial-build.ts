@@ -1,7 +1,7 @@
 import fs from 'fs-extra'
 import path from 'path'
 
-import { sleep } from '@gwent/utils'
+import { sleep } from '@gwent-oss/utils'
 
 //
 ;(async () => {

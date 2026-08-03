@@ -1,11 +1,11 @@
 import ApiClient from '../util/api-client'
-import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent/node-client'
+import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent-oss/node-client'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import LoginPage from '../page-objects/login-page'
-import { sortObjectArray } from '@gwent/utils'
-import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
+import { sortObjectArray } from '@gwent-oss/utils'
+import { SORT_FIELD } from '@gwent-oss/graphql-schema/deck-filter'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()

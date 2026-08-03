@@ -1,4 +1,4 @@
-import { EffectKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey, GameUnitOrigin } from '@gwent-oss/graphql-schema/resolver-typings'
 import getImpactDescription from '../../src/get-impact-description'
 
 describe('getImpactDescription', () => {

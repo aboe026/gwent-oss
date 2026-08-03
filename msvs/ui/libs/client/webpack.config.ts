@@ -6,7 +6,7 @@ import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackShellPluginNext from 'webpack-shell-plugin-next'
 
-import { NODE_ENV } from '@gwent/env'
+import { NODE_ENV } from '@gwent-oss/env'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

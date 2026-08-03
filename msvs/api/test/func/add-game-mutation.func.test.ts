@@ -3,7 +3,7 @@ import { GraphQLError, graphql } from 'graphql'
 import { addUser } from './util/graphql-util'
 import { expectizeGame } from './util/expect-util'
 import { getGameFragment } from './util/fragment-util'
-import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent-oss/constants'
 import schema from '../../src/graphql/executable-schema'
 import TestUtil from '../util/test-util'
 

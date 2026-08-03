@@ -8,9 +8,9 @@ import {
   FieldUnitEffectDbObject,
   GameDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { EFFECT_OPERATOR } from '@gwent/constants'
-import { EffectReasonType } from '@gwent/graphql-schema'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { EFFECT_OPERATOR } from '@gwent-oss/constants'
+import { EffectReasonType } from '@gwent-oss/graphql-schema'
 import EffectWeather from '../../src/graphql/resolvers/mutations/play-unit/effect-weather'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { PlayerWeatherUnit } from '../../src/graphql/resolvers/mutations/play-unit/get-weather-units-for-row'

@@ -1,5 +1,5 @@
 import formatGameStatus from '../../src/format-game-status'
-import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 
 describe('formatGameStatus', () => {
   it('returns Choosing Decks if status is DECKING', () => {

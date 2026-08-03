@@ -13,8 +13,8 @@ import {
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { GameUnitType } from '@gwent/graphql-schema'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent-oss/graphql-schema'
 import GetEffectWithKey from './get-effect-with-key'
 import GetFieldUnits from '../../util/get-field-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'

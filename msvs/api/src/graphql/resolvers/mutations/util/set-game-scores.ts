@@ -1,4 +1,4 @@
-import { FieldUnitDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { FieldUnitDbObject, GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * Sets the scores for the current round and each combat row in it for the game.

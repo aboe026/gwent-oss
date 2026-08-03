@@ -3,7 +3,7 @@ import { getLogger } from 'log4js'
 
 import PasswordHasher from '../../util/password-hasher'
 import Store from './store'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * Factory for users that can interact with the application.

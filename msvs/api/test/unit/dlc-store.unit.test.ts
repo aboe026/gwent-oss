@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { DlcDbObject, DlcKey } from '@gwent/graphql-schema/database-typings'
+import { DlcDbObject, DlcKey } from '@gwent-oss/graphql-schema/database-typings'
 import DlcStore, { GetDlcsInput } from '../../src/database/stores/dlc-store'
 
 describe('dlc-store', () => {

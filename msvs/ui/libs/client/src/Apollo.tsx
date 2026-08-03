@@ -6,7 +6,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { HttpLink, ApolloClient, InMemoryCache, ApolloLink } from '@apollo/client'
 import urlJoin from 'url-join'
 
-import generatedIntrospection from '@gwent/graphql-schema/apollo-possible-typings'
+import generatedIntrospection from '@gwent-oss/graphql-schema/apollo-possible-typings'
 
 /**
  * Need to pass management of WebSocket status to a lower-order component

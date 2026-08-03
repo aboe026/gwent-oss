@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router'
 
 import DeckEditor from '../../components/DeckEditor'
-import { ROUTES } from '@gwent/constants'
+import { ROUTES } from '@gwent-oss/constants'
 import { useTitle } from '../../components/TabTitle'
 
 /**
@@ -10,7 +10,7 @@ import { useTitle } from '../../components/TabTitle'
  * @returns The page to configure decks.
  */
 export default function DeckPage() {
-  useTitle('Deck | Gwent')
+  useTitle('Deck | gwent-oss')
   const navigate = useNavigate()
   return <DeckEditor onCancel={() => navigate(ROUTES.Decks.path)} onSave={() => navigate(ROUTES.Decks.path)} />
 }

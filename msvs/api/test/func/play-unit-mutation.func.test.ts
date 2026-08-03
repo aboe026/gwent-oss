@@ -14,8 +14,16 @@ import {
   setDeck,
   setOrder,
 } from './util/graphql-util'
-import { Combat, Deck, FactionKey, Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+import {
+  Combat,
+  Deck,
+  FactionKey,
+  Game,
+  GamePlayer,
+  GameStatus,
+  User,
+} from '@gwent-oss/graphql-schema/resolver-typings'
+import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'

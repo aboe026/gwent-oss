@@ -31,7 +31,7 @@ import {
   UnitStats,
   User,
   WeatherUnit,
-} from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   DeckDbObject,
   DeckUnitDbObject,
@@ -61,9 +61,9 @@ import {
   UnitDbObject,
   UserDbObject,
   WeatherUnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { GameUnitType, MoveType } from '@gwent/graphql-schema'
-import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent/constants'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { GameUnitType, MoveType } from '@gwent-oss/graphql-schema'
+import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent-oss/constants'
 
 export default class TestUtil {
   static getDbUnit({

@@ -1,4 +1,4 @@
-import { UnitFragment } from '@gwent/graphql-schema/apollo-typings'
+import { UnitFragment } from '@gwent-oss/graphql-schema/apollo-typings'
 
 /**
  * Get the path to the weather image for a Unit.

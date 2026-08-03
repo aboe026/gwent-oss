@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to determine if the current round of a game is over or not.

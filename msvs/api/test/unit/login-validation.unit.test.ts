@@ -1,5 +1,5 @@
 import LoginValidation from '../../src/graphql/resolvers/mutations/login/login-validation'
-import { MutationLoginArgs } from '@gwent/graphql-schema/resolver-typings'
+import { MutationLoginArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 import UserStore from '../../src/database/stores/user-store'

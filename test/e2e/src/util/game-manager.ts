@@ -21,9 +21,9 @@ import {
   GameUnit,
   GameUnitOrigin,
   MoveReasonType,
-} from '@gwent/node-client'
+} from '@gwent-oss/node-client'
 import E2eUtil from './e2e-util'
-import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
+import { ensureUnitsInHand, setTurnOrder } from '@gwent-oss/test-utils'
 import env from './e2e-env'
 import GamePage, {
   GamePlayerExpected,
@@ -37,8 +37,8 @@ import GamePage, {
 } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
-import { toTitleCase } from '@gwent/utils'
+import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
+import { toTitleCase } from '@gwent-oss/utils'
 
 export class GameManager {
   public gameId: string

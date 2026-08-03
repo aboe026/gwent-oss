@@ -3,8 +3,8 @@ import {
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
-import { Combat, DeckUnit, UnitStats, EffectKey } from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
+import { Combat, DeckUnit, UnitStats, EffectKey } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * A class used to calculate statistics for Units in a Deck.

@@ -2,7 +2,7 @@ import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { expectizeLeaders, verifyMongoIds } from './util/expect-util'
-import { FactionKey } from '@gwent/graphql-schema/database-typings'
+import { FactionKey } from '@gwent-oss/graphql-schema/database-typings'
 import { getLeaderFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 

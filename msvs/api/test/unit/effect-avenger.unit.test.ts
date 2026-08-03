@@ -7,7 +7,7 @@ import {
   GameDbObject,
   GameUnitOrigin,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectAvenger, {
   Avengings,

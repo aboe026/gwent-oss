@@ -1,11 +1,11 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import env from '../../../env'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
-import { Setting, SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
+import { Setting, SettingKey, SettingType } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * A class for executing the settings GraphQL Query.

@@ -3,7 +3,7 @@ import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import EventManager from '../../src/graphql/event-manager'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import TestUtil from '../util/test-util'
 
 describe('add-deck-resolution', () => {

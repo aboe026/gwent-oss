@@ -10,7 +10,7 @@ import {
   ready,
   setDeck,
 } from './util/graphql-util'
-import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, FactionKey } from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   getDeckFragment,
   getDeckUnitFragment,
@@ -22,7 +22,7 @@ import {
   getUnitFragment,
   getUserFragment,
 } from './util/fragment-util'
-import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('permissions', () => {

@@ -14,7 +14,7 @@ import {
   UnitFragmentDoc,
   useFragment,
   WeatherUnitFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import UnitGameCard from '../../components/UnitGameCard'
 

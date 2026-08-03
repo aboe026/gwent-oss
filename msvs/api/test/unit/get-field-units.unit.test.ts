@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, FieldUnitDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, FieldUnitDbObject, GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import TestUtil from '../util/test-util'
 

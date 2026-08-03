@@ -1,6 +1,6 @@
 import { Document, Filter, ObjectId, UpdateFilter } from 'mongodb'
 
-import { FactionDbObject, FactionKey } from '@gwent/graphql-schema/database-typings'
+import { FactionDbObject, FactionKey } from '@gwent-oss/graphql-schema/database-typings'
 import FactionStore, { EditFactionInput, GetFactionsInput } from '../../src/database/stores/faction-store'
 import TestUtil from '../util/test-util'
 

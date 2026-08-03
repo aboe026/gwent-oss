@@ -1,4 +1,4 @@
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import PresentableError from '../../../../util/presentable-error'
 
 /**

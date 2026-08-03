@@ -1,4 +1,4 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import LogoutValidation, { ValidatedLogout } from '../../src/graphql/resolvers/mutations/logout/logout-validation'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'

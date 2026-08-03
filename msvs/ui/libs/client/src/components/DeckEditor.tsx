@@ -24,11 +24,11 @@ import {
   UnitsDocument,
   UnitStats,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
-import { combineUnitStats, sortObjectArray } from '@gwent/utils'
+import { combineUnitStats, sortObjectArray } from '@gwent-oss/utils'
 import DlcTag from '../components/DlcTag'
 import {
   FILTERS,
@@ -37,10 +37,10 @@ import {
   FilterField,
   SORT_FIELD,
   SORT_ORDER,
-} from '@gwent/graphql-schema/deck-filter'
+} from '@gwent-oss/graphql-schema/deck-filter'
 import getEnumFromString from '../util/get-faction-key-from-string'
 import { getErrorMessages, retryCheckingAuth } from '../util/error-util'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
@@ -50,7 +50,7 @@ import UnitsHeader from '../components/UnitsHeader'
 import UnitsStats from '../components/UnitsStats'
 import { useAuthRetry } from '../AuthRetry'
 import { useUserContext } from '../UserContext'
-import { ValidateDeck } from '@gwent/validators'
+import { ValidateDeck } from '@gwent-oss/validators'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './DeckEditor.css'
 

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
 import ResolverUtil from '../../resolver-util'
 

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameStatus, RoundResult } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to set the victors on a game when it is over.

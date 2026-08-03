@@ -2,15 +2,15 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
-import { FactionKey, GameDbObject, GameDeckDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { FactionKey, GameDbObject, GameDeckDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import FactionStore from '../../../../database/stores/faction-store'
-import { Game } from '@gwent/graphql-schema/resolver-typings'
+import { Game } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameResolver from '../../types/game-resolver'
 import GameStore from '../../../../database/stores/game-store'
-import { getDuplicateItems, randomizeOrder } from '@gwent/utils'
+import { getDuplicateItems, randomizeOrder } from '@gwent-oss/utils'
 import { OrderSetPayload } from '../../subscription-resolver'
 import PresentableError from '../../../../util/presentable-error'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 
 /**
  * A class used to set the turn order on a game.

@@ -1,13 +1,18 @@
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../src/graphql/event-manager'
-import { FactionDbObject, GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import {
+  FactionDbObject,
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+} from '@gwent-oss/graphql-schema/database-typings'
+import { FactionKey } from '@gwent-oss/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import * as gwentUtils from '@gwent/utils'
-import { PubSubEvents } from '@gwent/constants'
+import * as gwentUtils from '@gwent-oss/utils'
+import { PubSubEvents } from '@gwent-oss/constants'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
 import TestUtil from '../util/test-util'
 

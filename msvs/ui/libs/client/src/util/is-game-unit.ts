@@ -3,7 +3,7 @@ import {
   FieldUnitFragment,
   GameUnitFragment,
   WeatherUnitFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 
 /**
  * Whether an object is a GameUnitFragment or not.

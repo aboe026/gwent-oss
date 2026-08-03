@@ -1,4 +1,4 @@
-import { EffectKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey, GameUnitOrigin } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * Gets the description text for an impact on a unit due to a given effect.

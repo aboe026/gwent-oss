@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import { sleep } from '@gwent/utils'
+import { sleep } from '@gwent-oss/utils'
 import Upgrade from './upgrades/upgrade'
 import UpgradeStore from './stores/upgrade-store'
 

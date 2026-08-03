@@ -1,5 +1,5 @@
 {
-  "name": "@gwent/test-utils",
+  "name": "@gwent-oss/test-utils",
   "version": "0.24.1",
   "author": "Adam Boe",
   "description": "Utility functions for tests",
@@ -7,14 +7,14 @@
   "types": "build/src/index.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
-    "build-all": "yarn g:recurse @gwent/test-utils run build",
+    "build-all": "yarn g:recurse @gwent-oss/test-utils run build",
     "clean": "yarn g:rimraf build",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "@gwent/graphql-schema": "workspace:*",
+    "@gwent-oss/graphql-schema": "workspace:*",
     "mongodb": "7.5.0"
   },
   "devDependencies": {

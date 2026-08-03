@@ -1,10 +1,10 @@
 import { CgChevronDoubleLeft, CgChevronDoubleRight, CgLock, CgLockUnlock } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckUnitFragment, UnitFragmentDoc, UnitStats, useFragment } from '@gwent/graphql-schema/apollo-typings'
-import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
-import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
-import { GetUnitStats, RandomizeDeckUnits, toTitleCase } from '@gwent/utils'
+import { DeckUnitFragment, UnitFragmentDoc, UnitStats, useFragment } from '@gwent-oss/graphql-schema/apollo-typings'
+import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent-oss/constants'
+import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent-oss/graphql-schema/deck-filter'
+import { GetUnitStats, RandomizeDeckUnits, toTitleCase } from '@gwent-oss/utils'
 import ProgressRing from '../components/ProgressRing'
 import './UnitsStats.css'
 

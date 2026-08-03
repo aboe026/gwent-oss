@@ -12,7 +12,7 @@ import {
   Leader,
   Unit,
   User,
-} from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   getDeckFragment,
   getDeckUnitFragment,

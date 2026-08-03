@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { DeckDbObject, GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import { getRandomSubset } from '@gwent/utils'
+import { DeckDbObject, GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
+import { getRandomSubset } from '@gwent-oss/utils'
 import PresentableError from '../../../../util/presentable-error'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 
 /**
  * The class for setting the deck on a game.

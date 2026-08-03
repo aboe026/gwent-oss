@@ -1,6 +1,6 @@
 import { FindOptions, ObjectId } from 'mongodb'
 
-import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import UnitStore, { GetUnitsInput } from '../../src/database/stores/unit-store'
 
 describe('unit-store', () => {

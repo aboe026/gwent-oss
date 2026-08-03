@@ -1,7 +1,7 @@
 import CombatRowResolver from '../../src/graphql/resolvers/types/combat-row-resolver'
-import { FieldUnit } from '@gwent/graphql-schema/resolver-typings'
+import { FieldUnit } from '@gwent-oss/graphql-schema/resolver-typings'
 import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
-import { PlayerCombatRowDbObject, Unit } from '@gwent/graphql-schema/database-typings'
+import { PlayerCombatRowDbObject, Unit } from '@gwent-oss/graphql-schema/database-typings'
 import TestUtil from '../util/test-util'
 
 describe('combat-row-resolver', () => {

@@ -1,12 +1,12 @@
 import { getLogger } from 'log4js'
 import { withFilter } from 'graphql-subscriptions'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent-oss/graphql-schema/resolver-typings'
 import EventManager from '../event-manager'
 import GameResolver from './types/game-resolver'
-import { getNestedProperty, setNestedProperty } from '@gwent/utils'
-import { PubSubEvents } from '@gwent/constants'
+import { getNestedProperty, setNestedProperty } from '@gwent-oss/utils'
+import { PubSubEvents } from '@gwent-oss/constants'
 
 /**
  * A class for publising the events of the GraphQL Subscriptions defined in the schema.

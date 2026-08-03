@@ -1,6 +1,6 @@
 import { Selector, t } from 'testcafe'
 
-import { HTML_CLASSES } from '@gwent/constants'
+import { HTML_CLASSES } from '@gwent-oss/constants'
 
 export default class Confirm {
   elements: {

@@ -1,5 +1,5 @@
-import { Combat, FieldUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { FieldUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, FieldUnit, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
+import { FieldUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import FieldUnitEffectResolver from './field-unit-effect-resolver'
 import UnitResolver from './unit-resolver'
 

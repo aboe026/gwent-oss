@@ -1,4 +1,4 @@
-import { EffectKey } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * Gets the message text for when an impact of a given effect does not modify any units. Used to help user identify why no units impacted.

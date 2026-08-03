@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { DeckUnit, FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { DeckUnit, FactionDbObject, LeaderDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import DeckUnitResolver from '../../types/deck-unit-resolver'
-import { FactionKey, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, MutationAddDeckArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import FactionStore from '../../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'
 import LeaderStore from '../../../../database/stores/leader-store'
@@ -12,7 +12,7 @@ import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
-import { ValidateDeck } from '@gwent/validators'
+import { ValidateDeck } from '@gwent-oss/validators'
 
 /**
  * A class for validating the addDeck GraphQL Mutation.

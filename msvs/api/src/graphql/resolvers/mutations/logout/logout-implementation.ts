@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 
 /**
  * A class for implementing the logout GraphQL Mutation.

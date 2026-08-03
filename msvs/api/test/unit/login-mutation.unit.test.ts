@@ -1,9 +1,9 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import LoginImplementation from '../../src/graphql/resolvers/mutations/login/login-implementation'
 import LoginMutation from '../../src/graphql/resolvers/mutations/login/login-mutation'
 import LoginValidation from '../../src/graphql/resolvers/mutations/login/login-validation'
 import LoginResolution from '../../src/graphql/resolvers/mutations/login/login-resolution'
-import { MutationLoginArgs } from '@gwent/graphql-schema/resolver-typings'
+import { MutationLoginArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import TestUtil from '../util/test-util'
 
 describe('login-mutation', () => {

@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import { FieldUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { FieldUnitDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class for retrieving the strongest non-hero Unit ids in a given list of FieldUnit.

@@ -1,11 +1,11 @@
 import ApiClient from '../util/api-client'
 import DeckList, { DeckInfo } from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
-import { Deck, Faction, FactionKey, Leader } from '@gwent/node-client'
+import { Deck, Faction, FactionKey, Leader } from '@gwent-oss/node-client'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import LoginPage from '../page-objects/login-page'
-import { SORT_FIELD } from '@gwent/graphql-schema/decks-filter'
+import { SORT_FIELD } from '@gwent-oss/graphql-schema/decks-filter'
 
 interface DecksSortTestCtx extends E2eCtx {
   username: string

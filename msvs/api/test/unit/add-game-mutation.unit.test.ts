@@ -2,8 +2,8 @@ import AddGameImplementation from '../../src/graphql/resolvers/mutations/add-gam
 import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game/add-game-mutation'
 import AddGameResolution from '../../src/graphql/resolvers/mutations/add-game/add-game-resolution'
 import AddGameValidation from '../../src/graphql/resolvers/mutations/add-game/add-game-validation'
-import { Context } from '@gwent/graphql-schema/context'
-import { MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { MutationAddGameArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import TestUtil from '../util/test-util'
 
 describe('add-game-mutation', () => {

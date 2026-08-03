@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameDeckDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import PresentableError from '../../../../util/presentable-error'
 import SetGameDeck from './set-game-deck'

@@ -8,7 +8,7 @@ import {
   GameDbObject,
   GameUnitDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import EffectAvenger from './effect-avenger'
 import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'

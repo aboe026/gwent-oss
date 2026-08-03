@@ -1,5 +1,5 @@
 import createGameManager from '../util/game-manager'
-import { Combat, FactionKey } from '@gwent/node-client'
+import { Combat, FactionKey } from '@gwent-oss/node-client'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import GamePage from '../page-objects/game-page'
 

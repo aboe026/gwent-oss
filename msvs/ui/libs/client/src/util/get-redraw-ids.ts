@@ -4,7 +4,7 @@ import {
   GameDeckFragment,
   UnitFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 
 /**
  * Get the IDs of the units involved in redraws.

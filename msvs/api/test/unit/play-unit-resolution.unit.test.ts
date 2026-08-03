@@ -10,7 +10,7 @@ import {
 } from '../../src/graphql/resolvers/mutations/util/players-to-deck-units'
 import PlayersToDeckUnitsResolver from '../../src/graphql/resolvers/types/players-to-deck-units-resolver'
 import PlayUnitResolution from '../../src/graphql/resolvers/mutations/play-unit/play-unit-resolution'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import TestUtil from '../util/test-util'
 
 describe('play-unit-resolution', () => {

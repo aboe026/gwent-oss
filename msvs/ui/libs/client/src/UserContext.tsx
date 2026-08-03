@@ -1,6 +1,6 @@
 import { CheckAuth } from './util/error-util'
 import { createContext, useContext } from 'react'
-import { User } from '@gwent/graphql-schema/apollo-typings'
+import { User } from '@gwent-oss/graphql-schema/apollo-typings'
 
 type UserContextType = {
   user: User | undefined | null

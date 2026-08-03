@@ -2,7 +2,7 @@ import { getLogger } from 'log4js'
 
 import BattlefieldUpdates from './battlefield-updates'
 import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
-import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import getRoundUnits from '../util/get-round-units'
 import getUnitEffects from '../util/get-unit-effects'

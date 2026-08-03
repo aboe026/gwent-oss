@@ -1,7 +1,7 @@
-import { Combat, EffectKey, FactionKey, GameUnitOrigin } from '@gwent/node-client'
+import { Combat, EffectKey, FactionKey, GameUnitOrigin } from '@gwent-oss/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
-import { EFFECT_OPERATOR } from '@gwent/constants'
+import { EFFECT_OPERATOR } from '@gwent-oss/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 

@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
-import { GameFragment } from '@gwent/graphql-schema/apollo-typings'
+import { GameFragment } from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../../util/error-util'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { SetDeckProps } from './GameProps'

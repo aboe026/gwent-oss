@@ -2,13 +2,13 @@ import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGameDeck, playUnit, ready, setDeck, setOrder } from './util/graphql-util'
-import { Combat, FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+import { Combat, FactionKey, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
+import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
-import { sortObjectArray } from '@gwent/utils'
+import { sortObjectArray } from '@gwent-oss/utils'
 import Store from '../../src/database/stores/store'
 
 describe('games-query', () => {

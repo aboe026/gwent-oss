@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
-import { User } from '@gwent/graphql-schema/resolver-typings'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import UserResolver from '../../types/user-resolver'
 
 /**

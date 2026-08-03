@@ -1,12 +1,12 @@
 import { Document, Filter, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { FactionDbObject, FactionKey, UnitStats } from '@gwent/graphql-schema/database-typings'
+import { FactionDbObject, FactionKey, UnitStats } from '@gwent-oss/graphql-schema/database-typings'
 import PresentableError from '../../util/presentable-error'
 import Store from './store'
 
 /**
- * Factory for possible factions Gwent resources can belong to.
+ * Factory for possible Factions that resources can belong to.
  */
 export default class FactionStore extends Store {
   static readonly COLLECTION_NAME = 'factions'

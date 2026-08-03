@@ -12,9 +12,9 @@ import {
   UnitFragment,
   UnitFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { FullUnitCards, ReadyProps, RedrawProps, UnitForPlayer } from './GameProps'
-import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
+import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent-oss/constants'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'

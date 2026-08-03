@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { User } from '@gwent/graphql-schema/resolver-typings'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import UserStore from '../../../database/stores/user-store'
 import Verifier from '../../../util/verifier'
 

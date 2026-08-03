@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 
-import { GameUnitOrigin, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnitOrigin, Impact, Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameUnitResolver from './game-unit-resolver'
-import { ImpactDbObject } from '@gwent/graphql-schema/database-typings'
+import { ImpactDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import ResolverUtil from '../resolver-util'
 
 /**

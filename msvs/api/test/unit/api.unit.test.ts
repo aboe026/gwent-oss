@@ -19,11 +19,11 @@ import BasicAuth from '../../src/auth/basic-auth'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import * as env from '../../src/env'
-import { NODE_ENV } from '@gwent/env'
+import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from '../../src/util/presentable-error'
 import schema from '../../src/graphql/executable-schema'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import { version } from '../../package.json'
 import WebSocketAuth from '../../src/auth/websocket-auth'
 
@@ -127,7 +127,7 @@ describe('Api', () => {
   })
   describe('printStartupInfo', () => {
     it('logs out correct information', async () => {
-      const text = 'Gwent'
+      const text = 'gwent-oss'
       const buildNumber = 0
       const nodeEnv = 'development'
       const logLevel = 'INFO'
@@ -150,7 +150,7 @@ describe('Api', () => {
 
       expect(textSyncSpy.mock.calls).toEqual([
         [
-          'Gwent',
+          'gwent-oss',
           {
             font: 'Tombstone',
           },
@@ -165,7 +165,7 @@ describe('Api', () => {
   })
   describe('configureSession', () => {
     it('calls to create session on app for development node env', () => {
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       testConfigureSession({
         nodeEnv: NODE_ENV.Dev,
         expectedCookie: {
@@ -183,7 +183,7 @@ describe('Api', () => {
       })
     })
     it('calls to create session on app for production node env', () => {
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       testConfigureSession({
         nodeEnv: NODE_ENV.Prod,
         expectedCookie: {
@@ -210,7 +210,7 @@ describe('Api', () => {
         sameSite: 'lax',
         maxAge: 1000,
       }
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       testConfigureSession({
         nodeEnv: NODE_ENV.Dev,
         expectedCookie: cookie,
@@ -455,7 +455,7 @@ function testConfigureSession({
   nodeEnv,
   expectedCookie,
   expectedProxy,
-  sessionCookieName = 'gwent.sid',
+  sessionCookieName = 'gwent-oss.sid',
   setCalls = [],
   traceEnabled,
   traceCalls = [],

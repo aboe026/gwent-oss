@@ -1,4 +1,4 @@
-import { DeckUnitDbObject, GameDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, GameDbObject, PlayerCombatRowDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to discard players battlefield units for the current game round.

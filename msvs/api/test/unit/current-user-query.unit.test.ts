@@ -1,9 +1,9 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import CurrentUserQuery from '../../src/graphql/resolvers/queries/current-user-query'
 import Permissions from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'
-import { User } from '@gwent/graphql-schema/resolver-typings'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('current-user-query', () => {

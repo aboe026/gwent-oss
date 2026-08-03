@@ -1,4 +1,4 @@
-import { Combat, EffectKey, FactionKey } from '@gwent/node-client'
+import { Combat, EffectKey, FactionKey } from '@gwent-oss/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 

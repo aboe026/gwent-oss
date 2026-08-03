@@ -7,7 +7,7 @@ import {
   GamePlayerDbObject,
   ImpactDbObject,
   PlayerCombatRowDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import EffectDecoy, { PotentialDecoy } from '../../src/graphql/resolvers/mutations/play-unit/effect-decoy'
 import PresentableError from '../../src/util/presentable-error'
 import TestUtil from '../util/test-util'

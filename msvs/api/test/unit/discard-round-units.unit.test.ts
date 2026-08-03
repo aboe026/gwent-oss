@@ -1,7 +1,7 @@
 import DiscardRoundUnits from '../../src/graphql/resolvers/mutations/play-pass/discard-round-units'
 import deepClone from '../util/deep-clone'
 import TestUtil from '../util/test-util'
-import { DeckUnitDbObject, GameDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, GameDbObject, PlayerCombatRowDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 describe('discard-round-units', () => {
   describe('discardRoundUnits', () => {

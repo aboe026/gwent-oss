@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { FactionDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { FactionKey, QueryUnitsArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { FactionDbObject, UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { FactionKey, QueryUnitsArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import Permissions from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'

@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
-import { User } from '@gwent/graphql-schema/resolver-typings'
+import { User } from '@gwent-oss/graphql-schema/resolver-typings'
 import UserResolver from '../types/user-resolver'
 
 /**

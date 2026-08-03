@@ -9,7 +9,7 @@ import {
   EffectKey,
   PlayerCombatRowDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectBond from '../../src/graphql/resolvers/mutations/play-unit/effect-bond'
 import EffectHorn from '../../src/graphql/resolvers/mutations/play-unit/effect-horn'

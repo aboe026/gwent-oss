@@ -1,11 +1,11 @@
 import { Document, Filter, FilterOperators, FindOptions, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import Store from './store'
 
 /**
- * Factory for Gwent Units a user can add to their deck.
+ * Factory for Units a User can add to their Deck.
  */
 export default class UnitStore extends Store {
   static readonly COLLECTION_NAME = 'units'

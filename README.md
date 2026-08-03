@@ -1,10 +1,10 @@
-# gwent
+# gwent-oss
 
-![build](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/build.json)
-![coverage](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/coverage.json)
+![build](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent-oss/main/build.json)
+![coverage](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent-oss/main/coverage.json)
 [![Common Changelog](https://common-changelog.org/badge.svg)](https://common-changelog.org)
 
-A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
+An open-source recreation of the card game Gwent from The Witcher 3: Wild Hunt for online multiplayer.
 
 <details>
 <summary><strong>Table of Contents</strong> (click to expand)</summary>
@@ -260,7 +260,7 @@ yarn coverage-view
 
 Functional tests require a running instance of [MongoDB](https://www.mongodb.com/) they can connect to in order to run tests against a functional database (rather than mocking out responses).
 
-The functional test are configured to use the `gwent-func` database.
+The functional test are configured to use the `gwent-oss-func` database.
 
 To run functional (func) tests, run
 
@@ -276,9 +276,9 @@ yarn test-unit -t 'test name'
 
 #### End to End
 
-End to End (E2E) tests execute against a running instance of a Gwent server and are meant to be as close to a "real world" scenario as tests can possibly be.
+End to End (E2E) tests execute against a running instance of a gwent-oss server and are meant to be as close to a "real world" scenario as tests can possibly be.
 
-The E2E tests are expecting the Gwent server to be configured to use the `gwent-e2e` database.
+The E2E tests are expecting the gwent-oss server to be configured to use the `gwent-oss-e2e` database.
 
 To run End-To-End (E2E) tests, make sure the services and libraries are [built](#build), then run
 
@@ -290,7 +290,7 @@ _Note_: Source code for e2e tests must first be built with `yarn build` in `test
 
 _Note_: To run a specific test, place a `.only` after the test/fixture
 
-This will start Gwent for you. To only run the tests (without starting Gwent), go to the `test/e2e` directory and run
+This will start gwent-oss for you. To only run the tests (without starting gwent-oss), go to the `test/e2e` directory and run
 
 ```sh
 yarn test

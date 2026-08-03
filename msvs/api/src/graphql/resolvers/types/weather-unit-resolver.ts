@@ -1,6 +1,6 @@
-import { Unit, WeatherUnit } from '@gwent/graphql-schema/resolver-typings'
+import { Unit, WeatherUnit } from '@gwent-oss/graphql-schema/resolver-typings'
 import UnitResolver from './unit-resolver'
-import { WeatherUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { WeatherUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to convert WeatherUnit database objects to their GraphQL equivalent.

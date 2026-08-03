@@ -1,4 +1,4 @@
-import { FieldUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { FieldUnitDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GetStrongestNonHeroUnitIds from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-unit-ids'
 import TestUtil from '../util/test-util'
 

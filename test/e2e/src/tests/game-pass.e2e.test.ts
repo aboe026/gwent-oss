@@ -1,9 +1,9 @@
 import createGameManager from '../util/game-manager'
 import Confirm from '../components/confirm'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
-import { FactionKey } from '@gwent/node-client'
+import { FactionKey } from '@gwent-oss/node-client'
 import GamePage from '../page-objects/game-page'
-import { HTML_IDS } from '@gwent/constants'
+import { HTML_IDS } from '@gwent-oss/constants'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()

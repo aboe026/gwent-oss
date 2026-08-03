@@ -1,13 +1,13 @@
 import { getLogger } from 'log4js'
 
-import { Deck, DeckUnit } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit } from '@gwent-oss/graphql-schema/resolver-typings'
 import { DeckAddedPayload } from '../../subscription-resolver'
 import DeckResolver from '../../types/deck-resolver'
 import EventManager from '../../../event-manager'
 import FactionResolver from '../../types/faction-resolver'
 import LeaderResolver from '../../types/leader-resolver'
-import { PubSubEvents } from '@gwent/constants'
-import { DeckDbObject, FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
+import { PubSubEvents } from '@gwent-oss/constants'
+import { DeckDbObject, FactionDbObject, LeaderDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class for resolving the addDeck GraphQL Mutation.

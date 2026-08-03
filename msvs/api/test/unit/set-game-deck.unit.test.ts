@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 
-import { DeckDbObject, DeckUnitDbObject, GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject, DeckUnitDbObject, GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import SetGameDeck from '../../src/graphql/resolvers/mutations/set-deck/set-game-deck'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 import TestUtil from '../util/test-util'
-import * as utils from '@gwent/utils'
+import * as utils from '@gwent-oss/utils'
 
 describe('set-game-deck', () => {
   describe('setGameDeck', () => {

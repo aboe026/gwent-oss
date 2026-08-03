@@ -9,7 +9,7 @@ import {
   useFragment,
   WeatherUnitFragment,
   WeatherUnitFragmentDoc,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 
 /**
  * Converts a GameUnitFragment to either a DeckUnitFragment, FieldUnitFragment or WeatherUnitFragment depending on its type.

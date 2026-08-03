@@ -1,7 +1,7 @@
 import { HTMLInputTypeAttribute, useState } from 'react'
 
 import { getErrorMessages } from '../util/error-util'
-import { HTML_CLASSES } from '@gwent/constants'
+import { HTML_CLASSES } from '@gwent-oss/constants'
 import LoadingBar from './LoadingBar'
 import './Form.css'
 

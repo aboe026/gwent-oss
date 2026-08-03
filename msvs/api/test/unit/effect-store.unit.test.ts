@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { EffectDbObject, EffectKey } from '@gwent/graphql-schema/database-typings'
+import { EffectDbObject, EffectKey } from '@gwent-oss/graphql-schema/database-typings'
 import EffectStore, { GetEffectsInput } from '../../src/database/stores/effect-store'
 
 describe('effect-store', () => {

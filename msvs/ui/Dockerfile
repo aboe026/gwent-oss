@@ -1,10 +1,10 @@
-ARG APP_DIR=/opt/gwent
+ARG APP_DIR=/opt/gwent-oss
 ARG BUILD=0
 
 #########
 # BUILD #
 #########
-FROM node:22.20.0-alpine AS build
+FROM node:24.18.1-alpine AS build
 
 ARG APP_DIR
 ARG BUILD
@@ -22,7 +22,7 @@ RUN yarn cache clean --all
 ###########
 # RUNTIME #
 ###########
-FROM node:22.20.0-alpine
+FROM node:24.18.1-alpine
 
 ARG APP_DIR
 ARG BUILD

@@ -12,7 +12,7 @@ import {
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'

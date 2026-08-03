@@ -1,4 +1,4 @@
-import { Combat, EffectKey } from '@gwent/graphql-schema/apollo-typings'
+import { Combat, EffectKey } from '@gwent-oss/graphql-schema/apollo-typings'
 
 export enum DECK_SORT_FIELD {
   Name = 'name',

@@ -488,7 +488,7 @@ type Mutation {
   "Create a user-defined deck."
   addDeck(name: String!, faction: FactionKey!, leader: ID!, units: [DeckUnitInput!]!): Deck!
 
-  "Create a game of Gwent between the authenticated user and another player."
+  "Create a game between the authenticated user and another player."
   addGame(opponentNames: [String!]!): Game!
 
   "Create a user."

@@ -1,12 +1,12 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, str, url } from '@gwent/env'
+import getEnv, { NODE_ENV, num, str, url } from '@gwent-oss/env'
 
 export default getEnv({
   dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
   specs: {
     API_URL: url({
-      desc: 'The URL the GraphQL server running Gwent.',
+      desc: 'The URL the GraphQL server running gwent-oss.',
       default: 'http://localhost:4000/graphql',
     }),
     GAMES_TO_PLAY: num({

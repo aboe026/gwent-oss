@@ -1,11 +1,18 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import {
+  Faction,
+  GamePlayer,
+  GamePlayerUnitCounts,
+  Leader,
+  Unit,
+  User,
+} from '@gwent-oss/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
-import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GamePlayerDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import GetFieldUnits from '../util/get-field-units'
-import { getUniqueItems } from '@gwent/utils'
+import { getUniqueItems } from '@gwent-oss/utils'
 import getWeatherUnits from '../mutations/play-unit/get-weather-units'
 import LeaderResolver from './leader-resolver'
 import PlayerRoundResolver from './player-round-resolver'

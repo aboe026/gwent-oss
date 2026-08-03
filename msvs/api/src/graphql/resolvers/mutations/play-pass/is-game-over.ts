@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, RoundResult } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to determine if a game is over or not.

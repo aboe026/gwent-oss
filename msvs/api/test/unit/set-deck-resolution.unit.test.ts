@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../src/graphql/event-manager'
-import { FactionKey, GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { FactionKey, GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import PresentableError from '../../src/util/presentable-error'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import SetDeckResolution from '../../src/graphql/resolvers/mutations/set-deck/set-deck-resolution'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
 import TestUtil from '../util/test-util'

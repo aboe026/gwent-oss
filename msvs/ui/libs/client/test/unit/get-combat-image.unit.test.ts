@@ -7,7 +7,7 @@ import {
   Unit,
   UnitFragmentDoc,
   WeatherUnitFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import getCombatImage from '../../src/util/get-combat-image'
 
 describe('getCombatImage', () => {

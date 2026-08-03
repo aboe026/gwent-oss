@@ -1,5 +1,5 @@
 import AddUserValidation from '../../src/graphql/resolvers/mutations/add-user/add-user-validation'
-import { MutationAddUserArgs } from '@gwent/graphql-schema/database-typings'
+import { MutationAddUserArgs } from '@gwent-oss/graphql-schema/database-typings'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 
 describe('add-user-validation', () => {

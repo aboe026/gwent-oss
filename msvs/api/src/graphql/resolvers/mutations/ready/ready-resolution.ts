@@ -2,11 +2,11 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
-import { Game } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { Game } from '@gwent-oss/graphql-schema/resolver-typings'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import { GameReadyPayload } from '../../subscription-resolver'
 import GameResolver from '../../types/game-resolver'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 
 /**
  * A class for resolving the ready GraphQL Mutation.

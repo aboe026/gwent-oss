@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, RoundResult } from '@gwent-oss/graphql-schema/database-typings'
 import SetTurnForNextRound from '../../src/graphql/resolvers/mutations/play-pass/set-turn-for-next-round'
 import TestUtil from '../util/test-util'
 

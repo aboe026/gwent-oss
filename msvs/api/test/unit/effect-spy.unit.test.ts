@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, DeckUnitDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, DeckUnitDbObject, GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectSpy, { PotentialSpies } from '../../src/graphql/resolvers/mutations/play-unit/effect-spy'
-import { GameUnitType } from '@gwent/graphql-schema'
+import { GameUnitType } from '@gwent-oss/graphql-schema'
 import TestUtil from '../util/test-util'
-import * as utils from '@gwent/utils'
+import * as utils from '@gwent-oss/utils'
 
 describe('effect-spy', () => {
   describe('spyBattlefield', () => {

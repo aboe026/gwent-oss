@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
-import { getRandomSubset } from '@gwent/utils'
+import { GameDbObject, RedrawDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { getRandomSubset } from '@gwent-oss/utils'
 import PresentableError from '../../../../util/presentable-error'
 
 /**

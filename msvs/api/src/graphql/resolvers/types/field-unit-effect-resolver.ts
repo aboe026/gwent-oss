@@ -6,13 +6,13 @@ import {
   FieldUnitEffect,
   Leader,
   Unit,
-} from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   EffectFromLeaderDbObject,
   EffectFromUnitDbObject,
   FieldUnitEffectDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { EffectReasonType } from '@gwent/graphql-schema'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { EffectReasonType } from '@gwent-oss/graphql-schema'
 import EffectResolver from './effect-resolver'
 import LeaderResolver from './leader-resolver'
 import UnitResolver from './unit-resolver'

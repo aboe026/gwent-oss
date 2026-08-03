@@ -1,4 +1,4 @@
-import { PlayerRoundDbObject, WeatherUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { PlayerRoundDbObject, WeatherUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * Retrieve all the WeatherUnit database documents that are currently weathering the battlefield from the given players in a game.

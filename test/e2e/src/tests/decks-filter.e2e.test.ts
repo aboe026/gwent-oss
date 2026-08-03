@@ -1,10 +1,10 @@
 import ApiClient from '../util/api-client'
 import DeckList from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
-import { Deck, Faction, FactionKey, Leader } from '@gwent/node-client'
+import { Deck, Faction, FactionKey, Leader } from '@gwent-oss/node-client'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
-import { FILTER_FIELD } from '@gwent/graphql-schema/decks-filter'
+import { FILTER_FIELD } from '@gwent-oss/graphql-schema/decks-filter'
 import LoginPage from '../page-objects/login-page'
 
 interface DeckFilterTestCtx extends E2eCtx {

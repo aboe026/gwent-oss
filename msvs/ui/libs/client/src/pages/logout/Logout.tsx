@@ -2,11 +2,11 @@ import { useMutation } from '@apollo/client/react'
 import { useNavigate } from 'react-router'
 
 import Centered from '../../components/Centered'
-import { CurrentUserDocument, CurrentUserQuery, LogoutDocument } from '@gwent/graphql-schema/apollo-typings'
+import { CurrentUserDocument, CurrentUserQuery, LogoutDocument } from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../../util/error-util'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { ROUTES } from '@gwent/constants'
+import { ROUTES } from '@gwent-oss/constants'
 import './Logout.css'
 
 /**

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { Game } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Game } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'

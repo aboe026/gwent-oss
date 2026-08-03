@@ -12,9 +12,9 @@ import {
   FactionStatsQuery,
   FragmentType,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../util/error-util'
-import { HTML_CLASSES } from '@gwent/constants'
+import { HTML_CLASSES } from '@gwent-oss/constants'
 import LoadingSpinner from './LoadingSpinner'
 import ProgressBar from './ProgressBar'
 import './DeckRow.css'

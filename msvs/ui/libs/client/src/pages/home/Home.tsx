@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router'
 
 import Centered from '../../components/Centered'
-import { HTML_IDS, ROUTES } from '@gwent/constants'
+import { HTML_IDS, ROUTES } from '@gwent-oss/constants'
 import { useUserContext } from '../../UserContext'
 import './Home.css'
 

@@ -4,7 +4,7 @@ import EventManager from '../../src/graphql/event-manager'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import PlayPassResolution from '../../src/graphql/resolvers/mutations/play-pass/play-pass-resolution'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import TestUtil from '../util/test-util'
 
 describe('play-pass-resolution', () => {

@@ -2,7 +2,7 @@ import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
 import env from '../util/e2e-env'
-import { HTML_IDS, ROUTES } from '@gwent/constants'
+import { HTML_IDS, ROUTES } from '@gwent-oss/constants'
 import { version } from '../../package.json'
 
 const container = Selector(`#${HTML_IDS.AboutContainer}`)

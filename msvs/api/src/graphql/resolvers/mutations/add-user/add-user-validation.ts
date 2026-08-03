@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
 import { GraphQLResolveInfo } from 'graphql'
-import { MutationAddUserArgs } from '@gwent/graphql-schema/resolver-typings'
+import { MutationAddUserArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import ResolverUtil from '../../resolver-util'
 
 /**

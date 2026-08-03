@@ -1,9 +1,9 @@
 import { Selector, t } from 'testcafe'
 
-import { Combat, EffectKey, Faction, Leader } from '@gwent/node-client'
+import { Combat, EffectKey, Faction, Leader } from '@gwent-oss/node-client'
 import E2eUtil from '../util/e2e-util'
-import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
-import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
+import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent-oss/constants'
+import { SORT_FIELD } from '@gwent-oss/graphql-schema/deck-filter'
 
 const container = Selector(`#${HTML_IDS.DeckEditorContainer}`)
 

@@ -1,5 +1,5 @@
 import DeckList from '../../components/DeckList'
-import { HTML_IDS } from '@gwent/constants'
+import { HTML_IDS } from '@gwent-oss/constants'
 import { useTitle } from '../../components/TabTitle'
 import './Decks.css'
 
@@ -9,7 +9,7 @@ import './Decks.css'
  * @returns The users created decks page.
  */
 export default function DecksPage() {
-  useTitle('Decks | Gwent')
+  useTitle('Decks | gwent-oss')
 
   return (
     <div id={HTML_IDS.DecksContainer}>

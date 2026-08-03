@@ -21,8 +21,8 @@ import {
   GameUnitOrigin,
   MoveReasonType,
   User,
-} from '@gwent/graphql-schema/resolver-typings'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+} from '@gwent-oss/graphql-schema/resolver-typings'
+import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'

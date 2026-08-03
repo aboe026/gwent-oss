@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { addListsToMap } from '@gwent/utils'
+import { addListsToMap } from '@gwent-oss/utils'
 import {
   Combat,
   DeckUnitDbObject,
@@ -11,7 +11,7 @@ import {
   GameDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import EffectBond from '../play-unit/effect-bond'
 import EffectHorn from '../play-unit/effect-horn'
 import EffectMorale from '../play-unit/effect-morale'

@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, GameDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GetWeatherUnitsForRow, {
   PlayerWeatherUnit,
 } from '../../src/graphql/resolvers/mutations/play-unit/get-weather-units-for-row'

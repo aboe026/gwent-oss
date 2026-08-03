@@ -2,7 +2,7 @@ import AddUserImplementation from './add-user-implementation'
 import AddUserResolution from './add-user-resolution'
 import AddUserValidation from './add-user-validation'
 import { GraphQLResolveInfo } from 'graphql'
-import { MutationAddUserArgs, User } from '@gwent/graphql-schema/resolver-typings'
+import { MutationAddUserArgs, User } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * A class for executing the addUser GraphQL Mutation.

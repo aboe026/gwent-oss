@@ -1,5 +1,5 @@
-import { Context } from '@gwent/graphql-schema/context'
-import { Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Game, MutationPlayUnitArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import PlayUnitImplementation from './play-unit-implementation'
 import PlayUnitResolution from './play-unit-resolution'

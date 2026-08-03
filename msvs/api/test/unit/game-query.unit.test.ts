@@ -1,12 +1,12 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import GameQuery from '../../src/graphql/resolvers/queries/game-query'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import { QueryGameArgs } from '@gwent/graphql-schema/resolver-typings'
+import { QueryGameArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 describe('game-query', () => {
   describe('game', () => {

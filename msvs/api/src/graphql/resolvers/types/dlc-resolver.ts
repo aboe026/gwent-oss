@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Dlc, DlcKey } from '@gwent/graphql-schema/resolver-typings'
-import { DlcDbObject } from '@gwent/graphql-schema/database-typings'
+import { Dlc, DlcKey } from '@gwent-oss/graphql-schema/resolver-typings'
+import { DlcDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import DlcStore from '../../../database/stores/dlc-store'
 import Verifier from '../../../util/verifier'
 

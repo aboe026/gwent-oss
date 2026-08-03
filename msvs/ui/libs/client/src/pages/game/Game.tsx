@@ -39,14 +39,14 @@ import {
   UnitFragmentDoc,
   useFragment,
   User,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import addToCacheList from '../../util/add-to-cache-list'
 import Centered from '../../components/Centered'
 import { CheckAuth, getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import Confirm from '../../components/Confirm'
 import DeckEditor from '../../components/DeckEditor'
 import DeckList from '../../components/DeckList'
-import { DeckUnit as DeckUnitRaw } from '@gwent/graphql-schema/apollo-raw-typings'
+import { DeckUnit as DeckUnitRaw } from '@gwent-oss/graphql-schema/apollo-raw-typings'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import {
   FullUnitCards,
@@ -78,11 +78,11 @@ import {
   MAX_REDRAWS,
   NOT_AUTHORIZED_MESSAGE,
   ROUTES,
-} from '@gwent/constants'
+} from '@gwent-oss/constants'
 import { getUnitFromGameUnit } from '../../util/game-unit-util'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import NewGame from './NewGame'
-import { sortObjectArray } from '@gwent/utils'
+import { sortObjectArray } from '@gwent-oss/utils'
 import UnitFullCard from '../../components/UnitFullCard'
 import updateGameDeckCacheOnRedraw from '../../util/update-game-deck-cache-on-redraw'
 import { useAuthRetry } from '../../AuthRetry'
@@ -98,7 +98,7 @@ import './Game.css'
  * @returns A users game.
  */
 export default function GamePage() {
-  useTitle('Game | Gwent')
+  useTitle('Game | gwent-oss')
   const [cardSelected, setCardSelected] = useState<UnitForPlayer | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayerFragment[]>([])
   const { checkAuth, user } = useUserContext()
