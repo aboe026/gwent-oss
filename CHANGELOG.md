@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.25.0 - 2026-08-03
+
+### Added
+
+- Rename application from "gwent" to "gwent-oss" ([#62](https://github.com/aboe026/gwent-oss/pull/62)) (Adam Boe)
+
 ## 0.24.1 - 2026-08-02
 
 ### Fixed
