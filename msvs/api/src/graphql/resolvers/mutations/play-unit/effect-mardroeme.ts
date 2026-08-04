@@ -10,11 +10,11 @@ import {
   ImpactDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { GameUnitType } from '@gwent/graphql-schema'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent-oss/graphql-schema'
 import GetEffectWithKey from './get-effect-with-key'
 import GetFieldUnits from '../../util/get-field-units'
-import { getUniqueItems } from '@gwent/utils'
+import { getUniqueItems } from '@gwent-oss/utils'
 import getUnitIdsWithEffect from './get-unit-ids-with-effect'
 import { ImpactsByUnitId } from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'

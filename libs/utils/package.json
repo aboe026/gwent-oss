@@ -1,13 +1,13 @@
 {
-  "name": "@gwent/utils",
-  "version": "0.24.1",
+  "name": "@gwent-oss/utils",
+  "version": "0.25.0",
   "author": "Adam Boe",
   "description": "Utility functions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
-    "build-all": "yarn g:recurse @gwent/utils run build",
+    "build-all": "yarn g:recurse @gwent-oss/utils run build",
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
@@ -16,8 +16,8 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "@gwent/constants": "workspace:*",
-    "@gwent/graphql-schema": "workspace:*"
+    "@gwent-oss/constants": "workspace:*",
+    "@gwent-oss/graphql-schema": "workspace:*"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",

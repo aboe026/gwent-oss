@@ -5,7 +5,7 @@ import {
   UnitFragmentDoc,
   useFragment,
   WeatherUnitFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 
 /**
  * Get the path to the combat image for a GameUnit.

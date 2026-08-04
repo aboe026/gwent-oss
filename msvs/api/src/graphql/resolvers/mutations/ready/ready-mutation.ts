@@ -1,5 +1,5 @@
-import { Context } from '@gwent/graphql-schema/context'
-import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Game, MutationReadyArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import ReadyImplementation from './ready-implementation'
 import ReadyResolution from './ready-resolution'

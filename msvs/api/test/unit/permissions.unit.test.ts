@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { DeckDbObject, GameDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { DeckDbObject, GameDbObject, UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
 import GameStore from '../../src/database/stores/game-store'
-import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import PresentableError from '../../src/util/presentable-error'
 import TestUtil from '../util/test-util'

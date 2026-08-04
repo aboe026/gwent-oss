@@ -6,7 +6,7 @@ import {
   GameDbObject,
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to get FieldUnits that are currently on a Game battlefield.

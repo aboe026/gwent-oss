@@ -6,9 +6,9 @@ import {
   FieldUnitDbObject,
   GameDbObject,
   ImpactDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { GameUnitType } from '@gwent/graphql-schema'
-import { getRandomNumber } from '@gwent/utils'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent-oss/graphql-schema'
+import { getRandomNumber } from '@gwent-oss/utils'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 

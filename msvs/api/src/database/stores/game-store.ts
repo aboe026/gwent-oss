@@ -1,12 +1,12 @@
 import { Document, Filter, FindOptions, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import { STARTING_LIVES } from '@gwent/constants'
+import { GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
+import { STARTING_LIVES } from '@gwent-oss/constants'
 import Store from './store'
 
 /**
- * Factory for Gwent games a user creates.
+ * Factory for Games a User creates.
  */
 export default class GameStore extends Store {
   static readonly COLLECTION_NAME = 'games'

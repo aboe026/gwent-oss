@@ -1,6 +1,6 @@
 import FieldUnitResolver from './field-unit-resolver'
-import { PlayerCombatRow, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
+import { PlayerCombatRow, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
+import { PlayerCombatRowDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to convert PlayerCombatRow database objects to their GraphQL equivalent.

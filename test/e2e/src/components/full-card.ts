@@ -1,8 +1,8 @@
 import { Selector, t } from 'testcafe'
 
-import { EffectKey, FactionKey, Unit } from '@gwent/node-client'
-import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
-import { toTitleCase } from '@gwent/utils'
+import { EffectKey, FactionKey, Unit } from '@gwent-oss/node-client'
+import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent-oss/constants'
+import { toTitleCase } from '@gwent-oss/utils'
 
 const container = Selector(`#${HTML_IDS.UnitFullCardContainer}`)
 

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
-import { Effect } from '@gwent/graphql-schema/resolver-typings'
-import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
+import { Effect } from '@gwent-oss/graphql-schema/resolver-typings'
+import { EffectDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import EffectResolver from '../../src/graphql/resolvers/types/effect-resolver'
 import EffectStore from '../../src/database/stores/effect-store'
 import TestUtil from '../util/test-util'

@@ -1,12 +1,12 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameDeck, QueryGameDeckArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameDeckQuery from '../../src/graphql/resolvers/queries/game-deck-query'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 describe('game-deck-query', () => {
   describe('gameDeck', () => {

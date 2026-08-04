@@ -12,9 +12,9 @@ import {
   MoveReasonType,
   MoveUnitDbObject,
   MoveUnitReasonDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
-import { EffectReasonType, GameUnitType, MoveType } from '@gwent/graphql-schema'
+import { EffectReasonType, GameUnitType, MoveType } from '@gwent-oss/graphql-schema'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'

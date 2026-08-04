@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
 
 import { E2eHelper } from '../util/e2e-helper'
-import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent-oss/constants'
 
 const container = Selector(`#${HTML_IDS.GameRedrawContainer}`)
 

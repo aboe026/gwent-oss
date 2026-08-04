@@ -30,11 +30,11 @@ import {
   useFragment,
   WeatherUnitFragment,
   WeatherUnitFragmentDoc,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getErrorMessages } from '../../util/error-util'
-import { getImpactDescription, getNoImpactMessage, groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { getImpactDescription, getNoImpactMessage, groupBy, sortObjectArray, toTitleCase } from '@gwent-oss/utils'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import './GameHistory.css'
 

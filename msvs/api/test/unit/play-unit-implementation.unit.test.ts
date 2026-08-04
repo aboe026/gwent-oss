@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/battlefield-updates'
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
-import { Combat } from '@gwent/graphql-schema/resolver-typings'
+import { Combat } from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   DeckUnitDbObject,
   EffectDbObject,
@@ -13,7 +13,7 @@ import {
   GameUnitDbObject,
   ImpactDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
 import * as getUnitEffects from '../../src/graphql/resolvers/mutations/util/get-unit-effects'

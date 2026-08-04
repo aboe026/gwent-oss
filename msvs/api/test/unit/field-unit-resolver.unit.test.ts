@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, FieldUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { FieldUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, FieldUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { FieldUnit, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
 import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'

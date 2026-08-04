@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 import AddGameResolution from '../../src/graphql/resolvers/mutations/add-game/add-game-resolution'
 import EventManager from '../../src/graphql/event-manager'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import TestUtil from '../util/test-util'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 

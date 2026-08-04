@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, port, str, url } from '@gwent/env'
+import getEnv, { NODE_ENV, num, port, str, url } from '@gwent-oss/env'
 
 /**
  * Gets the environment variables that relate to how the UI server operates.
@@ -12,7 +12,7 @@ export default function env() {
     dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
     specs: {
       API_BASE_URL: url({
-        desc: 'The base URL the Gwent API is running on (should contain /graphql and /subscribe endpoints)',
+        desc: 'The base URL the gwent-oss API is running on (should contain /graphql and /subscribe endpoints)',
         default: 'http://localhost:4000',
       }),
       CLIENT_DIR: str({

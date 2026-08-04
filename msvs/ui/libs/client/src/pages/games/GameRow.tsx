@@ -6,9 +6,9 @@ import {
   GamePlayerFragmentDoc,
   GameFactionFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
-import { HTML_CLASSES, ROUTES } from '@gwent/constants'
-import { humanizeDay, formatGameStatus, humanizeTime } from '@gwent/utils'
+} from '@gwent-oss/graphql-schema/apollo-typings'
+import { HTML_CLASSES, ROUTES } from '@gwent-oss/constants'
+import { humanizeDay, formatGameStatus, humanizeTime } from '@gwent-oss/utils'
 import './GameRow.css'
 
 /**

@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 
 import AppInfo from '../../../app-info'
-import { Application } from '@gwent/graphql-schema/resolver-typings'
-import { Context } from '@gwent/graphql-schema/context'
+import { Application } from '@gwent-oss/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
 import ResolverUtil from '../resolver-util'
 import { version } from '../../../../package.json'

@@ -1,11 +1,11 @@
 import { Document, Filter, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { EffectDbObject, EffectKey } from '@gwent/graphql-schema/database-typings'
+import { EffectDbObject, EffectKey } from '@gwent-oss/graphql-schema/database-typings'
 import Store from './store'
 
 /**
- * Factory for possible effects Gwent units can have.
+ * Factory for possible Effects that Units can have.
  */
 export default class EffectStore extends Store {
   static readonly COLLECTION_NAME = 'effects'

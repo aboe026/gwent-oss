@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import { ValidatedAddGame } from './add-game-validation'
 

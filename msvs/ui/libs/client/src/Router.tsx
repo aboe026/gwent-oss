@@ -11,7 +11,7 @@ import LoginPage from './pages/login/Login'
 import LogoutPage from './pages/logout/Logout'
 import NotFoundPage from './pages/NotFound'
 import ProfilePage from './pages/profile/Profile'
-import { ROUTES } from '@gwent/constants'
+import { ROUTES } from '@gwent-oss/constants'
 import SignupPage from './pages/signup/Signup'
 
 /**

@@ -10,12 +10,12 @@ import {
   MoveReasonType,
   GameUnitOrigin,
   User,
-} from '@gwent/node-client'
+} from '@gwent-oss/node-client'
 import { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 import ProfilePage from '../page-objects/profile-page'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 
 export interface ContextGamePlayer {
   user: User

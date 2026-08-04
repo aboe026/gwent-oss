@@ -1,13 +1,13 @@
 import { getLogger } from 'log4js'
 
-import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnit } from '@gwent-oss/graphql-schema/resolver-typings'
+import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import DeckUnitResolver from '../../types/deck-unit-resolver'
 import EventManager from '../../../event-manager'
 import GameDeckResolver from '../../types/game-deck-resolver'
 import GameResolver from '../../types/game-resolver'
 import PresentableError from '../../../../util/presentable-error'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import { UnitRedrawnPayload } from '../../subscription-resolver'
 
 /**

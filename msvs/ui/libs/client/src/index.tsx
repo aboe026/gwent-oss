@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 
-import '@gwent/client-env' // get typings/access to window.env throughout project
+import '@gwent-oss/client-env' // get typings/access to window.env throughout project
 import Apollo from './Apollo'
 import Router from './Router'
 import './index.css'

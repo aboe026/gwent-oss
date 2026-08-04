@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'

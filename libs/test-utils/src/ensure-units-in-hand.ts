@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { DeckDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject, GameDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import { getGame, getUnits, updateGame } from './db-util'
 
 /**

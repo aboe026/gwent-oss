@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
-import { HTML_IDS, ROUTES } from '@gwent/constants'
+import { HTML_IDS, ROUTES } from '@gwent-oss/constants'
 
 const container = Selector(`#${HTML_IDS.ProfileContainer}`)
 

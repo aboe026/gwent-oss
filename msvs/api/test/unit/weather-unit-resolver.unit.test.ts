@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb'
 
 import TestUtil from '../util/test-util'
-import { Unit, WeatherUnit } from '@gwent/graphql-schema/resolver-typings'
+import { Unit, WeatherUnit } from '@gwent-oss/graphql-schema/resolver-typings'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
-import { WeatherUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { WeatherUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import WeatherUnitResolver from '../../src/graphql/resolvers/types/weather-unit-resolver'
 
 describe('weather-unit-resolver', () => {

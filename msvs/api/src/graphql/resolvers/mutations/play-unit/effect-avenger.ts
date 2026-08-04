@@ -11,7 +11,7 @@ import {
   GameUnitOrigin,
   ImpactDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import GetEffectWithKey from './get-effect-with-key'
 import getRoundUnits from '../util/get-round-units'
 import { ImpactsByUnitId } from '../../resolver-util'

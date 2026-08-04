@@ -2,7 +2,7 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addUser } from './util/graphql-util'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE } from '@gwent-oss/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('user', () => {

@@ -3,12 +3,12 @@ import { ObjectId } from 'mongodb'
 
 import { DeckSetPayload, GameSetPayload } from '../../subscription-resolver'
 import EventManager from '../../../event-manager'
-import { FactionKey, GameDbObject, GameDeckDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import { GameDeck } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, GameDbObject, GameDeckDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
+import { GameDeck } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameDeckResolver from '../../types/game-deck-resolver'
 import GameResolver from '../../types/game-resolver'
 import PresentableError from '../../../../util/presentable-error'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import SetGameTurnOrder from '../util/set-game-turn-order'
 
 /**

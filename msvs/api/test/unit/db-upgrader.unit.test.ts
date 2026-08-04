@@ -3,7 +3,7 @@ import { MongoError, ObjectId } from 'mongodb'
 import DbUpgrader from '../../src/database/db-upgrader'
 import Upgrade from '../../src/database/upgrades/upgrade'
 import UpgradeStore from '../../src/database/stores/upgrade-store'
-import * as utils from '@gwent/utils'
+import * as utils from '@gwent-oss/utils'
 
 describe('db-upgrader', () => {
   describe('constructor', () => {

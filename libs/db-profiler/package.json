@@ -1,6 +1,6 @@
 {
-  "name": "@gwent/db-profiler",
-  "version": "0.24.1",
+  "name": "@gwent-oss/db-profiler",
+  "version": "0.25.0",
   "author": "Adam Boe",
   "description": "Database profiler to analyze operations",
   "main": "build/src/index.js",
@@ -8,7 +8,7 @@
   "scripts": {
     "analyze": "yarn g:ts-node scripts/analyze.ts",
     "build": "yarn g:tsc --build",
-    "build-all": "yarn g:recurse @gwent/db-profiler run build",
+    "build-all": "yarn g:recurse @gwent-oss/db-profiler run build",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

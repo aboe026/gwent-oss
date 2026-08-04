@@ -1,4 +1,4 @@
-import { EffectKey } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey } from '@gwent-oss/graphql-schema/resolver-typings'
 import getNoImpactMessage from '../../src/get-no-impact-message'
 
 describe('getNoImpactMessage', () => {

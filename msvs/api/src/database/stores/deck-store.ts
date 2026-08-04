@@ -1,11 +1,11 @@
 import { Document, Filter, FindOptions, ObjectId, WithoutId } from 'mongodb'
 
-import { DeckDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject, UnitStats } from '@gwent-oss/graphql-schema/database-typings'
 import { getLogger } from 'log4js'
 import Store from './store'
 
 /**
- * Factory for Gwent decks a user creates.
+ * Factory for the Decks a User creates.
  */
 export default class DeckStore extends Store {
   static readonly COLLECTION_NAME = 'decks'

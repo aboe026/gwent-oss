@@ -1,9 +1,9 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
 import LoginImplementation from './login-implementation'
 import LoginResolution from './login-resolution'
 import LoginValidation from './login-validation'
-import { MutationLoginArgs, User } from '@gwent/graphql-schema/resolver-typings'
+import { MutationLoginArgs, User } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * A class for executing the login GraphQL Mutation.

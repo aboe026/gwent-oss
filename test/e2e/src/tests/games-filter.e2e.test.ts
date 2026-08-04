@@ -1,8 +1,8 @@
 import ApiClient from '../util/api-client'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
-import { FactionKey, GamePlayer } from '@gwent/node-client'
-import { FILTER_FIELD } from '@gwent/graphql-schema/games-filter'
+import { FactionKey, GamePlayer } from '@gwent-oss/node-client'
+import { FILTER_FIELD } from '@gwent-oss/graphql-schema/games-filter'
 import GamesPage, { GameInList } from '../page-objects/games-page'
 import LoginPage from '../page-objects/login-page'
 

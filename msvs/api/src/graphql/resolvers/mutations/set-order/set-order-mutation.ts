@@ -1,5 +1,5 @@
-import { Context } from '@gwent/graphql-schema/context'
-import { Game, MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Game, MutationSetOrderArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import SetGameTurnOrder from '../util/set-game-turn-order'
 import SetOrderValidation from './set-order-validation'

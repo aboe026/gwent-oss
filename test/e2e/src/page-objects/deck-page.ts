@@ -1,7 +1,7 @@
 import DeckEditor from '../components/deck-editor'
 import E2eUtil from '../util/e2e-util'
-import { Faction, Leader } from '@gwent/node-client'
-import { ROUTES } from '@gwent/constants'
+import { Faction, Leader } from '@gwent-oss/node-client'
+import { ROUTES } from '@gwent-oss/constants'
 
 export default class DeckPage {
   static getUrl(deckId?: string): string {

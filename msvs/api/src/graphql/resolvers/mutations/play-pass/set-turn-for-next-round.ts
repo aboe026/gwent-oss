@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, GamePlayerDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
-import { sortObjectArray } from '@gwent/utils'
+import { GameDbObject, GamePlayerDbObject, RoundResult } from '@gwent-oss/graphql-schema/database-typings'
+import { sortObjectArray } from '@gwent-oss/utils'
 
 /**
  * A class to set the turn on a Game for the next round in the Game.

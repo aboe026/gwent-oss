@@ -2,8 +2,8 @@ import { getLogger } from 'log4js'
 
 import DeckResolver from './deck-resolver'
 import DeckUnitResolver from './deck-unit-resolver'
-import { GameDeck } from '@gwent/graphql-schema/resolver-typings'
-import { GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDeck } from '@gwent-oss/graphql-schema/resolver-typings'
+import { GameDeckDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class to convert GameDeck database objects to their GraphQL equivalent.

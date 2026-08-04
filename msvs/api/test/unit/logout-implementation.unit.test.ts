@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import LogoutImplementation from '../../src/graphql/resolvers/mutations/logout/logout-implementation'
 import TestUtil from '../util/test-util'
 

@@ -4,9 +4,14 @@ import { ObjectId } from 'mongodb'
 import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
 import DiscardRoundUnits from './discard-round-units'
 import EffectAvenger from '../play-unit/effect-avenger'
-import { GameDbObject, GameUnitOrigin, MovePassDbObject, MoveReasonType } from '@gwent/graphql-schema/database-typings'
+import {
+  GameDbObject,
+  GameUnitOrigin,
+  MovePassDbObject,
+  MoveReasonType,
+} from '@gwent-oss/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
-import { GameUnitType, MoveType } from '@gwent/graphql-schema'
+import { GameUnitType, MoveType } from '@gwent-oss/graphql-schema'
 import getRoundUnits from '../util/get-round-units'
 import getUnitEffects from '../util/get-unit-effects'
 import initializeNewRound from '../util/initialize-new-round'

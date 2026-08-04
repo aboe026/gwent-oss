@@ -1,7 +1,7 @@
 import { CgArrowDown, CgArrowUp, CgClose, CgEye, CgEyeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { FactionFragment } from '@gwent/graphql-schema/apollo-typings'
+import { FactionFragment } from '@gwent-oss/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FilterField,
@@ -9,7 +9,7 @@ import {
   FILTER_GROUP,
   SORT_FIELD,
   SORT_ORDER,
-} from '@gwent/graphql-schema/deck-filter'
+} from '@gwent-oss/graphql-schema/deck-filter'
 import getEnumFromString from '../util/get-faction-key-from-string'
 import './UnitsHeader.css'
 

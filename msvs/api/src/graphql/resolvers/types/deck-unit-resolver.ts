@@ -1,5 +1,5 @@
-import { DeckUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnit, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
+import { DeckUnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import UnitResolver from './unit-resolver'
 
 /**

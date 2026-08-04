@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, port, str, url } from '@gwent/env'
+import getEnv, { NODE_ENV, num, port, str, url } from '@gwent-oss/env'
 
 /**
  * Gets the environment variables that relate to how the API operates.
@@ -34,7 +34,7 @@ export default function env() {
       }),
       MONGO_DB: str({
         desc: 'The name of the MongoDB database to interact with',
-        default: 'gwent',
+        default: 'gwent-oss',
       }),
       MONGO_URL: url({
         desc: 'Connection string for MongoDB instance',
@@ -51,7 +51,7 @@ export default function env() {
       }),
       SESSION_COOKIE_NAME: str({
         desc: 'The name of the Cookie for the user session.',
-        default: 'gwent.sid',
+        default: 'gwent-oss.sid',
       }),
       SESSION_SECRET: str({
         desc: 'The secret to use for securing user sessions',

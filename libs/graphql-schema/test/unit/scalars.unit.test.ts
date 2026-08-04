@@ -10,8 +10,8 @@ import {
   VariableNode,
 } from 'graphql'
 
+import { DATE_TIME_FORMAT } from '@gwent-oss/constants'
 import Scalars from '../../src/scalars'
-import { DATE_TIME_FORMAT } from '@gwent/constants'
 
 describe('scalars', () => {
   describe('DateTime', () => {

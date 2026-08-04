@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { Faction, QueryFactionsArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Faction, QueryFactionsArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import FactionResolver from '../types/faction-resolver'
 import FactionStore from '../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'

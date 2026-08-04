@@ -8,13 +8,13 @@ import {
   GameDbObject,
   GameUnitOrigin,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectMuster, {
   MusterForPlayer,
   Musterings,
 } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
-import { GameUnitType } from '@gwent/graphql-schema'
+import { GameUnitType } from '@gwent-oss/graphql-schema'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'

@@ -7,10 +7,10 @@ import {
   GameUnitDbObject,
   GameUnitOrigin,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectMedic, { Medicing } from '../../src/graphql/resolvers/mutations/play-unit/effect-medic'
-import { GameUnitType, MoveType } from '@gwent/graphql-schema'
+import { GameUnitType, MoveType } from '@gwent-oss/graphql-schema'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'

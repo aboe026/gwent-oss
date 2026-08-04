@@ -1,10 +1,10 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import * as env from '../../src/env'
 import Permissions from '../../src/graphql/permissions'
-import { SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
+import { SettingKey, SettingType } from '@gwent-oss/graphql-schema/resolver-typings'
 import SettingsQuery from '../../src/graphql/resolvers/queries/settings-query'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 describe('settings-query', () => {
   describe('settings', () => {

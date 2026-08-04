@@ -10,14 +10,14 @@ import {
   MoveDbObject,
   MoveReasonType,
   WeatherUnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
-import { MoveType } from '@gwent/graphql-schema'
+import { MoveType } from '@gwent-oss/graphql-schema'
 import PresentableError from '../../src/util/presentable-error'
-import { REDACTED } from '@gwent/constants'
+import { REDACTED } from '@gwent-oss/constants'
 import ResolverUtil, { GamePlayerResponse, MoveUsersAndUnits } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
-import { Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 

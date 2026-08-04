@@ -1,6 +1,6 @@
 import { Selector, t } from 'testcafe'
 
-import { HTML_IDS } from '@gwent/constants'
+import { HTML_IDS } from '@gwent-oss/constants'
 
 const container = Selector(`#${HTML_IDS.LoginDialogContainer}`)
 

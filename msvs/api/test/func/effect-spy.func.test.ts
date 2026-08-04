@@ -2,14 +2,14 @@ import { graphql, GraphQLError } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, ready, setDeck } from './util/graphql-util'
-import { Deck, FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
-import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
+import { Deck, FactionKey, Game, GameStatus, User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { ensureUnitsInHand, setTurnOrder } from '@gwent-oss/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 import TestUtil from '../util/test-util'
-import * as utils from '@gwent/utils'
+import * as utils from '@gwent-oss/utils'
 
 describe('effect-spy', () => {
   let self: User

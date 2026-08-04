@@ -1,4 +1,4 @@
-import { Deck, DeckUnit, GameDeck, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { Deck, DeckUnit, GameDeck, GameDeckDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'

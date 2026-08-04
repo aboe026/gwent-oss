@@ -14,8 +14,8 @@ import {
   WeatherUnitDbObject,
   FieldUnitDbObject,
   ImpactDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { GameUnitType, MoveType } from '@gwent/graphql-schema'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { GameUnitType, MoveType } from '@gwent-oss/graphql-schema'
 import GetFieldUnits from '../../util/get-field-units'
 import { ImpactsByUnitId } from '../../resolver-util'
 import mergeImpacts from '../play-unit/merge-impacts'

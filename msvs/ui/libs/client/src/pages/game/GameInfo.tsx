@@ -21,10 +21,10 @@ import {
   UnitFragmentDoc,
   UnitEffectFragmentDoc,
   WeatherUnitFragmentDoc,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { FullUnitCards, GameDeckCardType, GameDeckProps, GameProps, PlayUnitProps, UnitForPlayer } from './GameProps'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { humanizeDay, humanizeTime } from '@gwent/utils'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
+import { humanizeDay, humanizeTime } from '@gwent-oss/utils'
 import { retryCheckingAuth } from '../../util/error-util'
 import { useUserContext } from '../../UserContext'
 import UnitGameCard from '../../components/UnitGameCard'

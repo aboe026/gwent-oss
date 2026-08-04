@@ -1,9 +1,9 @@
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import EventManager from '../../src/graphql/event-manager'
-import { GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDeckDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import RedrawResolution from '../../src/graphql/resolvers/mutations/redraw/redraw-resolution'
 import TestUtil from '../util/test-util'
 

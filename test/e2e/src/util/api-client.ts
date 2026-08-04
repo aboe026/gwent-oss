@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import createGwentClient, {
+import createGwentOssClient, {
   Combat,
   Deck,
   DeckUnit,
@@ -10,21 +10,21 @@ import createGwentClient, {
   Game,
   GameDeck,
   GameUnit,
-  GwentClient,
+  GwentOssClient,
   Leader,
   QueryUnitsArgs,
   Setting,
   SettingType,
   Unit,
   User,
-} from '@gwent/node-client'
+} from '@gwent-oss/node-client'
 import E2eUtil from './e2e-util'
 
 export default class ApiClient {
-  public client: GwentClient
+  public client: GwentOssClient
 
   constructor({ username, password = 'password' }: { username?: string; password?: string }) {
-    this.client = createGwentClient({
+    this.client = createGwentOssClient({
       graphqlUrl: E2eUtil.getGraphqlUrl(),
       username,
       password,

@@ -1,5 +1,5 @@
 import { getRouteFromPath } from '../../src/util/route-util'
-import { ROUTES } from '@gwent/constants'
+import { ROUTES } from '@gwent-oss/constants'
 
 describe('route-util', () => {
   describe('getRouteFromPath', () => {

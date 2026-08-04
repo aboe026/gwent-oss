@@ -10,12 +10,12 @@ import {
   MoveDbObject,
   MoveUnitDbObject,
   WeatherUnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
-import { MoveType, RequestedFields } from '@gwent/graphql-schema'
+import { MoveType, RequestedFields } from '@gwent-oss/graphql-schema'
 import PresentableError from '../../util/presentable-error'
-import { REDACTED } from '@gwent/constants'
-import { Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { REDACTED } from '@gwent-oss/constants'
+import { Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
 import UnitResolver from './types/unit-resolver'
 import UserResolver from './types/user-resolver'
 

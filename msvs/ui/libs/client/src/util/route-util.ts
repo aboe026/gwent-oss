@@ -1,4 +1,4 @@
-import { AppRoute, ROUTES } from '@gwent/constants'
+import { AppRoute, ROUTES } from '@gwent-oss/constants'
 
 /**
  * Gets potential AppRoute from given path

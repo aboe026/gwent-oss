@@ -1,4 +1,4 @@
-import { UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import { UnitStats } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * Combine the statistics of two different unit sets.

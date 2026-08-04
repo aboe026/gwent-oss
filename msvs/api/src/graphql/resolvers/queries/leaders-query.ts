@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { FactionDbObject } from '@gwent/graphql-schema/database-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { FactionDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import FactionStore from '../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'
-import { Leader, QueryLeadersArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Leader, QueryLeadersArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import LeaderStore from '../../../database/stores/leader-store'
 import LeaderResolver from '../types/leader-resolver'
 import Permissions from '../../permissions'

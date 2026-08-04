@@ -2,7 +2,7 @@ import { GraphQLScalarType, Kind } from 'graphql'
 import moment from 'moment'
 import semver from 'semver'
 
-import { DATE_TIME_FORMAT } from '@gwent/constants'
+import { DATE_TIME_FORMAT } from '@gwent-oss/constants'
 
 const semverUrl = 'https://semver.org'
 

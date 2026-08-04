@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { DeckDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { DeckDbObject, GameStatus, UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { MutationSetDeckArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import SetDeckValidation, { ValidatedSetDeck } from '../../src/graphql/resolvers/mutations/set-deck/set-deck-validation'

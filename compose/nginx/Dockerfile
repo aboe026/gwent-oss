@@ -8,6 +8,6 @@ RUN apt-get update && \
         -nodes \
         -days 365 \
         -newkey rsa:2048 \
-        -subj "/C=US/ST=Washington/L=Seattle/CN=gwent.com" \
+        -subj "/C=US/ST=Washington/L=Seattle/CN=gwent-oss.com" \
         -keyout /etc/ssl/private/server.key \
         -out /etc/ssl/certs/server.crt

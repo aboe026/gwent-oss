@@ -1,5 +1,5 @@
-import { Context } from '@gwent/graphql-schema/context'
-import { Game, MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Game, MutationPlayPassArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import PlayPassImplementation from './play-pass-implementation'
 import PlayPassResolution from './play-pass-resolution'

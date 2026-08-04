@@ -1,11 +1,11 @@
 import * as graphqlSubscriptions from 'graphql-subscriptions'
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { Deck, Game } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Deck, Game } from '@gwent-oss/graphql-schema/resolver-typings'
 import EventManager from '../../src/graphql/event-manager'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import SubscriptionResolver, {
   DeckAddedPayload,
   DeckSetPayload,
@@ -20,7 +20,7 @@ import SubscriptionResolver, {
   UnitRedrawnPayload,
 } from '../../src/graphql/resolvers/subscription-resolver'
 import TestUtil from '../util/test-util'
-import * as utils from '@gwent/utils'
+import * as utils from '@gwent-oss/utils'
 
 describe('subscription-resolver', () => {
   describe('getResolvers', () => {

@@ -23,7 +23,7 @@ import BasicAuth from './auth/basic-auth'
 import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
 import env from './env'
-import { NODE_ENV } from '@gwent/env'
+import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from './util/presentable-error'
 import schema from './graphql/executable-schema'
 import { version } from '../package.json'
@@ -64,7 +64,7 @@ export default class Api {
    */
   private static async printStartupInfo() {
     Api.logger.info(
-      `\n${figlet.textSync('Gwent', {
+      `\n${figlet.textSync('gwent-oss', {
         font: 'Tombstone',
       })}`
     )

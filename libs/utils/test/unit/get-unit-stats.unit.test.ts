@@ -1,5 +1,5 @@
-import { UnitFragment, DeckUnitFragment } from '@gwent/graphql-schema/apollo-typings'
-import { Combat, DeckUnit, EffectKey, Unit, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import { UnitFragment, DeckUnitFragment } from '@gwent-oss/graphql-schema/apollo-typings'
+import { Combat, DeckUnit, EffectKey, Unit, UnitStats } from '@gwent-oss/graphql-schema/resolver-typings'
 import GetUnitStats, { DeckUnitForValidation } from '../../src/get-unit-stats'
 
 describe('GetUnitStats', () => {

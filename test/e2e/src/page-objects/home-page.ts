@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
-import { HTML_IDS } from '@gwent/constants'
+import { HTML_IDS } from '@gwent-oss/constants'
 
 export default class HomePage {
   static elements = {

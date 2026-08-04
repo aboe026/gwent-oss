@@ -2,7 +2,7 @@ import AddUserImplementation from '../../src/graphql/resolvers/mutations/add-use
 import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user/add-user-mutation'
 import AddUserResolution from '../../src/graphql/resolvers/mutations/add-user/add-user-resolution'
 import AddUserValidation from '../../src/graphql/resolvers/mutations/add-user/add-user-validation'
-import { MutationAddUserArgs } from '@gwent/graphql-schema/resolver-typings'
+import { MutationAddUserArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import TestUtil from '../util/test-util'
 
 describe('add-user-mutation', () => {

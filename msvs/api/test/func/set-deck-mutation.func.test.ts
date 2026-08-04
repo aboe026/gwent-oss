@@ -3,9 +3,9 @@ import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, setDeck } from './util/graphql-util'
 import { expectizeGame, expectizeGameDeck, expectizeGamePlayer, verifyGameDeckSet } from './util/expect-util'
-import { FactionKey, GameDeck, GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, GameDeck, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 import { getGameDeckFragment } from './util/fragment-util'
-import { NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('set-deck-mutation', () => {

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * A class for implementing the login GraphQL Mutation.

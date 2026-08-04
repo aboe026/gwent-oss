@@ -31,7 +31,7 @@ describe('upgrade-store', () => {
       await expect(UpgradeStore.getLock()).resolves.toEqual(lock)
 
       await expect(UpgradeStore.addLock()).rejects.toThrow(
-        `E11000 duplicate key error collection: gwent-func.upgrades index: _id_ dup key: { _id: ObjectId('${UpgradeStore[
+        `E11000 duplicate key error collection: gwent-oss-func.upgrades index: _id_ dup key: { _id: ObjectId('${UpgradeStore[
           'LOCK_ID'
         ].toString()}') }`
       )

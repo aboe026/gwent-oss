@@ -1,4 +1,4 @@
-import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
  * Convert a GameStatus enum to a human readable string.

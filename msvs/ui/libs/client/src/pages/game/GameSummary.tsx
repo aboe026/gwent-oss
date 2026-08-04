@@ -7,8 +7,8 @@ import {
   PlayerRoundFragmentDoc,
   RoundResult,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
-import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
+} from '@gwent-oss/graphql-schema/apollo-typings'
+import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent-oss/constants'
 
 /**
  * A breakdown of the results of a finished Game.

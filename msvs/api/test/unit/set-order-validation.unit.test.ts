@@ -1,6 +1,6 @@
-import { Context } from '@gwent/graphql-schema/context'
-import { GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameStatus, UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { MutationSetOrderArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import SetOrderValidation, {

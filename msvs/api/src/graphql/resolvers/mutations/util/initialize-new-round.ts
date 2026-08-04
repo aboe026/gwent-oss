@@ -1,4 +1,4 @@
-import { GameDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, PlayerCombatRowDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
  * Add a new round to each player on a game. This new round is in a starting/initial state.

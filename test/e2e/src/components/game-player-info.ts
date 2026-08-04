@@ -1,8 +1,8 @@
 import { t } from 'testcafe'
 
-import { Deck, Faction, GameUnitOrigin, Leader } from '@gwent/node-client'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { humanizeDay, humanizeTime } from '@gwent/utils'
+import { Deck, Faction, GameUnitOrigin, Leader } from '@gwent-oss/node-client'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
+import { humanizeDay, humanizeTime } from '@gwent-oss/utils'
 
 export default class GamePlayerInfo {
   private elements

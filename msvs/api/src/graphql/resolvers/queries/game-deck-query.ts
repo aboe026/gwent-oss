@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameDeck, QueryGameDeckArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameDeckResolver from '../types/game-deck-resolver'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions from '../../permissions'

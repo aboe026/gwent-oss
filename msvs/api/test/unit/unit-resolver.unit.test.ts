@@ -1,13 +1,13 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, Dlc, Effect, Faction, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Dlc, Effect, Faction, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   DlcDbObject,
   EffectDbObject,
   EffectKey,
   FactionDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import DlcResolver from '../../src/graphql/resolvers/types/dlc-resolver'
 import DlcStore from '../../src/database/stores/dlc-store'
 import EffectResolver from '../../src/graphql/resolvers/types/effect-resolver'

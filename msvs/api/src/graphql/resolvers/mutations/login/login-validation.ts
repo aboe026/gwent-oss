@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
 
 import { GraphQLResolveInfo } from 'graphql'
-import { MutationLoginArgs } from '@gwent/graphql-schema/resolver-typings'
+import { MutationLoginArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import UserStore from '../../../../database/stores/user-store'
 
 /**

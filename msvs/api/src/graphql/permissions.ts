@@ -1,11 +1,16 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { DeckDbObject, GameDbObject, GamePlayerDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import {
+  DeckDbObject,
+  GameDbObject,
+  GamePlayerDbObject,
+  UserDbObject,
+} from '@gwent-oss/graphql-schema/database-typings'
 import DeckStore from '../database/stores/deck-store'
 import GameStore from '../database/stores/game-store'
-import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
 import PresentableError from '../util/presentable-error'
 
 /**

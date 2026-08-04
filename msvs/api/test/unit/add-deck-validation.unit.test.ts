@@ -1,17 +1,17 @@
 import { ObjectId } from 'mongodb'
 
 import AddDeckValidation from '../../src/graphql/resolvers/mutations/add-deck/add-deck-validation'
-import { Context } from '@gwent/graphql-schema/context'
-import { DeckUnit, FactionKey, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { DeckUnit, FactionKey, MutationAddDeckArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
-import { FactionDbObject, LeaderDbObject, UnitDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { FactionDbObject, LeaderDbObject, UnitDbObject, UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import LeaderStore from '../../src/database/stores/leader-store'
 import Permissions from '../../src/graphql/permissions'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
-import { ValidateDeck } from '@gwent/validators'
+import { ValidateDeck } from '@gwent-oss/validators'
 
 describe('add-deck-validation', () => {
   const user = TestUtil.getDbUser({})

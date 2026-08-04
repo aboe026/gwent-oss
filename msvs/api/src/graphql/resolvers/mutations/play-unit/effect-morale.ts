@@ -9,9 +9,9 @@ import {
   FieldUnitEffectDbObject,
   ImpactDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { EffectReasonType, GameUnitType } from '@gwent/graphql-schema'
-import { EFFECT_OPERATOR } from '@gwent/constants'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { EffectReasonType, GameUnitType } from '@gwent-oss/graphql-schema'
+import { EFFECT_OPERATOR } from '@gwent-oss/constants'
 import { ImpactsByUnitId } from '../../resolver-util'
 
 /**

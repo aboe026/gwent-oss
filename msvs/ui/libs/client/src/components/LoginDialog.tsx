@@ -7,9 +7,9 @@ import {
   CurrentUserDocument,
   CurrentUserQuery,
   LoginDocument,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../util/error-util'
-import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent-oss/constants'
 import LoadingBar from '../components/LoadingBar'
 import './LoginDialog.css'
 

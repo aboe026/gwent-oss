@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import AddDeckImplementation from '../../src/graphql/resolvers/mutations/add-deck/add-deck-implementation'
 import DeckStore from '../../src/database/stores/deck-store'
-import { GetUnitStats } from '@gwent/utils'
+import { GetUnitStats } from '@gwent-oss/utils'
 import TestUtil from '../util/test-util'
 import { ValidatedAddDeck } from '../../src/graphql/resolvers/mutations/add-deck/add-deck-validation'
 

@@ -5,7 +5,7 @@ import {
   GameDbObject,
   UnitDbObject,
   WeatherUnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import UnitStore from '../../../../database/stores/unit-store'
 
 /**

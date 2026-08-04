@@ -1,21 +1,21 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Combat, Effect, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Effect, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   DlcDbObject,
   EffectDbObject,
   EffectKey,
   FactionDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import DlcResolver from './dlc-resolver'
 import DlcStore from '../../../database/stores/dlc-store'
 import EffectResolver from './effect-resolver'
 import EffectStore from '../../../database/stores/effect-store'
 import FactionResolver from './faction-resolver'
 import FactionStore from '../../../database/stores/faction-store'
-import { getUniqueItems, toTitleCase } from '@gwent/utils'
+import { getUniqueItems, toTitleCase } from '@gwent-oss/utils'
 import { prettyPrintList } from '../../../util/string-util'
 import UnitStore from '../../../database/stores/unit-store'
 import Verifier from '../../../util/verifier'

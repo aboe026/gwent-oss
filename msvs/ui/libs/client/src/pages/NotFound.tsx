@@ -1,7 +1,7 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
 
-import { HTML_IDS } from '@gwent/constants'
-import { ROUTES } from '@gwent/constants'
+import { HTML_IDS } from '@gwent-oss/constants'
+import { ROUTES } from '@gwent-oss/constants'
 
 /**
  * A page to display when a user attempts to access a URL that has no defined page.

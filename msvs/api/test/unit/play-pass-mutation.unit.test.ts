@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
-import { MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { MutationPlayPassArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import PlayPassImplementation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-implementation'
 import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-mutation'
 import PlayPassValidation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-validation'

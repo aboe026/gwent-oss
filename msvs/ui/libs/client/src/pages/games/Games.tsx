@@ -17,7 +17,7 @@ import {
   GamesQuery,
   GameStatus,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -25,13 +25,13 @@ import {
   FilterField,
   SORT_FIELD,
   SORT_ORDER,
-} from '@gwent/graphql-schema/games-filter'
+} from '@gwent-oss/graphql-schema/games-filter'
 import GameRow from './GameRow'
 import getEnumFromString from '../../util/get-faction-key-from-string'
 import { getErrorMessages } from '../../util/error-util'
-import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent-oss/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { sortObjectArray } from '@gwent/utils'
+import { sortObjectArray } from '@gwent-oss/utils'
 import { useAuthRetry } from '../../AuthRetry'
 import { useTitle } from '../../components/TabTitle'
 import './Games.css'
@@ -42,7 +42,7 @@ import './Games.css'
  * @returns The users games page.
  */
 export default function GamesPage() {
-  useTitle('Games | Gwent')
+  useTitle('Games | gwent-oss')
   const [userFilter, setUserFilter] = useState('')
   const [sortField, setSortField] = useState<SORT_FIELD>(SORT_FIELD.Updated)
   const [sortOrder, setSortOrder] = useState<SORT_ORDER>(SORT_ORDER.Desc)

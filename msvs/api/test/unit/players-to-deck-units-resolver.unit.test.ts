@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit } from '@gwent-oss/graphql-schema/resolver-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import {
   PlayersToDeckUnitDbObjects,

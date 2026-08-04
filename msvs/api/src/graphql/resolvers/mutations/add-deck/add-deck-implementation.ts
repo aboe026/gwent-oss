@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 
-import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import DeckStore from '../../../../database/stores/deck-store'
-import { GetUnitStats } from '@gwent/utils'
+import { GetUnitStats } from '@gwent-oss/utils'
 import PresentableError from '../../../../util/presentable-error'
 import { ValidatedAddDeck } from './add-deck-validation'
 

@@ -8,11 +8,11 @@ import {
   FieldUnitDbObject,
   FieldUnitEffectDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectMorale from '../../src/graphql/resolvers/mutations/play-unit/effect-morale'
-import { EFFECT_OPERATOR } from '@gwent/constants'
-import { EffectReasonType } from '@gwent/graphql-schema'
+import { EFFECT_OPERATOR } from '@gwent-oss/constants'
+import { EffectReasonType } from '@gwent-oss/graphql-schema'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 

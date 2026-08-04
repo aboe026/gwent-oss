@@ -1,6 +1,6 @@
 import { FindOptions, ObjectId } from 'mongodb'
 
-import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
+import { LeaderDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import LeaderStore, { GetLeadersInput } from '../../src/database/stores/leader-store'
 import TestUtil from '../util/test-util'
 

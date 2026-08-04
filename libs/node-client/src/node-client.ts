@@ -5,19 +5,19 @@ import { getSdk } from '../generated/node-sdk'
 
 type Sdk = ReturnType<typeof getSdk>
 
-export type GwentClient = {
+export type GwentOssClient = {
   [K in keyof Sdk]: Sdk[K] extends (vars: infer V) => Promise<infer R>
     ? (vars: V) => Promise<Exclude<R[keyof R], undefined | 'Mutation' | 'Query'>>
     : never
 }
 
 /**
- * Configuration options for creating a GwentClient.
+ * Configuration options for creating a GwentOssClient.
  */
-export interface GwentClientOptions {
+export interface GwentOssClientOptions {
   /**
-   * The URL to the GraphQL server for the Gwent instance.
-   * For example: https://gwent.com/graphql
+   * The URL to the GraphQL server for the gwent-oss instance.
+   * For example: https://gwent-oss.com/graphql
    */
   graphqlUrl: string
 
@@ -34,7 +34,7 @@ export interface GwentClientOptions {
   password?: string
 }
 
-export interface GwentClientOptions {
+export interface GwentOssClientOptions {
   graphqlUrl: string
   username?: string
   password?: string
@@ -43,15 +43,15 @@ export interface GwentClientOptions {
 export * from '../generated/node-sdk'
 
 /**
- * Creates an instance of a GwentClient, which can be used to interact with a Gwent GraphQL API.
+ * Creates an instance of a GwentOssClient, which can be used to interact with a gwent-oss GraphQL API.
  *
- * @param config The configuration used to create the GwentClient instance.
- * @param config.graphqlUrl The URL to the GraphQL server for the Gwent instance (for example: https://gwent.com/graphql).
+ * @param config The configuration used to create the GwentOssClient instance.
+ * @param config.graphqlUrl The URL to the GraphQL server for the gwent-oss instance (for example: https://gwent-oss.com/graphql).
  * @param config.username An optional username to use for authenticating against the server, required for some Queries/Mutations.
  * @param config.password An optional password to use for authenticating against the server, required for some Queries/Mutations.
- * @returns An instance of the GwentClient that can be used to interact with the Gwent GraphQL API.
+ * @returns An instance of the GwentOssClient that can be used to interact with the gwent-oss GraphQL API.
  */
-export function createGwentClient({ graphqlUrl, username, password }: GwentClientOptions) {
+export function createGwentOssClient({ graphqlUrl, username, password }: GwentOssClientOptions) {
   const headers: Record<string, string> = {}
 
   if (username && password) {
@@ -67,7 +67,7 @@ export function createGwentClient({ graphqlUrl, username, password }: GwentClien
   /**
    * "lift up" response data, so when have response:
    *
-   * const response = await client.addUser({ name: 'james', password: 'bond' })
+   * const response = await client.addUser({ name: 'james-bond', password: '007' })
    *
    * can access fields with just:
    *
@@ -88,7 +88,7 @@ export function createGwentClient({ graphqlUrl, username, password }: GwentClien
     ])
   )
 
-  return wrapped as GwentClient
+  return wrapped as GwentOssClient
 }
 
-export default createGwentClient
+export default createGwentOssClient

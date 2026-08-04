@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { FactionDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { FactionKey, QueryLeadersArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { FactionDbObject, UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
+import { FactionKey, QueryLeadersArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeadersQuery from '../../src/graphql/resolvers/queries/leaders-query'

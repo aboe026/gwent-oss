@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Game, GamePlayer, MoveReasonType, Unit, User } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { Game, GamePlayer, MoveReasonType, Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
 import GetFieldUnits from '../util/get-field-units'

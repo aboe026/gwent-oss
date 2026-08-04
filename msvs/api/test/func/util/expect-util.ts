@@ -24,13 +24,13 @@ import {
   Unit,
   UnitStats,
   User,
-} from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent-oss/graphql-schema/resolver-typings'
 import dlcs from '../../../src/database/upgrades/resources/dlcs.json'
 import effects from '../../../src/database/upgrades/resources/effects.json'
 import factions from '../../../src/database/upgrades/resources/factions.json'
-import { GetUnitStats, sortObjectArray } from '@gwent/utils'
+import { GetUnitStats, sortObjectArray } from '@gwent-oss/utils'
 import leaders from '../../../src/database/upgrades/resources/leaders.json'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 import UnitResolver from '../../../src/graphql/resolvers/types/unit-resolver'
 import units from '../../../src/database/upgrades/resources/units.json'
 import Upgrade2, { ImageType } from '../../../src/database/upgrades/upgrade-2'

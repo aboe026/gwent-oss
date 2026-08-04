@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 
-import createGwentClient, {
+import createGwentOssClient, {
   Combat,
   Deck,
   DeckUnit,
@@ -10,12 +10,12 @@ import createGwentClient, {
   GameDeck,
   GamePlayer,
   GameStatus,
-  GwentClient,
+  GwentOssClient,
   User,
-} from '@gwent/node-client'
+} from '@gwent-oss/node-client'
 import env from './env'
-import { getRandomItem, getRandomNumber, RandomizeDeckUnits, randomizeOrder, toTitleCase } from '@gwent/utils'
-import { MAX_REDRAWS } from '@gwent/constants'
+import { getRandomItem, getRandomNumber, RandomizeDeckUnits, randomizeOrder, toTitleCase } from '@gwent-oss/utils'
+import { MAX_REDRAWS } from '@gwent-oss/constants'
 
 const PASSWORD = 'password'
 
@@ -25,7 +25,7 @@ const PASSWORD = 'password'
   await fs.rm(env.LOG_FILE, {
     force: true,
   })
-  const client = createGwentClient({
+  const client = createGwentOssClient({
     graphqlUrl: env.API_URL,
   })
   const selfName = `rando-self-${Date.now()}`
@@ -34,7 +34,7 @@ const PASSWORD = 'password'
   await log(`Opponent username: "${oppName}"`)
 
   const self: Player = {
-    client: createGwentClient({
+    client: createGwentOssClient({
       graphqlUrl: env.API_URL,
       username: selfName,
       password: PASSWORD,
@@ -45,7 +45,7 @@ const PASSWORD = 'password'
     }),
   }
   const opponent: Player = {
-    client: createGwentClient({
+    client: createGwentOssClient({
       graphqlUrl: env.API_URL,
       username: oppName,
       password: PASSWORD,
@@ -149,7 +149,7 @@ async function createAndPlayGame({ self, opponent, index }: { self: Player; oppo
   await log('\n')
 }
 
-async function createRandomDeck({ client, index }: { client: GwentClient; index: number }): Promise<Deck> {
+async function createRandomDeck({ client, index }: { client: GwentOssClient; index: number }): Promise<Deck> {
   const faction = getRandomItem({
     items: [
       FactionKey.Monsters,
@@ -190,7 +190,7 @@ async function redrawRandomly({
   gameDeck,
   username,
 }: {
-  client: GwentClient
+  client: GwentOssClient
   gameId: string
   gameDeck: GameDeck
   username: string
@@ -414,5 +414,5 @@ async function playRound({
 
 interface Player {
   user: User
-  client: GwentClient
+  client: GwentOssClient
 }

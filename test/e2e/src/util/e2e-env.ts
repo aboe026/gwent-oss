@@ -1,16 +1,16 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, str, url } from '@gwent/env'
+import getEnv, { NODE_ENV, num, str, url } from '@gwent-oss/env'
 
 export default getEnv({
   dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
   specs: {
     API_BASE_URL: url({
-      desc: 'The base URL the Gwent API is running on (should contain /graphql and /subscribe endpoints)',
+      desc: 'The base URL the gwent-oss API is running on (should contain /graphql and /subscribe endpoints)',
       default: 'http://localhost:4000',
     }),
     BASE_URL: url({
-      desc: 'The URL the Gwent website is running on',
+      desc: 'The URL the gwent-oss website is running on',
       default: 'http://localhost:3000',
     }),
     BROWSER: str({
@@ -28,7 +28,7 @@ export default getEnv({
     }),
     MONGO_DB: str({
       desc: 'The name of the MongoDB database to interact with',
-      default: 'gwent-e2e',
+      default: 'gwent-oss-e2e',
     }),
     MONGO_URL: url({
       desc: 'Connection string for MongoDB instance',
@@ -36,7 +36,7 @@ export default getEnv({
     }),
     SESSION_COOKIE_NAME: str({
       desc: 'The name of the Cookie for the user session.',
-      default: 'gwent.sid',
+      default: 'gwent-oss.sid',
     }),
     SESSION_SECRET: str({
       desc: 'The secret to use for securing user sessions',

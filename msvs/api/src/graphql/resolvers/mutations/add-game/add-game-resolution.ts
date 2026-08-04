@@ -2,11 +2,11 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
-import { Game, User } from '@gwent/graphql-schema/resolver-typings'
+import { Game, User } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GameAddedPayload } from '../../subscription-resolver'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import GameResolver from '../../types/game-resolver'
-import { PubSubEvents } from '@gwent/constants'
+import { PubSubEvents } from '@gwent-oss/constants'
 import UserResolver from '../../types/user-resolver'
 
 /**

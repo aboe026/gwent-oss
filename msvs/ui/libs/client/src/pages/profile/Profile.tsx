@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router'
 
 import Centered from '../../components/Centered'
-import { HTML_IDS } from '@gwent/constants'
-import { ROUTES } from '@gwent/constants'
+import { HTML_IDS } from '@gwent-oss/constants'
+import { ROUTES } from '@gwent-oss/constants'
 import { useTitle } from '../../components/TabTitle'
 import { useUserContext } from '../../UserContext'
 import './Profile.css'
@@ -15,7 +15,7 @@ import './Profile.css'
 export default function ProfilePage() {
   const { user } = useUserContext()
   const navigate = useNavigate()
-  useTitle('Profile | Gwent')
+  useTitle('Profile | gwent-oss')
 
   let created = ''
   if (user?.created) {

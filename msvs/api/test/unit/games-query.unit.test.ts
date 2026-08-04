@@ -1,10 +1,10 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GamesQuery from '../../src/graphql/resolvers/queries/games-query'
 import GameStore from '../../src/database/stores/game-store'
 import Permissions from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 describe('games-query', () => {
   describe('games', () => {

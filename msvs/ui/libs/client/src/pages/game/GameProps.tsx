@@ -23,7 +23,7 @@ import {
   ReadyMutation,
   WeatherUnitFragment,
   FieldUnitFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
   addGame: useMutation.MutationFunction<

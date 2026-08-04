@@ -15,7 +15,7 @@ import {
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -23,11 +23,11 @@ import {
   FilterField,
   SORT_FIELD,
   SORT_ORDER,
-} from '@gwent/graphql-schema/game-units-filter'
+} from '@gwent-oss/graphql-schema/game-units-filter'
 import { FullUnitCards, GameDeckCardType, UnitForPlayer } from './GameProps'
 import getEnumFromString from '../../util/get-faction-key-from-string'
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { sortObjectArray, toTitleCase } from '@gwent/utils'
+import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
+import { sortObjectArray, toTitleCase } from '@gwent-oss/utils'
 import UnitFilters from '../../components/UnitFilters'
 import UnitGameCard from '../../components/UnitGameCard'
 import { usePrevious } from '../../util/usePrevious'

@@ -1,4 +1,4 @@
-import { sleep } from '@gwent/utils'
+import { sleep } from '@gwent-oss/utils'
 
 jest.mock('log4js', () => ({
   configure: jest.fn().mockImplementation(),

@@ -7,11 +7,11 @@ import {
   UnitEffectFragmentDoc,
   UnitFragmentDoc,
   useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
-import { HTML_CLASSES } from '@gwent/constants'
+import { HTML_CLASSES } from '@gwent-oss/constants'
 import StrengthCircle from './StrengthCircle'
-import { toTitleCase } from '@gwent/utils'
+import { toTitleCase } from '@gwent-oss/utils'
 import './UnitDeckCard.css'
 
 /**

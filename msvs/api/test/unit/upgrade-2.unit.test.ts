@@ -10,14 +10,14 @@ import {
   FactionKey,
   LeaderDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import dlcs from '../../src/database/upgrades/resources/dlcs.json'
 import DlcStore, { AddDlcInput } from '../../src/database/stores/dlc-store'
 import effects from '../../src/database/upgrades/resources/effects.json'
 import EffectStore, { AddEffectInput } from '../../src/database/stores/effect-store'
 import factions from '../../src/database/upgrades/resources/factions.json'
 import FactionStore, { AddFactionInput } from '../../src/database/stores/faction-store'
-import { GetUnitStats } from '@gwent/utils'
+import { GetUnitStats } from '@gwent-oss/utils'
 import leaders from '../../src/database/upgrades/resources/leaders.json'
 import LeaderStore, { AddLeaderInput } from '../../src/database/stores/leader-store'
 import units from '../../src/database/upgrades/resources/units.json'
@@ -32,7 +32,7 @@ import Upgrade2, {
   LeaderJson,
   UnitJson,
 } from '../../src/database/upgrades/upgrade-2'
-import * as validators from '@gwent/validators'
+import * as validators from '@gwent-oss/validators'
 import TestUtil from '../util/test-util'
 
 describe('upgrade-2', () => {

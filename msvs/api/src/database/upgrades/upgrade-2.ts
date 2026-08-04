@@ -10,21 +10,21 @@ import {
   FactionDbObject,
   FactionKey,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import dlcs from './resources/dlcs.json'
 import DlcStore, { AddDlcInput } from '../stores/dlc-store'
 import effects from './resources/effects.json'
 import EffectStore, { AddEffectInput } from '../stores/effect-store'
 import factions from './resources/factions.json'
 import FactionStore, { AddFactionInput } from '../stores/faction-store'
-import { GetUnitStats } from '@gwent/utils'
+import { GetUnitStats } from '@gwent-oss/utils'
 import leaders from './resources/leaders.json'
 import LeaderStore, { AddLeaderInput } from '../stores/leader-store'
 import units from './resources/units.json'
 import UnitStore, { AddUnitInput } from '../stores/unit-store'
-import { Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Unit } from '@gwent-oss/graphql-schema/resolver-typings'
 import Upgrade from './upgrade'
-import { validatePositiveInteger } from '@gwent/validators'
+import { validatePositiveInteger } from '@gwent-oss/validators'
 
 /**
  * Adds resources required to create decks.

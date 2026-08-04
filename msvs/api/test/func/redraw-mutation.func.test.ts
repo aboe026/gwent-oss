@@ -2,10 +2,10 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, ready, redraw, setDeck } from './util/graphql-util'
-import { DeckUnit, FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, FactionKey, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
 import { getDeckUnitFragment } from './util/fragment-util'
-import { MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
+import { MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('redraw-mutation', () => {

@@ -50,7 +50,7 @@ describe('websocket-auth', () => {
     })
     it('returns undefined if encoded session cookie decodes to be false', async () => {
       const corsOrigin = 'hostname'
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       await testAuthenticate({
         corsOrigin,
         sessionCookieName,
@@ -66,7 +66,7 @@ describe('websocket-auth', () => {
     })
     it('returns undefined if encoded session cookie decodes to be the encoded value', async () => {
       const corsOrigin = 'hostname'
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       await testAuthenticate({
         corsOrigin,
         sessionCookieName,
@@ -82,7 +82,7 @@ describe('websocket-auth', () => {
     })
     it('returns undefined if mongo store throws error', async () => {
       const corsOrigin = 'hostname'
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       const sessionId = '123'
       const error = 'Session not found'
       await testAuthenticate({
@@ -101,7 +101,7 @@ describe('websocket-auth', () => {
     })
     it('returns undefined if session undefined', async () => {
       const corsOrigin = 'hostname'
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       const sessionId = '123'
       await testAuthenticate({
         corsOrigin,
@@ -119,7 +119,7 @@ describe('websocket-auth', () => {
     })
     it('returns undefined if no user on session', async () => {
       const corsOrigin = 'hostname'
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       const sessionId = '123'
       await testAuthenticate({
         corsOrigin,
@@ -137,7 +137,7 @@ describe('websocket-auth', () => {
     })
     it('returns user if returned on session', async () => {
       const corsOrigin = 'hostname'
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       const sessionId = '123'
       await testAuthenticate({
         corsOrigin,
@@ -156,7 +156,7 @@ describe('websocket-auth', () => {
     })
     it('logs to trace if enabled', async () => {
       const corsOrigin = 'hostname'
-      const sessionCookieName = 'gwent.sid'
+      const sessionCookieName = 'gwent-oss.sid'
       const encodedSessionId = '456'
       const sessionId = '123'
       await testAuthenticate({

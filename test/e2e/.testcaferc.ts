@@ -1,6 +1,6 @@
 import path from 'path'
 
-import DbProfiler from '@gwent/db-profiler'
+import DbProfiler from '@gwent-oss/db-profiler'
 import { E2eCtx, E2ETestController } from './src/util/e2e-ctx'
 import env from './src/util/e2e-env'
 
@@ -59,7 +59,7 @@ const config: any = {
 }
 
 if (process.env.START_APP === 'true') {
-  config.appCommand = 'yarn start-gwent'
+  config.appCommand = 'yarn start-app'
   config.appInitDelay = 10000
 }
 

@@ -8,7 +8,7 @@ import {
   GameUnitOrigin,
   User,
   Unit,
-} from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent-oss/graphql-schema/resolver-typings'
 import GameUnitResolver from './game-unit-resolver'
 import ImpactResolver from './impact-resolver'
 import LeaderResolver from './leader-resolver'
@@ -17,8 +17,8 @@ import {
   MoveLeaderDbObject,
   MovePassDbObject,
   MoveUnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { MoveType } from '@gwent/graphql-schema'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { MoveType } from '@gwent-oss/graphql-schema'
 import ResolverUtil from '../resolver-util'
 
 /**

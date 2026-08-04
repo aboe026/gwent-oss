@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import { getGame, updateGame } from './db-util'
 
 /**

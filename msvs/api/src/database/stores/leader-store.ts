@@ -1,12 +1,12 @@
 import { Document, Filter, FindOptions, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
+import { LeaderDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import PresentableError from '../../util/presentable-error'
 import Store from './store'
 
 /**
- * Factory for possible Gwent leaders a user can set for their decks.
+ * Factory for possible Leaders a User can set for their Decks.
  */
 export default class LeaderStore extends Store {
   static readonly COLLECTION_NAME = 'leaders'

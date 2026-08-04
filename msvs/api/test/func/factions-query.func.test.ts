@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { expectizeFactions, verifyMongoIds } from './util/expect-util'
 import { getFactionFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey } from '@gwent-oss/graphql-schema/resolver-typings'
 
 describe('factions-query', () => {
   describe('factions', () => {

@@ -17,7 +17,7 @@ if (testType === undefined) {
 }
 
 if (testType === TEST_TYPE.Func) {
-  process.env.MONGO_DB = 'gwent-func'
+  process.env.MONGO_DB = 'gwent-oss-func'
 }
 
 const sharedConfig: Config = {

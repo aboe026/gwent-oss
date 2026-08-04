@@ -30,14 +30,14 @@ import {
   UnitRedrawnDocument,
   useFragment,
   UnitFragmentDoc,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import {
   DecksQuery as DecksQueryRaw,
   DeckUnit as DeckUnitRaw,
   GameDeckQuery as GameDeckQueryRaw,
   GameQuery as GameQueryRaw,
   GamesQuery as GamesQueryRaw,
-} from '@gwent/graphql-schema/apollo-raw-typings'
+} from '@gwent-oss/graphql-schema/apollo-raw-typings'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
 import { useUserContext } from './UserContext'
 

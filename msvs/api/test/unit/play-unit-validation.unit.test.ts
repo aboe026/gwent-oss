@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
-import { Context } from '@gwent/graphql-schema/context'
+import { Combat, MutationPlayUnitArgs } from '@gwent-oss/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import {
   DeckUnitDbObject,
   EffectDbObject,
@@ -12,7 +12,7 @@ import {
   GameStatus,
   UnitDbObject,
   UserDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import EffectStore from '../../src/database/stores/effect-store'
 import GetFieldUnits from '../../src/graphql/resolvers/util/get-field-units'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'

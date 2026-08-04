@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/battlefield-updates'
-import { Combat } from '@gwent/graphql-schema/resolver-typings'
+import { Combat } from '@gwent-oss/graphql-schema/resolver-typings'
 import {
   DeckUnitDbObject,
   FieldUnitDbObject,
@@ -10,7 +10,7 @@ import {
   GameUnitOrigin,
   ImpactDbObject,
   UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+} from '@gwent-oss/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectAvenger from '../../src/graphql/resolvers/mutations/play-unit/effect-avenger'
 import EffectDecoy from '../../src/graphql/resolvers/mutations/play-unit/effect-decoy'

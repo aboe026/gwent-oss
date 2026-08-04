@@ -1,10 +1,10 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import DecksQuery from '../../src/graphql/resolvers/queries/decks-query'
 import DeckStore from '../../src/database/stores/deck-store'
 import Permissions from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 describe('decks-query', () => {
   describe('decks', () => {

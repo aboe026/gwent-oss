@@ -1,7 +1,7 @@
 import { ApolloClient } from '@apollo/client'
 import { useEffect } from 'react'
 
-import { Exact } from '@gwent/graphql-schema/apollo-typings'
+import { Exact } from '@gwent-oss/graphql-schema/apollo-typings'
 import { useUserContext } from './UserContext'
 
 /**

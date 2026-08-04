@@ -1,13 +1,13 @@
 {
-  "name": "@gwent/constants",
-  "version": "0.24.1",
+  "name": "@gwent-oss/constants",
+  "version": "0.25.0",
   "author": "Adam Boe",
   "description": "Defined constants to share between microservices",
   "main": "build/src/constants.js",
   "types": "build/src/constants.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
-    "build-all": "yarn g:recurse @gwent/constants run build",
+    "build-all": "yarn g:recurse @gwent-oss/constants run build",
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",

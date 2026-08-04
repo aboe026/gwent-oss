@@ -1,8 +1,8 @@
 import AddDeckImplementation from './add-deck-implementation'
 import AddDeckResolution from './add-deck-resolution'
 import AddDeckValidation from './add-deck-validation'
-import { Context } from '@gwent/graphql-schema/context'
-import { Deck, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Deck, MutationAddDeckArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 
 /**

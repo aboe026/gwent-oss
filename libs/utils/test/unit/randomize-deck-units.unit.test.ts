@@ -1,9 +1,9 @@
-import { DECK_MAX_SPECIALS, DECK_MIN_UNITS } from '@gwent/constants'
-import { DeckUnitFragment, UnitFragment } from '@gwent/graphql-schema/apollo-typings'
+import { DECK_MAX_SPECIALS, DECK_MIN_UNITS } from '@gwent-oss/constants'
+import { DeckUnitFragment, UnitFragment } from '@gwent-oss/graphql-schema/apollo-typings'
 import * as getRandomNumber from '../../src/get-random-number'
 import RandomizeDeckUnits, { UnitForValidation } from '../../src/randomize-deck-units'
 import * as randomizeOrder from '../../src/randomize-order'
-import { Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Unit } from '@gwent-oss/graphql-schema/resolver-typings'
 
 describe('randomize-deck-units', () => {
   describe('fromUnits', () => {

@@ -1,11 +1,11 @@
 import { Document, Filter, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { DlcDbObject, DlcKey } from '@gwent/graphql-schema/database-typings'
+import { DlcDbObject, DlcKey } from '@gwent-oss/graphql-schema/database-typings'
 import Store from './store'
 
 /**
- * Factory for possible DLCs that Gwent resources can belong to.
+ * Factory for possible DLCs that resources can belong to.
  */
 export default class DlcStore extends Store {
   static readonly COLLECTION_NAME = 'dlcs'

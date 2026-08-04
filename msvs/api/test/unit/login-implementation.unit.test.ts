@@ -1,4 +1,4 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import LoginImplementation from '../../src/graphql/resolvers/mutations/login/login-implementation'
 import TestUtil from '../util/test-util'
 

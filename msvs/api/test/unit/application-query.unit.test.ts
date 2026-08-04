@@ -1,6 +1,6 @@
 import AppInfo from '../../src/app-info'
 import ApplicationQuery from '../../src/graphql/resolvers/queries/application-query'
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import TestUtil from '../util/test-util'
 import { version } from '../../package.json'
 

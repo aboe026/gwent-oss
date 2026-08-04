@@ -7,8 +7,8 @@ import {
   GamePlayerDbObject,
   ImpactDbObject,
   PlayerCombatRowDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { GameUnitType } from '@gwent/graphql-schema'
+} from '@gwent-oss/graphql-schema/database-typings'
+import { GameUnitType } from '@gwent-oss/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 

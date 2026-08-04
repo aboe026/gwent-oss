@@ -1,9 +1,9 @@
 import { getLogger } from 'log4js'
 
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import DeckResolver from '../types/deck-resolver'
 import DeckStore from '../../../database/stores/deck-store'
-import { Deck } from '@gwent/graphql-schema/resolver-typings'
+import { Deck } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'

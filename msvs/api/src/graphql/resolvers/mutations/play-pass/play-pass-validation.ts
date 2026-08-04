@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
-import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
-import { MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
+import { MutationPlayPassArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'

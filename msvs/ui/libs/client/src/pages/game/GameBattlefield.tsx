@@ -9,10 +9,10 @@ import {
   UnitFragmentDoc,
   useFragment,
   WeatherUnitFragmentDoc,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import { FullUnitCards, GameDeckCardType, PlayUnitProps, UnitForPlayer } from './GameProps'
 import GameCombatRow from './GameCombatRow'
-import { HTML_CLASSES } from '@gwent/constants'
+import { HTML_CLASSES } from '@gwent-oss/constants'
 import { useUserContext } from '../../UserContext'
 
 /**

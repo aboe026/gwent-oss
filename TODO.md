@@ -41,7 +41,7 @@ Existing problems in the codebase that need to be fixed.
   - use AI upscaler?
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - rename "undrawn" to "draw" (since its the draw pile?)
-- remove @gwent/graphql-schema dependency from @gwent/test-e2e once filters/sorting in schema
+- remove @gwent-oss/graphql-schema dependency from @gwent-oss/test-e2e once filters/sorting in schema
 - have node-client export class instead of function (attempted to but lost typings)
 - restrict/filter subscriptions to just active game?
 - use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
@@ -126,6 +126,8 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- Faction abilities
+- Leader abilities
 - Better game summarization (graphs?)
   - points per round
   - time per round
@@ -137,7 +139,6 @@ New things that should be added to the codebase.
 - Limit user creation
   - activation code?
   - manual review?
-- rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - allow for "undo" (opponent(s) have to approve?)

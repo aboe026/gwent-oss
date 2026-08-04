@@ -1,8 +1,8 @@
 import AddGameImplementation from './add-game-implementation'
 import AddGameResolution from './add-game-resolution'
 import AddGameValidation from './add-game-validation'
-import { Context } from '@gwent/graphql-schema/context'
-import { Game, MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
+import { Context } from '@gwent-oss/graphql-schema/context'
+import { Game, MutationAddGameArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 
 /**

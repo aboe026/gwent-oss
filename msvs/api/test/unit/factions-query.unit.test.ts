@@ -1,11 +1,11 @@
-import { Context } from '@gwent/graphql-schema/context'
+import { Context } from '@gwent-oss/graphql-schema/context'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionsQuery from '../../src/graphql/resolvers/queries/factions-query'
 import FactionStore from '../../src/database/stores/faction-store'
-import { FactionKey, QueryFactionsArgs } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, QueryFactionsArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import Permissions from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 describe('factions-query', () => {
   describe('factions', () => {

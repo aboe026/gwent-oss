@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router'
 
 import { Button } from '../util/keyboard-listener'
 import { ConnectionStatusContext, CONNECTION_STATUS } from '../ConnectionStatus'
-import { HTML_IDS } from '@gwent/constants'
-import { ROUTES } from '@gwent/constants'
+import { HTML_IDS } from '@gwent-oss/constants'
+import { ROUTES } from '@gwent-oss/constants'
 import { useUserContext } from '../UserContext'
 import './Banner.css'
 
@@ -58,7 +58,7 @@ export default function Banner() {
             }
           }}
         >
-          Gwent
+          gwent-oss
         </h1>
         <div className="banner-item">
           {user?.name && (

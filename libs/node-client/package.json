@@ -1,13 +1,13 @@
 {
-  "name": "@gwent/node-client",
-  "version": "0.24.1",
+  "name": "@gwent-oss/node-client",
+  "version": "0.25.0",
   "author": "Adam Boe",
-  "description": "A Node.js client/SDK for the Gwent GraphQL API",
+  "description": "A Node.js client/SDK for the gwent-oss GraphQL API",
   "main": "build/src/node-client.js",
   "types": "build/src/node-client.d.ts",
   "scripts": {
     "build": "yarn g:npm-run-all --sequential build-codegen build-node",
-    "build-all": "yarn g:recurse @gwent/node-client run build",
+    "build-all": "yarn g:recurse @gwent-oss/node-client run build",
     "build-codegen": "yarn g:npm-run-all --sequential generate-docs codegen",
     "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage generated results tsconfig.tsbuildinfo",
@@ -20,7 +20,7 @@
     "watch-node": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "@gwent/graphql-schema": "workspace:*",
+    "@gwent-oss/graphql-schema": "workspace:*",
     "graphql": "16.14.2",
     "graphql-request": "6.1.0",
     "graphql-tag": "2.12.7"

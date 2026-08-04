@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 
 import env from '../../src/env'
 import schema from '../../src/graphql/executable-schema'
-import { SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
+import { SettingKey, SettingType } from '@gwent-oss/graphql-schema/resolver-typings'
 
 describe('settings', () => {
   it('returns session timeout', async () => {

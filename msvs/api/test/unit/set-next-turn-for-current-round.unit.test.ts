@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import deepClone from '../util/deep-clone'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
 import TestUtil from '../util/test-util'
 

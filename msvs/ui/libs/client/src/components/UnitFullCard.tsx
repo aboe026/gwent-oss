@@ -13,13 +13,13 @@ import {
   UnitFragmentDoc,
   useFragment,
   WeatherUnitFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+} from '@gwent-oss/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
 import getWeatherImage from '../util/get-weather-image'
-import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent-oss/constants'
 import { Key, useKeyDown } from '../util/keyboard-listener'
 import StrengthCircle from './StrengthCircle'
-import { toTitleCase } from '@gwent/utils'
+import { toTitleCase } from '@gwent-oss/utils'
 import WholeScreenDialog from './WholeScreenDialog'
 import './UnitFullCard.css'
 

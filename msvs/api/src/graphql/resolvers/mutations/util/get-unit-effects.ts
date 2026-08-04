@@ -1,4 +1,4 @@
-import { EffectDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { EffectDbObject, UnitDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import EffectStore from '../../../../database/stores/effect-store'
 
 /**
