@@ -84,7 +84,8 @@ export default function App() {
       />
     )
   } else if (shouldNavigateToLogin) {
-    return <Navigate to={ROUTES.Login.path} replace />
+    const hasAccount = localStorage.getItem('hasAccount') === 'true'
+    return <Navigate to={hasAccount ? ROUTES.Login.path : ROUTES.Signup.path} replace />
   }
 
   /**
@@ -121,7 +122,7 @@ export default function App() {
       <IconContext.Provider value={{ color: 'white' }}>
         <ConnectionStatus>
           <Subscriptions>
-            <Banner />
+            {loggedIn && <Banner />}
             {authTimedOut && (
               <WholeScreenDialog style={{ zIndex: 200 }}>
                 <Centered>

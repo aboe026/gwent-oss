@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, port, str, url } from '@gwent-oss/env'
+import getEnv, { email, NODE_ENV, num, port, str, url } from '@gwent-oss/env'
 
 /**
  * Gets the environment variables that relate to how the UI server operates.
@@ -18,6 +18,14 @@ export default function env() {
       CLIENT_DIR: str({
         desc: 'Path to directory containing client files to serve',
         default: '../libs/client/build',
+      }),
+      EMAIL_ADDRESS: email({
+        desc: 'The email address for users to contact',
+        default: 'gwent-oss@outlook.com',
+      }),
+      GITHUB_LINK: url({
+        desc: 'The URL containing the repository of this projects source code',
+        default: 'https://github.com/aboe026/gwent-oss',
       }),
       IMAGES_DIR: str({
         desc: 'Path on filesystem to directory containing asset images to serve',

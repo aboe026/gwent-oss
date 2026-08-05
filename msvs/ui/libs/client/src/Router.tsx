@@ -12,7 +12,6 @@ import LogoutPage from './pages/logout/Logout'
 import NotFoundPage from './pages/NotFound'
 import ProfilePage from './pages/profile/Profile'
 import { ROUTES } from '@gwent-oss/constants'
-import SignupPage from './pages/signup/Signup'
 
 /**
  * The URL paths the application supports and their corresponding React components.
@@ -53,7 +52,7 @@ export default function Router() {
             },
             {
               path: ROUTES.Signup.path,
-              element: <SignupPage />,
+              element: <LoginPage />,
             },
             {
               path: ROUTES.Logout.path,

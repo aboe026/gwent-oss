@@ -12,7 +12,13 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- no spaces in username?
+- username restrictions
+  - no spaces
+  - only alpha-numeric and select special characters
+- password restrictions
+  - min 8, max 50?
+  - upper, lower, num and special?
+
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
   - how to represent? new relationship in db or infer in front end?
   - would same approach work for other effects (like mardroeme)?
@@ -28,7 +34,6 @@ Existing problems in the codebase that need to be fixed.
 - refactor units tests to utilize dynamic looping instead of enumerating them explicitly
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
-- have Impact.unit field be "required" (never null) in database typings? (mapping?)
 - automate check in build process to ensure package.json versions incremented (and all same)?
 - use INFO logging more? Like any time action successful (game created, unit played, etc)?
 - remove need for classes just for log4js spying
@@ -70,7 +75,7 @@ Existing problems in the codebase that need to be fixed.
   - ran into issue with returning empty objects (because some fragments not having ids ?)
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
-- rename "redraw" mutation to "redrawUnit"? and "ready" to "readyGame"? Have mutation name convention by "verbNoun"?
+- rename "redraw" mutation to "redrawUnit"? and "ready" to "readyGame"? Have mutation name convention by "verbNoun"? Or maybe "nounVerb"?
 - remove "renderXYZ" methods in favor of functional components always?
 - do not store yarn sdks in source?
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
@@ -90,8 +95,6 @@ Existing problems in the codebase that need to be fixed.
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - replace "effectiveStrength" with "score" for GameUnit
   - rename "CalculateGameEffectiveStrengths" to just "UnitScores"
-- carry over username (and password?) when switching between log-in and sign-up
-  - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
   - update places in UI code which check user/player by ".name" and switch them to ".id"
 - Have "DateTime" on resolver object map to javascript Date object?
@@ -105,11 +108,13 @@ Existing problems in the codebase that need to be fixed.
   - save config in database?
     - save config in memory as well to reduce database reads?
       - how to handle changes when multiple instances running?
+- have setEnvVars for dynamic-env.js updates be dynamic (so don't have to enumerate/update every env var)
 - move all config files (prettier, eslint, docker, jest) to `.config` directory
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
 - dynamically set scenario name for e2e tests based on their fixture name, have it set on context
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
+- change game.round to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
 - swap NginX for Caddy?
@@ -128,19 +133,17 @@ New things that should be added to the codebase.
 
 - Faction abilities
 - Leader abilities
+- onboarding/tutorial for users unfamiliar with Gwent
 - Better game summarization (graphs?)
   - points per round
   - time per round
   - efficiency per round?
   - game duration
   - duration per player
-- Add link to GitHub repo in about page
-- Add loading animations in about page to show how nicely they look
 - Limit user creation
   - activation code?
   - manual review?
 - Animations of cards entering battlefield?
-- some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - allow for "undo" (opponent(s) have to approve?)
 - "practice" mode
   - can choose exact hand (for self and opponent)
@@ -160,11 +163,10 @@ New things that should be added to the codebase.
 - implement audit actions
   - status of attempt, success, failure
   - all actions so can know who does what in which order
-- implement user registration
-  - register with email
-  - need to verify in email to get account created
 - auto-pass after certain amount of time
-- email notifications?
+- optional email for account?
+  - allow account recovery if password forgotten?
+  - email notifications?
 - edit deck
 - delete deck
 - pagination

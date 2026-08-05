@@ -61,11 +61,22 @@ export default function LoginDialog({
           await addUser({ variables })
         }
         await login({ variables })
+        localStorage.setItem('hasAccount', 'true')
       }}
     >
       <div id={HTML_IDS.LoginDialogTitle}>
         <span>{title}</span>
       </div>
+      {secondaryText && (
+        <div id="loginDialogSwitch">
+          <span>{secondaryText}</span>
+          {secondaryLinkLabel && secondaryLinkPath && (
+            <Link id={HTML_IDS.LoginDialogModeSwitch} to={secondaryLinkPath}>
+              {secondaryLinkLabel}
+            </Link>
+          )}
+        </div>
+      )}
       <div id="loginDialogFields">
         <div className="login-dialog-field">
           <label htmlFor="username">
@@ -107,16 +118,6 @@ export default function LoginDialog({
           </span>
         )}
         <div id="loginDialogActions">
-          {secondaryText && (
-            <div id="loginDialogSwitch">
-              <span>{secondaryText}</span>
-              {secondaryLinkLabel && secondaryLinkPath && (
-                <Link id={HTML_IDS.LoginDialogModeSwitch} to={secondaryLinkPath}>
-                  {secondaryLinkLabel}
-                </Link>
-              )}
-            </div>
-          )}
           <button type="submit" disabled={loading} id={HTML_IDS.LoginDialogSubmit}>
             {submitLabel}
           </button>

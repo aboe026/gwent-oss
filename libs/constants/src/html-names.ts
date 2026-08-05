@@ -110,6 +110,7 @@ export const HTML_CLASSES = {
 }
 export const HTML_IDS = {
   AboutContainer: 'aboutContainer',
+  AboutContents: 'aboutContents',
   AboutBuild: 'aboutBuild',
   AboutVersion: 'aboutVersion',
   BannerContainer: 'bannerContainer',

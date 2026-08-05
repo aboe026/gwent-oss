@@ -44,15 +44,30 @@ export default class ClientUtil {
     const envFile = path.join(clientDir, 'dynamic-env.js')
     ClientUtil.logger.trace(`envFile: "${envFile}"`)
     ClientUtil.logger.trace(`env.API_BASE_URL: "${env().API_BASE_URL}"`)
+    ClientUtil.logger.trace(`env.EMAIL_ADDRESS: "${env().EMAIL_ADDRESS}"`)
+    ClientUtil.logger.trace(`env.GITHUB_LINK: "${env().GITHUB_LINK}"`)
     ClientUtil.logger.trace(`env.WEB_SOCKET_PING_INTERVAL_SECONDS: "${env().WEB_SOCKET_PING_INTERVAL_SECONDS}"`)
     if (!(await fs.pathExists(envFile))) {
       throw Error(`Client env file "${envFile}" does not exist, ensure it has been built properly.`)
     }
+
     await replaceInFile({
       files: [envFile],
       disableGlobs: true,
       from: /API_BASE_URL:(\s*)(['"]).*?(['"])/,
       to: `API_BASE_URL:$1$2${env().API_BASE_URL}$3`,
+    })
+    await replaceInFile({
+      files: [envFile],
+      disableGlobs: true,
+      from: /EMAIL_ADDRESS:(\s*)(['"]).*?(['"])/,
+      to: `EMAIL_ADDRESS:$1$2${env().EMAIL_ADDRESS}$3`,
+    })
+    await replaceInFile({
+      files: [envFile],
+      disableGlobs: true,
+      from: /GITHUB_LINK:(\s*)(['"]).*?(['"])/,
+      to: `GITHUB_LINK:$1$2${env().GITHUB_LINK}$3`,
     })
     await replaceInFile({
       files: [envFile],
