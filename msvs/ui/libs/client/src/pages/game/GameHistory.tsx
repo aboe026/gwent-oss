@@ -372,6 +372,7 @@ function PlayerHistoryMove({
           impacts={impacts}
           moveReasonType={moveReasonType}
           self={self}
+          player={player}
           setCardSelected={setCardSelected}
           setFullUnits={setFullUnits}
         />
@@ -390,6 +391,7 @@ function MoveUnitImpact({
   impacts,
   moveReasonType,
   self,
+  player,
   setCardSelected,
   setFullUnits,
 }: {
@@ -399,6 +401,7 @@ function MoveUnitImpact({
   impacts: ImpactFragment[] | null | undefined
   moveReasonType: MoveReasonType | undefined
   self: GamePlayerFragment
+  player: GamePlayerFragment
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
@@ -408,7 +411,8 @@ function MoveUnitImpact({
     moveReasonType === MoveReasonType.Summon
       ? findEffectForMoveByPrefix({
           gameUnit,
-          self,
+          // TODO: write E2E test to ensure this does not regress
+          player,
         })
       : getEffectForImpact({
           gameUnit,
@@ -664,17 +668,17 @@ function getEffectForImpact({
  */
 function findEffectForMoveByPrefix({
   gameUnit,
-  self,
+  player,
 }: {
   gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
-  self: GamePlayerFragment
+  player: GamePlayerFragment
 }): EffectForImpact {
   let error = ''
   let effect: UnitEffectFragment | undefined | null = undefined
 
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
 
-  const selfMoveFragments = self.rounds
+  const selfMoveFragments = player.rounds
     .map((round) => {
       return useFragment(PlayerRoundFragmentDoc, round).moves
     })
