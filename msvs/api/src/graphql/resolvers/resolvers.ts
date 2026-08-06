@@ -22,6 +22,7 @@ import SetOrderMutation from './mutations/set-order/set-order-mutation'
 import SettingsQuery from './queries/settings-query'
 import SubscriptionResolver from './subscription-resolver'
 import UnitsQuery from './queries/units-query'
+import UsernameAvailableQuery from './queries/username-available'
 
 /**
  * The definition of all resolvers defined on the GraphQL schema.
@@ -51,6 +52,8 @@ export const resolvers: Resolvers = {
     leaders: async (parent, args, context, info) => LeadersQuery.leaders(args, context, info),
     settings: async (parent, args, context, info) => SettingsQuery.settings(context, info),
     units: async (parent, args, context, info) => UnitsQuery.units(args, context, info),
+    usernameAvailable: async (parent, args, context, info) =>
+      UsernameAvailableQuery.usernameAvailable(args, context, info),
   },
   Subscription: SubscriptionResolver.getResolvers(),
   ...scalars,

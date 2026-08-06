@@ -46,6 +46,26 @@ export default abstract class Store {
   }
 
   /**
+   * Retrieves a document from a MongoDB collection matching filter criteria.
+   *
+   * @param config The configuration for what document to return.
+   * @param config.filter The MongoDB filter which determines what document should be returned.
+   * @param config.options The options for how the find operation should work when returning the document.
+   * @returns The document from the MongoDB collection matching the filter criteria, or undefined if it does not exist.
+   */
+  protected static async readOne<T extends WithId<Document>>({
+    filter = {},
+    options,
+  }: {
+    filter?: Filter<Document>
+    options?: FindOptions
+  }): Promise<T | null> {
+    const collection = await Store.getCollection<T>(this.COLLECTION_NAME)
+    return await collection.findOne(filter, options)
+  }
+  // TODO: go through and replace readMany with readOne for relevant cases
+
+  /**
    * Retrieves documents from a MongoDB collection matching filter criteria.
    *
    * @param config The configuration for what documents to return.
@@ -53,7 +73,7 @@ export default abstract class Store {
    * @param config.options The options for how the find operation should work when returning documents.
    * @returns The documents from the MongoDB collection matching the filter criteria.
    */
-  protected static async read<T extends WithId<Document>[]>({
+  protected static async readMany<T extends WithId<Document>[]>({
     filter = {},
     options,
   }: {

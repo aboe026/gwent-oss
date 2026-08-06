@@ -62,7 +62,7 @@ export default class EffectStore extends Store {
     if (EffectStore.logger.isTraceEnabled()) {
       EffectStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
-    return EffectStore.read<EffectDbObject[]>({ filter })
+    return EffectStore.readMany<EffectDbObject[]>({ filter })
   }
 }
 

@@ -40,6 +40,14 @@
   font-size: larger;
 }
 
+#loginUsernameAvailableContainer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2px;
+  font-size: small;
+}
+
 .login-dialog-field {
   display: flex;
   flex-direction: column;

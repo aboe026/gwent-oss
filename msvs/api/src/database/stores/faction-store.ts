@@ -118,7 +118,7 @@ export default class FactionStore extends Store {
     if (FactionStore.logger.isTraceEnabled()) {
       FactionStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
-    return FactionStore.read<FactionDbObject[]>({ filter })
+    return FactionStore.readMany<FactionDbObject[]>({ filter })
   }
 
   /**

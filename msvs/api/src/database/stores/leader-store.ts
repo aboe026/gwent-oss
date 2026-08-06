@@ -79,7 +79,7 @@ export default class LeaderStore extends Store {
       LeaderStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
       LeaderStore.logger.trace(`get options: "${JSON.stringify(options)}"`)
     }
-    return LeaderStore.read<LeaderDbObject[]>({
+    return LeaderStore.readMany<LeaderDbObject[]>({
       filter,
       options,
     })

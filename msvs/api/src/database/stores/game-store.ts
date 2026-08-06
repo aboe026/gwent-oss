@@ -71,7 +71,7 @@ export default class GameStore extends Store {
   }: {
     id: string | ObjectId
     options?: FindOptions
-  }): Promise<GameDbObject | undefined> {
+  }): Promise<GameDbObject | null> {
     GameStore.logger.debug(`Getting game by ID "${id}"`)
     const filter: Filter<Document> = {
       _id: new ObjectId(id),
@@ -80,16 +80,10 @@ export default class GameStore extends Store {
       GameStore.logger.trace(`getById filter for ID "${id}": "${JSON.stringify(filter)}"`)
       GameStore.logger.trace(`getById options for ID "${id}": "${JSON.stringify(options)}"`)
     }
-    const result = await GameStore.read<GameDbObject[]>({
+    return GameStore.readOne<GameDbObject>({
       filter,
       options,
     })
-    if (result && result.length > 1) {
-      const message = `Multiple games with ID "${id}" found`
-      GameStore.logger.error(`${message}: "${JSON.stringify(result)}"`)
-      throw Error(`${message}.`)
-    }
-    return result && result[0]
   }
 
   /**
@@ -106,7 +100,7 @@ export default class GameStore extends Store {
     if (GameStore.logger.isTraceEnabled()) {
       GameStore.logger.trace(`getByUserId filter for userId "${userId}": "${JSON.stringify(filter)}"`)
     }
-    return GameStore.read<GameDbObject[]>({
+    return GameStore.readMany<GameDbObject[]>({
       filter,
     })
   }

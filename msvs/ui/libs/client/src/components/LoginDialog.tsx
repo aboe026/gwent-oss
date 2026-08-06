@@ -1,12 +1,14 @@
+import { CgCheckO, CgUnavailable } from 'react-icons/cg'
 import { Link, useLocation } from 'react-router'
-import { useMutation } from '@apollo/client/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLazyQuery, useMutation } from '@apollo/client/react'
 
 import {
   AddUserDocument,
   CurrentUserDocument,
   CurrentUserQuery,
   LoginDocument,
+  UsernameAvailableDocument,
 } from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent-oss/constants'
@@ -29,6 +31,7 @@ export default function LoginDialog({
 }: LoginDialogProps) {
   const [username, setUsername] = useState(initialUsername || '')
   const [password, setPassword] = useState('')
+  const [waitingToCheckUsername, setWaitingToCheckUsername] = useState(false)
   const { pathname } = useLocation()
   const [login, { loading: loginLoading, error: loginError }] = useMutation(LoginDocument, {
     update(cache, { data }) {
@@ -42,10 +45,31 @@ export default function LoginDialog({
       }
     },
   })
+  const [
+    usernameAvailable,
+    { loading: usernameAvailableLoading, error: usernameAvailableError, data: usernameAvailableData },
+  ] = useLazyQuery(UsernameAvailableDocument)
   const [addUser, { loading: addUserLoading, error: addUserError }] = useMutation(AddUserDocument)
   const loading = loginLoading || addUserLoading
   const errorMessages = getErrorMessages(loginError || addUserError)
+  const usernameAvailableErrorMessages = getErrorMessages(usernameAvailableError)
   const newUser = pathname === ROUTES.Signup.path
+
+  useEffect(() => {
+    if (!newUser || !username) return
+
+    setWaitingToCheckUsername(true)
+    const handle = setTimeout(() => {
+      usernameAvailable({
+        variables: {
+          name: username,
+        },
+      })
+      setWaitingToCheckUsername(false)
+    }, 1000)
+
+    return () => clearTimeout(handle)
+  }, [username, newUser])
 
   return (
     <form
@@ -94,6 +118,26 @@ export default function LoginDialog({
             onChange={(event) => setUsername(event.target.value)}
           />
         </div>
+        {newUser && (
+          <>
+            {usernameAvailableLoading || waitingToCheckUsername ? (
+              <LoadingBar height="15px" width="100%" />
+            ) : usernameAvailableErrorMessages ? (
+              <div>Error checking availability: {usernameAvailableErrorMessages}</div>
+            ) : (
+              usernameAvailableData !== undefined && (
+                <div id="loginUsernameAvailableContainer">
+                  {usernameAvailableData.usernameAvailable ? (
+                    <CgCheckO color="green" size={'13px'} style={{ marginLeft: '2px' }} />
+                  ) : (
+                    <CgUnavailable color="red" size={'15px'} />
+                  )}
+                  {usernameAvailableData.usernameAvailable === true ? 'Available to use' : 'Already taken'}
+                </div>
+              )
+            )}
+          </>
+        )}
         <div className="login-dialog-field">
           <label htmlFor="password">
             Password
@@ -136,4 +180,5 @@ interface LoginDialogProps {
   submitLabel?: string
   title: string
   usernameDisabled?: boolean
+  newUser?: boolean
 }

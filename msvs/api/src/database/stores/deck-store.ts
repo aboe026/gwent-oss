@@ -75,7 +75,7 @@ export default class DeckStore extends Store {
     if (DeckStore.logger.isTraceEnabled()) {
       DeckStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
-    return DeckStore.read<DeckDbObject[]>({
+    return DeckStore.readMany<DeckDbObject[]>({
       filter,
     })
   }
@@ -95,7 +95,7 @@ export default class DeckStore extends Store {
   }: {
     id: ObjectId | string
     options?: FindOptions
-  }): Promise<DeckDbObject | undefined> {
+  }): Promise<DeckDbObject | null> {
     DeckStore.logger.debug(`Getting deck with ID "${id}"`)
     const filter: Filter<Document> = {
       _id: new ObjectId(id),
@@ -104,16 +104,10 @@ export default class DeckStore extends Store {
       DeckStore.logger.trace(`getById filter for ID "${id}": "${JSON.stringify(filter)}"`)
       DeckStore.logger.trace(`getById options for ID "${id}": "${JSON.stringify(options)}"`)
     }
-    const decks = await DeckStore.read<DeckDbObject[]>({
+    return DeckStore.readOne<DeckDbObject>({
       filter,
       options,
     })
-    if (decks.length > 1) {
-      const message = `Multiple decks with ID "${id}" found`
-      DeckStore.logger.error(`${message}: "${JSON.stringify(decks)}"`)
-      throw Error(`${message}.`)
-    }
-    return decks && decks[0]
   }
 }
 

@@ -57,7 +57,7 @@ export default class Permissions {
     label: string
   }): Promise<GameAndPlayer> {
     const logPrefix = `isGamePlayer check failed operation "${label}":`
-    let game: GameDbObject | undefined
+    let game: GameDbObject | null
     let player: GamePlayerDbObject | undefined
 
     if (!ObjectId.isValid(gameId)) {
@@ -119,7 +119,7 @@ export default class Permissions {
     label: string
   }): Promise<DeckDbObject> {
     const logPrefix = `isDeckOwner check failed operation "${label}":`
-    let deck: DeckDbObject | undefined
+    let deck: DeckDbObject | null
 
     if (!ObjectId.isValid(deckId)) {
       const message = `Deck ID "${deckId}" not a valid MongoDB ObjectId.`

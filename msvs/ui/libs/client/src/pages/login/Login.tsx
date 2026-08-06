@@ -27,6 +27,7 @@ export default function LoginPage() {
             secondaryText={newUser ? 'Existing user?' : 'New user?'}
             title={newUser ? 'Sign Up!' : 'Welcome Back!'}
             submitLabel={newUser ? 'Sign Up' : 'Log In'}
+            newUser={newUser}
           />
         </Centered>
       </div>

@@ -482,6 +482,9 @@ type Query {
 
   "All units available to build decks with."
   units(factions: [FactionKey!], deckable: Boolean): [Unit!]!
+
+  "Whether or not the given name is available to be used for a new username."
+  usernameAvailable(name: String!): Boolean!
 }
 
 type Mutation {
