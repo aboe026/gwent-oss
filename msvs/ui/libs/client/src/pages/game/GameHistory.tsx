@@ -411,7 +411,6 @@ function MoveUnitImpact({
     moveReasonType === MoveReasonType.Summon
       ? findEffectForMoveByPrefix({
           gameUnit,
-          // TODO: write E2E test to ensure this does not regress
           player,
         })
       : getEffectForImpact({
