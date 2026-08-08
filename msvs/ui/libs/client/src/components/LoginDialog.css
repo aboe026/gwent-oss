@@ -42,13 +42,21 @@
 
 #loginUsernameAvailableContainer {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 2px;
-  font-size: small;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 20px;
 }
 
 .login-dialog-field {
   display: flex;
   flex-direction: column;
+}
+
+.login-username-validation-field {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2px;
+  font-size: small;
+  min-height: 20px;
 }

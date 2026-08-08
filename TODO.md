@@ -32,6 +32,7 @@ Existing problems in the codebase that need to be fixed.
   - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - refactor units tests to utilize dynamic looping instead of enumerating them explicitly
+- replace instances of using arrays for unique items with Set
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
 - automate check in build process to ensure package.json versions incremented (and all same)?

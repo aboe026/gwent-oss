@@ -11,8 +11,9 @@ import {
   UsernameAvailableDocument,
 } from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../util/error-util'
-import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent-oss/constants'
+import { HTML_CLASSES, HTML_IDS, ROUTES, USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 import LoadingBar from '../components/LoadingBar'
+import { validateUsername } from '@gwent-oss/validators'
 import './LoginDialog.css'
 
 /**
@@ -53,10 +54,11 @@ export default function LoginDialog({
   const loading = loginLoading || addUserLoading
   const errorMessages = getErrorMessages(loginError || addUserError)
   const usernameAvailableErrorMessages = getErrorMessages(usernameAvailableError)
+  const usernameValidation = validateUsername(username)
   const newUser = pathname === ROUTES.Signup.path
 
   useEffect(() => {
-    if (!newUser || !username) return
+    if (!newUser || !username || !usernameValidation.valid) return
 
     setWaitingToCheckUsername(true)
     const handle = setTimeout(() => {
@@ -118,26 +120,56 @@ export default function LoginDialog({
             onChange={(event) => setUsername(event.target.value)}
           />
         </div>
-        {newUser && (
-          <>
-            {usernameAvailableLoading || waitingToCheckUsername ? (
-              <LoadingBar height="15px" width="100%" />
-            ) : usernameAvailableErrorMessages ? (
-              <div>Error checking availability: {usernameAvailableErrorMessages}</div>
-            ) : (
-              usernameAvailableData !== undefined && (
-                <div id="loginUsernameAvailableContainer">
-                  {usernameAvailableData.usernameAvailable ? (
-                    <CgCheckO color="green" size={'13px'} style={{ marginLeft: '2px' }} />
-                  ) : (
-                    <CgUnavailable color="red" size={'15px'} />
-                  )}
-                  {usernameAvailableData.usernameAvailable === true ? 'Available to use' : 'Already taken'}
+        {newUser &&
+          username !== '' &&
+          (usernameValidation.valid ? (
+            <div id="loginUsernameAvailableContainer">
+              {usernameAvailableLoading || waitingToCheckUsername ? (
+                <LoadingBar height="15px" width="100%" />
+              ) : usernameAvailableErrorMessages ? (
+                <div>Error checking availability: {usernameAvailableErrorMessages}</div>
+              ) : (
+                usernameAvailableData !== undefined && (
+                  <div className="login-username-validation-field">
+                    {usernameAvailableData.usernameAvailable ? (
+                      <CgCheckO color="green" size={'13px'} style={{ marginLeft: '2px' }} />
+                    ) : (
+                      <CgUnavailable color="red" size={'15px'} />
+                    )}
+                    {usernameAvailableData.usernameAvailable === true ? 'Available to use' : 'Already taken'}
+                  </div>
+                )
+              )}
+            </div>
+          ) : (
+            <div>
+              {usernameValidation.tooShort && (
+                <div className="login-username-validation-field">
+                  <CgUnavailable color="red" size={'15px'} />
+                  Minimum length: {USERNAME_REQUIREMENTS.Min}
                 </div>
-              )
-            )}
-          </>
-        )}
+              )}
+              {usernameValidation.tooLong && (
+                <div className="login-username-validation-field">
+                  <CgUnavailable color="red" size={'15px'} />
+                  Maximum length: {USERNAME_REQUIREMENTS.Max}
+                </div>
+              )}
+              {usernameValidation.spaces && (
+                <div className="login-username-validation-field">
+                  <CgUnavailable color="red" size={'15px'} />
+                  No spaces
+                </div>
+              )}
+              {usernameValidation.badSpecials.size > 0 && (
+                <div className="login-username-validation-field">
+                  <CgUnavailable color="red" size={'15px'} />
+                  Invalid character{usernameValidation.badSpecials.size > 1 ? 's' : ''}:{' '}
+                  {[...usernameValidation.badSpecials].join('')}
+                </div>
+              )}
+            </div>
+          ))}
         <div className="login-dialog-field">
           <label htmlFor="password">
             Password

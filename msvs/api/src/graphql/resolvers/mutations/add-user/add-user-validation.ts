@@ -2,7 +2,10 @@ import { getLogger } from 'log4js'
 
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationAddUserArgs } from '@gwent-oss/graphql-schema/resolver-typings'
+import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
+import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
+import { validateUsername } from '@gwent-oss/validators'
 
 /**
  * A class for validating the addUser GraphQL Mutation.
@@ -31,6 +34,27 @@ export default class AddUserValidation {
       info,
       secureKeys: ['password'],
     })
+
+    const usernameValidation = validateUsername(name)
+
+    if (!usernameValidation.valid) {
+      const violations: string[] = []
+      if (usernameValidation.tooShort) {
+        violations.push(`Length "${name.length}" less than minimum length "${USERNAME_REQUIREMENTS.Min}"`)
+      }
+      if (usernameValidation.tooLong) {
+        violations.push(`Length "${name.length}" greater than maximum length "${USERNAME_REQUIREMENTS.Max}"`)
+      }
+      if (usernameValidation.spaces) {
+        violations.push('Cannot contain spaces')
+      }
+      if (usernameValidation.badSpecials.size > 0) {
+        violations.push(`Contains invalid characters "${[...usernameValidation.badSpecials].join('')}"`)
+      }
+      const message = `Invalid name "${name}": ${violations.join(' and ')}`
+      AddUserValidation.logger.warn(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
 
     return {
       logPrefix,
