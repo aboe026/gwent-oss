@@ -13,7 +13,7 @@ import {
 import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES, USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 import LoadingBar from '../components/LoadingBar'
-import { validateUsername } from '@gwent-oss/validators'
+import { validatePassword, validateUsername } from '@gwent-oss/validators'
 import './LoginDialog.css'
 
 /**
@@ -55,7 +55,14 @@ export default function LoginDialog({
   const errorMessages = getErrorMessages(loginError || addUserError)
   const usernameAvailableErrorMessages = getErrorMessages(usernameAvailableError)
   const usernameValidation = validateUsername(username)
+  const passwordValidation = validatePassword(password)
   const newUser = pathname === ROUTES.Signup.path
+  let submitTitle = loading ? 'Loading...' : submitLabel
+  if (newUser && !usernameValidation.valid) {
+    submitTitle = 'Invalid username'
+  } else if (newUser && !passwordValidation.valid) {
+    submitTitle = 'Invalid password'
+  }
 
   useEffect(() => {
     if (!newUser || !username || !usernameValidation.valid) return
@@ -186,6 +193,59 @@ export default function LoginDialog({
             onChange={(event) => setPassword(event.target.value)}
           />
         </div>
+        {newUser && password !== '' && !passwordValidation.valid && (
+          <div>
+            {passwordValidation.tooShort && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                Minimum length: {USERNAME_REQUIREMENTS.Min}
+              </div>
+            )}
+            {passwordValidation.tooLong && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                Maximum length: {USERNAME_REQUIREMENTS.Max}
+              </div>
+            )}
+            {passwordValidation.spaces && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                No spaces
+              </div>
+            )}
+            {passwordValidation.noUppercase && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                No uppercase
+              </div>
+            )}
+            {passwordValidation.noLowercase && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                No lowercase
+              </div>
+            )}
+            {passwordValidation.noNumber && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                No number
+              </div>
+            )}
+            {passwordValidation.noSpecial && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                No special characters
+              </div>
+            )}
+            {passwordValidation.badSpecials.size > 0 && (
+              <div className="login-username-validation-field">
+                <CgUnavailable color="red" size={'15px'} />
+                Invalid character{passwordValidation.badSpecials.size > 1 ? 's' : ''}:{' '}
+                {[...passwordValidation.badSpecials].join('')}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div id="loginDialogLower">
         {errorMessages && (
@@ -194,7 +254,12 @@ export default function LoginDialog({
           </span>
         )}
         <div id="loginDialogActions">
-          <button type="submit" disabled={loading} id={HTML_IDS.LoginDialogSubmit}>
+          <button
+            type="submit"
+            disabled={loading || (newUser && !usernameValidation.valid) || (newUser && !passwordValidation.valid)}
+            id={HTML_IDS.LoginDialogSubmit}
+            title={submitTitle}
+          >
             {submitLabel}
           </button>
         </div>

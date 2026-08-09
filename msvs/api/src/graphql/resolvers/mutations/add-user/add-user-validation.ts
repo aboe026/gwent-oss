@@ -2,10 +2,10 @@ import { getLogger } from 'log4js'
 
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationAddUserArgs } from '@gwent-oss/graphql-schema/resolver-typings'
+import { PASSWORD_REQUIREMENTS, USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
-import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
-import { validateUsername } from '@gwent-oss/validators'
+import { validatePassword, validateUsername } from '@gwent-oss/validators'
 
 /**
  * A class for validating the addUser GraphQL Mutation.
@@ -36,6 +36,7 @@ export default class AddUserValidation {
     })
 
     const usernameValidation = validateUsername(name)
+    const passwordValidation = validatePassword(password)
 
     if (!usernameValidation.valid) {
       const violations: string[] = []
@@ -52,6 +53,37 @@ export default class AddUserValidation {
         violations.push(`Contains invalid characters "${[...usernameValidation.badSpecials].join('')}"`)
       }
       const message = `Invalid name "${name}": ${violations.join(' and ')}`
+      AddUserValidation.logger.warn(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+
+    if (!passwordValidation.valid) {
+      const violations: string[] = []
+      if (passwordValidation.tooShort) {
+        violations.push(`Length "${name.length}" less than minimum length "${PASSWORD_REQUIREMENTS.Min}"`)
+      }
+      if (passwordValidation.tooLong) {
+        violations.push(`Length "${name.length}" greater than maximum length "${PASSWORD_REQUIREMENTS.Max}"`)
+      }
+      if (passwordValidation.spaces) {
+        violations.push('Cannot contain spaces')
+      }
+      if (passwordValidation.noUppercase) {
+        violations.push('Must contain an uppercase letter')
+      }
+      if (passwordValidation.noLowercase) {
+        violations.push('Must contain a lowercase letter')
+      }
+      if (passwordValidation.noNumber) {
+        violations.push('Must contain a number')
+      }
+      if (passwordValidation.noSpecial) {
+        violations.push('Must contain a special character')
+      }
+      if (passwordValidation.badSpecials.size > 0) {
+        violations.push(`Contains invalid characters "${[...passwordValidation.badSpecials].join('')}"`)
+      }
+      const message = `Invalid password: ${violations.join(' and ')}`
       AddUserValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
