@@ -372,7 +372,6 @@ function PlayerHistoryMove({
           impacts={impacts}
           moveReasonType={moveReasonType}
           self={self}
-          player={player}
           setCardSelected={setCardSelected}
           setFullUnits={setFullUnits}
         />
@@ -391,7 +390,6 @@ function MoveUnitImpact({
   impacts,
   moveReasonType,
   self,
-  player,
   setCardSelected,
   setFullUnits,
 }: {
@@ -401,7 +399,6 @@ function MoveUnitImpact({
   impacts: ImpactFragment[] | null | undefined
   moveReasonType: MoveReasonType | undefined
   self: GamePlayerFragment
-  player: GamePlayerFragment
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
@@ -411,7 +408,7 @@ function MoveUnitImpact({
     moveReasonType === MoveReasonType.Summon
       ? findEffectForMoveByPrefix({
           gameUnit,
-          player,
+          players: useFragment(GamePlayerFragmentDoc, game.players),
         })
       : getEffectForImpact({
           gameUnit,
@@ -667,31 +664,33 @@ function getEffectForImpact({
  */
 function findEffectForMoveByPrefix({
   gameUnit,
-  player,
+  players,
 }: {
   gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
-  player: GamePlayerFragment
+  players: GamePlayerFragment[]
 }): EffectForImpact {
   let error = ''
   let effect: UnitEffectFragment | undefined | null = undefined
 
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
 
-  const selfMoveFragments = player.rounds
-    .map((round) => {
-      return useFragment(PlayerRoundFragmentDoc, round).moves
-    })
-    .flat()
-  for (let i = 0; i < selfMoveFragments.length && !effect; i++) {
-    const moveFragment = selfMoveFragments[i]
-    const move = useFragment(MoveFragmentDoc, moveFragment)
-    if (move.__typename === 'MoveUnit') {
-      const unitMove = useFragment(MoveUnitFragmentDoc, move)
-      const gameUnitForMove = useFragment(GameUnitFragmentDoc, unitMove.unit)
-      const unitForMove = getUnitFromGameUnit(gameUnitForMove)
-      if (unitForMove?.effectPrefix === unit.name) {
-        const unitEffects = useFragment(UnitEffectFragmentDoc, unitForMove?.effects)
-        effect = unitEffects && unitEffects[0]
+  for (let i = 0; i < players.length && effect === undefined; i++) {
+    const selfMoveFragments = players[i].rounds
+      .map((round) => {
+        return useFragment(PlayerRoundFragmentDoc, round).moves
+      })
+      .flat()
+    for (let i = 0; i < selfMoveFragments.length && !effect; i++) {
+      const moveFragment = selfMoveFragments[i]
+      const move = useFragment(MoveFragmentDoc, moveFragment)
+      if (move.__typename === 'MoveUnit') {
+        const unitMove = useFragment(MoveUnitFragmentDoc, move)
+        const gameUnitForMove = useFragment(GameUnitFragmentDoc, unitMove.unit)
+        const unitForMove = getUnitFromGameUnit(gameUnitForMove)
+        if (unitForMove?.effectPrefix === unit.name) {
+          const unitEffects = useFragment(UnitEffectFragmentDoc, unitForMove?.effects)
+          effect = unitEffects && unitEffects[0]
+        }
       }
     }
   }

@@ -11,7 +11,14 @@ import {
   UsernameAvailableDocument,
 } from '@gwent-oss/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../util/error-util'
-import { HTML_CLASSES, HTML_IDS, ROUTES, USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
+import {
+  HTML_CLASSES,
+  HTML_IDS,
+  LOCAL_STORAGE,
+  PASSWORD_REQUIREMENTS,
+  ROUTES,
+  USERNAME_REQUIREMENTS,
+} from '@gwent-oss/constants'
 import LoadingBar from '../components/LoadingBar'
 import { validatePassword, validateUsername } from '@gwent-oss/validators'
 import './LoginDialog.css'
@@ -58,7 +65,7 @@ export default function LoginDialog({
   const passwordValidation = validatePassword(password)
   const newUser = pathname === ROUTES.Signup.path
   let submitTitle = loading ? 'Loading...' : submitLabel
-  if (newUser && !usernameValidation.valid) {
+  if (newUser && (!usernameValidation.valid || (usernameAvailableData && !usernameAvailableData.usernameAvailable))) {
     submitTitle = 'Invalid username'
   } else if (newUser && !passwordValidation.valid) {
     submitTitle = 'Invalid password'
@@ -94,7 +101,7 @@ export default function LoginDialog({
           await addUser({ variables })
         }
         await login({ variables })
-        localStorage.setItem('hasAccount', 'true')
+        localStorage.setItem(LOCAL_STORAGE.Username, username)
       }}
     >
       <div id={HTML_IDS.LoginDialogTitle}>
@@ -130,7 +137,7 @@ export default function LoginDialog({
         {newUser &&
           username !== '' &&
           (usernameValidation.valid ? (
-            <div id="loginUsernameAvailableContainer">
+            <div id={HTML_IDS.LoginUsernameAvailableContainer}>
               {usernameAvailableLoading || waitingToCheckUsername ? (
                 <LoadingBar height="15px" width="100%" />
               ) : usernameAvailableErrorMessages ? (
@@ -151,25 +158,25 @@ export default function LoginDialog({
           ) : (
             <div>
               {usernameValidation.tooShort && (
-                <div className="login-username-validation-field">
+                <div id={HTML_IDS.LoginUsernameShort} className="login-username-validation-field">
                   <CgUnavailable color="red" size={'15px'} />
                   Minimum length: {USERNAME_REQUIREMENTS.Min}
                 </div>
               )}
               {usernameValidation.tooLong && (
-                <div className="login-username-validation-field">
+                <div id={HTML_IDS.LoginUsernameLong} className="login-username-validation-field">
                   <CgUnavailable color="red" size={'15px'} />
                   Maximum length: {USERNAME_REQUIREMENTS.Max}
                 </div>
               )}
               {usernameValidation.spaces && (
-                <div className="login-username-validation-field">
+                <div id={HTML_IDS.LoginUsernameSpaces} className="login-username-validation-field">
                   <CgUnavailable color="red" size={'15px'} />
                   No spaces
                 </div>
               )}
               {usernameValidation.badSpecials.size > 0 && (
-                <div className="login-username-validation-field">
+                <div id={HTML_IDS.LoginUsernameSpecials} className="login-username-validation-field">
                   <CgUnavailable color="red" size={'15px'} />
                   Invalid character{usernameValidation.badSpecials.size > 1 ? 's' : ''}:{' '}
                   {[...usernameValidation.badSpecials].join('')}
@@ -196,49 +203,50 @@ export default function LoginDialog({
         {newUser && password !== '' && !passwordValidation.valid && (
           <div>
             {passwordValidation.tooShort && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordShort} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
                 Minimum length: {USERNAME_REQUIREMENTS.Min}
               </div>
             )}
             {passwordValidation.tooLong && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordLong} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
                 Maximum length: {USERNAME_REQUIREMENTS.Max}
               </div>
             )}
             {passwordValidation.spaces && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordSpaces} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
                 No spaces
               </div>
             )}
             {passwordValidation.noUppercase && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordUppercase} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
                 No uppercase
               </div>
             )}
             {passwordValidation.noLowercase && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordLowercase} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
                 No lowercase
               </div>
             )}
             {passwordValidation.noNumber && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordNumbers} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
                 No number
               </div>
             )}
             {passwordValidation.noSpecial && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordNoSpecials} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
-                No special characters
+                No special characters: <br></br>
+                {PASSWORD_REQUIREMENTS.Specials.join('')}
               </div>
             )}
             {passwordValidation.badSpecials.size > 0 && (
-              <div className="login-username-validation-field">
+              <div id={HTML_IDS.LoginPasswordBadSpecials} className="login-username-validation-field">
                 <CgUnavailable color="red" size={'15px'} />
                 Invalid character{passwordValidation.badSpecials.size > 1 ? 's' : ''}:{' '}
                 {[...passwordValidation.badSpecials].join('')}
@@ -256,7 +264,12 @@ export default function LoginDialog({
         <div id="loginDialogActions">
           <button
             type="submit"
-            disabled={loading || (newUser && !usernameValidation.valid) || (newUser && !passwordValidation.valid)}
+            disabled={
+              loading ||
+              (newUser && !usernameValidation.valid) ||
+              (newUser && !passwordValidation.valid) ||
+              (newUser && !usernameAvailableData?.usernameAvailable)
+            }
             id={HTML_IDS.LoginDialogSubmit}
             title={submitTitle}
           >
@@ -270,7 +283,7 @@ export default function LoginDialog({
 }
 
 interface LoginDialogProps {
-  initialUsername?: string
+  initialUsername?: string | null | undefined
   secondaryLinkLabel?: string
   secondaryLinkPath?: string
   secondaryText?: string

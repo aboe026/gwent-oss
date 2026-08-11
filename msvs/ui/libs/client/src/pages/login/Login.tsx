@@ -4,8 +4,8 @@ import urljoin from 'url-join'
 import { useLocation } from 'react-router'
 
 import Centered from '../../components/Centered'
+import { LOCAL_STORAGE, ROUTES } from '@gwent-oss/constants'
 import LoginDialog from '../../components/LoginDialog'
-import { ROUTES } from '@gwent-oss/constants'
 import './Login.css'
 
 /**
@@ -25,9 +25,10 @@ export default function LoginPage() {
             secondaryLinkLabel={newUser ? 'Log In!' : 'Sign Up!'}
             secondaryLinkPath={newUser ? ROUTES.Login.path : ROUTES.Signup.path}
             secondaryText={newUser ? 'Existing user?' : 'New user?'}
-            title={newUser ? 'Sign Up!' : 'Welcome Back!'}
+            title={newUser ? 'Welcome!' : 'Welcome Back!'}
             submitLabel={newUser ? 'Sign Up' : 'Log In'}
             newUser={newUser}
+            initialUsername={localStorage.getItem(LOCAL_STORAGE.Username)}
           />
         </Centered>
       </div>

@@ -13,6 +13,7 @@ import {
 } from '@gwent-oss/node-client'
 import { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
+import { PASSWORD } from './e2e-constants'
 import { PlayerTurn } from '../components/game-player-info'
 import ProfilePage from '../page-objects/profile-page'
 import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
@@ -52,7 +53,7 @@ export class E2eHelper {
     )
   }
 
-  static async switchUser({ username, password = 'password' }: { username: string; password?: string }) {
+  static async switchUser({ username, password = PASSWORD }: { username: string; password?: string }) {
     await Banner.goTo(Banner.elements.MenuProfile)
     await ProfilePage.logout()
     await LoginPage.login({
@@ -119,7 +120,7 @@ export class E2eHelper {
     return unit
   }
 
-  static async switchToUser({ username, password = 'password' }: { username: string; password?: string }) {
+  static async switchToUser({ username, password = PASSWORD }: { username: string; password?: string }) {
     await Banner.goTo(Banner.elements.MenuProfile)
     await ProfilePage.logout()
     await LoginPage.verifyNotLoggedIn({})

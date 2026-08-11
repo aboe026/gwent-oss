@@ -2,6 +2,7 @@ import { t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
 import LoginForm from '../components/login-form'
+import { PASSWORD } from '../util/e2e-constants'
 import { ROUTES } from '@gwent-oss/constants'
 
 export default class SignupPage {
@@ -11,11 +12,13 @@ export default class SignupPage {
 
   static async signUp({
     username,
-    password = 'password',
+    password = PASSWORD,
+    submit = true,
     verify = true,
   }: {
     username: string
     password?: string
+    submit?: boolean
     verify?: boolean
   }) {
     const currentUrl = await E2eUtil.getCurrentUrl()
@@ -29,6 +32,8 @@ export default class SignupPage {
       username,
       password,
       title: 'Welcome!',
+      submitLabel: 'Sign Up',
+      submit,
       verify,
     })
     if (verify) {
@@ -57,5 +62,9 @@ export default class SignupPage {
   static async verifyLoggedIn() {
     await t.expect(E2eUtil.getCurrentUrl()).notEql(SignupPage.getUrl())
     await LoginForm.verifyAbscence()
+  }
+
+  static async switchToLogin() {
+    await LoginForm.switchMode()
   }
 }

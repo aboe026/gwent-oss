@@ -55,8 +55,11 @@
 .login-username-validation-field {
   display: flex;
   justify-content: flex-start;
-  align-items: center;
   gap: 2px;
   font-size: small;
   min-height: 20px;
+}
+
+.login-username-validation-field > svg {
+  margin-top: 2px;
 }

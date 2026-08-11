@@ -16,7 +16,9 @@ import HomePage from '../page-objects/home-page'
 import LoginForm from '../components/login-form'
 import LoginPage from '../page-objects/login-page'
 import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent-oss/constants'
+import { PASSWORD } from '../util/e2e-constants'
 import { PlayerTurn } from '../components/game-player-info'
+import SignupPage from '../page-objects/signup-page'
 
 interface SessionExpiryFixtureCtx extends E2eCtx {
   sessionTimeoutSeconds: number
@@ -29,7 +31,7 @@ const fixture = getFixtureCtx<SessionExpiryFixtureCtx, E2eCtx>()
 const test = getTestCtx<SessionExpiryFixtureCtx, E2eCtx>()
 
 fixture('Session Expiry').before(async (ctx) => {
-  const username = `session-expiry-${ctx.start}`
+  const username = `exp-${ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -54,8 +56,24 @@ fixture('Session Expiry').before(async (ctx) => {
   })
 })
 
+test('Navigating to home page after session expires redirects to login page', async (t) => {
+  const name = 'exp-login'
+  const username = `${name}-${t.ctx.start}`
+  await E2eUtil.goTo(HomePage.getUrl())
+  await SignupPage.signUp({
+    username,
+  })
+  await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
+  await E2eUtil.goTo(HomePage.getUrl())
+  await LoginPage.login({
+    username,
+    initialUsername: username,
+  })
+  await HomePage.verify(username)
+})
+
 test('View decks after session expires', async (t) => {
-  const name = 'session-expiry-decks'
+  const name = 'exp-decks'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -91,7 +109,7 @@ test('View decks after session expires', async (t) => {
 })
 
 test('View new deck after session expires', async (t) => {
-  const name = 'session-expiry-deck-new'
+  const name = 'exp-deck-new'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -129,7 +147,7 @@ test('View new deck after session expires', async (t) => {
 })
 
 test('Select faction for new deck after session expires', async (t) => {
-  const name = 'session-expiry-deck-set-faction'
+  const name = 'exp-deck-set-faction'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -193,7 +211,7 @@ test('Select faction for new deck after session expires', async (t) => {
 })
 
 test('Change faction for new deck after session expires', async (t) => {
-  const name = 'session-expiry-deck-change-faction'
+  const name = 'exp-deck-change-faction'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -268,7 +286,7 @@ test('Change faction for new deck after session expires', async (t) => {
 })
 
 test('Create new deck after session expires', async (t) => {
-  const scenario = 'session-expiry-deck-create'
+  const scenario = 'exp-deck-create'
   const username = `${scenario}-user-${t.ctx.start}`
   const deckName = `${scenario}-deck-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -322,7 +340,7 @@ test('Create new deck after session expires', async (t) => {
 })
 
 test('Create new game after session expires', async (t) => {
-  const scenario = 'session-expiry-game-create'
+  const scenario = 'exp-game-create'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -354,7 +372,7 @@ test('Create new game after session expires', async (t) => {
 })
 
 test('View games after session expires', async (t) => {
-  const scenario = 'session-expiry-games'
+  const scenario = 'exp-games'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -387,7 +405,7 @@ test('View games after session expires', async (t) => {
 })
 
 test('List decks for game after session expires', async (t) => {
-  const scenario = 'session-expiry-listing-decks-for-game'
+  const scenario = 'exp-listing-decks-for-game'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -429,7 +447,7 @@ test('List decks for game after session expires', async (t) => {
 })
 
 test('Set deck for game after session expires', async (t) => {
-  const scenario = 'session-expiry-games-choosing-deck-for-game'
+  const scenario = 'exp-games-choosing-deck'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -496,7 +514,7 @@ test('Set deck for game after session expires', async (t) => {
 })
 
 test('Create deck for game after session expires', async (t) => {
-  const scenario = 'session-expiry-games-create-deck-for-game'
+  const scenario = 'exp-games-create-deck'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -567,7 +585,7 @@ test('Create deck for game after session expires', async (t) => {
 })
 
 test('Set game order after session expires', async (t) => {
-  const scenario = 'session-expiry-game-ready'
+  const scenario = 'exp-game-ready'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponentName = `${scenario}-opponent-${t.ctx.start}`
   const self = await new ApiClient({}).addUser({
@@ -669,7 +687,7 @@ test('Set game order after session expires', async (t) => {
 })
 
 test('Redraw unit for game after session expires', async (t) => {
-  const scenario = 'session-expiry-game-redraw'
+  const scenario = 'exp-game-redraw'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponentName = `${scenario}-opponent-${t.ctx.start}`
   const unitName1 = 'Toruviel'
@@ -771,7 +789,7 @@ test('Redraw unit for game after session expires', async (t) => {
 })
 
 test('Ready game after session expires', async (t) => {
-  const scenario = 'session-expiry-game-ready'
+  const scenario = 'exp-game-ready'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponentName = `${scenario}-opponent-${t.ctx.start}`
   const self = await new ApiClient({}).addUser({
@@ -850,9 +868,9 @@ test('Ready game after session expires', async (t) => {
 })
 
 test('Change user after session expires shows new users data', async (t) => {
-  const username1 = `session-expiry-change-user-1-${t.ctx.start}`
-  const username2 = `session-expiry-change-user-2-${t.ctx.start}`
-  const name = 'session-expiry-decks'
+  const username1 = `exp-change-user-1-${t.ctx.start}`
+  const username2 = `exp-change-user-2-${t.ctx.start}`
+  const name = 'exp-decks'
   await new ApiClient({}).addUser({
     name: username1,
   })
@@ -1021,7 +1039,7 @@ async function reAuthenticate(username: string, t: E2ETestController<SessionExpi
     username,
     usernameDisabled: true,
   })
-  for (const char of 'password') {
+  for (const char of PASSWORD) {
     await t.pressKey(char)
   }
   await t.pressKey('enter')

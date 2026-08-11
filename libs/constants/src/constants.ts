@@ -21,7 +21,7 @@ export const EFFECT_OPERATOR = {
 export const USERNAME_REQUIREMENTS = {
   Min: 3,
   Max: 50,
-  Specials: ['!', '&', '-', '+', '.', '~'],
+  Specials: ['!', '&', '-', '+', '~'],
 }
 export const PASSWORD_REQUIREMENTS = {
   Min: 8,
@@ -56,6 +56,9 @@ export const PASSWORD_REQUIREMENTS = {
     '\\',
     '|',
   ],
+}
+export const LOCAL_STORAGE = {
+  Username: 'username',
 }
 
 export const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'
