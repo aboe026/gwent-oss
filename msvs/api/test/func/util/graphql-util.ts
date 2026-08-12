@@ -22,10 +22,11 @@ import {
   getLeaderFragment,
   getUnitFragment,
 } from './fragment-util'
+import { PASSWORD } from './func-constants'
 import schema from '../../../src/graphql/executable-schema'
 import TestUtil from '../../util/test-util'
 
-export async function addUser(name: string, password = 'password'): Promise<User> {
+export async function addUser(name: string, password = PASSWORD): Promise<User> {
   const response = await graphql({
     schema,
     source: `mutation AddUser($name: String!, $password: String!) {

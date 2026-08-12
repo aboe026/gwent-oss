@@ -60,10 +60,10 @@ export default class AddUserValidation {
     if (!passwordValidation.valid) {
       const violations: string[] = []
       if (passwordValidation.tooShort) {
-        violations.push(`Length "${name.length}" less than minimum length "${PASSWORD_REQUIREMENTS.Min}"`)
+        violations.push(`Length "${password.length}" less than minimum length "${PASSWORD_REQUIREMENTS.Min}"`)
       }
       if (passwordValidation.tooLong) {
-        violations.push(`Length "${name.length}" greater than maximum length "${PASSWORD_REQUIREMENTS.Max}"`)
+        violations.push(`Length "${password.length}" greater than maximum length "${PASSWORD_REQUIREMENTS.Max}"`)
       }
       if (passwordValidation.spaces) {
         violations.push('Cannot contain spaces')

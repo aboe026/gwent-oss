@@ -3,8 +3,11 @@ import { getLogger } from 'log4js'
 import { Context } from '@gwent-oss/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
 import { QueryUsernameAvailableArgs } from '@gwent-oss/graphql-schema/resolver-typings'
+import PresentableError from '../../../util/presentable-error'
 import ResolverUtil from '../resolver-util'
+import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 import UserStore from '../../../database/stores/user-store'
+import { validateUsername } from '@gwent-oss/validators'
 
 /**
  * A class for executing the usernameAvailable GraphQL Query.
@@ -33,9 +36,30 @@ export default class UsernameAvailableQuery {
     resolverUtil.logRequestInfo({
       info,
     })
+    const name = args.name
 
-    // TODO: validate username requirements
-    const existingUser = await UserStore.getByName(args.name, {
+    const usernameValidation = validateUsername(name)
+
+    if (!usernameValidation.valid) {
+      const violations: string[] = []
+      if (usernameValidation.tooShort) {
+        violations.push(`Length "${name.length}" less than minimum length "${USERNAME_REQUIREMENTS.Min}"`)
+      }
+      if (usernameValidation.tooLong) {
+        violations.push(`Length "${name.length}" greater than maximum length "${USERNAME_REQUIREMENTS.Max}"`)
+      }
+      if (usernameValidation.spaces) {
+        violations.push('Cannot contain spaces')
+      }
+      if (usernameValidation.badSpecials.size > 0) {
+        violations.push(`Contains invalid characters "${[...usernameValidation.badSpecials].join('')}"`)
+      }
+      const message = `Invalid name "${name}": ${violations.join(' and ')}`
+      UsernameAvailableQuery.logger.warn(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+
+    const existingUser = await UserStore.getByName(name, {
       projection: {
         _id: 1,
       },

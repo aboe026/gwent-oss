@@ -9,7 +9,7 @@ describe('upgrade-store', () => {
   })
   describe('addLock', () => {
     it('adds lock to database if none exist', async () => {
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
 
       const lock = await UpgradeStore.addLock()
 
@@ -20,7 +20,7 @@ describe('upgrade-store', () => {
       await expect(UpgradeStore.getLock()).resolves.toEqual(lock)
     })
     it('throws error if lock already exists', async () => {
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
 
       const lock = await UpgradeStore.addLock()
 
@@ -41,7 +41,7 @@ describe('upgrade-store', () => {
   })
   describe('updateLock', () => {
     it('updates the updated field on lock if it exists', async () => {
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
 
       const lock = await UpgradeStore.addLock()
 
@@ -59,21 +59,21 @@ describe('upgrade-store', () => {
       expect(updatedLock.updated.getTime()).toBeGreaterThan(lock.updated.getTime())
     })
     it('throws error if lock does not exist', async () => {
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
 
       await expect(UpgradeStore.updateLock()).rejects.toEqual(
         Error(`Invalid ID "${UpgradeStore['LOCK_ID'].toString()}": Does not exist.`)
       )
 
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
     })
   })
   describe('getLock', () => {
     it('returns undefined if lock does not exist', async () => {
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
     })
     it('returns lock if lock exists', async () => {
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const lock = await UpgradeStore.addLock()
       expect(lock).toEqual({
         _id: UpgradeStore['LOCK_ID'],
@@ -85,7 +85,7 @@ describe('upgrade-store', () => {
   })
   describe('deleteLock', () => {
     it('removes lock if it exists', async () => {
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const lock = await UpgradeStore.addLock()
       expect(lock).toEqual({
         _id: UpgradeStore['LOCK_ID'],
@@ -94,7 +94,7 @@ describe('upgrade-store', () => {
 
       await expect(UpgradeStore.deleteLock()).resolves.toEqual(lock)
 
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
     })
   })
   describe('getCurrentVersion', () => {

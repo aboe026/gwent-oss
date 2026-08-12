@@ -895,7 +895,7 @@ describe('games-query', () => {
         userId: user3.id,
       })
 
-      const readSpy = jest.spyOn(Store as any, 'read')
+      const readSpy = jest.spyOn(Store as any, 'readMany')
 
       await graphql({
         schema,

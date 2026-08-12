@@ -47,12 +47,11 @@ export default class UpgradeStore extends Store {
   }
 
   /**
-   * Get the database lock document. Throws an error if somehow more than 1 exists in the database.
+   * Get the database lock document.
    *
-   * @returns The database lock document.
-   * @throws {Error} if more than 1 lock found.
+   * @returns The database lock document or null if one does not exist.
    */
-  static async getLock(): Promise<LockDbObject> {
+  static async getLock(): Promise<LockDbObject | null> {
     const lock = await UpgradeStore.readOne<LockDbObject>({
       filter: {
         _id: UpgradeStore.LOCK_ID,
@@ -60,9 +59,6 @@ export default class UpgradeStore extends Store {
     })
     if (UpgradeStore.logger.isTraceEnabled()) {
       UpgradeStore.logger.trace(`getLock doc: "${JSON.stringify(lock)}"`)
-    }
-    if (lock === null) {
-      throw Error('No upgrade lock found in database')
     }
     return lock
   }

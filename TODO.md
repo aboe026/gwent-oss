@@ -12,13 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- username restrictions
-  - no spaces
-  - only alpha-numeric and select special characters
-- password restrictions
-  - min 8, max 50?
-  - upper, lower, num and special?
-
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
   - how to represent? new relationship in db or infer in front end?
   - would same approach work for other effects (like mardroeme)?

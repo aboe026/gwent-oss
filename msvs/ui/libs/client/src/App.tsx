@@ -129,7 +129,7 @@ export default function App() {
       <IconContext.Provider value={{ color: 'white' }}>
         <ConnectionStatus>
           <Subscriptions>
-            {(loggedIn || pathname === ROUTES.About.path) && <Banner />}
+            {(!route || ![ROUTES.Login.path, ROUTES.Signup.path].includes(pathname)) && <Banner />}
             {authTimedOut && (
               <WholeScreenDialog style={{ zIndex: 200 }}>
                 <Centered>
