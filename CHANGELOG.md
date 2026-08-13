@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.26.0 - 2026-08-13
+
+### Added
+
+- Login improvements and credential requirements ([#63](https://github.com/aboe026/gwent-oss/pull/63)) (Adam Boe)
+
 ## 0.25.0 - 2026-08-03
 
 ### Added
