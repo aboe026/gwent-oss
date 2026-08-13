@@ -1,6 +1,6 @@
-import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 import isLetter from './is-letter'
 import isPositiveInteger from './is-positive-integer'
+import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 
 /**
  * Checks whether a username is valid or not, returning potential violations.

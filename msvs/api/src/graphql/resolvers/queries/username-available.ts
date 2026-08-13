@@ -2,8 +2,8 @@ import { getLogger } from 'log4js'
 
 import { Context } from '@gwent-oss/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
-import { QueryUsernameAvailableArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import PresentableError from '../../../util/presentable-error'
+import { QueryUsernameAvailableArgs } from '@gwent-oss/graphql-schema/resolver-typings'
 import ResolverUtil from '../resolver-util'
 import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 import UserStore from '../../../database/stores/user-store'
@@ -16,7 +16,7 @@ export default class UsernameAvailableQuery {
   private static logger = getLogger('UsernameAvailableQuery')
 
   /**
-   * Checks whether or not a username is available to use or not.
+   * Checks whether or not a username is available to use.
    *
    * @param args The arguments the user supplied to the query.
    * @param context The session containing the user getting the settings.

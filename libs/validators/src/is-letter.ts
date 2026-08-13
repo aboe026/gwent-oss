@@ -2,7 +2,7 @@
  * Checks whether a given string contains only letters (A-Z, capital or lowercase).
  *
  * @param str The string to check for letters.
- * @returns True if all the characters of a string a letters (A-Z, capital or lowercase), false otherwise.
+ * @returns True if all the characters of a string are letters (A-Z, capital or lowercase), false otherwise.
  */
 export default function isLetter(str: string) {
   let valid = str.length > 0 ? true : false

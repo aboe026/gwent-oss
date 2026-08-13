@@ -1,9 +1,9 @@
 import { graphql } from 'graphql'
 
+import { addUser } from './util/graphql-util'
+import { GraphQLError } from 'graphql/error'
 import schema from '../../src/graphql/executable-schema'
 import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
-import { GraphQLError } from 'graphql/error'
-import { addUser } from './util/graphql-util'
 
 describe('username-available-query', () => {
   describe('invalid', () => {
