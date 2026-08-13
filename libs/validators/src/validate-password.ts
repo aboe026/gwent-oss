@@ -1,5 +1,5 @@
 import isLetter from './is-letter'
-import isInteger from './is-integer'
+import isPositiveInteger from './is-positive-integer'
 import { PASSWORD_REQUIREMENTS } from '@gwent-oss/constants'
 
 /**
@@ -23,7 +23,7 @@ export default function validatePassword(password: string): ValidatedPassword {
     if (PASSWORD_REQUIREMENTS.Specials.includes(char)) {
       noSpecial = false
     }
-    if (!isLetter(char) && !isInteger(char) && char !== ' ' && !PASSWORD_REQUIREMENTS.Specials.includes(char)) {
+    if (!isLetter(char) && !isPositiveInteger(char) && char !== ' ' && !PASSWORD_REQUIREMENTS.Specials.includes(char)) {
       badSpecials.add(char)
     }
   }

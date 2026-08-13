@@ -106,6 +106,12 @@ describe('validatePassword', () => {
         valid: true,
       })
     })
+    it('valid true and no violations if all rules met more than once', () => {
+      testValidatePassword({
+        password: 'p@ssW0rdp@ssW0rd',
+        valid: true,
+      })
+    })
   })
 })
 

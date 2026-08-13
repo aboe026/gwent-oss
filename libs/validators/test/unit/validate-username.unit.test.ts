@@ -86,6 +86,54 @@ describe('validateUsername', () => {
         valid: true,
       })
     })
+    it('valid true and no violations if minimum length and only numbers', () => {
+      testValidateUsername({
+        username: '123',
+        valid: true,
+      })
+    })
+    it('valid true and no violations if medium length and only numbers', () => {
+      testValidateUsername({
+        username: '1234567890',
+        valid: true,
+      })
+    })
+    it('valid true and no violations if maximum length and only numbers', () => {
+      testValidateUsername({
+        username: '12345678901234567890123456789012345678901234567890',
+        valid: true,
+      })
+    })
+    it('valid true and no violations if minimum length and only special characters', () => {
+      testValidateUsername({
+        username: '!&-',
+        valid: true,
+      })
+    })
+    it('valid true and no violations if medium length and only special characters', () => {
+      testValidateUsername({
+        username: '!&-+~',
+        valid: true,
+      })
+    })
+    it('valid true and no violations if minimum length and mixed', () => {
+      testValidateUsername({
+        username: 'a1!',
+        valid: true,
+      })
+    })
+    it('valid true and no violations if medium length and mixed', () => {
+      testValidateUsername({
+        username: 'h3lloW0rld!!',
+        valid: true,
+      })
+    })
+    it('valid true and no violations if maximum length and mixed', () => {
+      testValidateUsername({
+        username: 'hi-W0rld!!hi-W0rld!!hi-W0rld!!hi-W0rld!!hi-W0rld!!',
+        valid: true,
+      })
+    })
   })
 })
 

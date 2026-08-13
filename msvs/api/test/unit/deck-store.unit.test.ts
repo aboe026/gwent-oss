@@ -77,34 +77,17 @@ describe('deck-store', () => {
     })
   })
   describe('getById', () => {
-    it('throws error if multiple decks found', async () => {
-      const deckId = new ObjectId()
-      const decks: DeckDbObject[] = [
-        TestUtil.getDbDeck({
-          id: deckId,
-        }),
-        TestUtil.getDbDeck({
-          id: deckId,
-        }),
-      ]
-      await testGetById({
-        id: deckId,
-        deckReadResponse: decks,
-        expected: Error(`Multiple decks with ID "${deckId}" found.`),
-        errorCalls: [[`Multiple decks with ID "${deckId}" found: "${JSON.stringify(decks)}"`]],
-      })
-    })
     it('returns undefined if deck not found', async () => {
       await testGetById({
-        deckReadResponse: [],
-        expected: undefined,
+        readOneResponse: null,
+        expected: null,
       })
     })
     it('returns deck if found with ObjectId', async () => {
       const deck = TestUtil.getDbDeck({})
       await testGetById({
         id: deck._id,
-        deckReadResponse: [deck],
+        readOneResponse: deck,
         expected: deck,
       })
     })
@@ -112,7 +95,7 @@ describe('deck-store', () => {
       const deck = TestUtil.getDbDeck({})
       await testGetById({
         id: deck._id.toString(),
-        deckReadResponse: [deck],
+        readOneResponse: deck,
         expected: deck,
       })
     })
@@ -120,7 +103,7 @@ describe('deck-store', () => {
       const deck = TestUtil.getDbDeck({})
       await testGetById({
         id: deck._id.toString(),
-        deckReadResponse: [deck],
+        readOneResponse: deck,
         expected: deck,
         traceEnabled: true,
       })
@@ -259,7 +242,7 @@ async function testGet({
   deckReadResponse?: DeckDbObject[]
   traceEnabled?: boolean
 }) {
-  const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue(deckReadResponse)
+  const readSpy = jest.spyOn(DeckStore as any, 'readMany').mockResolvedValue(deckReadResponse)
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   DeckStore['logger'] = {
@@ -296,19 +279,19 @@ async function testGet({
 async function testGetById({
   id = new ObjectId(),
   options,
-  deckReadResponse = [],
+  readOneResponse,
   expected,
   errorCalls = [],
   traceEnabled,
 }: {
   id?: ObjectId | string
   options?: FindOptions
-  deckReadResponse?: DeckDbObject[]
-  expected: Error | DeckDbObject | undefined
+  readOneResponse?: DeckDbObject | null
+  expected: Error | DeckDbObject | null
   errorCalls?: any[][]
   traceEnabled?: boolean
 }) {
-  const deckReadSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue(deckReadResponse)
+  const deckReadSpy = jest.spyOn(DeckStore as any, 'readOne').mockResolvedValue(readOneResponse)
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()

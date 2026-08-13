@@ -61,48 +61,28 @@ describe('upgrade-store', () => {
     })
   })
   describe('getLock', () => {
-    it('calls to read method and returns undefined if no locks returned', async () => {
+    it('calls to read method and returns null if no locks returned', async () => {
       await testGetLock({
-        locks: [],
+        lock: null,
       })
     })
     it('calls to read method and returns lock if single lock returned', async () => {
       await testGetLock({
-        locks: [
-          {
-            _id: UpgradeStore['LOCK_ID'],
-            updated: new Date(),
-          },
-        ],
-      })
-    })
-    it('calls to read method and throws error if multiple locks returned', async () => {
-      const locks = [
-        {
+        lock: {
           _id: UpgradeStore['LOCK_ID'],
           updated: new Date(),
         },
-        {
-          _id: UpgradeStore['LOCK_ID'],
-          updated: new Date(),
-        },
-      ]
-      await testGetLock({
-        locks,
-        error: `More than 1 upgrade lock document found: "${JSON.stringify(locks)}"`,
       })
     })
     it('logs out locks if trace enabled', async () => {
-      const locks = [
-        {
-          _id: UpgradeStore['LOCK_ID'],
-          updated: new Date(),
-        },
-      ]
+      const locks = {
+        _id: UpgradeStore['LOCK_ID'],
+        updated: new Date(),
+      }
       await testGetLock({
-        locks,
+        lock: locks,
         traceEnabled: true,
-        traceCalls: [[`getLock docs: "${JSON.stringify(locks)}"`]],
+        traceCalls: [[`getLock lock: "${JSON.stringify(locks)}"`]],
       })
     })
   })
@@ -128,59 +108,37 @@ describe('upgrade-store', () => {
   describe('getCurrentVersion', () => {
     it('calls to read method and returns 0 if no upgrades returned', async () => {
       await testGetCurrentVersion({
-        upgrades: [],
+        upgrade: null,
         expected: 0,
       })
     })
     it('calls to read method and returns upgrade version if single upgrade returned', async () => {
       const version = 1
       await testGetCurrentVersion({
-        upgrades: [
-          {
-            _id: new ObjectId(),
-            version,
-            start: new Date(),
-            end: new Date(),
-          },
-        ],
-        expected: version,
-      })
-    })
-    it('calls to read method and throws error if multiple upgrades returned', async () => {
-      const upgrades = [
-        {
-          _id: new ObjectId(),
-          version: 2,
-          start: new Date(),
-          end: new Date(),
-        },
-        {
-          _id: new ObjectId(),
-          version: 1,
-          start: new Date(),
-          end: new Date(),
-        },
-      ]
-      await testGetCurrentVersion({
-        upgrades,
-        error: `More than 1 doc returned for current upgrade version: "${JSON.stringify(upgrades)}"`,
-      })
-    })
-    it('logs out upgrade docs if trace enabled', async () => {
-      const version = 1
-      const upgrades = [
-        {
+        upgrade: {
           _id: new ObjectId(),
           version,
           start: new Date(),
           end: new Date(),
         },
-      ]
+
+        expected: version,
+      })
+    })
+    it('logs out upgrade docs if trace enabled', async () => {
+      const version = 1
+      const upgrade = {
+        _id: new ObjectId(),
+        version,
+        start: new Date(),
+        end: new Date(),
+      }
+
       await testGetCurrentVersion({
-        upgrades,
+        upgrade,
         expected: version,
         traceEnabled: true,
-        traceCalls: [[`getCurrentVersion docs: "${JSON.stringify(upgrades)}"`]],
+        traceCalls: [[`getCurrentVersion upgrade: "${JSON.stringify(upgrade)}"`]],
       })
     })
   })
@@ -213,7 +171,7 @@ describe('upgrade-store', () => {
           time: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(attempts)
+      const readSpy = jest.spyOn(UpgradeStore as any, 'readMany').mockResolvedValue(attempts)
 
       await expect(UpgradeStore.getAttempts()).resolves.toEqual(attempts)
 
@@ -268,7 +226,7 @@ describe('upgrade-store', () => {
           end: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(upgrades)
+      const readSpy = jest.spyOn(UpgradeStore as any, 'readMany').mockResolvedValue(upgrades)
 
       await expect(UpgradeStore.getUpgrades()).resolves.toEqual(upgrades)
 
@@ -293,12 +251,12 @@ describe('upgrade-store', () => {
 })
 
 async function testGetLock({
-  locks,
+  lock,
   traceEnabled,
   traceCalls = [],
   error,
 }: {
-  locks: LockDbObject[]
+  lock: LockDbObject | null
   traceEnabled?: boolean
   traceCalls?: string[][]
   error?: string
@@ -308,13 +266,13 @@ async function testGetLock({
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
-  const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(locks)
+  const readSpy = jest.spyOn(UpgradeStore as any, 'readOne').mockResolvedValue(lock)
 
   const promise = UpgradeStore.getLock()
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(promise).resolves.toEqual(locks[0])
+    await expect(promise).resolves.toEqual(lock)
   }
 
   expect(readSpy.mock.calls).toEqual([
@@ -330,13 +288,13 @@ async function testGetLock({
 }
 
 async function testGetCurrentVersion({
-  upgrades,
+  upgrade,
   expected,
   traceEnabled,
   traceCalls = [],
   error,
 }: {
-  upgrades: UpgradeDbObject[]
+  upgrade: UpgradeDbObject | null
   expected?: number
   traceEnabled?: boolean
   traceCalls?: string[][]
@@ -347,7 +305,7 @@ async function testGetCurrentVersion({
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
-  const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(upgrades)
+  const readSpy = jest.spyOn(UpgradeStore as any, 'readOne').mockResolvedValue(upgrade)
 
   const promise = UpgradeStore.getCurrentVersion()
   if (error) {

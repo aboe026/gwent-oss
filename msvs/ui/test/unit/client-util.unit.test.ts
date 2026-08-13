@@ -73,10 +73,14 @@ describe('client-util', () => {
       const clientDir = 'path/to/dir'
       const envFile = path.join(clientDir, 'dynamic-env.js')
       const apiUrl = 'http://localhost:4000'
+      const emailAddress = 'james.bond@mi6.com'
+      const githubLink = 'https://github.com/aboe026/gwent-oss'
       const webSocketPingIntervalSeconds = 5
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(false))
       jest.spyOn(env, 'default').mockReturnValue({
         API_BASE_URL: apiUrl,
+        EMAIL_ADDRESS: emailAddress,
+        GITHUB_LINK: githubLink,
         WEB_SOCKET_PING_INTERVAL_SECONDS: webSocketPingIntervalSeconds,
       } as any)
       const traceSpy = jest.fn().mockImplementation()
@@ -92,6 +96,8 @@ describe('client-util', () => {
       expect(traceSpy.mock.calls).toEqual([
         [`envFile: "${envFile}"`],
         [`env.API_BASE_URL: "${apiUrl}"`],
+        [`env.EMAIL_ADDRESS: "${emailAddress}"`],
+        [`env.GITHUB_LINK: "${githubLink}"`],
         [`env.WEB_SOCKET_PING_INTERVAL_SECONDS: "${webSocketPingIntervalSeconds}"`],
       ])
     })
@@ -99,10 +105,14 @@ describe('client-util', () => {
       const clientDir = 'path/to/dir'
       const envFile = path.join(clientDir, 'dynamic-env.js')
       const apiUrl = 'http://localhost:4000'
+      const emailAddress = 'james.bond@mi6.com'
+      const githubLink = 'https://github.com/aboe026/gwent-oss'
       const webSocketPingIntervalSeconds = 5
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(true))
       jest.spyOn(env, 'default').mockReturnValue({
         API_BASE_URL: apiUrl,
+        EMAIL_ADDRESS: emailAddress,
+        GITHUB_LINK: githubLink,
         WEB_SOCKET_PING_INTERVAL_SECONDS: webSocketPingIntervalSeconds,
       } as any)
       const traceSpy = jest.fn().mockImplementation()
@@ -117,6 +127,8 @@ describe('client-util', () => {
       expect(traceSpy.mock.calls).toEqual([
         [`envFile: "${envFile}"`],
         [`env.API_BASE_URL: "${apiUrl}"`],
+        [`env.EMAIL_ADDRESS: "${emailAddress}"`],
+        [`env.GITHUB_LINK: "${githubLink}"`],
         [`env.WEB_SOCKET_PING_INTERVAL_SECONDS: "${webSocketPingIntervalSeconds}"`],
       ])
       expect(replaceInFileSpy.mock.calls).toEqual([
@@ -126,6 +138,22 @@ describe('client-util', () => {
             disableGlobs: true,
             from: /API_BASE_URL:(\s*)(['"]).*?(['"])/,
             to: `API_BASE_URL:$1$2${apiUrl}$3`,
+          },
+        ],
+        [
+          {
+            files: [envFile],
+            disableGlobs: true,
+            from: /EMAIL_ADDRESS:(\s*)(['"]).*?(['"])/,
+            to: `EMAIL_ADDRESS:$1$2${emailAddress}$3`,
+          },
+        ],
+        [
+          {
+            files: [envFile],
+            disableGlobs: true,
+            from: /GITHUB_LINK:(\s*)(['"]).*?(['"])/,
+            to: `GITHUB_LINK:$1$2${githubLink}$3`,
           },
         ],
         [

@@ -58,7 +58,7 @@ export default class UpgradeStore extends Store {
       },
     })
     if (UpgradeStore.logger.isTraceEnabled()) {
-      UpgradeStore.logger.trace(`getLock doc: "${JSON.stringify(lock)}"`)
+      UpgradeStore.logger.trace(`getLock lock: "${JSON.stringify(lock)}"`)
     }
     return lock
   }
@@ -94,7 +94,7 @@ export default class UpgradeStore extends Store {
       },
     })
     if (UpgradeStore.logger.isTraceEnabled()) {
-      UpgradeStore.logger.trace(`getCurrentVersion docs: "${JSON.stringify(upgrade)}"`)
+      UpgradeStore.logger.trace(`getCurrentVersion upgrade: "${JSON.stringify(upgrade)}"`)
     }
     return upgrade === null ? 0 : upgrade.version
   }

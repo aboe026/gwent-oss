@@ -100,15 +100,13 @@ export default class UserStore extends Store {
    * @returns The User database object if it exists, null otherwise.
    */
   static async getByName(name: string, options?: FindOptions): Promise<UserDbObject | null> {
-    if (UserStore.logger.isDebugEnabled()) {
-      UserStore.logger.debug(`Getting user with name "${name}"`)
-    }
+    UserStore.logger.debug(`Getting user with name "${name}"`)
     const filter: Filter<Document> = {
       name,
     }
     if (UserStore.logger.isTraceEnabled()) {
-      UserStore.logger.trace(`getByName filter: "${JSON.stringify(filter)}`)
-      UserStore.logger.trace(`getByName options: "${JSON.stringify(options)}`)
+      UserStore.logger.trace(`getByName filter: "${JSON.stringify(filter)}"`)
+      UserStore.logger.trace(`getByName options: "${JSON.stringify(options)}"`)
     }
     const response = await UserStore.readOne<UserDbObject>({
       filter,

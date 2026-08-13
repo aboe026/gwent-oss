@@ -20,6 +20,7 @@ import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck/set-
 import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order/set-order-mutation'
 import SettingsQuery from '../../src/graphql/resolvers/queries/settings-query'
 import UnitsQuery from '../../src/graphql/resolvers/queries/units-query'
+import UsernameAvailableQuery from '../../src/graphql/resolvers/queries/username-available'
 
 describe('resolvers', () => {
   it('calls queries and mutations', async () => {
@@ -44,6 +45,7 @@ describe('resolvers', () => {
     const leadersSpy = jest.spyOn(LeadersQuery, 'leaders').mockImplementation()
     const settingsSpy = jest.spyOn(SettingsQuery, 'settings').mockImplementation()
     const unitsSpy = jest.spyOn(UnitsQuery, 'units').mockImplementation()
+    const usernameAvailableSpy = jest.spyOn(UsernameAvailableQuery, 'usernameAvailable').mockImplementation()
 
     await verifyOperation(resolvers.Mutation?.addDeck, addDeckSpy)
     await verifyOperation(resolvers.Mutation?.addGame, addGameSpy)
@@ -66,6 +68,7 @@ describe('resolvers', () => {
     await verifyOperation(resolvers.Query?.leaders, leadersSpy)
     await verifyOperation(resolvers.Query?.settings, settingsSpy)
     await verifyOperation(resolvers.Query?.units, unitsSpy)
+    await verifyOperation(resolvers.Query?.usernameAvailable, usernameAvailableSpy)
   })
 })
 

@@ -388,6 +388,34 @@ describe('db-upgrader', () => {
         debugCalls: [[`Attempting for "30" seconds to aquire lock`], [`Attempt "1" to aquire lock`]],
       })
     })
+    it('throws error if getting existing lock returns null', async () => {
+      const start = Date.now()
+      const error = 'Could not get lock which should exist'
+      await testAquireLock({
+        dates: [
+          start,
+          start + 1000, // loop check 1
+        ],
+        addLockResponses: [() => Promise.reject(Error(error))],
+        getLockResponses: [() => Promise.resolve(null)],
+        isMongoErrorResponses: [true],
+        isMongoErrorCalls: [
+          [
+            {
+              error: Error(error),
+              code: 11000,
+            },
+          ],
+        ],
+        error,
+        debugCalls: [
+          [`Attempting for "30" seconds to aquire lock`],
+          [`Attempt "1" to aquire lock`],
+          ['Lock already exists, checking if expired'],
+        ],
+        errorCalls: [[error]],
+      })
+    })
     it('throws error if previous lock does not expire before LOCK_TIMEOUT_SECONDS', async () => {
       const start = Date.now()
       const error = new MongoError('duplicate key')
@@ -1158,7 +1186,7 @@ async function testExecute({
       run: upgradeSpy,
     })
   }
-  DbUpgrader['finished'] = false
+  upgrader['finished'] = false
   const infoSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()

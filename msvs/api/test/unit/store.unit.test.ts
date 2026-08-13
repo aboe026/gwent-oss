@@ -42,7 +42,40 @@ describe('store', () => {
       expect(insertOneSpy.mock.calls).toEqual([[doc]])
     })
   })
-  describe('read', () => {
+  describe('readOne', () => {
+    it('calls to findOne with filter and options', async () => {
+      const findOneSpy = jest.fn().mockResolvedValue({})
+      jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
+        findOne: findOneSpy,
+      })
+      const filter = {
+        name: 'unit-test',
+      }
+      const options = {
+        projection: {
+          name: 1,
+        },
+      }
+      await expect(
+        Store['readOne']({
+          filter,
+          options,
+        })
+      ).resolves.toEqual({})
+
+      expect(findOneSpy.mock.calls).toEqual([[filter, options]])
+    })
+    it('uses empty filter if none specified', async () => {
+      const findOneSpy = jest.fn().mockResolvedValue({})
+      jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
+        findOne: findOneSpy,
+      })
+      await expect(Store['readOne']({})).resolves.toEqual({})
+
+      expect(findOneSpy.mock.calls).toEqual([[{}]])
+    })
+  })
+  describe('readMany', () => {
     it('calls toArray after find with filter and options', async () => {
       const toArraySpy = jest.fn().mockImplementation()
       const findSpy = jest.fn().mockReturnValue({
@@ -61,7 +94,7 @@ describe('store', () => {
       }
 
       await expect(
-        Store['read']({
+        Store['readMany']({
           filter,
           options,
         })
@@ -85,7 +118,7 @@ describe('store', () => {
       }
 
       await expect(
-        Store['read']({
+        Store['readMany']({
           options,
         })
       ).resolves.toEqual(undefined)

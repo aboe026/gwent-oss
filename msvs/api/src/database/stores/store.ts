@@ -63,7 +63,6 @@ export default abstract class Store {
     const collection = await Store.getCollection<T>(this.COLLECTION_NAME)
     return await collection.findOne(filter, options)
   }
-  // TODO: go through and replace readMany with readOne for relevant cases
 
   /**
    * Retrieves documents from a MongoDB collection matching filter criteria.

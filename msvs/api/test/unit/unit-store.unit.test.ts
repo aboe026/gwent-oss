@@ -408,7 +408,7 @@ async function testGet({
   debugEnabled?: boolean
   traceEnabled?: boolean
 }) {
-  const readSpy = jest.spyOn(UnitStore as any, 'read').mockResolvedValue([])
+  const readSpy = jest.spyOn(UnitStore as any, 'readMany').mockResolvedValue([])
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   UnitStore['logger'] = {

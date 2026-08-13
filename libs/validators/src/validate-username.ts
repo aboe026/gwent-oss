@@ -1,6 +1,6 @@
 import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
 import isLetter from './is-letter'
-import isInteger from './is-integer'
+import isPositiveInteger from './is-positive-integer'
 
 /**
  * Checks whether a username is valid or not, returning potential violations.
@@ -16,7 +16,7 @@ export default function validateUsername(username: string): ValidatedUsername {
 
   for (let i = 0; i < username.length; i++) {
     const char = username[i]
-    if (!isLetter(char) && !isInteger(char) && char !== ' ' && !USERNAME_REQUIREMENTS.Specials.includes(char)) {
+    if (!isLetter(char) && !isPositiveInteger(char) && char !== ' ' && !USERNAME_REQUIREMENTS.Specials.includes(char)) {
       badSpecials.add(char)
     }
   }
