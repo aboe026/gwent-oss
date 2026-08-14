@@ -17,6 +17,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
 
   api:
     image: gwent-oss-api:${GWENT_OSS_TAG}
@@ -37,6 +42,11 @@ services:
     secrets:
       - mongo_user
       - mongo_pass
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
 
   ui:
     image: gwent-oss-ui:${GWENT_OSS_TAG}
@@ -51,6 +61,11 @@ services:
     environment:
       - LOG_LEVEL=${LOG_LEVEL}
       - API_BASE_URL=https://${HOST_NAME}
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
 
   router:
     image: caddy:2.11.4
@@ -70,6 +85,11 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
 
 volumes:
   mongo_data:
