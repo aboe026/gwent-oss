@@ -1,9 +1,16 @@
 services:
   database:
     image: mongo:8.3.7
+    restart: ${RESTART_POLICY}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
 
   api:
-    image: gwent-oss-api
+    image: gwent-oss-api:${GWENT_OSS_TAG:-latest}
+    restart: ${RESTART_POLICY}
     build:
       context: ../
       dockerfile: msvs/api/Dockerfile
@@ -11,11 +18,12 @@ services:
       - database
     environment:
       - LOG_LEVEL=${LOG_LEVEL}
-      - MONGO_URL=mongodb://database:27017
+      - MONGO_URL=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017
       - CORS_ORIGIN=https://${HOST_NAME}
 
   ui:
-    image: gwent-oss-ui
+    image: gwent-oss-ui:${GWENT_OSS_TAG:-latest}
+    restart: ${RESTART_POLICY}
     build:
       context: ../
       dockerfile: msvs/ui/Dockerfile
@@ -26,11 +34,23 @@ services:
       - API_BASE_URL=https://${HOST_NAME}
 
   router:
-    build: ./nginx
+    image: caddy:2.11.4
+    restart: ${RESTART_POLICY}
     depends_on:
       - api
       - ui
+    environment:
+      - HOST_NAME=${HOST_NAME}
+      - LOCAL_CERTS=${LOCAL_CERTS}
+      - DEBUG=${DEBUG}
     ports:
       - '443:443'
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:

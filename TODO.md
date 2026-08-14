@@ -12,6 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- add license
+
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
   - how to represent? new relationship in db or infer in front end?
   - would same approach work for other effects (like mardroeme)?

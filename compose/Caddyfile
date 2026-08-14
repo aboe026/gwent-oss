@@ -1,0 +1,18 @@
+{
+  {$LOCAL_CERTS} # If value is "local_certs" Caddy will use internal CA for SSL cert. If set to empty string "" Caddy will reach out to letencrypt to create a public SSL cert.
+  {$DEBUG} # set to "debug" to get higher level debugging output.
+}
+
+{$HOST_NAME} {
+  handle /graphql {
+    reverse_proxy api:4000
+  }
+
+  handle /subscribe {
+    reverse_proxy api:4000
+  }
+
+  handle {
+    reverse_proxy ui:3000
+  }
+}
