@@ -2,6 +2,8 @@ services:
   database:
     image: mongo:8.3.7
     restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
     environment:
       MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo_user
       MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_pass
@@ -12,8 +14,10 @@ services:
       - mongo_data:/data/db
 
   api:
-    image: gwent-oss-api:${GWENT_OSS_TAG:-latest}
+    image: gwent-oss-api:${GWENT_OSS_TAG}
     restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
     build:
       context: ../
       dockerfile: msvs/api/Dockerfile
@@ -30,8 +34,10 @@ services:
       - mongo_pass
 
   ui:
-    image: gwent-oss-ui:${GWENT_OSS_TAG:-latest}
+    image: gwent-oss-ui:${GWENT_OSS_TAG}
     restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
     build:
       context: ../
       dockerfile: msvs/ui/Dockerfile
@@ -44,6 +50,8 @@ services:
   router:
     image: caddy:2.11.4
     restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
     depends_on:
       - api
       - ui
@@ -68,3 +76,8 @@ secrets:
     file: ./secrets/mongo_user
   mongo_pass:
     file: ./secrets/mongo_pass
+
+networks:
+  gwent-oss:
+    name: ${NETWORK_NAME}
+    driver: bridge
