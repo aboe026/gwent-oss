@@ -115,6 +115,13 @@ export default class DbUpgrader {
           if (DbUpgrader.logger.isTraceEnabled()) {
             DbUpgrader.logger.trace(`potentiallyExpiredLock: "${JSON.stringify(potentiallyExpiredLock)}"`)
           }
+          if (potentiallyExpiredLock === null) {
+            const message = 'Could not get lock which should exist'
+            DbUpgrader.logger.error(message)
+            throw Error(message, {
+              cause: err,
+            })
+          }
           const secondsSinceLastUpdate = (Date.now() - potentiallyExpiredLock.updated.getTime()) / 1000
           DbUpgrader.logger.trace(`secondsSinceLastUpdate: "${secondsSinceLastUpdate}"`)
           if (secondsSinceLastUpdate > this.lockTimeoutSeconds) {

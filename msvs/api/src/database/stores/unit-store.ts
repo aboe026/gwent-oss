@@ -157,7 +157,7 @@ export default class UnitStore extends Store {
       UnitStore.logger.trace(`get filter: "${JSON.stringify(filter)}`)
       UnitStore.logger.trace(`get options: "${JSON.stringify(options)}`)
     }
-    return UnitStore.read<UnitDbObject[]>({
+    return UnitStore.readMany<UnitDbObject[]>({
       filter,
       options,
     })

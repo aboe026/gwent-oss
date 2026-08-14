@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/node-client",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "author": "Adam Boe",
   "description": "A Node.js client/SDK for the gwent-oss GraphQL API",
   "main": "build/src/node-client.js",

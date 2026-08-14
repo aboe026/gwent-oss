@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/client-env",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "author": "Adam Boe",
   "description": "Client-side runtime dynamic environment variables",
   "main": "build/src/env.js",

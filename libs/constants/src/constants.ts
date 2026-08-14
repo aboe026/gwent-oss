@@ -18,6 +18,44 @@ export const EFFECT_OPERATOR = {
   Double: 'x2',
   Set: '=1',
 }
+export const USERNAME_REQUIREMENTS = {
+  Min: 3,
+  Max: 50,
+  Specials: ['!', '&', '-', '+', '~'],
+}
+export const PASSWORD_REQUIREMENTS = {
+  Min: 8,
+  Max: 50,
+  Specials: [
+    '!',
+    '&',
+    '-',
+    '+',
+    '~',
+    '@',
+    '#',
+    '%',
+    '^',
+    '*',
+    '(',
+    ')',
+    '=',
+    '[',
+    ']',
+    '{',
+    '}',
+    ':',
+    ';',
+    '<',
+    '>',
+    ',',
+    '?',
+    '|',
+  ],
+}
+export const LOCAL_STORAGE = {
+  Username: 'username',
+}
 
 export const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'
 export const NOT_AUTHORIZED_MESSAGE = 'Not Authorized. You do not have access to this resource.'

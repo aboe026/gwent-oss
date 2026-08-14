@@ -1,5 +1,7 @@
 import 'testcafe'
 
+import { USERNAME_REQUIREMENTS } from '@gwent-oss/constants'
+
 export interface E2eCtx {
   start: number
 }
@@ -65,6 +67,7 @@ export function getTestCtx<FixtureCtxType, TestCtxType>() {
   return test as E2eTest<FixtureCtxType, TestCtxType>
 }
 
-export function getScenario(t: E2ETestController<E2eCtx, E2eCtx>): string {
-  return (t as any).testRun.test.fixture.name.replace(/ /g, '-').toLowerCase()
+export function getScenario(t: E2ETestController<E2eCtx, E2eCtx>, trim = true): string {
+  const scenario: string = (t as any).testRun.test.fixture.name.replace(/ /g, '-').toLowerCase()
+  return trim ? scenario.substring(0, USERNAME_REQUIREMENTS.Max / 2) : scenario
 }

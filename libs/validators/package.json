@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/validators",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "author": "Adam Boe",
   "description": "Validator functions",
   "main": "build/src/index.js",

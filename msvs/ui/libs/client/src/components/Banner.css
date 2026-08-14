@@ -6,6 +6,10 @@
   align-items: center;
 }
 
+#bannerMainTitle {
+  margin-top: 12px;
+}
+
 #bannerUsername {
   text-align: right;
   margin: 10px;

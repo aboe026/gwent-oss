@@ -13,7 +13,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 fixture('Deck Units Filter').page(DeckPage.getUrl())
 
 test('Available filters specials when locked', async (t) => {
-  const username = `deck-available-filter-specials-locked-${t.ctx.start}`
+  const username = `deck-available-specials-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -50,7 +50,7 @@ test('Available filters specials when locked', async (t) => {
 })
 
 test('Available filters heroes when locked', async (t) => {
-  const username = `deck-available-filter-heroes-locked-${t.ctx.start}`
+  const username = `deck-available-heroes-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -87,7 +87,7 @@ test('Available filters heroes when locked', async (t) => {
 })
 
 test('Available filters strength when locked', async (t) => {
-  const username = `deck-available-filter-strength-locked-${t.ctx.start}`
+  const username = `deck-available-strength-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -130,7 +130,7 @@ test('Available filters strength when locked', async (t) => {
 })
 
 test('Available filters close when locked', async (t) => {
-  const username = `deck-available-filter-close-locked-${t.ctx.start}`
+  const username = `deck-available-close-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -174,7 +174,7 @@ test('Available filters close when locked', async (t) => {
 })
 
 test('Available filters ranged when locked', async (t) => {
-  const username = `deck-available-filter-ranged-locked-${t.ctx.start}`
+  const username = `deck-available-ranged-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -220,7 +220,7 @@ test('Available filters ranged when locked', async (t) => {
 })
 
 test('Available filters siege when locked', async (t) => {
-  const username = `deck-available-filter-siege-locked-${t.ctx.start}`
+  const username = `deck-available-siege-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -264,7 +264,7 @@ test('Available filters siege when locked', async (t) => {
 })
 
 test('Available filters agile when locked', async (t) => {
-  const username = `deck-available-filter-agile-locked-${t.ctx.start}`
+  const username = `deck-available-agile-locked-${t.ctx.start}`
   const factionKey = FactionKey.Skellige
   await new ApiClient({}).addUser({
     name: username,
@@ -536,7 +536,7 @@ test('Available filters faction when locked', async (t) => {
 })
 
 test('Selected filters faction separately when unlocked', async (t) => {
-  const username = `deck-selected-filter-faction-unlocked-${t.ctx.start}`
+  const username = `deck-faction-unlocked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -825,7 +825,7 @@ async function testEffectFilter({
   selected: string[]
   start: number
 }) {
-  const username = `deck-available-filter-${effectKey.toLowerCase()}-locked-${start}`
+  const username = `deck-filter-${effectKey.toLowerCase()}-locked-${start}`
   await new ApiClient({}).addUser({
     name: username,
   })

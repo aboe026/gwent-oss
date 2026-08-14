@@ -17,7 +17,7 @@ import env from './env'
 import { getRandomItem, getRandomNumber, RandomizeDeckUnits, randomizeOrder, toTitleCase } from '@gwent-oss/utils'
 import { MAX_REDRAWS } from '@gwent-oss/constants'
 
-const PASSWORD = 'password'
+const PASSWORD = 'p@ssW0rd'
 
 //
 ;(async () => {

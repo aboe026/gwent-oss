@@ -60,7 +60,7 @@ export default class DlcStore extends Store {
     if (DlcStore.logger.isTraceEnabled()) {
       DlcStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
-    return DlcStore.read<DlcDbObject[]>({ filter })
+    return DlcStore.readMany<DlcDbObject[]>({ filter })
   }
 }
 

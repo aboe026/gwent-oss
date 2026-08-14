@@ -63,6 +63,7 @@ import {
   WeatherUnitDbObject,
 } from '@gwent-oss/graphql-schema/database-typings'
 import { GameUnitType, MoveType } from '@gwent-oss/graphql-schema'
+import { PASSWORD } from '../func/util/func-constants'
 import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent-oss/constants'
 
 export default class TestUtil {
@@ -1097,7 +1098,7 @@ export default class TestUtil {
   static getDbUser({
     id,
     name = 'user-name',
-    password = 'user-password',
+    password = PASSWORD,
     created = new Date(),
   }: {
     id?: ObjectId | string

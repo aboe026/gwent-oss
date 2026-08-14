@@ -54,31 +54,15 @@ export default class UserStore extends Store {
    * Retrieve a user from the database by their ObjectId.
    *
    * @param id The ObjectId of the user to retrieve.
-   * @returns The User database object if it exists, undefined otherwise.
-   * @throws {Error} if more than 1 user found.
+   * @returns The User database object if it exists, null otherwise.
    */
-  static async getById(id: string | ObjectId): Promise<UserDbObject | undefined> {
+  static async getById(id: string | ObjectId): Promise<UserDbObject | null> {
     UserStore.logger.debug(`Getting user by id "${id}"`)
-    const users = await UserStore.getByIds([id])
-    if (users.length > 1) {
-      const message = `Multiple users with ID "${id}" found`
-      UserStore.logger.error(
-        `${message}: "${JSON.stringify(
-          users.map((user) => {
-            return {
-              ...user,
-              password: '',
-            }
-          })
-        )}"`
-      )
-      throw Error(`${message}.`)
-    }
-    if (users.length === 1) {
-      const user = users[0]
-      user.password = '' // for security, ensure password isn't exposed
-      return user
-    }
+    return UserStore.readOne({
+      filter: {
+        _id: new ObjectId(id),
+      },
+    })
   }
 
   /**
@@ -99,13 +83,39 @@ export default class UserStore extends Store {
     if (UserStore.logger.isTraceEnabled()) {
       UserStore.logger.trace(`getByIds filter: "${JSON.stringify(filter)}`)
     }
-    const users = await UserStore.read<UserDbObject[]>({
+    const users = await UserStore.readMany<UserDbObject[]>({
       filter,
     })
     return users.map((user) => {
       user.password = '' // for security, ensure password isn't exposed
       return user
     })
+  }
+
+  /**
+   * Retrieve a user from the database by their name.
+   *
+   * @param name The name of the user to retrieve.
+   * @param options The options used when retrieving the User.
+   * @returns The User database object if it exists, null otherwise.
+   */
+  static async getByName(name: string, options?: FindOptions): Promise<UserDbObject | null> {
+    UserStore.logger.debug(`Getting user with name "${name}"`)
+    const filter: Filter<Document> = {
+      name,
+    }
+    if (UserStore.logger.isTraceEnabled()) {
+      UserStore.logger.trace(`getByName filter: "${JSON.stringify(filter)}"`)
+      UserStore.logger.trace(`getByName options: "${JSON.stringify(options)}"`)
+    }
+    const response = await UserStore.readOne<UserDbObject>({
+      filter,
+      options,
+    })
+    if (response !== null) {
+      response.password = '' // for security, ensure password isn't exposed
+    }
+    return response
   }
 
   /**
@@ -128,7 +138,7 @@ export default class UserStore extends Store {
       UserStore.logger.trace(`getByNames filter: "${JSON.stringify(filter)}`)
       UserStore.logger.trace(`getByNames options: "${JSON.stringify(options)}`)
     }
-    const response = await UserStore.read<UserDbObject[]>({
+    const response = await UserStore.readMany<UserDbObject[]>({
       filter,
       options,
     })
@@ -154,18 +164,13 @@ export default class UserStore extends Store {
     if (UserStore.logger.isTraceEnabled()) {
       UserStore.logger.trace(`validate filter: "${JSON.stringify(filter)}`)
     }
-    const users = await UserStore.read<UserDbObject[]>({
+    const user = await UserStore.readOne<UserDbObject>({
       filter,
     })
-    if (users.length === 0) {
+    if (user === null) {
       UserStore.logger.warn(`User with name "${name}" does not exist.`)
       throw Error(`Invalid credentials for user "${name}"`)
-    } else if (users.length > 1) {
-      const message = `More than 1 user exists with name "${name}"`
-      UserStore.logger.error(`${message}: "${JSON.stringify(users)}"`)
-      throw Error(`${message}.`)
     }
-    const user = users[0]
     const passwordCorrect = await PasswordHasher.match(password, user.password)
     if (passwordCorrect) {
       user.password = '' // for security, ensure password isn't exposed

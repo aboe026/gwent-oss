@@ -69,7 +69,6 @@ test('Create deck with dropdowns', async (t) => {
 
 test('Create deck with pickers', async (t) => {
   const username = `deck-create-pickers-${t.ctx.start}`
-  const password = 'password'
   const name = 'Create deck pickers'
   const factionKey = FactionKey.ScoiaTael
   const leaderName = 'Francesca Findabair Pureblood Elf'
@@ -100,18 +99,16 @@ test('Create deck with pickers', async (t) => {
 
   await new ApiClient({}).addUser({
     name: username,
-    password,
   })
-  const faction = await new ApiClient({ username, password }).getFaction({
+  const faction = await new ApiClient({ username }).getFaction({
     key: factionKey,
   })
-  const leader = await new ApiClient({ username, password }).getLeader({
+  const leader = await new ApiClient({ username }).getLeader({
     faction: factionKey,
     name: leaderName,
   })
   await LoginPage.login({
     username,
-    password,
   })
 
   await DeckPage.createDeck({
@@ -125,7 +122,6 @@ test('Create deck with pickers', async (t) => {
 
 test('Create disabled if invalid', async (t) => {
   const username = `deck--create-disabled-if-invalid-${t.ctx.start}`
-  const password = 'password'
   const name = 'Create deck disabled if invalid'
   const factionKey = FactionKey.NilfgaardianEmpire
   const leaderName = 'Emhyr var Emreis the Relentless'
@@ -153,18 +149,16 @@ test('Create disabled if invalid', async (t) => {
 
   await new ApiClient({}).addUser({
     name: username,
-    password,
   })
-  const faction = await new ApiClient({ username, password }).getFaction({
+  const faction = await new ApiClient({ username }).getFaction({
     key: factionKey,
   })
-  const leader = await new ApiClient({ username, password }).getLeader({
+  const leader = await new ApiClient({ username }).getLeader({
     faction: factionKey,
     name: leaderName,
   })
   await LoginPage.login({
     username,
-    password,
   })
   await DeckPage.verify({})
   await DeckEditor.verifyValid(false)
@@ -200,7 +194,6 @@ test('Create disabled if invalid', async (t) => {
 
 test('Change leader', async (t) => {
   const username = `deck-create-change-leader-${t.ctx.start}`
-  const password = 'password'
   const name = 'Create deck change leader'
   const factionKey = FactionKey.Skellige
   const leaderName1 = 'King Bran'
@@ -232,22 +225,20 @@ test('Change leader', async (t) => {
 
   await new ApiClient({}).addUser({
     name: username,
-    password,
   })
-  const faction = await new ApiClient({ username, password }).getFaction({
+  const faction = await new ApiClient({ username }).getFaction({
     key: factionKey,
   })
-  const leader1 = await new ApiClient({ username, password }).getLeader({
+  const leader1 = await new ApiClient({ username }).getLeader({
     faction: factionKey,
     name: leaderName1,
   })
-  const leader2 = await new ApiClient({ username, password }).getLeader({
+  const leader2 = await new ApiClient({ username }).getLeader({
     faction: factionKey,
     name: leaderName2,
   })
   await LoginPage.login({
     username,
-    password,
   })
 
   await DeckEditor.setName(name)
@@ -270,7 +261,6 @@ test('Change leader', async (t) => {
 
 test('Change faction', async (t) => {
   const username = `deck-create-change-faction-${t.ctx.start}`
-  const password = 'password'
   const name = 'Create deck change faction'
   const factionKey1 = FactionKey.Monsters
   const factionKey2 = FactionKey.NorthernRealms
@@ -328,25 +318,23 @@ test('Change faction', async (t) => {
 
   await new ApiClient({}).addUser({
     name: username,
-    password,
   })
-  const faction1 = await new ApiClient({ username, password }).getFaction({
+  const faction1 = await new ApiClient({ username }).getFaction({
     key: factionKey1,
   })
-  const faction2 = await new ApiClient({ username, password }).getFaction({
+  const faction2 = await new ApiClient({ username }).getFaction({
     key: factionKey2,
   })
-  const leader1 = await new ApiClient({ username, password }).getLeader({
+  const leader1 = await new ApiClient({ username }).getLeader({
     faction: factionKey1,
     name: leaderName1,
   })
-  const leader2 = await new ApiClient({ username, password }).getLeader({
+  const leader2 = await new ApiClient({ username }).getLeader({
     faction: factionKey2,
     name: leaderName2,
   })
   await LoginPage.login({
     username,
-    password,
   })
 
   await DeckEditor.setName(name)

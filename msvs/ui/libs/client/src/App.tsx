@@ -10,8 +10,8 @@ import { CurrentUserDocument, CurrentUserQuery } from '@gwent-oss/graphql-schema
 import { getErrorMessages } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
 import LoadingSpinner from './components/LoadingSpinner'
+import { LOCAL_STORAGE, NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent-oss/constants'
 import LoginDialog from './components/LoginDialog'
-import { NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent-oss/constants'
 import Subscriptions from './Subscriptions'
 import { UserContext } from './UserContext'
 import WholeScreenDialog from './components/WholeScreenDialog'
@@ -56,6 +56,7 @@ export default function App() {
     if (needsLogin) {
       client.resetStore()
       if (justLoggedOut) {
+        localStorage.removeItem(LOCAL_STORAGE.Username)
         setPreLoginPath('')
       }
       setShouldNavigateToLogin(true)
@@ -84,7 +85,14 @@ export default function App() {
       />
     )
   } else if (shouldNavigateToLogin) {
-    return <Navigate to={ROUTES.Login.path} replace />
+    let loginPath = ROUTES.Login.path
+    if (
+      ![ROUTES.Logout.path, ROUTES.Login.path].includes(pathname) &&
+      localStorage.getItem(LOCAL_STORAGE.Username) === null
+    ) {
+      loginPath = ROUTES.Signup.path
+    }
+    return <Navigate to={loginPath} replace />
   }
 
   /**
@@ -121,7 +129,7 @@ export default function App() {
       <IconContext.Provider value={{ color: 'white' }}>
         <ConnectionStatus>
           <Subscriptions>
-            <Banner />
+            {(!route || ![ROUTES.Login.path, ROUTES.Signup.path].includes(pathname)) && <Banner />}
             {authTimedOut && (
               <WholeScreenDialog style={{ zIndex: 200 }}>
                 <Centered>

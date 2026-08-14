@@ -13,7 +13,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 fixture('Deck Units Sort').page(DeckPage.getUrl())
 
 test('Available sorts selected by name ascending when locked', async (t) => {
-  const username = `deck-available-sort-selected-by-name-ascending-locked-${t.ctx.start}`
+  const username = `deck-name-ascending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -45,7 +45,7 @@ test('Available sorts selected by name ascending when locked', async (t) => {
 })
 
 test('Available sorts selected by strength ascending when locked', async (t) => {
-  const username = `deck-available-sort-selected-by-strength-ascending-locked-${t.ctx.start}`
+  const username = `deck-strength-ascending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -78,7 +78,7 @@ test('Available sorts selected by strength ascending when locked', async (t) => 
 })
 
 test('Available sorts selected by name descending when locked', async (t) => {
-  const username = `deck-available-sort-selected-by-name-descending-locked-${t.ctx.start}`
+  const username = `deck-name-descending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -112,7 +112,7 @@ test('Available sorts selected by name descending when locked', async (t) => {
 })
 
 test('Available sorts selected by strength descending when locked', async (t) => {
-  const username = `deck-available-sort-selected-by-strength-descending-locked-${t.ctx.start}`
+  const username = `deck-strength-descending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -147,7 +147,7 @@ test('Available sorts selected by strength descending when locked', async (t) =>
 })
 
 test('Selected independently sorts by name ascending when unlocked', async (t) => {
-  const username = `deck-selected-sort-by-name-ascending-unlocked-${t.ctx.start}`
+  const username = `deck-name-ascending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -184,7 +184,7 @@ test('Selected independently sorts by name ascending when unlocked', async (t) =
 })
 
 test('Selected independently sorts by strength ascending when unlocked', async (t) => {
-  const username = `deck-selected-sort-by-strength-ascending-unlocked-${t.ctx.start}`
+  const username = `deck-strength-ascending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -221,7 +221,7 @@ test('Selected independently sorts by strength ascending when unlocked', async (
 })
 
 test('Selected independently sorts by name descending when unlocked', async (t) => {
-  const username = `deck-selected-sort-by-name-descending-unlocked-${t.ctx.start}`
+  const username = `deck-name-descending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -258,7 +258,7 @@ test('Selected independently sorts by name descending when unlocked', async (t) 
 })
 
 test('Selected independently sorts by strength descending when unlocked', async (t) => {
-  const username = `deck-selected-sort-by-strength-descending-unlocked-${t.ctx.start}`
+  const username = `deck-strength-descending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })

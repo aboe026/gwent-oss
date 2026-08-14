@@ -1,0 +1,55 @@
+#loginContainer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+#loginFields {
+  height: 100%;
+  width: calc(100% - (100% / ((1 + sqrt(5)) / 2))); /* golden ratio */
+  min-width: 210px;
+  background-color: lightgray;
+}
+
+#loginInfo {
+  height: 100%;
+  width: calc((100% / ((1 + sqrt(5)) / 2)) - 10%); /* golden ratio */
+  padding-left: 10%;
+  padding-right: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#loginSiteTitle {
+  font-size: xxx-large;
+}
+
+#loginSiteDescription {
+  text-align: center;
+}
+
+#loginIcons {
+  display: flex;
+  gap: 10px;
+}
+
+#loginIcons a {
+  height: 30px;
+  width: 30px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+#loginAlert {
+  font-size: small;
+  margin-top: 30px;
+}
+
+#loginAlertTitle {
+  font-weight: bold;
+  text-align: center;
+}

@@ -408,7 +408,7 @@ function MoveUnitImpact({
     moveReasonType === MoveReasonType.Summon
       ? findEffectForMoveByPrefix({
           gameUnit,
-          self,
+          players: useFragment(GamePlayerFragmentDoc, game.players),
         })
       : getEffectForImpact({
           gameUnit,
@@ -664,31 +664,33 @@ function getEffectForImpact({
  */
 function findEffectForMoveByPrefix({
   gameUnit,
-  self,
+  players,
 }: {
   gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
-  self: GamePlayerFragment
+  players: GamePlayerFragment[]
 }): EffectForImpact {
   let error = ''
   let effect: UnitEffectFragment | undefined | null = undefined
 
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
 
-  const selfMoveFragments = self.rounds
-    .map((round) => {
-      return useFragment(PlayerRoundFragmentDoc, round).moves
-    })
-    .flat()
-  for (let i = 0; i < selfMoveFragments.length && !effect; i++) {
-    const moveFragment = selfMoveFragments[i]
-    const move = useFragment(MoveFragmentDoc, moveFragment)
-    if (move.__typename === 'MoveUnit') {
-      const unitMove = useFragment(MoveUnitFragmentDoc, move)
-      const gameUnitForMove = useFragment(GameUnitFragmentDoc, unitMove.unit)
-      const unitForMove = getUnitFromGameUnit(gameUnitForMove)
-      if (unitForMove?.effectPrefix === unit.name) {
-        const unitEffects = useFragment(UnitEffectFragmentDoc, unitForMove?.effects)
-        effect = unitEffects && unitEffects[0]
+  for (let i = 0; i < players.length && effect === undefined; i++) {
+    const selfMoveFragments = players[i].rounds
+      .map((round) => {
+        return useFragment(PlayerRoundFragmentDoc, round).moves
+      })
+      .flat()
+    for (let i = 0; i < selfMoveFragments.length && !effect; i++) {
+      const moveFragment = selfMoveFragments[i]
+      const move = useFragment(MoveFragmentDoc, moveFragment)
+      if (move.__typename === 'MoveUnit') {
+        const unitMove = useFragment(MoveUnitFragmentDoc, move)
+        const gameUnitForMove = useFragment(GameUnitFragmentDoc, unitMove.unit)
+        const unitForMove = getUnitFromGameUnit(gameUnitForMove)
+        if (unitForMove?.effectPrefix === unit.name) {
+          const unitEffects = useFragment(UnitEffectFragmentDoc, unitForMove?.effects)
+          effect = unitEffects && unitEffects[0]
+        }
       }
     }
   }

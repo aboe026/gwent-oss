@@ -47,24 +47,20 @@ export default class UpgradeStore extends Store {
   }
 
   /**
-   * Get the database lock document. Throws an error if somehow more than 1 exists in the database.
+   * Get the database lock document.
    *
-   * @returns The database lock document.
-   * @throws {Error} if more than 1 lock found.
+   * @returns The database lock document or null if one does not exist.
    */
-  static async getLock(): Promise<LockDbObject> {
-    const docs = await UpgradeStore.read<LockDbObject[]>({
+  static async getLock(): Promise<LockDbObject | null> {
+    const lock = await UpgradeStore.readOne<LockDbObject>({
       filter: {
         _id: UpgradeStore.LOCK_ID,
       },
     })
     if (UpgradeStore.logger.isTraceEnabled()) {
-      UpgradeStore.logger.trace(`getLock docs: "${JSON.stringify(docs)}"`)
+      UpgradeStore.logger.trace(`getLock lock: "${JSON.stringify(lock)}"`)
     }
-    if (docs.length > 1) {
-      throw Error(`More than 1 upgrade lock document found: "${JSON.stringify(docs)}"`)
-    }
-    return docs[0]
+    return lock
   }
 
   /**
@@ -84,7 +80,7 @@ export default class UpgradeStore extends Store {
    * @throws {Error} if more than 1 version found.
    */
   static async getCurrentVersion(): Promise<number> {
-    const docs = await UpgradeStore.read<UpgradeDbObject[]>({
+    const upgrade = await UpgradeStore.readOne<UpgradeDbObject>({
       filter: {
         end: {
           $exists: true,
@@ -98,12 +94,9 @@ export default class UpgradeStore extends Store {
       },
     })
     if (UpgradeStore.logger.isTraceEnabled()) {
-      UpgradeStore.logger.trace(`getCurrentVersion docs: "${JSON.stringify(docs)}"`)
+      UpgradeStore.logger.trace(`getCurrentVersion upgrade: "${JSON.stringify(upgrade)}"`)
     }
-    if (docs.length > 1) {
-      throw Error(`More than 1 doc returned for current upgrade version: "${JSON.stringify(docs)}"`)
-    }
-    return docs && docs.length ? docs[0]?.version : 0
+    return upgrade === null ? 0 : upgrade.version
   }
 
   /**
@@ -131,7 +124,7 @@ export default class UpgradeStore extends Store {
    * @returns All upgrade attempt documents, sorted by time descending.
    */
   static async getAttempts(): Promise<AttemptDbObject[]> {
-    return UpgradeStore.read<AttemptDbObject[]>({
+    return UpgradeStore.readMany<AttemptDbObject[]>({
       filter: {
         time: {
           $exists: true,
@@ -180,7 +173,7 @@ export default class UpgradeStore extends Store {
    * @returns All successful upgrade documents, sorted by time descending.
    */
   static async getUpgrades(): Promise<UpgradeDbObject[]> {
-    return UpgradeStore.read<UpgradeDbObject[]>({
+    return UpgradeStore.readMany<UpgradeDbObject[]>({
       filter: {
         end: {
           $exists: true,

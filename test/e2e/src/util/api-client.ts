@@ -19,11 +19,12 @@ import createGwentOssClient, {
   User,
 } from '@gwent-oss/node-client'
 import E2eUtil from './e2e-util'
+import { PASSWORD } from './e2e-constants'
 
 export default class ApiClient {
   public client: GwentOssClient
 
-  constructor({ username, password = 'password' }: { username?: string; password?: string }) {
+  constructor({ username, password = PASSWORD }: { username?: string; password?: string }) {
     this.client = createGwentOssClient({
       graphqlUrl: E2eUtil.getGraphqlUrl(),
       username,
@@ -31,7 +32,7 @@ export default class ApiClient {
     })
   }
 
-  async addUser({ name, password = 'password' }: { name: string; password?: string }): Promise<User> {
+  async addUser({ name, password = PASSWORD }: { name: string; password?: string }): Promise<User> {
     return this.client.addUser({
       name,
       password,

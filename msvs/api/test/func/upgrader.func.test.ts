@@ -26,7 +26,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       await expect(UpgradeStore.getAttempts()).resolves.toEqual([])
       await expect(UpgradeStore.getUpgrades()).resolves.toEqual([])
       await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(0)
@@ -48,7 +48,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -96,7 +96,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -185,7 +185,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -230,7 +230,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -299,7 +299,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -334,7 +334,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -387,7 +387,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       await expect(UpgradeStore.getAttempts()).resolves.toEqual([])
       await expect(UpgradeStore.getUpgrades()).resolves.toEqual([])
       await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(0)
@@ -402,7 +402,7 @@ describe('upgrader', () => {
       expect(reRanCollections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       await expect(UpgradeStore.getAttempts()).resolves.toEqual([])
       await expect(UpgradeStore.getUpgrades()).resolves.toEqual([])
       await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(0)
@@ -425,7 +425,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -463,7 +463,7 @@ describe('upgrader', () => {
       expect(reRanCollections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       await expect(UpgradeStore.getAttempts()).resolves.toEqual(attempts)
       await expect(UpgradeStore.getUpgrades()).resolves.toEqual(upgrades)
       await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(1)
@@ -486,7 +486,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -527,7 +527,7 @@ describe('upgrader', () => {
       expect(reRanCollections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const reRanAttempts = await UpgradeStore.getAttempts()
       expect(reRanAttempts).toEqual([
         {
@@ -601,7 +601,7 @@ describe('upgrader', () => {
       expect(collections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const attempts = await UpgradeStore.getAttempts()
       expect(attempts).toEqual([
         {
@@ -629,7 +629,7 @@ describe('upgrader', () => {
       expect(reRanCollections?.map((collection) => collection.name)).toEqual(
         expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
       )
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getLock()).resolves.toEqual(null)
       const reRanAttempts = await UpgradeStore.getAttempts()
       expect(reRanAttempts).toEqual([
         {

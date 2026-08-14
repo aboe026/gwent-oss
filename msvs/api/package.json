@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/msv-api",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "author": "Adam Boe",
   "description": "GraphQL backend to play gwent-oss.",
   "main": "src/index.ts",

@@ -21,23 +21,17 @@ describe('game-store', () => {
     })
   })
   describe('getById', () => {
-    it('calls out to read method and returns undefined if no result', async () => {
+    it('calls out to read method and returns null if no result', async () => {
       await testGetById({
-        readResponse: undefined,
-        expected: undefined,
-      })
-    })
-    it('calls out to read method and returns undefined if empty result', async () => {
-      await testGetById({
-        readResponse: [],
-        expected: undefined,
+        readOneResponse: null,
+        expected: null,
       })
     })
     it('calls out to read method and returns game if one exists', async () => {
       const game = TestUtil.getDbGame({})
       await testGetById({
         id: game._id,
-        readResponse: [game],
+        readOneResponse: game,
         expected: game,
       })
     })
@@ -45,7 +39,7 @@ describe('game-store', () => {
       const game = TestUtil.getDbGame({})
       await testGetById({
         id: game._id,
-        readResponse: [game],
+        readOneResponse: game,
         expected: game,
         options: {
           sort: {
@@ -55,20 +49,11 @@ describe('game-store', () => {
         },
       })
     })
-    it('calls out to read method and throws error if more than 1 game exists', async () => {
-      const game = TestUtil.getDbGame({})
-      await testGetById({
-        id: game._id,
-        readResponse: [game, game],
-        error: `Multiple games with ID "${game._id}" found.`,
-        errorCalls: [[`Multiple games with ID "${game._id}" found: "${JSON.stringify([game, game])}"`]],
-      })
-    })
     it('logs to trace if enabled', async () => {
       const game = TestUtil.getDbGame({})
       await testGetById({
         id: game._id,
-        readResponse: [game],
+        readOneResponse: game,
         expected: game,
         traceEnabled: true,
       })
@@ -157,7 +142,7 @@ async function testAddGame({
 async function testGetById({
   id,
   options,
-  readResponse,
+  readOneResponse,
   expected,
   error,
   errorCalls = [],
@@ -165,8 +150,8 @@ async function testGetById({
 }: {
   id?: ObjectId
   options?: FindOptions
-  readResponse?: GameDbObject[]
-  expected?: GameDbObject
+  readOneResponse?: GameDbObject | null
+  expected?: GameDbObject | null
   error?: string
   errorCalls?: any[][]
   traceEnabled?: boolean
@@ -174,7 +159,7 @@ async function testGetById({
   if (!id) {
     id = new ObjectId()
   }
-  const readSpy = jest.spyOn(GameStore as any, 'read').mockResolvedValue(readResponse)
+  const readSpy = jest.spyOn(GameStore as any, 'readOne').mockResolvedValue(readOneResponse)
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -220,7 +205,7 @@ async function testGetById({
 
 async function testGetByUserId({ userId, traceEnabled }: { userId: ObjectId | string; traceEnabled?: boolean }) {
   const game = TestUtil.getDbGame({})
-  const readSpy = jest.spyOn(GameStore as any, 'read').mockResolvedValue([game])
+  const readSpy = jest.spyOn(GameStore as any, 'readMany').mockResolvedValue([game])
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {

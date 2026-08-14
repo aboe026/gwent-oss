@@ -50,7 +50,7 @@ export default function Banner() {
         </div>
         <h1
           id={HTML_IDS.BannerMainTitle}
-          className={`banner-item ${user && 'pointable'}`}
+          className={'banner-item pointable'}
           onClick={() => navigate(ROUTES.Home.path)}
           onMouseDown={(event) => {
             if (event.button === Button.Wheel) {
