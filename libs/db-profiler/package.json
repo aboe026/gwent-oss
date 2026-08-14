@@ -15,11 +15,10 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "fs-extra": "11.4.0",
+    "@gwent-oss/node-utils": "workspace:*",
     "mongodb": "7.5.0"
   },
   "devDependencies": {
-    "@types/fs-extra": "11.0.4",
     "@types/node": "22.18.0"
   }
 }

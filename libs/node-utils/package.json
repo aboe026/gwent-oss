@@ -1,0 +1,24 @@
+{
+  "name": "@gwent-oss/node-utils",
+  "version": "0.26.0",
+  "author": "Adam Boe",
+  "description": "Utility functions for Node.js.",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "scripts": {
+    "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent-oss/node-utils run build",
+    "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
+    "coverage-view": "yarn g:coverage-view",
+    "lint": "yarn g:lint",
+    "lint:fix": "yarn g:lint-fix",
+    "test-unit": "yarn g:jest --test-type=unit",
+    "watch": "yarn g:tsc --watch"
+  },
+  "devDependencies": {
+    "@types/jest": "30.0.0",
+    "@types/node": "24.13.3",
+    "jest-junit": "17.0.0",
+    "ts-jest": "29.4.12"
+  }
+}

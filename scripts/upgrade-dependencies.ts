@@ -1,8 +1,8 @@
-import fs from 'fs-extra'
 import path from 'path'
 import { replaceInFile } from 'replace-in-file'
 
 import execa from './execute-async'
+import { getFileJson } from '@gwent-oss/node-utils'
 
 const DENY_LIST: string[] = [
   '@graphql-codegen/add', // 7.0 switched to ESM, need to switch to ESM to be able to use
@@ -46,7 +46,10 @@ const DENY_LIST: string[] = [
 })()
 
 async function upgradeDependencies(packageJsonFile: string): Promise<void> {
-  const packageJson = (await fs.readJson(packageJsonFile)) as PackageJson
+  const packageJson = await getFileJson<PackageJson>(packageJsonFile)
+  if (!packageJson) {
+    throw Error(`Could not get PackageJson from file "${packageJsonFile}"`)
+  }
   await upgradePackages(packageJsonFile, packageJson, 'dependencies')
   await upgradePackages(packageJsonFile, packageJson, 'devDependencies')
 }

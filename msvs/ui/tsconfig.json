@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig",
   "include": ["package.json", "src/**/*"],
-  "references": [{ "path": "../../libs/env" }, { "path": "../../libs/utils" }]
+  "references": [{ "path": "../../libs/env" }, { "path": "../../libs/node-utils" }]
 }

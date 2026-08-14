@@ -1,10 +1,10 @@
 import express, { Express } from 'express'
-import fs from 'fs-extra'
 import { getLogger } from 'log4js'
 import path from 'path'
 
 import ClientUtil from './client-util'
 import env from './env'
+import { fileExists } from '@gwent-oss/node-utils'
 
 /**
  * A class to handle startup and configuration of the UI server.
@@ -43,7 +43,7 @@ export default class Server {
     this.logger.trace(`imagesDir: "${imagesDir}"`)
     const imagesPath = path.isAbsolute(imagesDir) ? imagesDir : path.join(__dirname, imagesDir)
     this.logger.trace(`imagesPath: "${imagesPath}"`)
-    if (!(await fs.exists(imagesPath))) {
+    if (!(await fileExists(imagesPath))) {
       throw Error(`IMAGES_DIR "${imagesPath}" does not exist.`)
     }
     Server.app.use('/images', express.static(imagesPath))

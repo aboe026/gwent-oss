@@ -3,8 +3,11 @@ services:
     image: mongo:8.3.7
     restart: ${RESTART_POLICY}
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo_user
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_pass
+    secrets:
+      - mongo_user
+      - mongo_pass
     volumes:
       - mongo_data:/data/db
 
@@ -17,9 +20,14 @@ services:
     depends_on:
       - database
     environment:
-      - LOG_LEVEL=${LOG_LEVEL}
-      - MONGO_URL=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017
-      - CORS_ORIGIN=https://${HOST_NAME}
+      MONGO_USERNAME_FILE: /run/secrets/mongo_user
+      MONGO_PASSWORD_FILE: /run/secrets/mongo_pass
+      LOG_LEVEL: ${LOG_LEVEL}
+      MONGO_URL: mongodb://database:27017
+      CORS_ORIGIN: https://${HOST_NAME}
+    secrets:
+      - mongo_user
+      - mongo_pass
 
   ui:
     image: gwent-oss-ui:${GWENT_OSS_TAG:-latest}
@@ -54,3 +62,9 @@ volumes:
   mongo_data:
   caddy_data:
   caddy_config:
+
+secrets:
+  mongo_user:
+    file: ./secrets/mongo_user
+  mongo_pass:
+    file: ./secrets/mongo_pass

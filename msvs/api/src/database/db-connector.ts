@@ -3,6 +3,7 @@ import { ConnectionString } from 'connection-string'
 import { getLogger } from 'log4js'
 
 import env from '../env'
+import { getFileContents } from '@gwent-oss/node-utils'
 
 /**
  * A class for managing connections to a MongoDB instance.
@@ -22,16 +23,47 @@ export default class DbConnector {
   }
 
   /**
+   * Generates the MongoDB URL, optionally overwriting the username and/or password.
+   *
+   * @param config The configuration used to generate the MongoDB URL.
+   * @param config.url The URL to the MongoDB instance.
+   * @param config.username An optional username to authenticate against the MongoDB instance with.
+   * @param config.password An optional password to authenticate against the MongoDB instance with.
+   * @returns The full MongoDB URL, with optional parameters overwriting if provided.
+   */
+  private static getMongoUrl({
+    url,
+    username,
+    password,
+  }: {
+    url: string
+    username?: string
+    password?: string
+  }): string {
+    const mongoUrl = new URL(url)
+
+    if (username) mongoUrl.username = username
+    if (password) mongoUrl.password = password
+
+    return mongoUrl.toString()
+  }
+
+  /**
    * Establish a connection with a MongoDB database.
    */
   private static async initialize() {
+    const mongoUrl = DbConnector.getMongoUrl({
+      url: env().MONGO_URL,
+      username: await getFileContents(env().MONGO_USERNAME_FILE),
+      password: await getFileContents(env().MONGO_PASSWORD_FILE),
+    })
     DbConnector.logger.debug(
-      `MONGO_URL: '${new ConnectionString(env().MONGO_URL).toString({
+      `MongoDB URL: '${new ConnectionString(mongoUrl).toString({
         passwordHash: true,
       })}'`
     )
     DbConnector.logger.info(`Connecting to MongoDB database "${env().MONGO_DB}"`)
-    DbConnector.client = await MongoClient.connect(env().MONGO_URL)
+    DbConnector.client = await MongoClient.connect(mongoUrl)
 
     DbConnector.client.on('connectionClosed', (event: ConnectionClosedEvent) => {
       DbConnector.logger.warn(`Lost connection to MongoDB database "${env().MONGO_DB}" due to "${event.reason}"`)

@@ -1,6 +1,6 @@
-import fs from 'fs-extra'
 import path from 'path'
 
+import { fileExists } from '@gwent-oss/node-utils'
 import { sleep } from '@gwent-oss/utils'
 
 //
@@ -11,7 +11,7 @@ import { sleep } from '@gwent-oss/utils'
     const start = Date.now()
     while (!builtExists && (Date.now() - start) / 1000 < timeoutSeconds) {
       await sleep(1)
-      builtExists = await fs.exists(path.join(__dirname, '..', 'build', 'src', 'index.js'))
+      builtExists = await fileExists(path.join(__dirname, '..', 'build', 'src', 'index.js'))
     }
     if (!builtExists) {
       throw Error(`App not successfully built after "${timeoutSeconds}" seconds`)

@@ -1,8 +1,9 @@
-import fs from 'fs-extra'
+import fs from 'fs/promises'
 import { getLogger } from 'log4js'
 import path from 'path'
 
 import env from './env'
+import { fileExists } from '@gwent-oss/node-utils'
 
 /**
  * A class for getting information about the currently running instance of gwent-oss.
@@ -32,7 +33,7 @@ export default class AppInfo {
   static async getBuildNumber(): Promise<number> {
     const filePath = AppInfo.getFile()
     AppInfo.logger.debug(`filePath: "${filePath}"`)
-    if (await fs.pathExists(filePath)) {
+    if (await fileExists(filePath)) {
       try {
         const contents = await fs.readFile(filePath, 'utf-8')
         if (AppInfo.logger.isTraceEnabled()) {
