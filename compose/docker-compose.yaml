@@ -12,6 +12,11 @@ services:
       - mongo_pass
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api:
     image: gwent-oss-api:${GWENT_OSS_TAG}
