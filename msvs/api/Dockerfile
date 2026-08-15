@@ -34,10 +34,16 @@ ENV NODE_ENV=production
 LABEL build=${BUILD}
 LABEL version=${VERSION}
 
-COPY --from=build ${APP_DIR} ${APP_DIR}
+RUN adduser --disabled-password --gecos "" gwent-oss
+
+COPY --chown=gwent-oss:gwent-oss --from=build ${APP_DIR} ${APP_DIR}
 
 WORKDIR ${APP_DIR}/msvs/api
-RUN corepack enable && yarn workspaces focus --production
+RUN corepack enable && \
+    yarn workspaces focus --production
+
+USER gwent-oss
 
 EXPOSE 4000
+
 CMD ["yarn", "node", "build/src/index.js"]
