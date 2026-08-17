@@ -13,6 +13,7 @@ A list of things to be done in the future.
 Existing problems in the codebase that need to be fixed.
 
 - add license
+- ensure cannot pass when reviving
 
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
   - how to represent? new relationship in db or infer in front end?
@@ -112,8 +113,7 @@ Existing problems in the codebase that need to be fixed.
 - change game.round to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
-- swap NginX for Caddy?
-- rate limit requests?
+- have non-gwent images (Caddy, Mongo) run as non-root
 - add "title" attribute to DB upgrades to preserve in history
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files

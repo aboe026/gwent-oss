@@ -25,8 +25,14 @@ const PASSWORD = 'p@ssW0rd'
   await fs.rm(env.LOG_FILE, {
     force: true,
   })
+
+  if (env.IGNORE_CERTIFICATE_ERRORS) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  }
+
   const client = createGwentOssClient({
     graphqlUrl: env.API_URL,
+    waitMs: env.WAIT_MS,
   })
   const selfName = `rando-self-${Date.now()}`
   const oppName = `rando-opponent-${Date.now()}`
@@ -38,6 +44,7 @@ const PASSWORD = 'p@ssW0rd'
       graphqlUrl: env.API_URL,
       username: selfName,
       password: PASSWORD,
+      waitMs: env.WAIT_MS,
     }),
     user: await client.addUser({
       name: selfName,
@@ -49,6 +56,7 @@ const PASSWORD = 'p@ssW0rd'
       graphqlUrl: env.API_URL,
       username: oppName,
       password: PASSWORD,
+      waitMs: env.WAIT_MS,
     }),
     user: await client.addUser({
       name: oppName,
@@ -296,6 +304,9 @@ async function playRound({
     })
     if (gameDeck?.hand) {
       const player = game.players.find((player) => player.user.id === game.turn?.user.id)
+      if (!player) {
+        throw Error(`Could not find player for current turn "${game.turn?.user.id}" on game "${game.id}".`)
+      }
       const round = player?.rounds[game.round - 1]
       const rowsAvailableToModify: Combat[] = []
       if (!round?.close.modifier) {
@@ -320,7 +331,10 @@ async function playRound({
         (battlefieldUnit) => !battlefieldUnit.unit.hero && !battlefieldUnit.unit.special
       )
 
-      for (const deckUnit of gameDeck.hand) {
+      const eligibleUnits = player.reviving
+        ? gameDeck.discard.filter((discard) => !discard.unit.special && !discard.unit.hero)
+        : gameDeck.hand
+      for (const deckUnit of eligibleUnits) {
         let playable = true
 
         // modifiers
@@ -388,7 +402,7 @@ async function playRound({
           ? ` to spy on user "${targetSpyUser.user.name}" (${targetSpyUser.user.id})`
           : ''
         await log(
-          `🪖 Playing unit "${unit.unit.name}" (${unit.unit.id}) as "${combat}" for user "${name}"${targetFieldUnitText || targetSpyUserText}`
+          `🪖 ${player.reviving ? 'Reviving' : 'Playing'} unit "${unit.unit.name}" (${unit.unit.id}) as "${combat}" for user "${name}"${targetFieldUnitText || targetSpyUserText}`
         )
         await client.playUnit({
           game: gameId,

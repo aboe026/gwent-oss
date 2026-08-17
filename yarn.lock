@@ -4753,6 +4753,7 @@ __metadata:
     "@graphql-codegen/typescript-operations": "npm:5.1.0"
     "@graphql-tools/schema": "npm:10.0.38"
     "@gwent-oss/graphql-schema": "workspace:*"
+    "@gwent-oss/utils": "workspace:*"
     "@types/node": "npm:22.18.0"
     graphql: "npm:16.14.2"
     graphql-request: "npm:6.1.0"
@@ -4764,8 +4765,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent-oss/node-utils@workspace:libs/node-utils"
   dependencies:
-    "@gwent-oss/constants": "workspace:*"
-    "@gwent-oss/graphql-schema": "workspace:*"
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:24.13.3"
     jest-junit: "npm:17.0.0"

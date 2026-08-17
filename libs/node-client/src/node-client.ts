@@ -2,6 +2,7 @@
 import { GraphQLClient } from 'graphql-request'
 
 import { getSdk } from '../generated/node-sdk'
+import { sleep } from '@gwent-oss/utils'
 
 type Sdk = ReturnType<typeof getSdk>
 
@@ -38,6 +39,7 @@ export interface GwentOssClientOptions {
   graphqlUrl: string
   username?: string
   password?: string
+  waitMs?: number
 }
 
 export * from '../generated/node-sdk'
@@ -49,9 +51,10 @@ export * from '../generated/node-sdk'
  * @param config.graphqlUrl The URL to the GraphQL server for the gwent-oss instance (for example: https://gwent-oss.com/graphql).
  * @param config.username An optional username to use for authenticating against the server, required for some Queries/Mutations.
  * @param config.password An optional password to use for authenticating against the server, required for some Queries/Mutations.
+ * @param config.waitMs An optional amount of time (in milliseconds) to wait before making each request. Useful to avoid rate-limiting errors.
  * @returns An instance of the GwentOssClient that can be used to interact with the gwent-oss GraphQL API.
  */
-export function createGwentOssClient({ graphqlUrl, username, password }: GwentOssClientOptions) {
+export function createGwentOssClient({ graphqlUrl, username, password, waitMs }: GwentOssClientOptions) {
   const headers: Record<string, string> = {}
 
   if (username && password) {
@@ -60,6 +63,12 @@ export function createGwentOssClient({ graphqlUrl, username, password }: GwentOs
 
   const client = new GraphQLClient(graphqlUrl, {
     headers,
+    requestMiddleware: async (request) => {
+      if (waitMs) {
+        await sleep(waitMs / 1000)
+      }
+      return request
+    },
   })
 
   const sdk = getSdk(client)

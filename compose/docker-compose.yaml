@@ -68,7 +68,9 @@ services:
         max-file: '${LOG_MAX_FILE}'
 
   router:
-    image: caddy:2.11.4
+    build:
+      context: caddy
+      dockerfile: caddy.Dockerfile
     restart: ${RESTART_POLICY}
     networks:
       - gwent-oss
@@ -79,10 +81,16 @@ services:
       - HOST_NAME=${HOST_NAME}
       - LOCAL_CERTS=${LOCAL_CERTS}
       - DEBUG=${DEBUG}
+      - RATE_LIMIT_EVENTS_NOT_AUTH=${RATE_LIMIT_EVENTS_NOT_AUTH}
+      - RATE_LIMIT_EVENTS_YES_AUTH=${RATE_LIMIT_EVENTS_YES_AUTH}
+      - RATE_LIMIT_WINDOW_NOT_AUTH=${RATE_LIMIT_WINDOW_NOT_AUTH}
+      - RATE_LIMIT_WINDOW_YES_AUTH=${RATE_LIMIT_WINDOW_YES_AUTH}
+      - RATE_LIMIT_BURST_NOT_AUTH=${RATE_LIMIT_BURST_NOT_AUTH}
+      - RATE_LIMIT_BURST_YES_AUTH=${RATE_LIMIT_BURST_YES_AUTH}
     ports:
       - '443:443'
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     logging:

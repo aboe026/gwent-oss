@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@gwent-oss/graphql-schema": "workspace:*",
+    "@gwent-oss/utils": "workspace:*",
     "graphql": "16.14.2",
     "graphql-request": "6.1.0",
     "graphql-tag": "2.12.7"
