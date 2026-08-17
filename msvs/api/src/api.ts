@@ -6,7 +6,6 @@ import { createServer, Server } from 'http'
 import { Disposable } from 'graphql-ws'
 import express, { Express, Request, Response } from 'express'
 import { expressMiddleware } from '@as-integrations/express5'
-import figlet from 'figlet'
 import { getLogger } from 'log4js'
 import { GraphQLFormattedError } from 'graphql'
 import { json } from 'body-parser'
@@ -26,6 +25,7 @@ import env from './env'
 import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from './util/presentable-error'
 import schema from './graphql/executable-schema'
+import { startupText } from '@gwent-oss/utils'
 import { version } from '../package.json'
 import WebSocketAuth from './auth/websocket-auth'
 
@@ -63,11 +63,7 @@ export default class Api {
    * print relevant startup information.
    */
   private static async printStartupInfo() {
-    Api.logger.info(
-      `\n${figlet.textSync('gwent-oss', {
-        font: 'Tombstone',
-      })}`
-    )
+    Api.logger.info(startupText)
     Api.logger.info(`Version: "${version}"`)
     Api.logger.debug(`Build: "${await AppInfo.getBuildNumber()}"`)
     Api.logger.trace(`NODE_ENV: "${env().NODE_ENV}"`)

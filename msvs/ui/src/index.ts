@@ -2,7 +2,7 @@ import env from './env' // import env first so any dependent packages/code get c
 
 import log4js from 'log4js'
 
-import Server from './server'
+import Ui from './ui'
 
 log4js.configure({
   appenders: { out: { type: 'stdout' } },
@@ -15,7 +15,7 @@ const logger = log4js.getLogger('index')
  */
 ;(async () => {
   try {
-    await Server.run()
+    await Ui.run()
   } catch (err) {
     logger.fatal(err)
     process.exitCode = 1

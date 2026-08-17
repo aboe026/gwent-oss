@@ -19,6 +19,7 @@ RUN corepack enable
 RUN yarn set version $(node -p "require('../../package.json').packageManager.split('@')[1]") --yarn-path
 RUN yarn install
 RUN yarn build-all
+RUN echo "{\"buildNumber\": ${BUILD}}" > app-info.json
 
 ###########
 # RUNTIME #

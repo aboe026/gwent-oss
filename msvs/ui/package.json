@@ -27,6 +27,7 @@
   "dependencies": {
     "@gwent-oss/env": "workspace:*",
     "@gwent-oss/node-utils": "workspace:*",
+    "@gwent-oss/utils": "workspace:*",
     "express": "5.2.1",
     "log4js": "6.9.1",
     "replace-in-file": "7.2.0"

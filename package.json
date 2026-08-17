@@ -10,7 +10,7 @@
     "clean": "npm-run-all clean-children clean-root",
     "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent-oss/core run clean",
     "clean-root": "rimraf coverage results",
-    "compose-build": "cd compose && docker compose build",
+    "compose-build": "cd compose && docker compose build --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0}",
     "compose-start": "cd compose && docker compose start",
     "compose-stop": "cd compose && docker compose stop",
     "compose-up": "cd compose && docker compose up -d",

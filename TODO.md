@@ -24,7 +24,6 @@ Existing problems in the codebase that need to be fixed.
   - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)
 - improve performance when typing (long) name for deck
 - remove unnecessary dependencies
-  - figlet: just have hard-coded banner text for startup
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - refactor units tests to utilize dynamic looping instead of enumerating them explicitly
 - replace instances of using arrays for unique items with Set

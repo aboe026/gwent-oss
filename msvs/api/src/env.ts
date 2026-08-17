@@ -13,7 +13,7 @@ export default function env() {
     specs: {
       APP_INFO_FILE_PATH: str({
         desc: 'The path to the file containing information for the application to ingest',
-        default: '../../app-info.json',
+        default: 'app-info.json',
       }),
       CORS_ORIGIN: url({
         desc: 'The URL to validate against Cross-Origin Resource Sharing (CORS)',

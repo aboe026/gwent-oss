@@ -4698,7 +4698,6 @@ __metadata:
     "@types/cors": "npm:2.8.19"
     "@types/express": "npm:4.17.21"
     "@types/express-session": "npm:1.19.0"
-    "@types/figlet": "npm:1.7.0"
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:24.13.3"
     "@types/semver": "npm:7.7.1"
@@ -4712,7 +4711,6 @@ __metadata:
     cors: "npm:2.8.6"
     express: "npm:5.2.1"
     express-session: "npm:1.19.0"
-    figlet: "npm:1.11.4"
     graphql: "npm:16.14.2"
     graphql-subscriptions: "npm:3.0.0"
     graphql-ws: "npm:6.2.0"
@@ -4731,6 +4729,7 @@ __metadata:
     "@gwent-oss/client": "workspace:*"
     "@gwent-oss/env": "workspace:*"
     "@gwent-oss/node-utils": "workspace:*"
+    "@gwent-oss/utils": "workspace:*"
     "@types/express": "npm:4.17.21"
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:24.13.3"
@@ -4768,6 +4767,7 @@ __metadata:
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:24.13.3"
     jest-junit: "npm:17.0.0"
+    log4js: "npm:6.9.1"
     ts-jest: "npm:29.4.12"
   languageName: unknown
   linkType: soft
@@ -6218,13 +6218,6 @@ __metadata:
     "@types/qs": "npm:*"
     "@types/serve-static": "npm:*"
   checksum: 10/7a6d26cf6f43d3151caf4fec66ea11c9d23166e4f3102edfe45a94170654a54ea08cf3103d26b3928d7ebcc24162c90488e33986b7e3a5f8941225edd5eb18c7
-  languageName: node
-  linkType: hard
-
-"@types/figlet@npm:1.7.0":
-  version: 1.7.0
-  resolution: "@types/figlet@npm:1.7.0"
-  checksum: 10/ee6fa9165b8c9bf3cb691b893c7bec21a6635abc7214017329ed78d13a5bfaef372292b412e2145b87646cbc00126875dedf8df925fcfb745cff94ef5979ef77
   languageName: node
   linkType: hard
 
@@ -8485,13 +8478,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^14.0.0":
-  version: 14.0.1
-  resolution: "commander@npm:14.0.1"
-  checksum: 10/783115e9403caeca29c0fcbd4e0358f70c67760e4e4933f3453fcdd5ddba2ec44173c8da5213d7ce5e404f51c7e71203a42c548164dbe27b668b32a8981577f1
-  languageName: node
-  linkType: hard
-
 "commander@npm:^14.0.3":
   version: 14.0.3
   resolution: "commander@npm:14.0.3"
@@ -10136,17 +10122,6 @@ __metadata:
     node-domexception: "npm:^1.0.0"
     web-streams-polyfill: "npm:^3.0.3"
   checksum: 10/5264ecceb5fdc19eb51d1d0359921f12730941e333019e673e71eb73921146dceabcb0b8f534582be4497312d656508a439ad0f5edeec2b29ab2e10c72a1f86b
-  languageName: node
-  linkType: hard
-
-"figlet@npm:1.11.4":
-  version: 1.11.4
-  resolution: "figlet@npm:1.11.4"
-  dependencies:
-    commander: "npm:^14.0.0"
-  bin:
-    figlet: bin/index.js
-  checksum: 10/9f2bc97e786834499f12cc82d592ca2ceae3c9a7b3d5aa0d0d759ed68c4ccb334b4859599d98705de323afe34dba078f3a733011680de539bc92a2ce3c64b6cb
   languageName: node
   linkType: hard
 
