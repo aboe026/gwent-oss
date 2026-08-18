@@ -55,7 +55,7 @@ describe('play-pass-mutation', () => {
       userId: self.id,
     })
     deckOpponent = await addDeck({
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.Skellige,
       name: `play-pass-deck-opponent-${Date.now()}`,
       userId: opponent.id,
     })
@@ -295,6 +295,89 @@ describe('play-pass-mutation', () => {
           errors: [new GraphQLError('Cannot pass round when it is not your turn.')],
         })
       })
+      it('returns error if user is reviving', async () => {
+        const unitName1 = 'Dennis Cranmer'
+        const unitName2 = 'Clan Dimun Pirate'
+        const unitName3 = 'Havekar Healer'
+        await ensureUnitsInHand({
+          gameId: game.id,
+          userId: self.id,
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+          unitNames: [unitName1, unitName3],
+        })
+        await ensureUnitsInHand({
+          gameId: game.id,
+          userId: opponent.id,
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+          unitNames: [unitName2],
+        })
+
+        const gameDeckSelf = await getGameDeck({
+          gameId: game.id,
+          userId: self.id,
+        })
+        const gameDeckOpponent = await getGameDeck({
+          gameId: game.id,
+          userId: opponent.id,
+        })
+
+        const unitSelf1 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName1)
+        if (!unitSelf1) {
+          throw Error(`Could not find unit "${unitName1}" in hand`)
+        }
+
+        await playUnit({
+          gameId: game.id,
+          unitId: unitSelf1.unit.id,
+          combat: Combat.Close,
+          userId: self.id,
+        })
+        gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
+
+        const unitOpponent = gameDeckOpponent.hand.find((unit) => unit.unit.name === unitName2)
+        if (!unitOpponent) {
+          throw Error(`Could not find unit "${unitName2}" in opponent hand`)
+        }
+        await playUnit({
+          gameId: game.id,
+          unitId: unitOpponent.unit.id,
+          combat: Combat.Ranged,
+          userId: opponent.id,
+        })
+
+        const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName3)
+        if (!unitSelf2) {
+          throw Error(`Could not find unit "${unitName3}" in hand`)
+        }
+        await playUnit({
+          gameId: game.id,
+          userId: self.id,
+          unitId: unitSelf2.unit.id,
+        })
+
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              playPass(
+                game: "${game.id}"
+              ) {
+                ${getGameFragment()}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: TestUtil.getDbUserFromUser(self),
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError('Cannot pass round while reviving unit.')],
+        })
+      })
     })
     describe('valid', () => {
       it('plays pass if first turn', async () => {
@@ -347,7 +430,7 @@ describe('play-pass-mutation', () => {
       })
       it('plays pass if second turn', async () => {
         const unitName1 = 'Toruviel'
-        const unitName2 = 'Ves'
+        const unitName2 = 'Blueboy Lugos'
         await ensureUnitsInHand({
           gameId: game.id,
           mongoConnectionString: funcEnv.MONGO_URL,
