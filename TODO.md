@@ -12,8 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- add license
-- ensure cannot pass when reviving
+- rate limiting for subscriptions?
+- fix logging for currentUser query
 
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
   - how to represent? new relationship in db or infer in front end?

@@ -358,7 +358,7 @@ async function playRound({
           playableHand.push(deckUnit)
         }
       }
-      if (pass === 0 || playableHand.length === 0) {
+      if ((pass === 0 || playableHand.length === 0) && !player.reviving) {
         await log(`🏳️ Playing pass for user "${name}"`)
         await client.playPass({
           game: gameId,
