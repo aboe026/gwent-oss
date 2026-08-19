@@ -17,7 +17,7 @@ import { useServer } from 'graphql-ws/use/ws'
 import { WebSocketServer } from 'ws'
 
 import allUpgrades from './database/upgrades/all-upgrades'
-import AppInfo from './app-info'
+import { AppInfo } from '@gwent-oss/node-utils'
 import BasicAuth from './auth/basic-auth'
 import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
@@ -65,7 +65,7 @@ export default class Api {
   private static async printStartupInfo() {
     Api.logger.info(startupText)
     Api.logger.info(`Version: "${version}"`)
-    Api.logger.debug(`Build: "${await AppInfo.getBuildNumber()}"`)
+    Api.logger.debug(`Build: "${await AppInfo.getBuildNumber(env().APP_INFO_FILE_PATH)}"`)
     Api.logger.trace(`NODE_ENV: "${env().NODE_ENV}"`)
     Api.logger.info(`LOG_LEVEL: "${env().LOG_LEVEL}"`)
   }

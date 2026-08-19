@@ -31,7 +31,7 @@ export default class Permissions {
   static isAuthenticated({ context, label }: { context: Context; label: string }): UserDbObject {
     const user = context?.session?.user
     if (!user) {
-      Permissions.logger.error(`No user on context for ${label}: "${JSON.stringify(context?.session)}".`)
+      Permissions.logger.warn(`No user on context for ${label}: "${JSON.stringify(context?.session)}".`)
       throw new PresentableError(NOT_AUTHENTICATED_MESSAGE)
     }
     return user
