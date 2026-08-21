@@ -17,6 +17,36 @@ describe('db-connector', () => {
       expect(DbConnector.getClient()).toEqual(client)
     })
   })
+  describe('getGetMongoUrl', () => {
+    it('returns unmodified url if no username or password specified and none in url', () => {
+      testGetMongoUrl({
+        url: 'mongodb://localhost',
+        expected: 'mongodb://localhost',
+      })
+    })
+    it('returns unmodified url if no username or password specified and both in url', () => {
+      testGetMongoUrl({
+        url: 'mongodb://root:password@localhost',
+        expected: 'mongodb://root:password@localhost',
+      })
+    })
+    it('returns string with added username and password if url contains neither and both specified', () => {
+      testGetMongoUrl({
+        url: 'mongodb://localhost',
+        username: 'root',
+        password: 'password',
+        expected: 'mongodb://root:password@localhost',
+      })
+    })
+    it('returns string overwriting username and password if url contains neither and both specified', () => {
+      testGetMongoUrl({
+        url: 'mongodb://admin:secret@localhost',
+        username: 'root',
+        password: 'password',
+        expected: 'mongodb://root:password@localhost',
+      })
+    })
+  })
   describe('initialize', () => {
     it('calls to connect client and sets connected to true', async () => {
       await testInitialize()
@@ -115,6 +145,26 @@ describe('db-connector', () => {
     })
   })
 })
+
+function testGetMongoUrl({
+  url,
+  username,
+  password,
+  expected,
+}: {
+  url: string
+  username?: string
+  password?: string
+  expected: string
+}) {
+  expect(
+    DbConnector['getMongoUrl']({
+      url,
+      username,
+      password,
+    })
+  ).toEqual(expected)
+}
 
 async function testInitialize() {
   const disconnectReason = 'connection pool closed'

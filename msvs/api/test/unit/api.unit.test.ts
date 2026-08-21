@@ -4,7 +4,6 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import { Disposable } from 'graphql-ws'
 import express from 'express'
-import figlet from 'figlet'
 import { GraphQLFormattedError } from 'graphql'
 import http from 'http'
 import MongoStore from 'connect-mongo'
@@ -14,7 +13,7 @@ import ws from 'ws'
 
 import allUpgrades from '../../src/database/upgrades/all-upgrades'
 import Api from '../../src/api'
-import AppInfo from '../../src/app-info'
+import { AppInfo } from '@gwent-oss/node-utils'
 import BasicAuth from '../../src/auth/basic-auth'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
@@ -22,6 +21,7 @@ import * as env from '../../src/env'
 import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from '../../src/util/presentable-error'
 import schema from '../../src/graphql/executable-schema'
+import { startupText } from '@gwent-oss/utils'
 import TestUtil from '../util/test-util'
 import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import { version } from '../../package.json'
@@ -127,13 +127,13 @@ describe('Api', () => {
   })
   describe('printStartupInfo', () => {
     it('logs out correct information', async () => {
-      const text = 'gwent-oss'
       const buildNumber = 0
+      const appInfoFilePath = 'app-info-file-path'
       const nodeEnv = 'development'
       const logLevel = 'INFO'
-      const textSyncSpy = jest.spyOn(figlet, 'textSync').mockReturnValue(text)
       const getBuildNumberSpy = jest.spyOn(AppInfo, 'getBuildNumber').mockResolvedValue(0)
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
+        APP_INFO_FILE_PATH: appInfoFilePath,
         NODE_ENV: nodeEnv,
         LOG_LEVEL: logLevel,
       } as any)
@@ -148,17 +148,9 @@ describe('Api', () => {
 
       await expect(Api['printStartupInfo']()).resolves.toEqual(undefined)
 
-      expect(textSyncSpy.mock.calls).toEqual([
-        [
-          'gwent-oss',
-          {
-            font: 'Tombstone',
-          },
-        ],
-      ])
-      expect(getBuildNumberSpy.mock.calls).toEqual([[]])
-      expect(envSpy.mock.calls).toEqual([[], []])
-      expect(infoSpy.mock.calls).toEqual([[`\n${text}`], [`Version: "${version}"`], [`LOG_LEVEL: "${logLevel}"`]])
+      expect(getBuildNumberSpy.mock.calls).toEqual([[appInfoFilePath]])
+      expect(envSpy.mock.calls).toEqual([[], [], []])
+      expect(infoSpy.mock.calls).toEqual([[startupText], [`Version: "${version}"`], [`LOG_LEVEL: "${logLevel}"`]])
       expect(debugSpy.mock.calls).toEqual([[`Build: "${buildNumber}"`]])
       expect(traceSpy.mock.calls).toEqual([[`NODE_ENV: "${nodeEnv}"`]])
     })

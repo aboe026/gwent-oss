@@ -20,7 +20,7 @@ export default class Ui {
    * Bring up the UI server.
    */
   static async run() {
-    await this.printStartupInfo()
+    await Ui.printStartupInfo()
     await Ui.configureClientDir()
 
     Ui.app = express()

@@ -11,18 +11,18 @@ export default class AppInfo {
   private static logger = getLogger('AppInfo')
 
   /**
-   * Gets the path of the file containing information about the application.
+   * Resolves path of the file containing information about the application.
    *
    * @param appInfoFilePath The path on the system to the file containing application information
    *
-   * @returns The path to the file containing information about the application.
+   * @returns The absolute path to the file containing information about the application.
    */
-  private static getFile(appInfoFilePath: string): string {
+  private static resolvePath(appInfoFilePath: string): string {
     AppInfo.logger.trace(`appInfoFilePath: "${appInfoFilePath}"`)
     let filePath = appInfoFilePath
     if (!path.isAbsolute(filePath)) {
       const procDir = process.cwd()
-      AppInfo.logger.trace(`Making appInfoFilePath absolute to: "${procDir}"`)
+      AppInfo.logger.debug(`Making appInfoFilePath absolute to: "${procDir}"`)
       filePath = path.join(procDir, filePath)
     }
     return filePath
@@ -36,7 +36,7 @@ export default class AppInfo {
    * @returns The build number which produced the version of the application running. Defaults to "0" if not found in the "APP_INFO_FILE_PATH" file.
    */
   static async getBuildNumber(appInfoFilePath: string): Promise<number> {
-    const filePath = AppInfo.getFile(appInfoFilePath)
+    const filePath = AppInfo.resolvePath(appInfoFilePath)
     AppInfo.logger.trace(`filePath: "${filePath}"`)
     if (await fileExists(filePath)) {
       try {
