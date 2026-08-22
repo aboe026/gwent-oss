@@ -1,11 +1,16 @@
-import { t } from 'testcafe'
+import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
 import LoginForm from '../components/login-form'
 import { PASSWORD } from '../util/e2e-constants'
-import { ROUTES } from '@gwent-oss/constants'
+import { HTML_IDS, ROUTES } from '@gwent-oss/constants'
 
 export default class SignupPage {
+  static elements = {
+    switch: Selector(`#${HTML_IDS.LoginDialogModeSwitch}`),
+    info: Selector(`#${HTML_IDS.LoginInfoButton}`),
+  }
+
   static getUrl(): string {
     return E2eUtil.getUrl(ROUTES.Signup.path)
   }

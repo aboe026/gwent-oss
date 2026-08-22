@@ -255,6 +255,7 @@ export const HTML_IDS = {
   LoginPasswordLowercase: 'loginPasswordLowercase',
   LoginPasswordNumbers: 'loginPasswordNumbers',
   LoginPasswordBadSpecials: 'loginPasswordBadSpecials',
+  LoginInfoButton: 'loginInfoButton',
   LogoutForm: 'logoutForm',
   LogoutMessage: 'logoutMessage',
   NotFoundContainer: 'notFoundContainer',

@@ -1,3 +1,4 @@
+import AboutPage from '../page-objects/about-page'
 import ApiClient from '../util/api-client'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
@@ -93,4 +94,15 @@ test('Logs in after navigating to startup page', async (t) => {
   await t.click(LoginForm.elements.Submit)
 
   await HomePage.verify(username)
+})
+
+test('redirects to about page when info icon clicked', async (t) => {
+  const username = `existing-user-${t.ctx.start}`
+  await new ApiClient({}).addUser({
+    name: username,
+  })
+
+  await E2eUtil.goTo(SignupPage.getUrl())
+  await t.click(SignupPage.elements.info)
+  await t.expect(E2eUtil.getCurrentUrl()).eql(AboutPage.getUrl())
 })

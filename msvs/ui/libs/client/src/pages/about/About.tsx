@@ -37,8 +37,8 @@ export default function AboutPage() {
           <div id="aboutAlertTitle">**Alpha Warning**</div>
           <div id="aboutAlertDescription">
             This website is currently in an "alpha" state, meaning it is in a technically playable state but is missing
-            some features (mainly Faction and Leader abilities). Please communicate any issues you come across or ideas
-            you have as{' '}
+            some features (mainly Faction and Leader abilities). Please communicate any problems you come across or
+            ideas you have as{' '}
             <a href={`${urljoin(window.env.GITHUB_LINK, 'issues')}`} target="_">
               GitHub Issues
             </a>{' '}
@@ -150,8 +150,8 @@ export default function AboutPage() {
           </div>
           <div id="animationsContainer">
             <div id="animationsProgress" className="animation-child">
-              <LoadingSpinner size="50px" />
-              <LoadingBar width="100%" height="25px" style={{ maxWidth: '200px' }} />
+              <LoadingSpinner size="100px" />
+              <LoadingBar width="100%" height="50px" />
             </div>
             <div className="animation-child pointable" onClick={() => setCoinFlipKey(coinFlipKey + 1)}>
               <Centered>
