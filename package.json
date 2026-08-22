@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/core",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "author": "Adam Boe",
   "description": "An open-source recreation of the card game Gwent from The Witcher 3: Wild Hunt for online multiplayer.",
   "scripts": {
