@@ -1,4 +1,4 @@
-import { CgMail } from 'react-icons/cg'
+import { CgInfo, CgMail } from 'react-icons/cg'
 import { SiGithub } from 'react-icons/si'
 import urljoin from 'url-join'
 import { useLocation } from 'react-router'
@@ -42,7 +42,12 @@ export default function LoginPage() {
             <CgMail color="black" />
           </a>
         </div>
-        <div id="loginSiteDescription">An open-source recreation of the card game Gwent with online multiplayer.</div>
+        <div id="loginSiteDescription">
+          An open-source recreation of the card game Gwent with online multiplayer.
+          <a href={ROUTES.About.path}>
+            <CgInfo color="black" />
+          </a>
+        </div>
         <div id="loginAlert">
           <div id="loginAlertTitle">**Alpha Warning**</div>
           <div id="loginAlertDescription">
