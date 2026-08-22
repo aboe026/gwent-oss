@@ -7,203 +7,231 @@ import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 
 describe('play-pass-validation', () => {
-  it('throws error if isAuthenticated throws error', async () => {
-    const error = Error('isAuthenticated error')
-    await testPlayPassValidation({
-      isAuthenticatedResponse: error,
-      error,
+  describe('invalid', () => {
+    it('throws error if isAuthenticated throws error', async () => {
+      const error = Error('isAuthenticated error')
+      await testPlayPassValidation({
+        isAuthenticatedResponse: error,
+        error,
+      })
+    })
+    it('throws error if isGamePlayer throws error', async () => {
+      const error = Error('isGamePlayer error')
+      await testPlayPassValidation({
+        isAuthenticatedResponse: TestUtil.getDbUser({}),
+        isGamePlayerResponse: error,
+        error,
+      })
+    })
+    it('throws error if validateGame throws error', async () => {
+      const error = Error('isGamePlayer error')
+      const user = TestUtil.getDbUser({})
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game: TestUtil.getDbGame({}),
+          player: TestUtil.getDbGamePlayer({
+            user: user._id,
+          }),
+        },
+        validateGameError: error,
+        error,
+      })
+    })
+    it('throws error if round does not exist on game player', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+          }),
+        ],
+        round: 2,
+      })
+      const message = `Could not get round "2" for player "${game.players[0].user}"`
+      const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        error: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(game.players[0].rounds)}"`]],
+      })
+    })
+    it('throws error if player already passed round 1', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                passed: true,
+              }),
+            ],
+          }),
+        ],
+        round: 1,
+      })
+      const message = `Already passed round "1"`
+      const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if player already passed round 2', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                passed: true,
+              }),
+              TestUtil.getDbPlayerRound({
+                passed: true,
+              }),
+            ],
+          }),
+        ],
+        round: 2,
+      })
+      const message = `Already passed round "2"`
+      const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if player already passed round 3', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                passed: true,
+              }),
+              TestUtil.getDbPlayerRound({
+                passed: true,
+              }),
+              TestUtil.getDbPlayerRound({
+                passed: true,
+              }),
+            ],
+          }),
+        ],
+        round: 3,
+      })
+      const message = `Already passed round "3"`
+      const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if player is reviving', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+            rounds: [TestUtil.getDbPlayerRound({})],
+            reviving: true,
+          }),
+        ],
+        round: 1,
+      })
+      const message = 'Cannot pass round while reviving unit.'
+      const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+        error: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
     })
   })
-  it('throws error if isGamePlayer throws error', async () => {
-    const error = Error('isGamePlayer error')
-    await testPlayPassValidation({
-      isAuthenticatedResponse: TestUtil.getDbUser({}),
-      isGamePlayerResponse: error,
-      error,
+  describe('valid', () => {
+    it('returns objects if no errors for round 1', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+            rounds: [TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+        round: 1,
+      })
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+      })
     })
-  })
-  it('throws error if validateGame throws error', async () => {
-    const error = Error('isGamePlayer error')
-    const user = TestUtil.getDbUser({})
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game: TestUtil.getDbGame({}),
-        player: TestUtil.getDbGamePlayer({
-          user: user._id,
-        }),
-      },
-      validateGameError: error,
-      error,
+    it('returns objects if no errors for round 2', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+        round: 2,
+      })
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+      })
     })
-  })
-  it('throws error if round does not exist on game player', async () => {
-    const user = TestUtil.getDbUser({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-        }),
-      ],
-      round: 2,
-    })
-    const message = `Could not get round "2" for player "${game.players[0].user}"`
-    const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      error: Error(message),
-      errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(game.players[0].rounds)}"`]],
-    })
-  })
-  it('throws error if player already passed round 1', async () => {
-    const user = TestUtil.getDbUser({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              passed: true,
-            }),
-          ],
-        }),
-      ],
-      round: 1,
-    })
-    const message = `Already passed round "1"`
-    const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      error: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if player already passed round 2', async () => {
-    const user = TestUtil.getDbUser({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              passed: true,
-            }),
-            TestUtil.getDbPlayerRound({
-              passed: true,
-            }),
-          ],
-        }),
-      ],
-      round: 2,
-    })
-    const message = `Already passed round "2"`
-    const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      error: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('throws error if player already passed round 3', async () => {
-    const user = TestUtil.getDbUser({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              passed: true,
-            }),
-            TestUtil.getDbPlayerRound({
-              passed: true,
-            }),
-            TestUtil.getDbPlayerRound({
-              passed: true,
-            }),
-          ],
-        }),
-      ],
-      round: 3,
-    })
-    const message = `Already passed round "3"`
-    const logPrefix = `playPass by "${game.players[0].user}" on game "${game._id}"`
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-      error: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
-    })
-  })
-  it('returns objects if no errors for round 1', async () => {
-    const user = TestUtil.getDbUser({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-          rounds: [TestUtil.getDbPlayerRound({})],
-        }),
-      ],
-      round: 1,
-    })
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-    })
-  })
-  it('returns objects if no errors for round 2', async () => {
-    const user = TestUtil.getDbUser({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-          rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
-        }),
-      ],
-      round: 2,
-    })
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
-    })
-  })
-  it('returns objects if no errors for round 3', async () => {
-    const user = TestUtil.getDbUser({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-          rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
-        }),
-      ],
-      round: 3,
-    })
-    await testPlayPassValidation({
-      isAuthenticatedResponse: user,
-      isGamePlayerResponse: {
-        game,
-        player: game.players[0],
-      },
+    it('returns objects if no errors for round 3', async () => {
+      const user = TestUtil.getDbUser({})
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: user._id,
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          }),
+        ],
+        round: 3,
+      })
+      await testPlayPassValidation({
+        isAuthenticatedResponse: user,
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
+      })
     })
   })
 })

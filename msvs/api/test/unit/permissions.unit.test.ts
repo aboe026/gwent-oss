@@ -18,7 +18,7 @@ describe('permissions', () => {
         context,
         label,
         expected: new PresentableError(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
+        warnCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
       })
     })
     it('throws error if session undefined', () => {
@@ -27,7 +27,7 @@ describe('permissions', () => {
         context,
         label,
         expected: new PresentableError(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
+        warnCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
       })
     })
     it('throws error if user undefined', () => {
@@ -38,7 +38,7 @@ describe('permissions', () => {
         context,
         label,
         expected: new PresentableError(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
+        warnCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
       })
     })
     it('returns user if defined', () => {
@@ -230,16 +230,16 @@ function testIsAuthenticated({
   context,
   label,
   expected,
-  errorCalls = [],
+  warnCalls = [],
 }: {
   context: Context
   label: string
   expected: UserDbObject | PresentableError
-  errorCalls?: string[][]
+  warnCalls?: string[][]
 }) {
-  const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   Permissions['logger'] = {
-    error: errorSpy,
+    warn: warnSpy,
   } as any
 
   if (expected instanceof PresentableError) {
@@ -258,14 +258,14 @@ function testIsAuthenticated({
     ).toEqual(expected)
   }
 
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
 }
 
 async function testIsGamePlayer({
   gameId,
   userId = new ObjectId(),
   label,
-  gameByIdResponse,
+  gameByIdResponse = null,
   expected,
   gameByIdCalled = true,
   warnCalls = [],
@@ -274,7 +274,7 @@ async function testIsGamePlayer({
   gameId: string
   userId?: ObjectId
   label: string
-  gameByIdResponse?: GameDbObject | undefined | Error
+  gameByIdResponse?: GameDbObject | null | Error
   expected: GameAndPlayer | PresentableError
   gameByIdCalled?: boolean
   warnCalls?: string[][]
@@ -323,7 +323,7 @@ async function testIsDeckOwner({
   deckId,
   userId = new ObjectId(),
   label,
-  deckByIdResponse,
+  deckByIdResponse = null,
   expected,
   deckByIdCalled = true,
   warnCalls = [],
@@ -332,7 +332,7 @@ async function testIsDeckOwner({
   deckId: string
   userId?: ObjectId
   label: string
-  deckByIdResponse?: DeckDbObject | undefined | Error
+  deckByIdResponse?: DeckDbObject | null | Error
   expected: DeckDbObject | PresentableError
   deckByIdCalled?: boolean
   warnCalls?: string[][]

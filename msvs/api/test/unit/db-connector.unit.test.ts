@@ -186,7 +186,7 @@ async function testInitialize() {
   await expect(DbConnector['initialize']()).resolves.toEqual(undefined)
 
   expect(DbConnector['connected']).toEqual(true)
-  expect(debugSpy.mock.calls).toEqual([[`MONGO_URL: '${env().MONGO_URL}'`]])
+  expect(debugSpy.mock.calls).toEqual([[`MongoDB URL: '${env().MONGO_URL}'`]])
   expect(infoSpy.mock.calls).toEqual([[`Connecting to MongoDB database "${env().MONGO_DB}"`]])
   expect(connectSpy.mock.calls).toEqual([[env().MONGO_URL]])
   expect(onSpy.mock.calls).toEqual([['connectionClosed', expect.any(Function)]])
