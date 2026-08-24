@@ -28,6 +28,7 @@ node {
     def dockerPushTag
     def uniqueName
     def composeYaml
+    def composeVars = []
     def mongoImage
     def testcafeVersion
     def testcafeImageTag
@@ -218,27 +219,9 @@ node {
 
                     stage('Start') {
                         dir('compose') {
-                            println 'TEST composeYaml: '
-                            println composeYaml
-                            // make unique to build
-                            // sh "sed -i -e 's/COMPOSE_PROJECT_NAME=.*/COMPOSE_PROJECT_NAME=${uniqueName}/g' .env"
-                            // sh "sed -i -e 's/HOST_NAME=.*/HOST_NAME=${uniqueName}-router-1/g' .env"
-                            // sh "sed -i -e 's/NETWORK_NAME=.*/NETWORK_NAME=${uniqueName}/g' .env"
-                            // sh "sed -i -e 's/RESTART_POLICY=.*/RESTART_POLICY=no/g' .env"
-                            // composeYaml.services.router.image = "${projectName}-router:${dockerTag}"
-                            // composeYaml.services.router.remove('ports') // remove exposed port to avoid port conflicts
-                            // composeYaml.services.router.volumes[0] = "${mountDir}/compose/caddy/Caddyfile:/etc/caddy/Caddyfile"
-                            msvs.each { service ->
-                                // refer to service images built earlier to avoid re-build
-                                composeYaml.services[service].image = "${projectName}-${service}:${dockerTag}"
-                            }
-                            // composeYaml.networks['gwent-oss'].external = true
-                            writeYaml file: composeFileName, data: composeYaml, overwrite: true
-                            sh "cat ${composeFileName}"
-
-                            // sh 'docker-compose build router --no-cache'
-                            withEnv([
+                            composeVars = [
                                 "COMPOSE_PROJECT_NAME=${uniqueName}",
+                                "GWENT_OSS_TAG=${dockerTag}",
                                 "HOST_NAME=${uniqueName}-router-1",
                                 'LIMIT_HTTP_EVENTS_NOT_AUTH=100',
                                 'LIMIT_HTTP_EVENTS_YES_AUTH=100',
@@ -255,7 +238,8 @@ node {
                                 'NETWORK_EXTERNAL=true',
                                 'RESTART_POLICY=no',
                                 'SESSION_TIMEOUT_SECONDS=60'
-                            ]) {
+                            ]
+                            withEnv(composeVars) {
                                 sh 'docker-compose up -d'
                             }
                         }
@@ -316,7 +300,9 @@ node {
         stage('Cleanup') {
             try {
                 dir("${workDir}/compose") {
-                    sh "docker-compose logs > ${uniqueName}-compose.log"
+                    withEnv(composeVars) {
+                        sh "docker-compose logs --no-color > ${uniqueName}-compose.log"
+                    }
                     archiveArtifacts artifacts: "${uniqueName}-compose.log", allowEmptyArchive: true
                 }
             } catch (err) {
@@ -324,7 +310,9 @@ node {
             }
             try {
                 dir("${workDir}/compose") {
-                    sh 'docker-compose down -v --rmi \'local\''
+                    withEnv(composeVars) {
+                        sh 'docker-compose down -v --rmi \'local\''
+                    }
                 }
             } catch (err) {
                 println 'Exception caught when trying to bring down compose containers'
