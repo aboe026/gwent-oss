@@ -34,11 +34,13 @@ services:
     depends_on:
       - database
     environment:
-      MONGO_USERNAME_FILE: /run/secrets/mongo_user
-      MONGO_PASSWORD_FILE: /run/secrets/mongo_pass
-      LOG_LEVEL: ${LOG_LEVEL}
-      MONGO_URL: mongodb://database:27017
       CORS_ORIGIN: https://${HOST_NAME}
+      LOG_LEVEL: ${LOG_LEVEL}
+      MONGO_DB: ${MONGO_DB}
+      MONGO_PASSWORD_FILE: /run/secrets/mongo_pass
+      MONGO_URL: mongodb://database:27017
+      MONGO_USERNAME_FILE: /run/secrets/mongo_user
+      SESSION_TIMEOUT_SECONDS: ${SESSION_TIMEOUT_SECONDS}
     secrets:
       - mongo_user
       - mongo_pass
@@ -60,7 +62,7 @@ services:
       - api
     environment:
       - LOG_LEVEL=${LOG_LEVEL}
-      - API_BASE_URL=https://${HOST_NAME}
+      - API_BASE_URL=https://${HOST_NAME}:${PORT}
     logging:
       driver: 'json-file'
       options:
@@ -94,7 +96,7 @@ services:
       - LIMIT_WS_BURST_NOT_AUTH=${LIMIT_WS_BURST_NOT_AUTH}
       - LIMIT_WS_BURST_YES_AUTH=${LIMIT_WS_BURST_YES_AUTH}
     ports:
-      - '443:443'
+      - '${PORT}:443'
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -112,11 +114,12 @@ volumes:
 
 secrets:
   mongo_user:
-    file: ./secrets/mongo_user
+    file: ${MONGO_USER_FILE}
   mongo_pass:
-    file: ./secrets/mongo_pass
+    file: ${MONGO_PASS_FILE}
 
 networks:
   gwent-oss:
     name: ${NETWORK_NAME}
     driver: bridge
+    external: ${NETWORK_EXTERNAL}

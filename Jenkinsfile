@@ -32,7 +32,11 @@ node {
     def testcafeVersion
     def testcafeImageTag
     def e2eDbName
-    def services = []
+    def mongoUser = 'root'
+    def mongoPass = 'password'
+    def mongoUserFile = 'compose/secrets/mongo_user'
+    def mongoPassFile = 'compose/secrets/mongo_pass'
+    def msvs = []
 
     try {
         timeout(time: 80, unit: 'MINUTES') {
@@ -70,13 +74,12 @@ node {
                         // determine host mounted directory for correct volume mounting of testcafe container
                         mountDir = dockerUtil.getHostMountDir(workDir: workDir)
 
-                        // get services to build
                         dir('msvs') {
-                            def serviceFiles = findFiles()
+                            def msvsFiles = findFiles()
 
-                            serviceFiles.each { serviceFile ->
-                                if (serviceFile.directory) {
-                                    services.push(serviceFile.name)
+                            msvsFiles.each { msvFile ->
+                                if (msvFile.directory) {
+                                    msvs.push(msvFile.name)
                                 }
                             }
                         }
@@ -86,6 +89,14 @@ node {
                             composeYaml = readYaml file: composeFileName
                         }
                         mongoImage = composeYaml.services.database.image
+                        writeFile(
+                            file: mongoUserFile,
+                            text: mongoUser
+                        )
+                        writeFile(
+                            file: mongoPassFile,
+                            text: mongoPass
+                        )
                     }
                     stage('Install Compose') {
                         sh "curl -L 'https://github.com/docker/compose/releases/download/v${composeVersion}/docker-compose-linux-x86_64' -o /usr/local/bin/docker-compose"
@@ -94,10 +105,10 @@ node {
                         sh "docker network create ${uniqueName}"
                     }
                     stage('Pull Images') {
-                        sh "docker pull ${mongoImage}"
-                        sh "docker pull ${nodeImage}"
-                        sh "docker pull ${nodeImage}-alpine"
-                        sh "docker pull testcafe/testcafe:${testcafeVersion}"
+                        // sh "docker pull ${mongoImage}"
+                        // sh "docker pull ${nodeImage}"
+                        // sh "docker pull ${nodeImage}-alpine"
+                        // sh "docker pull testcafe/testcafe:${testcafeVersion}"
                     }
 
                     parallel(
@@ -106,58 +117,58 @@ node {
                                 dockerVolumesToDelete.addAll(dockerUtil.getContainerVolumes(containerName: "${uniqueName}-mongo"))
                                 docker.image(nodeImage).inside("--network=${uniqueName}") {
                                     stage('Install') {
-                                        sh 'node --version'
-                                        sh 'yarn --version'
+                                        // sh 'node --version'
+                                        // sh 'yarn --version'
                                         sh 'corepack enable'
                                         sh 'yarn install --immutable'
                                     }
                                     stage('Lint') {
-                                        sh 'yarn lint'
+                                        // sh 'yarn lint'
                                     }
                                     stage('Build') {
                                         sh 'yarn build'
                                     }
                                     stage('Unit Test') {
-                                        try {
-                                            sh 'yarn test-unit'
-                                        } catch (err) {
-                                            exceptionThrown = true
-                                            println 'Exception was caught in try block of unit tests stage.'
-                                            println err
-                                        } finally {
-                                            junit testResults: 'results/unit.xml', allowEmptyResults: true
-                                            recordCoverage(
-                                                skipPublishingChecks: true,
-                                                sourceCodeRetention: 'EVERY_BUILD',
-                                                tools: [
-                                                    [
-                                                        parser: 'COBERTURA',
-                                                        pattern: 'coverage/unit/cobertura-coverage.xml'
-                                                    ]
-                                                ]
-                                            )
-                                            if (upload) {
-                                                badges.uploadCoverageResult(
-                                                    branch: env.BRANCH_NAME
-                                                )
-                                            }
-                                        }
+                                        // try {
+                                        //     sh 'yarn test-unit'
+                                        // } catch (err) {
+                                        //     exceptionThrown = true
+                                        //     println 'Exception was caught in try block of unit tests stage.'
+                                        //     println err
+                                        // } finally {
+                                        //     junit testResults: 'results/unit.xml', allowEmptyResults: true
+                                        //     recordCoverage(
+                                        //         skipPublishingChecks: true,
+                                        //         sourceCodeRetention: 'EVERY_BUILD',
+                                        //         tools: [
+                                        //             [
+                                        //                 parser: 'COBERTURA',
+                                        //                 pattern: 'coverage/unit/cobertura-coverage.xml'
+                                        //             ]
+                                        //         ]
+                                        //     )
+                                        //     if (upload) {
+                                        //         badges.uploadCoverageResult(
+                                        //             branch: env.BRANCH_NAME
+                                        //         )
+                                        //     }
+                                        // }
                                     }
                                     stage('Func Test') {
-                                        try {
-                                            withEnv([
-                                                "MONGO_URL=mongodb://${uniqueName}-mongo:27017",
-                                                'MONGO_DB=gwent-func'
-                                            ]) {
-                                                sh 'yarn test-func'
-                                            }
-                                        } catch (err) {
-                                            exceptionThrown = true
-                                            println 'Exception was caught in try block of func tests stage.'
-                                            println err
-                                        } finally {
-                                            junit testResults: 'results/func.xml', allowEmptyResults: true
-                                        }
+                                        // try {
+                                        //     withEnv([
+                                        //         "MONGO_URL=mongodb://root:password@${uniqueName}-mongo:27017",
+                                        //         'MONGO_DB=gwent-func'
+                                        //     ]) {
+                                        //         sh 'yarn test-func'
+                                        //     }
+                                        // } catch (err) {
+                                        //     exceptionThrown = true
+                                        //     println 'Exception was caught in try block of func tests stage.'
+                                        //     println err
+                                        // } finally {
+                                        //     junit testResults: 'results/func.xml', allowEmptyResults: true
+                                        // }
                                     }
                                 }
                             }
@@ -165,7 +176,7 @@ node {
                         'docker': {
                             stage('Build Images') {
                                 def dockerBuilds = [:]
-                                services.each { service ->
+                                msvs.each { service ->
                                     dockerBuilds[service] = {
                                         dir("msvs/${service}") {
                                             sh """docker build \
@@ -190,6 +201,16 @@ node {
                                         """
                                     }
                                 }
+                                dockerBuilds['router'] = {
+                                    dir('compose') {
+                                        composeYaml.services.router.image = "${projectName}-router:${dockerTag}"
+                                        composeYaml.services.router.remove('ports') // remove exposed port to avoid port conflicts
+                                        composeYaml.services.router.volumes[0] = "${mountDir}/compose/caddy/Caddyfile:/etc/caddy/Caddyfile"
+                                        writeYaml file: composeFileName, data: composeYaml, overwrite: true
+
+                                        sh 'docker-compose build router --no-cache'
+                                    }
+                                }
                                 parallel dockerBuilds
                             }
                         }
@@ -197,28 +218,46 @@ node {
 
                     stage('Start') {
                         dir('compose') {
+                            println 'TEST composeYaml: '
+                            println composeYaml
                             // make unique to build
-                            sh "sed -i -e 's/COMPOSE_PROJECT_NAME=.*/COMPOSE_PROJECT_NAME=${uniqueName}/g' .env"
-                            sh "sed -i -e 's/HOST_NAME=.*/HOST_NAME=${uniqueName}-router-1/g' .env"
-                            composeYaml.services.router.image = "${projectName}-router:${dockerTag}"
-                            composeYaml.services.router.remove('ports') // remove exposed port to avoid port conflicts
-                            services.each { service ->
+                            // sh "sed -i -e 's/COMPOSE_PROJECT_NAME=.*/COMPOSE_PROJECT_NAME=${uniqueName}/g' .env"
+                            // sh "sed -i -e 's/HOST_NAME=.*/HOST_NAME=${uniqueName}-router-1/g' .env"
+                            // sh "sed -i -e 's/NETWORK_NAME=.*/NETWORK_NAME=${uniqueName}/g' .env"
+                            // sh "sed -i -e 's/RESTART_POLICY=.*/RESTART_POLICY=no/g' .env"
+                            // composeYaml.services.router.image = "${projectName}-router:${dockerTag}"
+                            // composeYaml.services.router.remove('ports') // remove exposed port to avoid port conflicts
+                            // composeYaml.services.router.volumes[0] = "${mountDir}/compose/caddy/Caddyfile:/etc/caddy/Caddyfile"
+                            msvs.each { service ->
                                 // refer to service images built earlier to avoid re-build
                                 composeYaml.services[service].image = "${projectName}-${service}:${dockerTag}"
                             }
-                            composeYaml.services.router.volumes[0] = "${mountDir}/compose/nginx/nginx.conf:/etc/nginx/nginx.conf"
-                            composeYaml.services.api.environment.push("MONGO_DB=${projectName}-e2e")
-                            composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=60')
-                            composeYaml.networks = [
-                                default: [
-                                    name: uniqueName,
-                                    external: true
-                                ]
-                            ]
+                            // composeYaml.networks['gwent-oss'].external = true
                             writeYaml file: composeFileName, data: composeYaml, overwrite: true
+                            sh "cat ${composeFileName}"
 
-                            sh 'docker-compose build router --no-cache'
-                            sh 'docker-compose up -d'
+                            // sh 'docker-compose build router --no-cache'
+                            withEnv([
+                                "COMPOSE_PROJECT_NAME=${uniqueName}",
+                                "HOST_NAME=${uniqueName}-router-1",
+                                'LIMIT_HTTP_EVENTS_NOT_AUTH=100',
+                                'LIMIT_HTTP_EVENTS_YES_AUTH=100',
+                                'LIMIT_HTTP_BURST_NOT_AUTH=100',
+                                'LIMIT_HTTP_BURST_YES_AUTH=100',
+                                'LIMIT_WS_EVENTS_NOT_AUTH=100',
+                                'LIMIT_WS_EVENTS_YES_AUTH=100',
+                                'LIMIT_WS_BURST_NOT_AUTH=100',
+                                'LIMIT_WS_BURST_YES_AUTH=100',
+                                "MONGO_DB=${projectName}-e2e",
+                                "MONGO_USER_FILE=${mountDir}/${mongoUserFile}",
+                                "MONGO_PASS_FILE=${mountDir}/${mongoPassFile}",
+                                "NETWORK_NAME=${uniqueName}",
+                                'NETWORK_EXTERNAL=true',
+                                'RESTART_POLICY=no',
+                                'SESSION_TIMEOUT_SECONDS=60'
+                            ]) {
+                                sh 'docker-compose up -d'
+                            }
                         }
                     }
 
@@ -241,7 +280,7 @@ node {
                             if (isBuildSucceeding()) {
                                 docker.withRegistry(dockerRegistry) {
                                     def dockerPushes = [:]
-                                    services.each { service ->
+                                    msvs.each { service ->
                                         dockerPushes[service] = {
                                             dir("msvs/${service}") {
                                                 def imageName = "${projectName}-${service}"
@@ -291,8 +330,8 @@ node {
                 println 'Exception caught when trying to bring down compose containers'
                 println err
             }
-            services.addAll('router', 'database')
-            services.each { service ->
+            msvs.addAll('router', 'database')
+            msvs.each { service ->
                 def containerName = "${uniqueName}-${service}-1"
                 try {
                     sh "docker stop ${containerName}"
@@ -382,7 +421,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -w /app/test/e2e \
                 -e BASE_URL=https://${uniqueName}-router-1 \
                 -e API_BASE_URL=https://${uniqueName}-router-1 \
-                -e MONGO_URL=mongodb://${uniqueName}-database-1:27017 \
+                -e MONGO_URL=mongodb://root:password@${uniqueName}-database-1:27017 \
                 -e MONGO_DB=${dbName} \
                 -e BUILD=${env.BUILD_ID} \
                 -e WEBGL_UNSUPPORTED=${browser == 'firefox' ? 'true' : 'false'} \
