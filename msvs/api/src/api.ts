@@ -17,7 +17,7 @@ import { useServer } from 'graphql-ws/use/ws'
 import { WebSocketServer } from 'ws'
 
 import allUpgrades from './database/upgrades/all-upgrades'
-import { AppInfo } from '@gwent-oss/node-utils'
+import { AppInfo, getFileContents } from '@gwent-oss/node-utils'
 import BasicAuth from './auth/basic-auth'
 import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
@@ -51,7 +51,7 @@ export default class Api {
     Api.app = express()
     Api.httpServer = createServer(Api.app)
 
-    Api.configureSession()
+    await Api.configureSession()
     Api.exposePlainSchema()
     const subscriptionCleanup = Api.configureWebsocketServer()
     await Api.configureApolloServer(subscriptionCleanup)
@@ -73,7 +73,7 @@ export default class Api {
   /**
    * Configure the server for user sessions.
    */
-  private static configureSession() {
+  private static async configureSession() {
     const isProduction = env().NODE_ENV === NODE_ENV.Prod
     const proxy = isProduction
     Api.logger.trace(`Session timeout: "${env().SESSION_TIMEOUT_SECONDS}" second(s)`)
@@ -97,6 +97,8 @@ export default class Api {
     })
     const sessionCookieName = env().SESSION_COOKIE_NAME
     Api.logger.trace(`session cookie name: "${sessionCookieName}"`)
+    Api.logger.trace(`SESSION_SECRET_FILE: "${env().SESSION_SECRET_FILE}"`)
+    const sessionSecretFromFile = await getFileContents(env().SESSION_SECRET_FILE)
     Api.app.use(
       session({
         cookie,
@@ -105,7 +107,7 @@ export default class Api {
         resave: false,
         rolling: true,
         saveUninitialized: false,
-        secret: env().SESSION_SECRET,
+        secret: sessionSecretFromFile || env().SESSION_SECRET,
         store: Api.sessionMongoStore,
       })
     )

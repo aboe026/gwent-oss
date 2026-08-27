@@ -71,6 +71,10 @@ cd compose
 docker compose up -d
 ```
 
+You can overwrite the default ".env" values with a custom env file by adding `--env-file=/path/to/.env --env-file=/path/to/custom.env` between the `compose` and `up` targets in the command.
+
+**Note**: If changing any secret path names via environment variables, you'll need to add the `--force-recreate` option to the command for the containers to get properly recreated with the correct values.
+
 ### Stop
 
 To stop the running containers, run

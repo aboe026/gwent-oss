@@ -65,6 +65,10 @@ export default function env() {
         desc: 'The secret to use for securing user sessions',
         default: 'youshouldreallychangethisforproductionusage',
       }),
+      SESSION_SECRET_FILE: str({
+        desc: 'The path to a file containing the secret to use for securing user sessions. Takes precedence over SESSION_SECRET.',
+        default: '',
+      }),
       SESSION_TIMEOUT_SECONDS: num({
         desc: 'The time in seconds after which the session for a user expires',
         default: 30 * 60, // 30 minutes

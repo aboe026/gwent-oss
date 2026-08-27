@@ -9,8 +9,8 @@ import isDirectory from './is-directory'
  * @param filePath The path on the system for the file to read contents of.
  * @returns The contents of the file as a string, or undefined if the file does not exist or cannot access.
  */
-export default async function getFileContents(filePath: string): Promise<string | undefined> {
-  if ((await fileExists(filePath)) && !(await isDirectory(filePath))) {
+export default async function getFileContents(filePath: string | undefined): Promise<string | undefined> {
+  if (filePath && (await fileExists(filePath)) && !(await isDirectory(filePath))) {
     return fs.readFile(filePath, {
       encoding: 'utf-8',
     })
