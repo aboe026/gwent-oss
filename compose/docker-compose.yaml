@@ -24,7 +24,7 @@ services:
         max-file: '${LOG_MAX_FILE}'
 
   api:
-    image: gwent-oss-api:${GWENT_OSS_TAG}
+    image: ${DOCKERHUB_REPO}gwent-oss-api:${GWENT_OSS_TAG}
     restart: ${RESTART_POLICY}
     networks:
       - gwent-oss
@@ -54,7 +54,7 @@ services:
         max-file: '${LOG_MAX_FILE}'
 
   ui:
-    image: gwent-oss-ui:${GWENT_OSS_TAG}
+    image: ${DOCKERHUB_REPO}gwent-oss-ui:${GWENT_OSS_TAG}
     restart: ${RESTART_POLICY}
     networks:
       - gwent-oss
