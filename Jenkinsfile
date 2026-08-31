@@ -228,12 +228,14 @@ node {
                                     dockerBuilds[service] = {
                                         dir('compose') {
                                             withEnv(composeVars) {
-                                                sh """docker-compose build \
-                                                    --build-arg VERSION=${packageJson.version} \
-                                                    --build-arg BUILD=${env.BUILD_ID} \
-                                                    --no-cache \
-                                                    ${service}
-                                                """
+                                                retry(retryAttempts) {
+                                                    sh """docker-compose build \
+                                                        --build-arg VERSION=${packageJson.version} \
+                                                        --build-arg BUILD=${env.BUILD_ID} \
+                                                        --no-cache \
+                                                        ${service}
+                                                    """
+                                                }
                                             }
                                         }
                                     }
@@ -271,7 +273,6 @@ node {
                             writeYaml file: composeFileName, data: composeYaml, overwrite: true
 
                             withEnv(composeVars) {
-                                sh 'docker-compose config'
                                 sh 'docker-compose up -d'
                             }
                         }
