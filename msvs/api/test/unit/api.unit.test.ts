@@ -13,7 +13,7 @@ import ws from 'ws'
 
 import allUpgrades from '../../src/database/upgrades/all-upgrades'
 import Api from '../../src/api'
-import { AppInfo } from '@gwent-oss/node-utils'
+import * as nodeUtils from '@gwent-oss/node-utils'
 import BasicAuth from '../../src/auth/basic-auth'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
@@ -131,7 +131,7 @@ describe('Api', () => {
       const appInfoFilePath = 'app-info-file-path'
       const nodeEnv = 'development'
       const logLevel = 'INFO'
-      const getBuildNumberSpy = jest.spyOn(AppInfo, 'getBuildNumber').mockResolvedValue(0)
+      const getBuildNumberSpy = jest.spyOn(nodeUtils.AppInfo, 'getBuildNumber').mockResolvedValue(0)
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
         APP_INFO_FILE_PATH: appInfoFilePath,
         NODE_ENV: nodeEnv,
@@ -156,9 +156,9 @@ describe('Api', () => {
     })
   })
   describe('configureSession', () => {
-    it('calls to create session on app for development node env', () => {
+    it('calls to create session on app for development node env', async () => {
       const sessionCookieName = 'gwent-oss.sid'
-      testConfigureSession({
+      await testConfigureSession({
         nodeEnv: NODE_ENV.Dev,
         expectedCookie: {
           httpOnly: true,
@@ -171,12 +171,13 @@ describe('Api', () => {
           ['Session timeout: "1" second(s)'],
           ['session cookie proxy: "false"'],
           [`session cookie name: "${sessionCookieName}"`],
+          [`SESSION_SECRET_FILE: "undefined"`],
         ],
       })
     })
-    it('calls to create session on app for production node env', () => {
+    it('calls to create session on app for production node env', async () => {
       const sessionCookieName = 'gwent-oss.sid'
-      testConfigureSession({
+      await testConfigureSession({
         nodeEnv: NODE_ENV.Prod,
         expectedCookie: {
           httpOnly: true,
@@ -192,10 +193,36 @@ describe('Api', () => {
           ['session cookie proxy: "true"'],
           ['enabling "trust proxy"'],
           [`session cookie name: "${sessionCookieName}"`],
+          [`SESSION_SECRET_FILE: "undefined"`],
         ],
       })
     })
-    it('calls out to trace if enabled', () => {
+    it('prioritizes session secret from file if it exists', async () => {
+      const sessionCookieName = 'gwent-oss.sid'
+      const sessionSecretFile = '/path/to/session/secret/file'
+      await testConfigureSession({
+        nodeEnv: NODE_ENV.Prod,
+        expectedCookie: {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'strict',
+          maxAge: 1000,
+        },
+        expectedProxy: true,
+        sessionCookieName,
+        sessionSecretFile,
+        getFileContentsResponse: 'session-secret-from-file',
+        setCalls: [['trust proxy', 1]],
+        traceCalls: [
+          ['Session timeout: "1" second(s)'],
+          ['session cookie proxy: "true"'],
+          ['enabling "trust proxy"'],
+          [`session cookie name: "${sessionCookieName}"`],
+          [`SESSION_SECRET_FILE: "${sessionSecretFile}"`],
+        ],
+      })
+    })
+    it('calls out to trace if enabled', async () => {
       const cookie: CookieOptions = {
         httpOnly: true,
         secure: false,
@@ -203,7 +230,7 @@ describe('Api', () => {
         maxAge: 1000,
       }
       const sessionCookieName = 'gwent-oss.sid'
-      testConfigureSession({
+      await testConfigureSession({
         nodeEnv: NODE_ENV.Dev,
         expectedCookie: cookie,
         expectedProxy: false,
@@ -213,6 +240,7 @@ describe('Api', () => {
           ['session cookie proxy: "false"'],
           [`cookie: "${JSON.stringify(cookie)}"`],
           [`session cookie name: "${sessionCookieName}"`],
+          [`SESSION_SECRET_FILE: "undefined"`],
         ],
       })
     })
@@ -443,11 +471,13 @@ describe('Api', () => {
   })
 })
 
-function testConfigureSession({
+async function testConfigureSession({
   nodeEnv,
   expectedCookie,
   expectedProxy,
   sessionCookieName = 'gwent-oss.sid',
+  sessionSecretFile,
+  getFileContentsResponse,
   setCalls = [],
   traceEnabled,
   traceCalls = [],
@@ -456,6 +486,8 @@ function testConfigureSession({
   expectedCookie: CookieOptions
   expectedProxy: boolean
   sessionCookieName?: string
+  sessionSecretFile?: string
+  getFileContentsResponse?: string | undefined
   setCalls?: any[][]
   traceEnabled?: boolean
   traceCalls: string[][]
@@ -469,15 +501,17 @@ function testConfigureSession({
     SESSION_COOKIE_NAME: sessionCookieName,
     SESSION_SECRET: sessionSecret,
     SESSION_TIMEOUT_SECONDS: sessionTimeoutSeconds,
+    SESSION_SECRET_FILE: sessionSecretFile,
   } as any)
+  const getFileContentsSpy = jest.spyOn(nodeUtils, 'getFileContents').mockResolvedValue(getFileContentsResponse)
   const useSpy = jest.fn().mockImplementation()
   const setSpy = jest.fn().mockImplementation()
   Api['app'] = {
     use: useSpy,
     set: setSpy,
   } as any
-  const resolvedPromise = {}
-  const promiseResolveSpy = jest.spyOn(Promise, 'resolve').mockImplementation(() => resolvedPromise as any)
+  const dbConnector = { hello: 'world' }
+  const dbConnectorGetClientSpy = jest.spyOn(DbConnector, 'getClient').mockReturnValue(dbConnector as any)
   const mongoStoreCreateSpy = jest.spyOn(MongoStore, 'create').mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   Api['logger'] = {
@@ -485,9 +519,14 @@ function testConfigureSession({
     trace: traceSpy,
   } as any
 
-  expect(Api['configureSession']()).toEqual(undefined)
+  await expect(Api['configureSession']()).resolves.toEqual(undefined)
 
-  expect(envSpy.mock.calls).toEqual([[], [], [], [], [], []])
+  const envSpyCalls = [[], [], [], [], [], [], []]
+  if (!getFileContentsResponse) {
+    envSpyCalls.push([])
+  }
+  expect(envSpy.mock.calls).toEqual(envSpyCalls)
+  expect(getFileContentsSpy.mock.calls).toEqual([[sessionSecretFile]])
   expect(useSpy).toHaveBeenCalledTimes(1)
   expect(setSpy.mock.calls).toEqual(setCalls)
   expect((session as any).mock.calls).toEqual([
@@ -499,16 +538,16 @@ function testConfigureSession({
         resave: false,
         rolling: true,
         saveUninitialized: false,
-        secret: sessionSecret,
+        secret: getFileContentsResponse || sessionSecret,
         store: undefined,
       },
     ],
   ])
-  expect(promiseResolveSpy.mock.calls).toEqual([[DbConnector.getClient()]])
+  expect(dbConnectorGetClientSpy.mock.calls).toEqual([[]])
   expect(mongoStoreCreateSpy.mock.calls).toEqual([
     [
       {
-        clientPromise: resolvedPromise,
+        clientPromise: new Promise(() => {}),
         dbName: dbName,
       },
     ],
