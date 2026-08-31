@@ -64,7 +64,7 @@ async function testGetFileContents({
 
   await expect(getFileContents(filePath)).resolves.toEqual(expected)
 
-  expect(fileExistsSpy.mock.calls).toEqual([[filePath]])
+  expect(fileExistsSpy.mock.calls).toEqual(filePath ? [[filePath]] : [])
   expect(isDirectorySpy.mock.calls).toEqual(isDirectoryResponse === undefined ? [] : [[filePath]])
   expect(readSpy.mock.calls).toEqual(
     readResponse
