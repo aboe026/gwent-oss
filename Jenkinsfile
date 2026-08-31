@@ -209,6 +209,8 @@ node {
                                         composeYaml.services.router.volumes[0] = "${mountDir}/compose/caddy/Caddyfile:/etc/caddy/Caddyfile"
                                         writeYaml file: composeFileName, data: composeYaml, overwrite: true
 
+                                        sh "cat ${composeFileName}"
+
                                         sh 'docker-compose build router --no-cache'
                                     }
                                 }
@@ -398,7 +400,7 @@ node {
     }
 }
 
-def runE2eTest(String displayName, String suiteName, String browser, String uniqueName, String mountDir, String testcafeImageTag, String dbName, String mongoUser, String, mongoPass) {
+def runE2eTest(String displayName, String suiteName, String browser, String uniqueName, String mountDir, String testcafeImageTag, String dbName, String mongoUser, String mongoPass) {
     def exceptionThrown = false
     stage(displayName) {
         try {
