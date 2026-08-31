@@ -38,6 +38,7 @@ node {
     def mongoPass = 'password'
     def mongoUserFile = 'compose/secrets/mongo_user'
     def mongoPassFile = 'compose/secrets/mongo_pass'
+    def sessionSecretFile = 'compose/secrets/session'
     def msvs = []
     def retryAttempts = 5
 
@@ -102,6 +103,10 @@ node {
                             file: mongoPassFile,
                             text: mongoPass
                         )
+                        writeFile(
+                            file: sessionSecretFile,
+                            text: 'session-secret-from-file'
+                        )
 
                         composeVars = [
                             "COMPOSE_PROJECT_NAME=${uniqueName}",
@@ -123,6 +128,7 @@ node {
                             'NETWORK_EXTERNAL=true',
                             'RESTART_POLICY=no',
                             'SESSION_TIMEOUT_SECONDS=60'
+                            "SESSION_SECRET_FILE=${mountDir}/${sessionSecretFile}"
                         ]
                     }
                     stage('Install Compose') {
@@ -254,15 +260,6 @@ node {
                                     }
                                 }
                                 parallel dockerBuilds
-
-                                [*msvs, 'router'].each { service ->
-                                    def imageName = "${projectName}-${service}"
-                                    def pushImageName = "${dockerRegistry}/${imageName}"
-                                    sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
-                                    sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:latest"
-                                    println "docker push ${pushImageName}:${dockerPushTag}"
-                                    println "docker push ${pushImageName}:latest"
-                                }
                             }
                         }
                     )
