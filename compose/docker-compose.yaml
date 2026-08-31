@@ -74,6 +74,7 @@ services:
         max-file: '${LOG_MAX_FILE}'
 
   router:
+    image: ${GWENT_OSS_REPO}:gwent-oss-router:${GWENT_OSS_TAG}
     build:
       context: caddy
       dockerfile: caddy.Dockerfile

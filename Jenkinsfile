@@ -98,6 +98,27 @@ node {
                             file: mongoPassFile,
                             text: mongoPass
                         )
+
+                        composeVars = [
+                            "COMPOSE_PROJECT_NAME=${uniqueName}",
+                            "GWENT_OSS_TAG=${dockerTag}",
+                            "HOST_NAME=${uniqueName}-router-1",
+                            'LIMIT_HTTP_EVENTS_NOT_AUTH=100',
+                            'LIMIT_HTTP_EVENTS_YES_AUTH=100',
+                            'LIMIT_HTTP_BURST_NOT_AUTH=100',
+                            'LIMIT_HTTP_BURST_YES_AUTH=100',
+                            'LIMIT_WS_EVENTS_NOT_AUTH=100',
+                            'LIMIT_WS_EVENTS_YES_AUTH=100',
+                            'LIMIT_WS_BURST_NOT_AUTH=100',
+                            'LIMIT_WS_BURST_YES_AUTH=100',
+                            "MONGO_DB=${projectName}-e2e",
+                            "MONGO_USER_FILE=${mountDir}/${mongoUserFile}",
+                            "MONGO_PASS_FILE=${mountDir}/${mongoPassFile}",
+                            "NETWORK_NAME=${uniqueName}",
+                            'NETWORK_EXTERNAL=true',
+                            'RESTART_POLICY=no',
+                            'SESSION_TIMEOUT_SECONDS=60'
+                        ]
                     }
                     stage('Install Compose') {
                         sh "curl -L 'https://github.com/docker/compose/releases/download/v${composeVersion}/docker-compose-linux-x86_64' -o /usr/local/bin/docker-compose"
@@ -204,14 +225,9 @@ node {
                                 }
                                 dockerBuilds['router'] = {
                                     dir('compose') {
-                                        composeYaml.services.router.image = "${projectName}-router:${dockerTag}"
-                                        composeYaml.services.router.remove('ports') // remove exposed port to avoid port conflicts
-                                        composeYaml.services.router.volumes[0] = "${mountDir}/compose/caddy/Caddyfile:/etc/caddy/Caddyfile"
-                                        writeYaml file: composeFileName, data: composeYaml, overwrite: true
-
-                                        sh "cat ${composeFileName}"
-
-                                        sh 'docker-compose build router --no-cache'
+                                        withEnv(composeVars) {
+                                            sh 'docker-compose build router --no-cache'
+                                        }
                                     }
                                 }
                                 parallel dockerBuilds
@@ -221,26 +237,10 @@ node {
 
                     stage('Start') {
                         dir('compose') {
-                            composeVars = [
-                                "COMPOSE_PROJECT_NAME=${uniqueName}",
-                                "GWENT_OSS_TAG=${dockerTag}",
-                                "HOST_NAME=${uniqueName}-router-1",
-                                'LIMIT_HTTP_EVENTS_NOT_AUTH=100',
-                                'LIMIT_HTTP_EVENTS_YES_AUTH=100',
-                                'LIMIT_HTTP_BURST_NOT_AUTH=100',
-                                'LIMIT_HTTP_BURST_YES_AUTH=100',
-                                'LIMIT_WS_EVENTS_NOT_AUTH=100',
-                                'LIMIT_WS_EVENTS_YES_AUTH=100',
-                                'LIMIT_WS_BURST_NOT_AUTH=100',
-                                'LIMIT_WS_BURST_YES_AUTH=100',
-                                "MONGO_DB=${projectName}-e2e",
-                                "MONGO_USER_FILE=${mountDir}/${mongoUserFile}",
-                                "MONGO_PASS_FILE=${mountDir}/${mongoPassFile}",
-                                "NETWORK_NAME=${uniqueName}",
-                                'NETWORK_EXTERNAL=true',
-                                'RESTART_POLICY=no',
-                                'SESSION_TIMEOUT_SECONDS=60'
-                            ]
+                            composeYaml.services.router.remove('ports') // remove exposed port to avoid port conflicts
+                            composeYaml.services.router.volumes[0] = "${mountDir}/compose/caddy/Caddyfile:/etc/caddy/Caddyfile"
+                            writeYaml file: composeFileName, data: composeYaml, overwrite: true
+
                             withEnv(composeVars) {
                                 sh 'docker-compose up -d'
                             }
