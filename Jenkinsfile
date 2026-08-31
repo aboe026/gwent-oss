@@ -127,7 +127,7 @@ node {
                             "NETWORK_NAME=${uniqueName}",
                             'NETWORK_EXTERNAL=true',
                             'RESTART_POLICY=no',
-                            'SESSION_TIMEOUT_SECONDS=60'
+                            'SESSION_TIMEOUT_SECONDS=60',
                             "SESSION_SECRET_FILE=${mountDir}/${sessionSecretFile}"
                         ]
                     }
