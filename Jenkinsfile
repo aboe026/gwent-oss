@@ -122,16 +122,26 @@ node {
                         ]
                     }
                     stage('Install Compose') {
-                        sh "curl -L 'https://github.com/docker/compose/releases/download/v${composeVersion}/docker-compose-linux-x86_64' -o /usr/local/bin/docker-compose"
+                        retry(retryAttempts) {
+                            sh "curl -L 'https://github.com/docker/compose/releases/download/v${composeVersion}/docker-compose-linux-x86_64' -o /usr/local/bin/docker-compose"
+                        }
                         sh 'chmod +x /usr/local/bin/docker-compose'
                         sh 'docker-compose --version'
                         sh "docker network create ${uniqueName}"
                     }
                     stage('Pull Images') {
-                        sh "docker pull ${mongoImage}"
-                        sh "docker pull ${nodeImage}"
-                        sh "docker pull ${nodeImage}-alpine"
-                        sh "docker pull testcafe/testcafe:${testcafeVersion}"
+                        retry(retryAttempts) {
+                            sh "docker pull ${mongoImage}"
+                        }
+                        retry(retryAttempts) {
+                            sh "docker pull ${nodeImage}"
+                        }
+                        retry(retryAttempts) {
+                            sh "docker pull ${nodeImage}-alpine"
+                        }
+                        retry(retryAttempts) {
+                            sh "docker pull testcafe/testcafe:${testcafeVersion}"
+                        }
                     }
 
                     parallel(
