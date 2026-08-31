@@ -46,7 +46,9 @@ node {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
-                        checkout scm
+                        retry(retryAttempts) {
+                            checkout scm
+                        }
 
                         def nvmrc = readFile '.nvmrc'
                         nodeImage = "node:${nvmrc.trim()}"
