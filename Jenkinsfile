@@ -146,7 +146,12 @@ node {
 
                     parallel(
                         'node': {
-                            docker.image(mongoImage).withRun("--name=${uniqueName}-mongo --network=${uniqueName}") {
+                            docker.image(mongoImage).withRun("""
+                                --name=${uniqueName}-mongo
+                                --network=${uniqueName}
+                                -e MONGO_INITDB_ROOT_USERNAME=${mongoUser}
+                                -e MONGO_INITDB_ROOT_PASSWORD=${mongoPass}
+                            """) {
                                 dockerVolumesToDelete.addAll(dockerUtil.getContainerVolumes(containerName: "${uniqueName}-mongo"))
                                 docker.image(nodeImage).inside("--network=${uniqueName}") {
                                     stage('Install') {
