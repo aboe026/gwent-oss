@@ -24,6 +24,7 @@ node {
     def exceptionThrown = false
     def packageJson
     def projectName
+    def gwentOssRepo = 'aboe026/'
     def dockerTag
     def dockerPushTag
     def uniqueName
@@ -102,6 +103,7 @@ node {
 
                         composeVars = [
                             "COMPOSE_PROJECT_NAME=${uniqueName}",
+                            "GWENT_OSS_REPO=${gwentOssRepo}",
                             "GWENT_OSS_TAG=${dockerTag}",
                             "HOST_NAME=${uniqueName}-router-1",
                             'LIMIT_HTTP_EVENTS_NOT_AUTH=100',
@@ -216,16 +218,15 @@ node {
                                 def dockerBuilds = [:]
                                 msvs.each { service ->
                                     dockerBuilds[service] = {
-                                        dir("msvs/${service}") {
-                                            sh """docker build \
-                                                --tag=${projectName}-${service}:${dockerTag} \
-                                                --build-arg VERSION=${packageJson.version} \
-                                                --build-arg BUILD=${env.BUILD_ID} \
-                                                --no-cache \
-                                                --progress=plain \
-                                                --file=Dockerfile \
-                                                ../../
-                                            """
+                                        dir('compose') {
+                                            withEnv(composeVars) {
+                                                sh """docker-compose build \
+                                                    --build-arg VERSION=${packageJson.version} \
+                                                    --build-arg BUILD=${env.BUILD_ID} \
+                                                    --no-cache \
+                                                    ${service}
+                                                """
+                                            }
                                         }
                                     }
                                 }
@@ -265,12 +266,14 @@ node {
                                 sh 'docker-compose up -d'
                             }
 
-                            def imageName = "${projectName}-router"
-                            def pushImageName = "${dockerRegistry}/${imageName}"
-                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
-                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:latest"
-                            println "docker push ${pushImageName}:${dockerPushTag}"
-                            println "docker push ${pushImageName}:latest"
+                            [*msvs, 'router'].each { service ->
+                                def imageName = "${projectName}-${service}"
+                                def pushImageName = "${dockerRegistry}/${imageName}"
+                                sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
+                                sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:latest"
+                                println "docker push ${pushImageName}:${dockerPushTag}"
+                                println "docker push ${pushImageName}:latest"
+                            }
                         }
                     }
 
@@ -295,24 +298,12 @@ node {
                             if (isBuildSucceeding()) {
                                 docker.withRegistry(dockerRegistry) {
                                     def dockerPushes = [:]
-                                    msvs.each { service ->
+                                    [*msvs, 'router'].each { service ->
                                         dockerPushes[service] = {
-                                            dir("msvs/${service}") {
-                                                def imageName = "${projectName}-${service}"
-                                                def pushImageName = "${dockerRegistry}/${imageName}"
-                                                sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
-                                                sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:latest"
-                                                sh "docker push ${pushImageName}:${dockerPushTag}"
-                                                sh "docker push ${pushImageName}:latest"
-                                            }
-                                        }
-                                    }
-                                    dockerPushes['router'] = {
-                                        dir('compose') {
-                                            def imageName = "${projectName}-router"
+                                            def imageName = "${projectName}-${service}"
                                             def pushImageName = "${dockerRegistry}/${imageName}"
-                                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
-                                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:latest"
+                                            sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
+                                            sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:latest"
                                             sh "docker push ${pushImageName}:${dockerPushTag}"
                                             sh "docker push ${pushImageName}:latest"
                                         }
@@ -359,8 +350,7 @@ node {
                 println 'Exception caught when trying to bring down compose containers'
                 println err
             }
-            msvs.addAll('router', 'database')
-            msvs.each { service ->
+            [*msvs, 'router', 'database'].each { service ->
                 def containerName = "${uniqueName}-${service}-1"
                 try {
                     sh "docker stop ${containerName}"
@@ -374,7 +364,9 @@ node {
                     println "non-fatal error trying to remove docker container ${containerName}"
                     println err
                 }
-                def imageName = "${projectName}-${service}:${dockerTag}"
+            }
+            [*msvs, 'router'].each { service ->
+                def imageName = "${gwentOssRepo}${projectName}-${service}:${dockerTag}"
                 try {
                     sh "docker rmi ${imageName}"
                 } catch (err) {
