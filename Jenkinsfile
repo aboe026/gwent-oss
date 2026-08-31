@@ -259,6 +259,13 @@ node {
                             withEnv(composeVars) {
                                 sh 'docker-compose up -d'
                             }
+
+                            def imageName = "${projectName}-router"
+                            def pushImageName = "${dockerRegistry}/${imageName}"
+                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
+                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:latest"
+                            println "docker push ${pushImageName}:${dockerPushTag}"
+                            println "docker push ${pushImageName}:latest"
                         }
                     }
 
@@ -299,8 +306,8 @@ node {
                                         dir('compose') {
                                             def imageName = "${projectName}-router"
                                             def pushImageName = "${dockerRegistry}/${imageName}"
-                                            sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
-                                            sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:latest"
+                                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
+                                            sh "docker tag aboe026/${imageName}:${dockerTag} ${pushImageName}:latest"
                                             sh "docker push ${pushImageName}:${dockerPushTag}"
                                             sh "docker push ${pushImageName}:latest"
                                         }
