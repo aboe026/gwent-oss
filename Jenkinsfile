@@ -158,7 +158,7 @@ node {
                                     stage('Func Test') {
                                         try {
                                             withEnv([
-                                                "MONGO_URL=mongodb://root:password@${uniqueName}-mongo:27017",
+                                                "MONGO_URL=mongodb://${mongoUser}:${mongoPass}@${uniqueName}-mongo:27017",
                                                 'MONGO_DB=gwent-func'
                                             ]) {
                                                 sh 'yarn test-func'
@@ -253,7 +253,9 @@ node {
                             uniqueName,
                             mountDir,
                             testcafeImageTag,
-                            e2eDbName
+                            e2eDbName,
+                            mongoUser,
+                            mongoPass
                         )
                     }
                     archiveArtifacts artifacts: 'test/e2e/screenshots/**/*', allowEmptyArchive: true
@@ -396,7 +398,7 @@ node {
     }
 }
 
-def runE2eTest(String displayName, String suiteName, String browser, String uniqueName, String mountDir, String testcafeImageTag, String dbName) {
+def runE2eTest(String displayName, String suiteName, String browser, String uniqueName, String mountDir, String testcafeImageTag, String dbName, String mongoUser, String, mongoPass) {
     def exceptionThrown = false
     stage(displayName) {
         try {
@@ -409,7 +411,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -w /app/test/e2e \
                 -e BASE_URL=https://${uniqueName}-router-1 \
                 -e API_BASE_URL=https://${uniqueName}-router-1 \
-                -e MONGO_URL=mongodb://root:password@${uniqueName}-database-1:27017 \
+                -e MONGO_URL=mongodb://${mongoUser}:${mongoPass}@${uniqueName}-database-1:27017 \
                 -e MONGO_DB=${dbName} \
                 -e BUILD=${env.BUILD_ID} \
                 -e WEBGL_UNSUPPORTED=${browser == 'firefox' ? 'true' : 'false'} \
