@@ -254,6 +254,15 @@ node {
                                     }
                                 }
                                 parallel dockerBuilds
+
+                                [*msvs, 'router'].each { service ->
+                                    def imageName = "${projectName}-${service}"
+                                    def pushImageName = "${dockerRegistry}/${imageName}"
+                                    sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
+                                    sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:latest"
+                                    println "docker push ${pushImageName}:${dockerPushTag}"
+                                    println "docker push ${pushImageName}:latest"
+                                }
                             }
                         }
                     )
@@ -265,16 +274,8 @@ node {
                             writeYaml file: composeFileName, data: composeYaml, overwrite: true
 
                             withEnv(composeVars) {
+                                sh 'docker-compose config'
                                 sh 'docker-compose up -d'
-                            }
-
-                            [*msvs, 'router'].each { service ->
-                                def imageName = "${projectName}-${service}"
-                                def pushImageName = "${dockerRegistry}/${imageName}"
-                                sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
-                                sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:latest"
-                                println "docker push ${pushImageName}:${dockerPushTag}"
-                                println "docker push ${pushImageName}:latest"
                             }
                         }
                     }
