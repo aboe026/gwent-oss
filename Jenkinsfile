@@ -38,6 +38,7 @@ node {
     def mongoUserFile = 'compose/secrets/mongo_user'
     def mongoPassFile = 'compose/secrets/mongo_pass'
     def msvs = []
+    def retryAttempts = 5
 
     try {
         timeout(time: 80, unit: 'MINUTES') {
@@ -215,18 +216,22 @@ node {
                                 }
                                 dockerBuilds['testcafe'] = {
                                     dir('test/e2e') {
-                                        sh """docker build \
-                                            --tag=testcafe/testcafe:${testcafeImageTag} \
-                                            --no-cache \
-                                            --progress=plain \
-                                            .
-                                        """
+                                        retry(retryAttempts) {
+                                            sh """docker build \
+                                                --tag=testcafe/testcafe:${testcafeImageTag} \
+                                                --no-cache \
+                                                --progress=plain \
+                                                .
+                                            """
+                                        }
                                     }
                                 }
                                 dockerBuilds['router'] = {
                                     dir('compose') {
                                         withEnv(composeVars) {
-                                            sh 'docker-compose build router --no-cache'
+                                            retry(retryAttempts) {
+                                                sh 'docker-compose build router --no-cache'
+                                            }
                                         }
                                     }
                                 }
@@ -278,6 +283,16 @@ node {
                                                 sh "docker push ${pushImageName}:${dockerPushTag}"
                                                 sh "docker push ${pushImageName}:latest"
                                             }
+                                        }
+                                    }
+                                    dockerPushes['router'] = {
+                                        dir('compose') {
+                                            def imageName = "${projectName}-router"
+                                            def pushImageName = "${dockerRegistry}/${imageName}"
+                                            sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
+                                            sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:latest"
+                                            sh "docker push ${pushImageName}:${dockerPushTag}"
+                                            sh "docker push ${pushImageName}:latest"
                                         }
                                     }
 
