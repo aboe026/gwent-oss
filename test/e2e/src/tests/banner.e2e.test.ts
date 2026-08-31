@@ -11,7 +11,7 @@ import SignupPage from '../page-objects/signup-page'
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
 
-fixture('Banner').only.page(env.BASE_URL)
+fixture('Banner').page(env.BASE_URL)
 
 test('Main title redirects to home page when logged in', async (t) => {
   const username = `banner-main-title-redirect-${t.ctx.start}`

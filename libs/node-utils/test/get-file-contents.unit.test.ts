@@ -5,14 +5,23 @@ import getFileContents from '../src/get-file-contents'
 import * as isDirectory from '../src/is-directory'
 
 describe('get-file-contents', () => {
+  it('returns undefined if filePath is undefined', async () => {
+    await testGetFileContents({
+      filePath: undefined,
+      fileExistsResponse: false,
+      expected: undefined,
+    })
+  })
   it('returns undefined if file does not exist', async () => {
     await testGetFileContents({
+      filePath: 'file-path',
       fileExistsResponse: false,
       expected: undefined,
     })
   })
   it('returns undefined if file exists but is directory', async () => {
     await testGetFileContents({
+      filePath: 'file-path',
       fileExistsResponse: true,
       isDirectoryResponse: true,
       expected: undefined,
@@ -21,6 +30,7 @@ describe('get-file-contents', () => {
   it('returns file contents if it exists', async () => {
     const contents = 'file-contents'
     await testGetFileContents({
+      filePath: 'file-path',
       fileExistsResponse: true,
       isDirectoryResponse: false,
       readResponse: contents,
@@ -30,17 +40,18 @@ describe('get-file-contents', () => {
 })
 
 async function testGetFileContents({
+  filePath,
   fileExistsResponse,
   isDirectoryResponse,
   readResponse,
   expected,
 }: {
+  filePath: string | undefined
   fileExistsResponse: boolean
   isDirectoryResponse?: boolean
   readResponse?: string
   expected: string | undefined
 }) {
-  const filePath = 'file-path'
   const fileExistsSpy = jest.spyOn(fileExists, 'default').mockResolvedValue(fileExistsResponse)
   const isDirectorySpy = jest.spyOn(isDirectory, 'default')
   if (isDirectoryResponse !== undefined) {

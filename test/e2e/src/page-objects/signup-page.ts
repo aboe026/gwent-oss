@@ -1,9 +1,9 @@
 import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
+import { HTML_IDS, ROUTES } from '@gwent-oss/constants'
 import LoginForm from '../components/login-form'
 import { PASSWORD } from '../util/e2e-constants'
-import { HTML_IDS, ROUTES } from '@gwent-oss/constants'
 
 export default class SignupPage {
   static elements = {
