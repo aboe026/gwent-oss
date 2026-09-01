@@ -34,7 +34,7 @@ services:
     depends_on:
       - database
     environment:
-      CORS_ORIGIN: https://${HOST_NAME}
+      CORS_ORIGIN: https://${HOST_NAME}:${PORT}
       JSON_UPLOAD_LIMIT: ${JSON_UPLOAD_LIMIT}
       LOG_LEVEL: ${LOG_LEVEL}
       MONGO_DB: ${MONGO_DB}

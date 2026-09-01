@@ -338,7 +338,7 @@ The following non-NodeJS related softwares should be monitored for upgrades:
 
 - [MongoDB](https://www.mongodb.com/)
   - Change the docker image tag in the [compose yaml](./compose/docker-compose.yaml)
-- [NginX](https://nginx.org/)
-  - Change the docker image tag in the [nginx Dockerfile](./compose/nginx/Dockerfile)
+- [Caddy](https://caddyserver.com/)
+  - Change the docker image tag in the [Caddy Dockerfile](./compose/caddy/caddy.Dockerfile)
 - [Docker Compose](https://docs.docker.com/compose/)
   - Change the `composeVersion` variable in the [Jenkinsfile](./Jenkinsfile)
