@@ -227,18 +227,15 @@ node {
                         'docker': {
                             stage('Build Images') {
                                 def dockerBuilds = [:]
-                                msvs.each { service ->
-                                    dockerBuilds[service] = {
-                                        dir('compose') {
-                                            withEnv(composeVars) {
-                                                retry(retryAttempts) {
-                                                    sh """docker-compose build \
-                                                        --build-arg VERSION=${packageJson.version} \
-                                                        --build-arg BUILD=${env.BUILD_ID} \
-                                                        --no-cache \
-                                                        ${service}
-                                                    """
-                                                }
+                                dockerBuilds['compose'] = {
+                                    dir('compose') {
+                                        withEnv(composeVars) {
+                                            retry(retryAttempts) {
+                                                sh """docker-compose build \
+                                                    --build-arg VERSION=${packageJson.version} \
+                                                    --build-arg BUILD=${env.BUILD_ID} \
+                                                    --no-cache
+                                                """
                                             }
                                         }
                                     }
@@ -253,15 +250,6 @@ node {
                                                 --progress=plain \
                                                 .
                                             """
-                                        }
-                                    }
-                                }
-                                dockerBuilds['router'] = {
-                                    dir('compose') {
-                                        withEnv(composeVars) {
-                                            retry(retryAttempts) {
-                                                sh 'docker-compose build router --no-cache'
-                                            }
                                         }
                                     }
                                 }
@@ -454,7 +442,7 @@ def runE2eTest(Map cfg) {
                 -e WEBGL_UNSUPPORTED=${cfg.browser == 'firefox' ? 'true' : 'false'} \
                 -e CONCURRENCY=8 \
                 -e IGNORE_CERTIFICATE_ERRORS=true \
-                -e SESSION_SECRET= ${cfg.sessionSecret} \
+                -e SESSION_SECRET=${cfg.sessionSecret} \
                 -i testcafe/testcafe:${cfg.testcafeImageTag} \
                     \'${cfg.browser} --ignore-certificate-errors\' \
                     build/src/tests \

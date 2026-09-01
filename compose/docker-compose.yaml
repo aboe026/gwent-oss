@@ -30,7 +30,9 @@ services:
       - gwent-oss
     build:
       context: ../
-      dockerfile: msvs/api/Dockerfile
+      target: api
+      args:
+        TARGET: api
     depends_on:
       - database
     environment:
@@ -60,7 +62,9 @@ services:
       - gwent-oss
     build:
       context: ../
-      dockerfile: msvs/ui/Dockerfile
+      target: ui
+      args:
+        TARGET: ui
     depends_on:
       - api
     environment:
