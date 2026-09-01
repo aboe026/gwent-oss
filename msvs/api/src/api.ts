@@ -17,7 +17,7 @@ import { useServer } from 'graphql-ws/use/ws'
 import { WebSocketServer } from 'ws'
 
 import allUpgrades from './database/upgrades/all-upgrades'
-import { AppInfo, getFileContents } from '@gwent-oss/node-utils'
+import { AppInfo } from '@gwent-oss/node-utils'
 import BasicAuth from './auth/basic-auth'
 import CorsUtil from './util/cors-util'
 import DbConnector from './database/db-connector'
@@ -26,6 +26,7 @@ import env from './env'
 import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from './util/presentable-error'
 import schema from './graphql/executable-schema'
+import SessionUtil from './util/session-util'
 import { startupText } from '@gwent-oss/utils'
 import { version } from '../package.json'
 import WebSocketAuth from './auth/websocket-auth'
@@ -97,9 +98,6 @@ export default class Api {
       dbName: env().MONGO_DB,
     })
     const sessionCookieName = env().SESSION_COOKIE_NAME
-    Api.logger.trace(`session cookie name: "${sessionCookieName}"`)
-    Api.logger.trace(`SESSION_SECRET_FILE: "${env().SESSION_SECRET_FILE}"`)
-    const sessionSecretFromFile = await getFileContents(env().SESSION_SECRET_FILE)
     Api.app.use(
       session({
         cookie,
@@ -108,7 +106,7 @@ export default class Api {
         resave: false,
         rolling: true,
         saveUninitialized: false,
-        secret: sessionSecretFromFile || env().SESSION_SECRET,
+        secret: await SessionUtil.getSessionSecret(),
         store: Api.sessionMongoStore,
       })
     )
