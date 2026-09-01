@@ -245,6 +245,7 @@ node {
                                     dir('test/e2e') {
                                         retry(retryAttempts) {
                                             sh """docker build \
+                                                --file=e2e.Dockerfile \
                                                 --tag=testcafe/testcafe:${testcafeImageTag} \
                                                 --no-cache \
                                                 --progress=plain \

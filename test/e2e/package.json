@@ -7,7 +7,7 @@
     "build": "yarn g:npm-run-all --sequential build-tsc remove-context-overrides",
     "build-all": "yarn g:recurse @gwent-oss/test-e2e run build",
     "build-tsc": "yarn g:tsc --build",
-    "build-image": "docker build --tag=testcafe/testcafe:${IMAGE_TAG:-yarn-pnp} --progress=plain ${BUILD_OPTIONS:-} .",
+    "build-image": "docker build --file=e2e.Dockerfile --tag=testcafe/testcafe:${IMAGE_TAG:-yarn-pnp} --progress=plain ${BUILD_OPTIONS:-} .",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
     "debug": "yarn start --debug-on-fail",
     "lint": "yarn g:lint",
