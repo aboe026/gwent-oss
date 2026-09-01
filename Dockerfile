@@ -111,7 +111,7 @@ RUN adduser --disabled-password --gecos "" gwent-oss
 
 COPY --chown=gwent-oss:gwent-oss --from=build ${APP_DIR} ${APP_DIR}
 
-WORKDIR ${APP_DIR}/msvs/${TARGET}}
+WORKDIR ${APP_DIR}/msvs/${TARGET}
 
 USER gwent-oss
 
