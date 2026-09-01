@@ -38,6 +38,7 @@ node {
     def mongoPass = 'password'
     def mongoUserFile = 'compose/secrets/mongo_user'
     def mongoPassFile = 'compose/secrets/mongo_pass'
+    def sessionSecret = 'SessionSecretFromFile'
     def sessionSecretFile = 'compose/secrets/session'
     def msvs = []
     def retryAttempts = 5
@@ -105,7 +106,7 @@ node {
                         )
                         writeFile(
                             file: sessionSecretFile,
-                            text: 'SessionSecretFromFile'
+                            text: sessionSecret
                         )
 
                         composeVars = [
@@ -279,17 +280,18 @@ node {
                     }
 
                     e2eSuites.each { e2eSuite ->
-                        runE2eTest(
-                            "E2E ${e2eSuite.name}",
-                            "e2e-${e2eSuite.name.toLowerCase()}",
-                            e2eSuite.browser,
-                            uniqueName,
-                            mountDir,
-                            testcafeImageTag,
-                            e2eDbName,
-                            mongoUser,
-                            mongoPass
-                        )
+                        runE2eTest([
+                            displayName: "E2E ${e2eSuite.name}",
+                            suiteName: "e2e-${e2eSuite.name.toLowerCase()}",
+                            browser: e2eSuite.browser,
+                            uniqueName: uniqueName,
+                            mountDir: mountDir,
+                            testcafeImageTag: testcafeImageTag,
+                            dbName: e2eDbName,
+                            mongoUser: mongoUser,
+                            mongoPass: mongoPass,
+                            sessionSecret: sessionSecret
+                        ])
                     }
                     archiveArtifacts artifacts: 'test/e2e/screenshots/**/*', allowEmptyArchive: true
                     dockerVolumesToDelete.addAll(dockerUtil.getContainerVolumes(containerName: "${uniqueName}-database-1"))
@@ -430,40 +432,56 @@ node {
     }
 }
 
-def runE2eTest(String displayName, String suiteName, String browser, String uniqueName, String mountDir, String testcafeImageTag, String dbName, String mongoUser, String mongoPass) {
+class E2eConfig {
+
+    String displayName
+    String suiteName
+    String browser
+    String uniqueName
+    String mountDir
+    String testcafeImageTag
+    String dbName
+    String mongoUser
+    String mongoPass
+    String sessionSecret
+
+}
+
+def runE2eTest(E2eConfig cfg) {
     def exceptionThrown = false
     stage(displayName) {
         try {
             sh """docker run \
                 --rm \
-                --name=${uniqueName}-${suiteName} \
+                --name=${cfg.uniqueName}-${cfg.suiteName} \
                 --shm-size=2g \
-                --network=${uniqueName} \
-                -v ${mountDir}:/app \
+                --network=${cfg.uniqueName} \
+                -v ${cfg.mountDir}:/app \
                 -w /app/test/e2e \
-                -e BASE_URL=https://${uniqueName}-router-1 \
-                -e API_BASE_URL=https://${uniqueName}-router-1 \
-                -e MONGO_URL=mongodb://${mongoUser}:${mongoPass}@${uniqueName}-database-1:27017 \
-                -e MONGO_DB=${dbName} \
+                -e BASE_URL=https://${cfg.uniqueName}-router-1 \
+                -e API_BASE_URL=https://${cfg.uniqueName}-router-1 \
+                -e MONGO_URL=mongodb://${cfg.mongoUser}:${cfg.mongoPass}@${cfg.uniqueName}-database-1:27017 \
+                -e MONGO_DB=${cfg.dbName} \
                 -e BUILD=${env.BUILD_ID} \
-                -e WEBGL_UNSUPPORTED=${browser == 'firefox' ? 'true' : 'false'} \
-                -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+                -e WEBGL_UNSUPPORTED=${cfg.browser == 'firefox' ? 'true' : 'false'} \
                 -e CONCURRENCY=8 \
-                -i testcafe/testcafe:${testcafeImageTag} \
-                    \'${browser} --ignore-certificate-errors\' \
+                -e IGNORE_CERTIFICATE_ERRORS=true \
+                -e SESSION_SECRET= ${cfg.sessionSecret} \
+                -i testcafe/testcafe:${cfg.testcafeImageTag} \
+                    \'${cfg.browser} --ignore-certificate-errors\' \
                     build/src/tests \
                     --config-file=build/.testcaferc.js \
-                    --reporter spec,xunit:results/${suiteName}.xml \
+                    --reporter spec,xunit:results/${cfg.suiteName}.xml \
                     --quarantine-mode \
                     --screenshots path=screenshots/,takeOnFails=true
             """
         } catch (err) {
             exceptionThrown = true
-            println "Exception was caught in try block of suite '${suiteName}' tests stage."
+            println "Exception was caught in try block of suite '${cfg.suiteName}' tests stage."
             println err
         } finally {
             dir('test/e2e') {
-                def filePath = "results/${suiteName}.xml"
+                def filePath = "results/${cfg.suiteName}.xml"
                 if (fileExists(filePath)) {
                     def contents = readFile filePath
                     if (contents) {
@@ -476,7 +494,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                                         testsuite.testcase.each { testcase ->
                                             def unstable = false
                                             def testcaseClass = testcase['@classname'].text()
-                                            testcase['@classname'] = "${suiteName}.${testcaseClass}".toString()
+                                            testcase['@classname'] = "${cfg.suiteName}.${testcaseClass}".toString()
                                             def testcaseName = testcase['@name'].text()
                                             if (testcaseName.contains('(unstable)')) {
                                                 unstable = true
