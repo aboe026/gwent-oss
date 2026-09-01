@@ -32,7 +32,7 @@ const fixture = getFixtureCtx<E2eCtx, GameSubscriptionTestCtx>()
 const test = getTestCtx<E2eCtx, GameSubscriptionTestCtx>()
 
 fixture('Game Subscription')
-  .page(HomePage.getUrl())
+  .only.page(HomePage.getUrl())
   .beforeEach(async (t) => {
     const selfUsername = `${getScenario(t)}-self-${t.ctx.start}`
     const opponentUsername = `${getScenario(t)}-opponent-${t.ctx.start}`

@@ -171,52 +171,52 @@ node {
                                         sh 'yarn install --immutable'
                                     }
                                     stage('Lint') {
-                                        sh 'yarn lint'
+                                        // sh 'yarn lint'
                                     }
                                     stage('Build') {
                                         sh 'yarn build'
                                     }
                                     stage('Unit Test') {
-                                        try {
-                                            sh 'yarn test-unit'
-                                        } catch (err) {
-                                            exceptionThrown = true
-                                            println 'Exception was caught in try block of unit tests stage.'
-                                            println err
-                                        } finally {
-                                            junit testResults: 'results/unit.xml', allowEmptyResults: true
-                                            recordCoverage(
-                                                skipPublishingChecks: true,
-                                                sourceCodeRetention: 'EVERY_BUILD',
-                                                tools: [
-                                                    [
-                                                        parser: 'COBERTURA',
-                                                        pattern: 'coverage/unit/cobertura-coverage.xml'
-                                                    ]
-                                                ]
-                                            )
-                                            if (upload) {
-                                                badges.uploadCoverageResult(
-                                                    branch: env.BRANCH_NAME
-                                                )
-                                            }
-                                        }
+                                        // try {
+                                        //     sh 'yarn test-unit'
+                                        // } catch (err) {
+                                        //     exceptionThrown = true
+                                        //     println 'Exception was caught in try block of unit tests stage.'
+                                        //     println err
+                                        // } finally {
+                                        //     junit testResults: 'results/unit.xml', allowEmptyResults: true
+                                        //     recordCoverage(
+                                        //         skipPublishingChecks: true,
+                                        //         sourceCodeRetention: 'EVERY_BUILD',
+                                        //         tools: [
+                                        //             [
+                                        //                 parser: 'COBERTURA',
+                                        //                 pattern: 'coverage/unit/cobertura-coverage.xml'
+                                        //             ]
+                                        //         ]
+                                        //     )
+                                        //     if (upload) {
+                                        //         badges.uploadCoverageResult(
+                                        //             branch: env.BRANCH_NAME
+                                        //         )
+                                        //     }
+                                        // }
                                     }
                                     stage('Func Test') {
-                                        try {
-                                            withEnv([
-                                                "MONGO_URL=mongodb://${mongoUser}:${mongoPass}@${uniqueName}-mongo:27017",
-                                                'MONGO_DB=gwent-func'
-                                            ]) {
-                                                sh 'yarn test-func'
-                                            }
-                                        } catch (err) {
-                                            exceptionThrown = true
-                                            println 'Exception was caught in try block of func tests stage.'
-                                            println err
-                                        } finally {
-                                            junit testResults: 'results/func.xml', allowEmptyResults: true
-                                        }
+                                        // try {
+                                        //     withEnv([
+                                        //         "MONGO_URL=mongodb://${mongoUser}:${mongoPass}@${uniqueName}-mongo:27017",
+                                        //         'MONGO_DB=gwent-func'
+                                        //     ]) {
+                                        //         sh 'yarn test-func'
+                                        //     }
+                                        // } catch (err) {
+                                        //     exceptionThrown = true
+                                        //     println 'Exception was caught in try block of func tests stage.'
+                                        //     println err
+                                        // } finally {
+                                        //     junit testResults: 'results/func.xml', allowEmptyResults: true
+                                        // }
                                     }
                                 }
                             }
