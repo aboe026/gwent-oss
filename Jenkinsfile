@@ -43,7 +43,7 @@ node {
     def retryAttempts = 5
 
     try {
-        timeout(time: 80, unit: 'MINUTES') {
+        timeout(time: 120, unit: 'MINUTES') {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
@@ -105,7 +105,7 @@ node {
                         )
                         writeFile(
                             file: sessionSecretFile,
-                            text: 'session-secret-from-file'
+                            text: 'SessionSecretFromFile'
                         )
 
                         composeVars = [
