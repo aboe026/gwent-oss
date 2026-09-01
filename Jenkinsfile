@@ -169,7 +169,9 @@ node {
                                         sh 'node --version'
                                         sh 'yarn --version'
                                         sh 'corepack enable'
-                                        sh 'yarn install --immutable'
+                                        retry(retryAttempts) {
+                                            sh 'yarn install --immutable'
+                                        }
                                     }
                                     stage('Lint') {
                                         // sh 'yarn lint'
