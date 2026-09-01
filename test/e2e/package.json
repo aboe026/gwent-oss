@@ -17,6 +17,7 @@
     "start-testcafe": "cross-env START_APP=true testcafe --config-file=build/.testcaferc.js",
     "start-app": "cd $PROJECT_CWD && cross-env SESSION_TIMEOUT_SECONDS=60 MONGO_DB=gwent-oss-e2e yarn start",
     "test": "cross-env MONGO_DB=gwent-oss testcafe --config-file=build/.testcaferc.js --debug-on-fail",
+    "test-compose": "cross-env BASE_URL=https://localhost API_BASE_URL=https://localhost IGNORE_CERTIFICATE_ERRORS=true yarn test",
     "start-docker": "yarn remove-context-overrides && docker run --rm -v $PROJECT_CWD:/gwent-oss -w /gwent-oss/test/e2e -it testcafe/testcafe:yarn-pnp chromium build/tests --config-file=build/.testcaferc.js",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
     "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn remove-context-overrides'",

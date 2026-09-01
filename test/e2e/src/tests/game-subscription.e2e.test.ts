@@ -32,7 +32,7 @@ const fixture = getFixtureCtx<E2eCtx, GameSubscriptionTestCtx>()
 const test = getTestCtx<E2eCtx, GameSubscriptionTestCtx>()
 
 fixture('Game Subscription')
-  .only.page(HomePage.getUrl())
+  .page(HomePage.getUrl())
   .beforeEach(async (t) => {
     const selfUsername = `${getScenario(t)}-self-${t.ctx.start}`
     const opponentUsername = `${getScenario(t)}-opponent-${t.ctx.start}`
@@ -85,7 +85,7 @@ fixture('Game Subscription')
     })
   })
 
-test('Page updates automatically with deck set via API on game page', async (t) => {
+test.only('Page updates automatically with deck set via API on game page', async (t) => {
   const client = new ApiClient({
     username: t.ctx.self.user.name,
   })

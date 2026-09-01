@@ -19,6 +19,7 @@ import { WebSocketServer } from 'ws'
 import allUpgrades from './database/upgrades/all-upgrades'
 import { AppInfo, getFileContents } from '@gwent-oss/node-utils'
 import BasicAuth from './auth/basic-auth'
+import CorsUtil from './util/cors-util'
 import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
 import env from './env'
@@ -267,7 +268,7 @@ export default class Api {
     Api.app.use(
       `/${env().GRAPHQL_PATH}`,
       cors({
-        origin: [env().CORS_ORIGIN],
+        origin: [CorsUtil.resolveCorsOrigin(env().CORS_ORIGIN)],
         credentials: true,
       }),
       json({
