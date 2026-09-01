@@ -116,6 +116,7 @@ Existing problems in the codebase that need to be fixed.
 - Get unit test coverage working for .tsx files
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
+- reduce docker image sizes
 - how to run api and ui just from their own specific dirs? (and not need to copy the entire monorepo to the runtime image)?
 - Fold [deck-filter.ts](libs/graphql-schema/src/deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - had to convert [webpack.config.ts](msvs/ui/libs/client/webpack.config.ts) to be ESM because having separate `tsconfig.webpack.json` for it wouldn't work

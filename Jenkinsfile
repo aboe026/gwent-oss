@@ -435,22 +435,7 @@ node {
     }
 }
 
-class E2eConfig {
-
-    String displayName
-    String suiteName
-    String browser
-    String uniqueName
-    String mountDir
-    String testcafeImageTag
-    String dbName
-    String mongoUser
-    String mongoPass
-    String sessionSecret
-
-}
-
-def runE2eTest(E2eConfig cfg) {
+def runE2eTest(Map cfg) {
     def exceptionThrown = false
     stage(displayName) {
         try {
