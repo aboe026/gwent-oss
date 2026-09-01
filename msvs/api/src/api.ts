@@ -98,6 +98,7 @@ export default class Api {
       dbName: env().MONGO_DB,
     })
     const sessionCookieName = env().SESSION_COOKIE_NAME
+    Api.logger.trace(`session cookie name: "${sessionCookieName}"`)
     Api.app.use(
       session({
         cookie,
@@ -263,10 +264,11 @@ export default class Api {
   private static async serve() {
     Api.logger.trace(`GRAPHQL_PATH: "${env().GRAPHQL_PATH}"`)
     Api.logger.trace(`CORS_ORIGIN: "${env().CORS_ORIGIN}"`)
+    const corsOrigin = CorsUtil.resolveCorsOrigin(env().CORS_ORIGIN)
     Api.app.use(
       `/${env().GRAPHQL_PATH}`,
       cors({
-        origin: [CorsUtil.resolveCorsOrigin(env().CORS_ORIGIN)],
+        origin: [corsOrigin],
         credentials: true,
       }),
       json({
@@ -276,7 +278,7 @@ export default class Api {
         context: Api.setContext,
       })
     )
-    Api.logger.debug(`CORS accepting requests from "${env().CORS_ORIGIN}"`)
+    Api.logger.debug(`CORS accepting requests from "${corsOrigin}"`)
     Api.logger.trace(`PORT: "${env().PORT}"`)
     await new Promise<void>((resolve) => Api.httpServer.listen({ port: env().PORT }, resolve))
     Api.logger.info(

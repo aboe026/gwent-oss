@@ -117,6 +117,7 @@ Existing problems in the codebase that need to be fixed.
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - reduce docker image sizes
 - how to run api and ui just from their own specific dirs? (and not need to copy the entire monorepo to the runtime image)?
+- ensure docker images do not re-run "yarn build-libs" when only service files change (add --exlude flag for service dirs on "base" image?)
 - Fold [deck-filter.ts](libs/graphql-schema/src/deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - had to convert [webpack.config.ts](msvs/ui/libs/client/webpack.config.ts) to be ESM because having separate `tsconfig.webpack.json` for it wouldn't work
 - why does jest have delay now? new tsconfig.test.json?

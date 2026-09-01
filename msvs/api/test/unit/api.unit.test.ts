@@ -15,12 +15,14 @@ import allUpgrades from '../../src/database/upgrades/all-upgrades'
 import Api from '../../src/api'
 import * as nodeUtils from '@gwent-oss/node-utils'
 import BasicAuth from '../../src/auth/basic-auth'
+import CorsUtil from '../../src/util/cors-util'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import * as env from '../../src/env'
 import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from '../../src/util/presentable-error'
 import schema from '../../src/graphql/executable-schema'
+import SessionUtil from '../../src/util/session-util'
 import { startupText } from '@gwent-oss/utils'
 import TestUtil from '../util/test-util'
 import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
@@ -171,7 +173,6 @@ describe('Api', () => {
           ['Session timeout: "1" second(s)'],
           ['session cookie proxy: "false"'],
           [`session cookie name: "${sessionCookieName}"`],
-          [`SESSION_SECRET_FILE: "undefined"`],
         ],
       })
     })
@@ -193,32 +194,6 @@ describe('Api', () => {
           ['session cookie proxy: "true"'],
           ['enabling "trust proxy"'],
           [`session cookie name: "${sessionCookieName}"`],
-          [`SESSION_SECRET_FILE: "undefined"`],
-        ],
-      })
-    })
-    it('prioritizes session secret from file if it exists', async () => {
-      const sessionCookieName = 'gwent-oss.sid'
-      const sessionSecretFile = '/path/to/session/secret/file'
-      await testConfigureSession({
-        nodeEnv: NODE_ENV.Prod,
-        expectedCookie: {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'strict',
-          maxAge: 1000,
-        },
-        expectedProxy: true,
-        sessionCookieName,
-        sessionSecretFile,
-        getFileContentsResponse: 'session-secret-from-file',
-        setCalls: [['trust proxy', 1]],
-        traceCalls: [
-          ['Session timeout: "1" second(s)'],
-          ['session cookie proxy: "true"'],
-          ['enabling "trust proxy"'],
-          [`session cookie name: "${sessionCookieName}"`],
-          [`SESSION_SECRET_FILE: "${sessionSecretFile}"`],
         ],
       })
     })
@@ -240,7 +215,6 @@ describe('Api', () => {
           ['session cookie proxy: "false"'],
           [`cookie: "${JSON.stringify(cookie)}"`],
           [`session cookie name: "${sessionCookieName}"`],
-          [`SESSION_SECRET_FILE: "undefined"`],
         ],
       })
     })
@@ -397,7 +371,8 @@ describe('Api', () => {
     it('calls to listen on the http server', async () => {
       const graphqlPath = 'graphql'
       const subscriptionPath = 'subscribe'
-      const corsOrigin = 'localhost'
+      const corsOrigin = 'https://localhost:443/'
+      const resolvedCorsOrigin = 'https://localhost'
       const port = 4000
       const jsonUploadLimit = '1mb'
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
@@ -407,6 +382,7 @@ describe('Api', () => {
         SUBSCRIPTION_PATH: subscriptionPath,
         JSON_UPLOAD_LIMIT: jsonUploadLimit,
       } as any)
+      const resolveCorsOriginSpy = jest.spyOn(CorsUtil, 'resolveCorsOrigin').mockReturnValue(resolvedCorsOrigin)
       const useSpy = jest.fn().mockImplementation()
       Api['app'] = {
         use: useSpy,
@@ -432,8 +408,9 @@ describe('Api', () => {
 
       await expect(Api['serve']()).resolves.toEqual(undefined)
 
+      expect(envSpy.mock.calls).toEqual([[], [], [], [], [], [], [], [], [], [], []])
+      expect(resolveCorsOriginSpy.mock.calls).toEqual([[corsOrigin]])
       expect(useSpy).toHaveBeenCalledTimes(1)
-      expect(envSpy.mock.calls).toEqual([[], [], [], [], [], [], [], [], [], [], [], []])
       expect(jsonSpy.mock.calls).toEqual([
         [
           {
@@ -452,7 +429,7 @@ describe('Api', () => {
       expect((cors as any).mock.calls).toEqual([
         [
           {
-            origin: [corsOrigin],
+            origin: [resolvedCorsOrigin],
             credentials: true,
           },
         ],
@@ -461,7 +438,7 @@ describe('Api', () => {
         [`GraphQL Queries and Mutations listening at: "http://localhost:${port}/${graphqlPath}"`],
         [`GraphQL Subscription Websocket available at: "ws://localhost:${port}/${subscriptionPath}"`],
       ])
-      expect(debugSpy.mock.calls).toEqual([[`CORS accepting requests from "${corsOrigin}"`]])
+      expect(debugSpy.mock.calls).toEqual([[`CORS accepting requests from "${resolvedCorsOrigin}"`]])
       expect(traceSpy.mock.calls).toEqual([
         [`GRAPHQL_PATH: "${graphqlPath}"`],
         [`CORS_ORIGIN: "${corsOrigin}"`],
@@ -477,7 +454,6 @@ async function testConfigureSession({
   expectedProxy,
   sessionCookieName = 'gwent-oss.sid',
   sessionSecretFile,
-  getFileContentsResponse,
   setCalls = [],
   traceEnabled,
   traceCalls = [],
@@ -487,13 +463,13 @@ async function testConfigureSession({
   expectedProxy: boolean
   sessionCookieName?: string
   sessionSecretFile?: string
-  getFileContentsResponse?: string | undefined
   setCalls?: any[][]
   traceEnabled?: boolean
   traceCalls: string[][]
 }) {
   const dbName = 'db-name'
   const sessionSecret = 'secret'
+  const resolvedSessionSecret = 'resolvedSessionSecret'
   const sessionTimeoutSeconds = 1
   const envSpy = jest.spyOn(env, 'default').mockReturnValue({
     MONGO_DB: dbName,
@@ -503,7 +479,6 @@ async function testConfigureSession({
     SESSION_TIMEOUT_SECONDS: sessionTimeoutSeconds,
     SESSION_SECRET_FILE: sessionSecretFile,
   } as any)
-  const getFileContentsSpy = jest.spyOn(nodeUtils, 'getFileContents').mockResolvedValue(getFileContentsResponse)
   const useSpy = jest.fn().mockImplementation()
   const setSpy = jest.fn().mockImplementation()
   Api['app'] = {
@@ -513,6 +488,7 @@ async function testConfigureSession({
   const dbConnector = { hello: 'world' }
   const dbConnectorGetClientSpy = jest.spyOn(DbConnector, 'getClient').mockReturnValue(dbConnector as any)
   const mongoStoreCreateSpy = jest.spyOn(MongoStore, 'create').mockImplementation()
+  const getSessionSecretSpy = jest.spyOn(SessionUtil, 'getSessionSecret').mockResolvedValue(resolvedSessionSecret)
   const traceSpy = jest.fn().mockImplementation()
   Api['logger'] = {
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
@@ -521,12 +497,8 @@ async function testConfigureSession({
 
   await expect(Api['configureSession']()).resolves.toEqual(undefined)
 
-  const envSpyCalls = [[], [], [], [], [], [], []]
-  if (!getFileContentsResponse) {
-    envSpyCalls.push([])
-  }
+  const envSpyCalls = [[], [], [], [], []]
   expect(envSpy.mock.calls).toEqual(envSpyCalls)
-  expect(getFileContentsSpy.mock.calls).toEqual([[sessionSecretFile]])
   expect(useSpy).toHaveBeenCalledTimes(1)
   expect(setSpy.mock.calls).toEqual(setCalls)
   expect((session as any).mock.calls).toEqual([
@@ -538,7 +510,7 @@ async function testConfigureSession({
         resave: false,
         rolling: true,
         saveUninitialized: false,
-        secret: getFileContentsResponse || sessionSecret,
+        secret: resolvedSessionSecret,
         store: undefined,
       },
     ],
@@ -552,6 +524,7 @@ async function testConfigureSession({
       },
     ],
   ])
+  expect(getSessionSecretSpy.mock.calls).toEqual([[]])
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 

@@ -15,8 +15,15 @@ export default class SessionUtil {
    * @returns The secret the session has been encoded with.
    */
   static async getSessionSecret(): Promise<string> {
-    SessionUtil.logger.trace(`SESSION_SECRET_FILE: "${env().SESSION_SECRET_FILE}"`)
-    const sessionSecretFromFile = await getFileContents(env().SESSION_SECRET_FILE)
-    return sessionSecretFromFile || env().SESSION_SECRET
+    const sessionSecretFile = env().SESSION_SECRET_FILE
+    SessionUtil.logger.trace(`SESSION_SECRET_FILE: "${sessionSecretFile}"`)
+    const sessionSecretFromFile = await getFileContents(sessionSecretFile)
+    if (sessionSecretFromFile) {
+      SessionUtil.logger.debug('Using session secret from file')
+      return sessionSecretFromFile
+    } else {
+      SessionUtil.logger.debug('Using session secret from environment variable')
+      return env().SESSION_SECRET
+    }
   }
 }

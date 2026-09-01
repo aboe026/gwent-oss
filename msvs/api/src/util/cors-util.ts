@@ -13,14 +13,7 @@ export default class CorsUtil {
    * @returns The CORS origin adjusted to properly enforce the CORS policy.
    */
   static resolveCorsOrigin(corsOrigin: string): string {
-    const corsUrl = new URL(corsOrigin)
-    if (corsUrl.protocol === 'https:' && corsUrl.port === '443') {
-      CorsUtil.logger.debug('Removing explicit HTTPS default port 443')
-      corsUrl.port = ''
-    } else if (corsUrl.protocol === 'http:' && corsUrl.port === '80') {
-      CorsUtil.logger.debug('Removing explicit HTTP default port 80')
-      corsUrl.port = ''
-    }
+    const corsUrl = new URL(corsOrigin) // removes default ports 80/443 for HTTP/HTTPS respectively
     let resolvedCorsOrigin = corsUrl.toString()
     if (resolvedCorsOrigin.endsWith('/')) {
       resolvedCorsOrigin = resolvedCorsOrigin.substring(0, resolvedCorsOrigin.length - 1)

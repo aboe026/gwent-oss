@@ -85,7 +85,7 @@ fixture('Game Subscription')
     })
   })
 
-test.only('Page updates automatically with deck set via API on game page', async (t) => {
+test('Page updates automatically with deck set via API on game page', async (t) => {
   const client = new ApiClient({
     username: t.ctx.self.user.name,
   })
