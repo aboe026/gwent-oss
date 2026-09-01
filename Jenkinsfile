@@ -437,7 +437,7 @@ node {
 
 def runE2eTest(Map cfg) {
     def exceptionThrown = false
-    stage(displayName) {
+    stage(cfg.displayName) {
         try {
             sh """docker run \
                 --rm \
@@ -508,23 +508,23 @@ def runE2eTest(Map cfg) {
                             }
                         } catch (er) {
                             exceptionThrown = true
-                            println "Exception caught in try block of finally block of suite '${suiteName}' tests stage."
+                            println "Exception caught in try block of finally block of suite '${cfg.suiteName}' tests stage."
                             println er
                         }
                         junit testResults: filePath
                     } else {
                         exceptionThrown = true
-                        println "Results file '${filePath}' for suite '${suiteName}' empty"
+                        println "Results file '${filePath}' for suite '${cfg.suiteName}' empty"
                     }
                 } else {
                     exceptionThrown = true
-                    println "Results file '${filePath}' for suite '${suiteName}' not found"
+                    println "Results file '${filePath}' for suite '${cfg.suiteName}' not found"
                 }
             }
         }
     }
     if (exceptionThrown) {
-        unstable(message: "Error occured running '${suiteName}' tests")
+        unstable(message: "Error occured running '${cfg.suiteName}' tests")
     }
 }
 
