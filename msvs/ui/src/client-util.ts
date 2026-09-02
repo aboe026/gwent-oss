@@ -1,9 +1,9 @@
-import fs from 'fs-extra'
 import { getLogger } from 'log4js'
 import path from 'path'
 import { replaceInFile } from 'replace-in-file'
 
 import env from './env'
+import { fileExists } from '@gwent-oss/node-utils'
 
 /**
  * A class for interacting with the browser client bundle.
@@ -26,7 +26,7 @@ export default class ClientUtil {
 
     ClientUtil.logger.debug(`Client directory resolved to "${clientDir}"`)
 
-    if (!(await fs.pathExists(clientDir))) {
+    if (!(await fileExists(clientDir))) {
       throw Error(
         `Invalid client directory "${clientDir}", path either does not exist (potentially needs to be built) or is not accessible due to permissions.`
       )
@@ -47,7 +47,7 @@ export default class ClientUtil {
     ClientUtil.logger.trace(`env.EMAIL_ADDRESS: "${env().EMAIL_ADDRESS}"`)
     ClientUtil.logger.trace(`env.GITHUB_LINK: "${env().GITHUB_LINK}"`)
     ClientUtil.logger.trace(`env.WEB_SOCKET_PING_INTERVAL_SECONDS: "${env().WEB_SOCKET_PING_INTERVAL_SECONDS}"`)
-    if (!(await fs.pathExists(envFile))) {
+    if (!(await fileExists(envFile))) {
       throw Error(`Client env file "${envFile}" does not exist, ensure it has been built properly.`)
     }
 

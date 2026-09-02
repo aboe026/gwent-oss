@@ -1,8 +1,8 @@
-import fs from 'fs-extra'
+import fs from 'fs/promises'
 import { getLogger } from 'log4js'
 import path from 'path'
 
-import env from './env'
+import fileExists from './file-exists'
 
 /**
  * A class for getting information about the currently running instance of gwent-oss.
@@ -11,15 +11,19 @@ export default class AppInfo {
   private static logger = getLogger('AppInfo')
 
   /**
-   * Gets the path of the file containing information about the application.
+   * Resolves path of the file containing information about the application.
    *
-   * @returns The path to the file containing information about the application.
+   * @param appInfoFilePath The path on the system to the file containing application information
+   *
+   * @returns The absolute path to the file containing information about the application.
    */
-  private static getFile(): string {
-    AppInfo.logger.trace(`APP_INFO_FILE_PATH: "${env().APP_INFO_FILE_PATH}"`)
-    let filePath = env().APP_INFO_FILE_PATH
+  private static resolvePath(appInfoFilePath: string): string {
+    AppInfo.logger.trace(`appInfoFilePath: "${appInfoFilePath}"`)
+    let filePath = appInfoFilePath
     if (!path.isAbsolute(filePath)) {
-      filePath = path.join(__dirname, filePath)
+      const procDir = process.cwd()
+      AppInfo.logger.debug(`Making appInfoFilePath absolute to: "${procDir}"`)
+      filePath = path.join(procDir, filePath)
     }
     return filePath
   }
@@ -27,12 +31,14 @@ export default class AppInfo {
   /**
    * Gets the build number of the running application.
    *
+   * @param appInfoFilePath The path on the system to the file containing application information
+   *
    * @returns The build number which produced the version of the application running. Defaults to "0" if not found in the "APP_INFO_FILE_PATH" file.
    */
-  static async getBuildNumber(): Promise<number> {
-    const filePath = AppInfo.getFile()
-    AppInfo.logger.debug(`filePath: "${filePath}"`)
-    if (await fs.pathExists(filePath)) {
+  static async getBuildNumber(appInfoFilePath: string): Promise<number> {
+    const filePath = AppInfo.resolvePath(appInfoFilePath)
+    AppInfo.logger.trace(`filePath: "${filePath}"`)
+    if (await fileExists(filePath)) {
       try {
         const contents = await fs.readFile(filePath, 'utf-8')
         if (AppInfo.logger.isTraceEnabled()) {

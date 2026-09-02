@@ -1,4 +1,4 @@
-import AppInfo from '../../src/app-info'
+import { AppInfo } from '@gwent-oss/node-utils'
 import ApplicationQuery from '../../src/graphql/resolvers/queries/application-query'
 import { Context } from '@gwent-oss/graphql-schema/context'
 import TestUtil from '../util/test-util'
@@ -37,7 +37,7 @@ async function testApplication({ traceEnabled }: { traceEnabled?: boolean }) {
     version,
   })
 
-  expect(getBuildNumberSpy.mock.calls).toEqual([[]])
+  expect(getBuildNumberSpy.mock.calls).toEqual([['app-info.json']])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

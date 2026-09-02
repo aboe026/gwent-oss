@@ -5,6 +5,7 @@
     { "path": "../../libs/constants" },
     { "path": "../../libs/db-profiler" },
     { "path": "../../libs/env" },
+    { "path": "../../libs/node-utils" },
     { "path": "../../libs/graphql-schema" },
     { "path": "../../libs/node-client" },
     { "path": "../../libs/test-utils" },

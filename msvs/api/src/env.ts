@@ -13,7 +13,7 @@ export default function env() {
     specs: {
       APP_INFO_FILE_PATH: str({
         desc: 'The path to the file containing information for the application to ingest',
-        default: '../../app-info.json',
+        default: 'app-info.json',
       }),
       CORS_ORIGIN: url({
         desc: 'The URL to validate against Cross-Origin Resource Sharing (CORS)',
@@ -36,9 +36,17 @@ export default function env() {
         desc: 'The name of the MongoDB database to interact with',
         default: 'gwent-oss',
       }),
+      MONGO_PASSWORD_FILE: str({
+        desc: 'The path to a file containing the MongoDB password for authentication.',
+        default: '',
+      }),
       MONGO_URL: url({
         desc: 'Connection string for MongoDB instance',
         default: 'mongodb://localhost',
+      }),
+      MONGO_USERNAME_FILE: str({
+        desc: 'The path to a file containing the MongoDB username for authentication.',
+        default: '',
       }),
       NODE_ENV: str({
         desc: 'What environment the application is running in',
@@ -56,6 +64,10 @@ export default function env() {
       SESSION_SECRET: str({
         desc: 'The secret to use for securing user sessions',
         default: 'youshouldreallychangethisforproductionusage',
+      }),
+      SESSION_SECRET_FILE: str({
+        desc: 'The path to a file containing the secret to use for securing user sessions. Takes precedence over SESSION_SECRET.',
+        default: '',
       }),
       SESSION_TIMEOUT_SECONDS: num({
         desc: 'The time in seconds after which the session for a user expires',

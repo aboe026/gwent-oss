@@ -1,23 +1,25 @@
-import fs from 'fs-extra'
+import fs from 'fs/promises'
 import path from 'path'
 
-import AppInfo from '../../src/app-info'
-import * as env from '../../src/env'
+import AppInfo from '../src/app-info'
+import * as fileExists from '../src/file-exists'
 
 describe('app-info', () => {
-  describe('getFile', () => {
-    it('returns unmodified file path if absolute', () => {
+  describe('resolvePath', () => {
+    it('returns unmodified file path if already absolute', () => {
       const filePath = '/absolute/path'
-      testGetPath({
-        filePath,
+      testResolvePath({
+        appInfoFilePath: filePath,
         expectedPath: filePath,
       })
     })
-    it('returns absolute path if given relative one', () => {
+    it('returns to absolute path if given relative one', () => {
       const filePath = 'relative/path'
-      testGetPath({
-        filePath,
-        expectedPath: path.join(__dirname, '..', '..', 'src', filePath),
+      const cwd = '/absolute/path'
+      testResolvePath({
+        appInfoFilePath: filePath,
+        cwdResponse: cwd,
+        expectedPath: path.join(cwd, filePath),
       })
     })
   })
@@ -26,7 +28,7 @@ describe('app-info', () => {
       const filePath = 'path/to/app-info.json'
       await testGetBuildNumber({
         filePath,
-        fileExists: false,
+        fileExistsResponse: false,
         errors: [[`Invalid "APP_INFO_FILE_PATH" value of "${filePath}", does not exist or cannot access.`]],
       })
     })
@@ -133,24 +135,36 @@ describe('app-info', () => {
   })
 })
 
-function testGetPath({ filePath, expectedPath }: { filePath: string; expectedPath: string }) {
-  jest.spyOn(env, 'default').mockReturnValue({
-    APP_INFO_FILE_PATH: filePath,
-  } as any)
+function testResolvePath({
+  appInfoFilePath,
+  cwdResponse,
+  expectedPath,
+}: {
+  appInfoFilePath: string
+  cwdResponse?: string
+  expectedPath: string
+}) {
+  const cwdSpy = jest.spyOn(process, 'cwd')
+  if (cwdResponse) {
+    cwdSpy.mockReturnValue(cwdResponse)
+  }
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   AppInfo['logger'] = {
-    isTraceEnabled: jest.fn().mockReturnValue(true),
+    debug: debugSpy,
     trace: traceSpy,
   } as any
 
-  expect(AppInfo['getFile']()).toEqual(expectedPath)
+  expect(AppInfo['resolvePath'](appInfoFilePath)).toEqual(expectedPath)
 
-  expect(traceSpy.mock.calls).toEqual([[`APP_INFO_FILE_PATH: "${filePath}"`]])
+  expect(cwdSpy.mock.calls).toEqual(cwdResponse ? [[]] : [])
+  expect(debugSpy.mock.calls).toEqual(cwdResponse ? [[`Making appInfoFilePath absolute to: "${cwdResponse}"`]] : [])
+  expect(traceSpy.mock.calls).toEqual([[`appInfoFilePath: "${appInfoFilePath}"`]])
 }
 
 async function testGetBuildNumber({
   filePath,
-  fileExists = true,
+  fileExistsResponse = true,
   fileReadError,
   fileContents,
   errors = [],
@@ -158,34 +172,39 @@ async function testGetBuildNumber({
   expected = 0,
 }: {
   filePath: string
-  fileExists?: boolean
+  fileExistsResponse?: boolean
   fileReadError?: string
   fileContents?: string
   errors?: (string | Error)[][]
   traceEnabled?: boolean
   expected?: number
 }) {
-  const getFileSpy = jest.spyOn(AppInfo as any, 'getFile').mockReturnValue(filePath)
-  const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(fileExists))
-  const readFileSpy = jest
-    .spyOn(fs, 'readFile')
-    .mockImplementation(() => (fileReadError ? Promise.reject(fileReadError) : Promise.resolve(fileContents)))
-  const debugSpy = jest.fn().mockImplementation()
+  const appInfoFilePath = ''
+  const getFileSpy = jest.spyOn(AppInfo as any, 'resolvePath').mockReturnValue(filePath)
+  const pathExistsSpy = jest.spyOn(fileExists, 'default').mockResolvedValue(fileExistsResponse)
+  const readFileSpy = jest.spyOn(fs, 'readFile')
+  if (fileReadError) {
+    readFileSpy.mockRejectedValue(fileReadError)
+  } else if (fileContents) {
+    readFileSpy.mockResolvedValue(fileContents)
+  }
   const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   AppInfo['logger'] = {
     error: errorSpy,
-    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
 
-  await expect(AppInfo.getBuildNumber()).resolves.toEqual(expected)
+  await expect(AppInfo.getBuildNumber(appInfoFilePath)).resolves.toEqual(expected)
 
+  expect(getFileSpy.mock.calls).toEqual([[appInfoFilePath]])
   expect(pathExistsSpy.mock.calls).toEqual([[filePath]])
-  expect(readFileSpy.mock.calls).toEqual(fileExists ? [[filePath, 'utf-8']] : [])
-  expect(getFileSpy.mock.calls).toEqual([[]])
-  expect(debugSpy.mock.calls).toEqual([[`filePath: "${filePath}"`]])
+  expect(readFileSpy.mock.calls).toEqual(fileExistsResponse ? [[filePath, 'utf-8']] : [])
   expect(errorSpy.mock.calls).toEqual(errors)
-  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`contents: "${fileContents}"`]] : [])
+  const traceCalls = [[`filePath: "${filePath}"`]]
+  if (traceEnabled) {
+    traceCalls.push([`contents: "${fileContents}"`])
+  }
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

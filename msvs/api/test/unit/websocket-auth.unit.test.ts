@@ -2,7 +2,9 @@ import cookieParser from 'cookie-parser'
 import { IncomingMessage } from 'http'
 import MongoStore from 'connect-mongo'
 
+import CorsUtil from '../../src/util/cors-util'
 import * as env from '../../src/env'
+import SessionUtil from '../../src/util/session-util'
 import TestUtil from '../util/test-util'
 import WebSocketAuth, { SessionDataWithUser } from '../../src/auth/websocket-auth'
 
@@ -198,10 +200,13 @@ async function testAuthenticate({
   errorCalls?: string[][]
   traceEnabled?: boolean
 }) {
+  const corsOriginEnvVar = 'corsOriginEnvVar'
   const envSpy = jest.spyOn(env, 'default').mockReturnValue({
-    CORS_ORIGIN: corsOrigin,
+    CORS_ORIGIN: corsOriginEnvVar,
     SESSION_COOKIE_NAME: sessionCookieName,
   } as any)
+  const resolveCorsOriginSpy = jest.spyOn(CorsUtil, 'resolveCorsOrigin').mockReturnValue(corsOrigin)
+  const getSessionSecretSpy = jest.spyOn(SessionUtil, 'getSessionSecret').mockResolvedValue('resolvedSessionSecret')
   const signedCookieSpy = jest.spyOn(cookieParser, 'signedCookie')
   if (signedCookieResponse !== undefined) {
     signedCookieSpy.mockReturnValue(signedCookieResponse)
@@ -231,7 +236,9 @@ async function testAuthenticate({
     })
   ).resolves.toEqual(session instanceof Error ? undefined : session?.user)
 
-  expect(envSpy.mock.calls).toEqual([[], [], []])
+  expect(resolveCorsOriginSpy.mock.calls).toEqual([[corsOriginEnvVar]])
+  expect(envSpy.mock.calls).toEqual([[], []])
+  expect(getSessionSecretSpy.mock.calls).toEqual([[]])
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled

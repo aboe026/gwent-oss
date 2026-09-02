@@ -1,10 +1,10 @@
-import { CgMail } from 'react-icons/cg'
+import { CgInfo, CgMail } from 'react-icons/cg'
 import { SiGithub } from 'react-icons/si'
 import urljoin from 'url-join'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import Centered from '../../components/Centered'
-import { LOCAL_STORAGE, ROUTES } from '@gwent-oss/constants'
+import { HTML_IDS, LOCAL_STORAGE, ROUTES } from '@gwent-oss/constants'
 import LoginDialog from '../../components/LoginDialog'
 import './Login.css'
 
@@ -15,6 +15,7 @@ import './Login.css'
  */
 export default function LoginPage() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const newUser = pathname.startsWith(ROUTES.Signup.path)
 
   return (
@@ -22,7 +23,7 @@ export default function LoginPage() {
       <div id="loginFields">
         <Centered>
           <LoginDialog
-            secondaryLinkLabel={newUser ? 'Log In!' : 'Sign Up!'}
+            secondaryLinkLabel={newUser ? 'Log In' : 'Sign Up'}
             secondaryLinkPath={newUser ? ROUTES.Login.path : ROUTES.Signup.path}
             secondaryText={newUser ? 'Existing user?' : 'New user?'}
             title={newUser ? 'Welcome!' : 'Welcome Back!'}
@@ -42,13 +43,21 @@ export default function LoginPage() {
             <CgMail color="black" />
           </a>
         </div>
-        <div id="loginSiteDescription">An open-source recreation of the card game Gwent with online multiplayer.</div>
+        <div id="loginSiteDescription">
+          An open-source recreation of the card game Gwent with online multiplayer{' '}
+          <CgInfo
+            id={HTML_IDS.LoginInfoButton}
+            className="pointable"
+            color="black"
+            onClick={() => navigate(ROUTES.About.path)}
+          />
+        </div>
         <div id="loginAlert">
           <div id="loginAlertTitle">**Alpha Warning**</div>
           <div id="loginAlertDescription">
             This website is currently in an "alpha" state, meaning it is in a technically playable state but is missing
-            some features (mainly Faction and Leader abilities). Please communicate any issues you come across or ideas
-            you have as{' '}
+            some features (mainly Faction and Leader abilities). Please communicate any problems you come across or
+            ideas you have as{' '}
             <a href={`${urljoin(window.env.GITHUB_LINK, 'issues')}`} target="_">
               GitHub Issues
             </a>{' '}

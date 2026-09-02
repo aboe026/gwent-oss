@@ -6,6 +6,8 @@
 
 An open-source recreation of the card game Gwent from The Witcher 3: Wild Hunt for online multiplayer.
 
+Visit the production instance at [gwent-oss.com](https://gwent-oss.com)
+
 <details>
 <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
@@ -70,6 +72,10 @@ To bring up the containers for the first time (or if the existing containers hav
 cd compose
 docker compose up -d
 ```
+
+You can overwrite the default ".env" values with a custom env file by adding `--env-file=/path/to/.env --env-file=/path/to/custom.env` between the `compose` and `up` targets in the command.
+
+**Note**: If changing any secret path names via environment variables, you'll need to add the `--force-recreate` option to the command for the containers to get properly recreated with the correct values.
 
 ### Stop
 
@@ -334,7 +340,9 @@ The following non-NodeJS related softwares should be monitored for upgrades:
 
 - [MongoDB](https://www.mongodb.com/)
   - Change the docker image tag in the [compose yaml](./compose/docker-compose.yaml)
-- [NginX](https://nginx.org/)
-  - Change the docker image tag in the [nginx Dockerfile](./compose/nginx/Dockerfile)
+- [Caddy](https://caddyserver.com/)
+  - Change the docker image tag in the [Caddy Dockerfile](./compose/caddy/caddy.Dockerfile)
 - [Docker Compose](https://docs.docker.com/compose/)
   - Change the `composeVersion` variable in the [Jenkinsfile](./Jenkinsfile)
+- [TestCafe Docker Image](https://hub.docker.com/r/testcafe/testcafe/)
+  - Change the image tag in the [TestCafe Dockerfile](./test/e2e/e2e.Dockerfile)

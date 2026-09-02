@@ -1,36 +1,136 @@
 services:
   database:
     image: mongo:8.3.7
+    restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
+    environment:
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo_user
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_pass
+    secrets:
+      - mongo_user
+      - mongo_pass
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
 
   api:
-    image: gwent-oss-api
+    image: ${GWENT_OSS_REPO}gwent-oss-api:${GWENT_OSS_TAG}
+    restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
     build:
       context: ../
-      dockerfile: msvs/api/Dockerfile
+      target: api
+      args:
+        TARGET: api
     depends_on:
       - database
     environment:
-      - LOG_LEVEL=${LOG_LEVEL}
-      - MONGO_URL=mongodb://database:27017
-      - CORS_ORIGIN=https://${HOST_NAME}
+      CORS_ORIGIN: https://${HOST_NAME}:${PORT}
+      JSON_UPLOAD_LIMIT: ${JSON_UPLOAD_LIMIT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      MONGO_DB: ${MONGO_DB}
+      MONGO_PASSWORD_FILE: /run/secrets/mongo_pass
+      MONGO_URL: mongodb://database:27017
+      MONGO_USERNAME_FILE: /run/secrets/mongo_user
+      SESSION_SECRET_FILE: /run/secrets/session_secret
+      SESSION_TIMEOUT_SECONDS: ${SESSION_TIMEOUT_SECONDS}
+    secrets:
+      - mongo_user
+      - mongo_pass
+      - session_secret
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
 
   ui:
-    image: gwent-oss-ui
+    image: ${GWENT_OSS_REPO}gwent-oss-ui:${GWENT_OSS_TAG}
+    restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
     build:
       context: ../
-      dockerfile: msvs/ui/Dockerfile
+      target: ui
+      args:
+        TARGET: ui
     depends_on:
       - api
     environment:
+      - API_BASE_URL=https://${HOST_NAME}:${PORT}
       - LOG_LEVEL=${LOG_LEVEL}
-      - API_BASE_URL=https://${HOST_NAME}
+      - WEB_SOCKET_PING_INTERVAL_SECONDS=${WEB_SOCKET_PING_INTERVAL_SECONDS}
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
 
   router:
-    build: ./nginx
+    image: ${GWENT_OSS_REPO}gwent-oss-router:${GWENT_OSS_TAG}
+    build:
+      context: caddy
+      dockerfile: caddy.Dockerfile
+    restart: ${RESTART_POLICY}
+    networks:
+      - gwent-oss
     depends_on:
       - api
       - ui
+    environment:
+      - HOST_NAME=${HOST_NAME}
+      - LOCAL_CERTS=${LOCAL_CERTS}
+      - DEBUG=${DEBUG}
+      - LIMIT_HTTP_EVENTS_NOT_AUTH=${LIMIT_HTTP_EVENTS_NOT_AUTH}
+      - LIMIT_HTTP_EVENTS_YES_AUTH=${LIMIT_HTTP_EVENTS_YES_AUTH}
+      - LIMIT_HTTP_WINDOW_NOT_AUTH=${LIMIT_HTTP_WINDOW_NOT_AUTH}
+      - LIMIT_HTTP_WINDOW_YES_AUTH=${LIMIT_HTTP_WINDOW_YES_AUTH}
+      - LIMIT_HTTP_BURST_NOT_AUTH=${LIMIT_HTTP_BURST_NOT_AUTH}
+      - LIMIT_HTTP_BURST_YES_AUTH=${LIMIT_HTTP_BURST_YES_AUTH}
+      - LIMIT_WS_EVENTS_NOT_AUTH=${LIMIT_WS_EVENTS_NOT_AUTH}
+      - LIMIT_WS_EVENTS_YES_AUTH=${LIMIT_WS_EVENTS_YES_AUTH}
+      - LIMIT_WS_WINDOW_NOT_AUTH=${LIMIT_WS_WINDOW_NOT_AUTH}
+      - LIMIT_WS_WINDOW_YES_AUTH=${LIMIT_WS_WINDOW_YES_AUTH}
+      - LIMIT_WS_BURST_NOT_AUTH=${LIMIT_WS_BURST_NOT_AUTH}
+      - LIMIT_WS_BURST_YES_AUTH=${LIMIT_WS_BURST_YES_AUTH}
     ports:
-      - '443:443'
+      - '${PORT}:443'
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
+
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:
+
+secrets:
+  mongo_user:
+    file: ${MONGO_USER_FILE}
+  mongo_pass:
+    file: ${MONGO_PASS_FILE}
+  session_secret:
+    file: ${SESSION_SECRET_FILE}
+
+networks:
+  gwent-oss:
+    name: ${NETWORK_NAME}
+    driver: bridge
+    external: ${NETWORK_EXTERNAL}

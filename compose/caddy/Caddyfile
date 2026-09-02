@@ -1,0 +1,138 @@
+{
+  # If value is "local_certs" Caddy will use internal CA for SSL cert.
+  # If set to empty string "" Caddy will reach out to letencrypt to create a public SSL cert.
+  {$LOCAL_CERTS}
+
+  # set to "debug" to get higher level debugging output.
+  {$DEBUG}
+
+  # Ensure rate limiting runs before responses
+  order rate_limit before respond
+}
+
+{$HOST_NAME} {
+  # --- Security Headers ---
+  header {
+    # Enforces HTTPS for all future requests.
+    # Prevents downgrade attacks and ensures browsers never use HTTP again.
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Prevents browsers from MIME-sniffing content types.
+    # Stops them from interpreting files as something more dangerous (XSS vector).
+    X-Content-Type-Options "nosniff"
+
+    # Blocks your site from being embedded in iframes.
+    # Prevents clickjacking attacks where a malicious site overlays your UI.
+    X-Frame-Options "DENY"
+
+    # Controls how much referrer information is sent to other sites.
+    # Protects sensitive URL paths and query parameters from leaking.
+    Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Restrict all powerful browser APIs in one unified header.
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=(), fullscreen=(), picture-in-picture=(), autoplay=(), encrypted-media=()"
+
+    # Strongest defense against XSS.
+    # Limits where scripts, styles, images, etc. can load from.
+    Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'"
+  }
+
+  # --- Compression ---
+  encode gzip zstd
+
+  # --- Block dangerous HTTP methods ---
+  @blocked_methods {
+    method TRACE
+    method TRACK
+    method OPTIONS
+  }
+  respond @blocked_methods 405
+
+  # ============================
+  # Reverse Proxy Routes
+  # ============================
+
+  handle /graphql {
+
+    # Public GraphQL traffic (no Authorization header)
+    @public_graphql {
+      not header Authorization *
+      not header Cookie *gwent-oss.sid=*
+    }
+    # Authenticated GraphQL traffic (Authorization header present)
+    @auth_graphql {
+      header Authorization *
+    }
+    # Authenticated browser traffic (with cookie)
+    @cookie_graphql {
+      header Cookie *gwent-oss.sid=*
+    }
+
+    rate_limit @public_graphql {
+      zone public_ip {
+        key {http.request.remote.host}
+        events {$LIMIT_HTTP_EVENTS_NOT_AUTH}
+        window {$LIMIT_HTTP_WINDOW_NOT_AUTH}
+        burst {$LIMIT_HTTP_BURST_NOT_AUTH}
+      }
+    }
+    rate_limit @auth_graphql {
+      zone auth_ip {
+        key {http.request.remote.host}
+        events {$LIMIT_HTTP_EVENTS_YES_AUTH}
+        window {$LIMIT_HTTP_WINDOW_YES_AUTH}
+        burst {$LIMIT_HTTP_BURST_YES_AUTH}
+      }
+    }
+    rate_limit @cookie_graphql {
+      zone auth_ip {
+        key {http.request.remote.host}
+        events {$LIMIT_HTTP_EVENTS_YES_AUTH}
+        window {$LIMIT_HTTP_WINDOW_YES_AUTH}
+        burst {$LIMIT_HTTP_BURST_YES_AUTH}
+      }
+    }
+
+    reverse_proxy api:4000
+  }
+
+  handle /subscribe {
+
+    @public_subscribe {
+      not header Cookie *gwent-oss.sid=*
+    }
+
+    @cookie_subscribe {
+      header Cookie *gwent-oss.sid=*
+    }
+
+    rate_limit @public_subscribe {
+      zone public_ws {
+        key {http.request.remote.host}
+        events {$LIMIT_WS_EVENTS_NOT_AUTH}
+        window {$LIMIT_WS_WINDOW_NOT_AUTH}
+        burst {$LIMIT_WS_BURST_NOT_AUTH}
+      }
+    }
+
+    rate_limit @cookie_subscribe {
+      zone auth_ws {
+        key {http.request.remote.host}
+        events {$LIMIT_WS_EVENTS_YES_AUTH}
+        window {$LIMIT_WS_WINDOW_YES_AUTH}
+        burst {$LIMIT_WS_BURST_YES_AUTH}
+      }
+    }
+
+    reverse_proxy api:4000
+  }
+
+  handle {
+    reverse_proxy ui:3000
+  }
+
+  # --- Unified error handler ---
+  handle_errors {
+    respond "{http.error.status_code} {http.error.status_text}" {http.error.status_code}
+  }
+}

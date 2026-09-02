@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, str, url } from '@gwent-oss/env'
+import getEnv, { bool, NODE_ENV, num, str, url } from '@gwent-oss/env'
 
 export default getEnv({
   dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
@@ -25,6 +25,10 @@ export default getEnv({
     CONCURRENCY: num({
       desc: 'The number of e2e tests to run simultaneously.',
       default: 2,
+    }),
+    IGNORE_CERTIFICATE_ERRORS: bool({
+      desc: 'Whether errors due to invalid/expired/self-signed certificates should be ignored or not.',
+      default: false,
     }),
     MONGO_DB: str({
       desc: 'The name of the MongoDB database to interact with',

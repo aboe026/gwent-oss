@@ -1,9 +1,13 @@
 import urljoin from 'url-join'
 import { useQuery } from '@apollo/client/react'
+import { useState } from 'react'
 
 import { ApplicationDocument } from '@gwent-oss/graphql-schema/apollo-typings'
+import CoinToss from '../../components/CoinToss'
+import Centered from '../../components/Centered'
+import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
 import { getErrorMessages } from '../../util/error-util'
-import { HTML_CLASSES, HTML_IDS } from '@gwent-oss/constants'
+import { getRandomNumber } from '@gwent-oss/utils'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { useTitle } from '../../components/TabTitle'
@@ -15,9 +19,15 @@ import './About.css'
  * @returns The application about page.
  */
 export default function AboutPage() {
+  const [coinFlipKey, setCoinFlipKey] = useState(0)
   useTitle('About | gwent-oss')
   const { loading, error, data } = useQuery(ApplicationDocument)
   const errorMessages = getErrorMessages(error)
+  const coinLandedHeads =
+    getRandomNumber({
+      min: 0,
+      max: 1,
+    }) === 0
 
   return (
     <div id={HTML_IDS.AboutContainer}>
@@ -27,8 +37,8 @@ export default function AboutPage() {
           <div id="aboutAlertTitle">**Alpha Warning**</div>
           <div id="aboutAlertDescription">
             This website is currently in an "alpha" state, meaning it is in a technically playable state but is missing
-            some features (mainly Faction and Leader abilities). Please communicate any issues you come across or ideas
-            you have as{' '}
+            some features (mainly Faction and Leader abilities). Please communicate any problems you come across or
+            ideas you have as{' '}
             <a href={`${urljoin(window.env.GITHUB_LINK, 'issues')}`} target="_">
               GitHub Issues
             </a>{' '}
@@ -86,7 +96,7 @@ export default function AboutPage() {
         <div id="when" className="about-section">
           <div className="about-section-title">When?</div>
           <div>
-            This project began in the autumn of 2023 and is finally released (in alpha form) in the summer of 2026.
+            This project began in the autumn of 2023 and is finally released (in alpha form) in the autumn of 2026.
             There are many things{' '}
             <a href={urljoin(window.env.GITHUB_LINK, 'blob/main/TODO.md')} target="_">
               to do
@@ -94,14 +104,22 @@ export default function AboutPage() {
             yet, so stay tuned for updates!
           </div>
         </div>
-        <div id="animations" className="about-section">
-          <div className="about-section-title">Animations</div>
+        <div id="contact" className="about-section">
+          <div className="about-section-title">Contact</div>
           <div>
-            Here are some of the loading animations used in this website. They took a bit of effort and I am pretty
-            proud of them, so here they are to admire:
+            <ul id="contactList">
+              <li>
+                To report a bug or request a new feature, create a{' '}
+                <a href={urljoin(window.env.GITHUB_LINK, 'issues')} target="_">
+                  GitHub Issue
+                </a>{' '}
+              </li>
+              <li>
+                To contact the site owner directly, please email{' '}
+                <a href={`mailto:${window.env.EMAIL_ADDRESS}`}>{window.env.EMAIL_ADDRESS}</a>
+              </li>
+            </ul>
           </div>
-          <LoadingSpinner size="50px" />
-          <LoadingBar width="100%" height="25px" style={{ maxWidth: '200px' }} />
         </div>
         <div className="about-section">
           <div className="about-section-title">Technical</div>
@@ -123,6 +141,33 @@ export default function AboutPage() {
               </tbody>
             </table>
           )}
+        </div>
+        <div id="animations" className="about-section">
+          <div className="about-section-title">Animations</div>
+          <div>
+            Here are some of the animations used in this website. They took a bit of effort and I am pretty proud of
+            them, so here they are to admire:
+          </div>
+          <div id="animationsContainer">
+            <div id="animationsProgress" className="animation-child">
+              <LoadingSpinner size="100px" />
+              <LoadingBar width="100%" height="50px" />
+            </div>
+            <div className="animation-child pointable" onClick={() => setCoinFlipKey(coinFlipKey + 1)}>
+              <Centered>
+                <CoinToss
+                  duration={`${GAME_ORDER_COIN_FLIP_DURATION_SECONDS - 1}s`}
+                  delay="0s"
+                  heads={coinLandedHeads}
+                  size="100px"
+                  bounce={true}
+                  resultText={`Coin landed ${coinLandedHeads ? 'heads' : 'tails'} side up`}
+                  key={coinFlipKey}
+                  style={{ marginTop: '200px' }}
+                />
+              </Centered>
+            </div>
+          </div>
         </div>
       </div>
     </div>

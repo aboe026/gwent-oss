@@ -15,6 +15,10 @@ export default function env() {
         desc: 'The base URL the gwent-oss API is running on (should contain /graphql and /subscribe endpoints)',
         default: 'http://localhost:4000',
       }),
+      APP_INFO_FILE_PATH: str({
+        desc: 'The path to the file containing information for the application to ingest',
+        default: 'app-info.json',
+      }),
       CLIENT_DIR: str({
         desc: 'Path to directory containing client files to serve',
         default: '../libs/client/build',

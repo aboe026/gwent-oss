@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/msv-ui",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "author": "Adam Boe",
   "description": "React frontend to play gwent-oss.",
   "main": "src/index.ts",
@@ -9,7 +9,7 @@
     "build-all": "yarn g:recurse @gwent-oss/msv-ui run build",
     "build-tsc": "yarn g:tsc --build",
     "build-client": "yarn workspaces foreach --worktree --parallel --interlaced --topological-dev --exclude @gwent-oss/msv-ui run build",
-    "build-image": "docker build --tag=gwent-oss-ui:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
+    "build-image": "docker build --tag=gwent-oss-ui:${IMAGE_TAG:-latest} --target=ui --build-arg TARGET=ui --progress=plain --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
     "clean": "npm-run-all clean-children clean-root",
     "clean-root": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent-oss/msv-ui run clean",
@@ -26,16 +26,15 @@
   },
   "dependencies": {
     "@gwent-oss/env": "workspace:*",
+    "@gwent-oss/node-utils": "workspace:*",
     "@gwent-oss/utils": "workspace:*",
     "express": "5.2.1",
-    "fs-extra": "11.4.0",
     "log4js": "6.9.1",
     "replace-in-file": "7.2.0"
   },
   "devDependencies": {
     "@gwent-oss/client": "workspace:*",
     "@types/express": "4.17.21",
-    "@types/fs-extra": "11.0.4",
     "@types/jest": "30.0.0",
     "@types/node": "24.13.3",
     "cross-env": "10.1.0",

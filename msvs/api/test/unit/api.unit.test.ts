@@ -4,7 +4,6 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import { Disposable } from 'graphql-ws'
 import express from 'express'
-import figlet from 'figlet'
 import { GraphQLFormattedError } from 'graphql'
 import http from 'http'
 import MongoStore from 'connect-mongo'
@@ -14,14 +13,17 @@ import ws from 'ws'
 
 import allUpgrades from '../../src/database/upgrades/all-upgrades'
 import Api from '../../src/api'
-import AppInfo from '../../src/app-info'
+import * as nodeUtils from '@gwent-oss/node-utils'
 import BasicAuth from '../../src/auth/basic-auth'
+import CorsUtil from '../../src/util/cors-util'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import * as env from '../../src/env'
 import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from '../../src/util/presentable-error'
 import schema from '../../src/graphql/executable-schema'
+import SessionUtil from '../../src/util/session-util'
+import { startupText } from '@gwent-oss/utils'
 import TestUtil from '../util/test-util'
 import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 import { version } from '../../package.json'
@@ -127,13 +129,13 @@ describe('Api', () => {
   })
   describe('printStartupInfo', () => {
     it('logs out correct information', async () => {
-      const text = 'gwent-oss'
       const buildNumber = 0
+      const appInfoFilePath = 'app-info-file-path'
       const nodeEnv = 'development'
       const logLevel = 'INFO'
-      const textSyncSpy = jest.spyOn(figlet, 'textSync').mockReturnValue(text)
-      const getBuildNumberSpy = jest.spyOn(AppInfo, 'getBuildNumber').mockResolvedValue(0)
+      const getBuildNumberSpy = jest.spyOn(nodeUtils.AppInfo, 'getBuildNumber').mockResolvedValue(0)
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
+        APP_INFO_FILE_PATH: appInfoFilePath,
         NODE_ENV: nodeEnv,
         LOG_LEVEL: logLevel,
       } as any)
@@ -148,25 +150,17 @@ describe('Api', () => {
 
       await expect(Api['printStartupInfo']()).resolves.toEqual(undefined)
 
-      expect(textSyncSpy.mock.calls).toEqual([
-        [
-          'gwent-oss',
-          {
-            font: 'Tombstone',
-          },
-        ],
-      ])
-      expect(getBuildNumberSpy.mock.calls).toEqual([[]])
-      expect(envSpy.mock.calls).toEqual([[], []])
-      expect(infoSpy.mock.calls).toEqual([[`\n${text}`], [`Version: "${version}"`], [`LOG_LEVEL: "${logLevel}"`]])
+      expect(getBuildNumberSpy.mock.calls).toEqual([[appInfoFilePath]])
+      expect(envSpy.mock.calls).toEqual([[], [], []])
+      expect(infoSpy.mock.calls).toEqual([[startupText], [`Version: "${version}"`], [`LOG_LEVEL: "${logLevel}"`]])
       expect(debugSpy.mock.calls).toEqual([[`Build: "${buildNumber}"`]])
       expect(traceSpy.mock.calls).toEqual([[`NODE_ENV: "${nodeEnv}"`]])
     })
   })
   describe('configureSession', () => {
-    it('calls to create session on app for development node env', () => {
+    it('calls to create session on app for development node env', async () => {
       const sessionCookieName = 'gwent-oss.sid'
-      testConfigureSession({
+      await testConfigureSession({
         nodeEnv: NODE_ENV.Dev,
         expectedCookie: {
           httpOnly: true,
@@ -182,9 +176,9 @@ describe('Api', () => {
         ],
       })
     })
-    it('calls to create session on app for production node env', () => {
+    it('calls to create session on app for production node env', async () => {
       const sessionCookieName = 'gwent-oss.sid'
-      testConfigureSession({
+      await testConfigureSession({
         nodeEnv: NODE_ENV.Prod,
         expectedCookie: {
           httpOnly: true,
@@ -203,7 +197,7 @@ describe('Api', () => {
         ],
       })
     })
-    it('calls out to trace if enabled', () => {
+    it('calls out to trace if enabled', async () => {
       const cookie: CookieOptions = {
         httpOnly: true,
         secure: false,
@@ -211,7 +205,7 @@ describe('Api', () => {
         maxAge: 1000,
       }
       const sessionCookieName = 'gwent-oss.sid'
-      testConfigureSession({
+      await testConfigureSession({
         nodeEnv: NODE_ENV.Dev,
         expectedCookie: cookie,
         expectedProxy: false,
@@ -377,7 +371,8 @@ describe('Api', () => {
     it('calls to listen on the http server', async () => {
       const graphqlPath = 'graphql'
       const subscriptionPath = 'subscribe'
-      const corsOrigin = 'localhost'
+      const corsOrigin = 'https://localhost:443/'
+      const resolvedCorsOrigin = 'https://localhost'
       const port = 4000
       const jsonUploadLimit = '1mb'
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
@@ -387,6 +382,7 @@ describe('Api', () => {
         SUBSCRIPTION_PATH: subscriptionPath,
         JSON_UPLOAD_LIMIT: jsonUploadLimit,
       } as any)
+      const resolveCorsOriginSpy = jest.spyOn(CorsUtil, 'resolveCorsOrigin').mockReturnValue(resolvedCorsOrigin)
       const useSpy = jest.fn().mockImplementation()
       Api['app'] = {
         use: useSpy,
@@ -412,8 +408,9 @@ describe('Api', () => {
 
       await expect(Api['serve']()).resolves.toEqual(undefined)
 
+      expect(envSpy.mock.calls).toEqual([[], [], [], [], [], [], [], [], [], [], []])
+      expect(resolveCorsOriginSpy.mock.calls).toEqual([[corsOrigin]])
       expect(useSpy).toHaveBeenCalledTimes(1)
-      expect(envSpy.mock.calls).toEqual([[], [], [], [], [], [], [], [], [], [], [], []])
       expect(jsonSpy.mock.calls).toEqual([
         [
           {
@@ -432,7 +429,7 @@ describe('Api', () => {
       expect((cors as any).mock.calls).toEqual([
         [
           {
-            origin: [corsOrigin],
+            origin: [resolvedCorsOrigin],
             credentials: true,
           },
         ],
@@ -441,7 +438,7 @@ describe('Api', () => {
         [`GraphQL Queries and Mutations listening at: "http://localhost:${port}/${graphqlPath}"`],
         [`GraphQL Subscription Websocket available at: "ws://localhost:${port}/${subscriptionPath}"`],
       ])
-      expect(debugSpy.mock.calls).toEqual([[`CORS accepting requests from "${corsOrigin}"`]])
+      expect(debugSpy.mock.calls).toEqual([[`CORS accepting requests from "${resolvedCorsOrigin}"`]])
       expect(traceSpy.mock.calls).toEqual([
         [`GRAPHQL_PATH: "${graphqlPath}"`],
         [`CORS_ORIGIN: "${corsOrigin}"`],
@@ -451,11 +448,12 @@ describe('Api', () => {
   })
 })
 
-function testConfigureSession({
+async function testConfigureSession({
   nodeEnv,
   expectedCookie,
   expectedProxy,
   sessionCookieName = 'gwent-oss.sid',
+  sessionSecretFile,
   setCalls = [],
   traceEnabled,
   traceCalls = [],
@@ -464,12 +462,14 @@ function testConfigureSession({
   expectedCookie: CookieOptions
   expectedProxy: boolean
   sessionCookieName?: string
+  sessionSecretFile?: string
   setCalls?: any[][]
   traceEnabled?: boolean
   traceCalls: string[][]
 }) {
   const dbName = 'db-name'
   const sessionSecret = 'secret'
+  const resolvedSessionSecret = 'resolvedSessionSecret'
   const sessionTimeoutSeconds = 1
   const envSpy = jest.spyOn(env, 'default').mockReturnValue({
     MONGO_DB: dbName,
@@ -477,6 +477,7 @@ function testConfigureSession({
     SESSION_COOKIE_NAME: sessionCookieName,
     SESSION_SECRET: sessionSecret,
     SESSION_TIMEOUT_SECONDS: sessionTimeoutSeconds,
+    SESSION_SECRET_FILE: sessionSecretFile,
   } as any)
   const useSpy = jest.fn().mockImplementation()
   const setSpy = jest.fn().mockImplementation()
@@ -484,18 +485,20 @@ function testConfigureSession({
     use: useSpy,
     set: setSpy,
   } as any
-  const resolvedPromise = {}
-  const promiseResolveSpy = jest.spyOn(Promise, 'resolve').mockImplementation(() => resolvedPromise as any)
+  const dbConnector = { hello: 'world' }
+  const dbConnectorGetClientSpy = jest.spyOn(DbConnector, 'getClient').mockReturnValue(dbConnector as any)
   const mongoStoreCreateSpy = jest.spyOn(MongoStore, 'create').mockImplementation()
+  const getSessionSecretSpy = jest.spyOn(SessionUtil, 'getSessionSecret').mockResolvedValue(resolvedSessionSecret)
   const traceSpy = jest.fn().mockImplementation()
   Api['logger'] = {
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
 
-  expect(Api['configureSession']()).toEqual(undefined)
+  await expect(Api['configureSession']()).resolves.toEqual(undefined)
 
-  expect(envSpy.mock.calls).toEqual([[], [], [], [], [], []])
+  const envSpyCalls = [[], [], [], [], []]
+  expect(envSpy.mock.calls).toEqual(envSpyCalls)
   expect(useSpy).toHaveBeenCalledTimes(1)
   expect(setSpy.mock.calls).toEqual(setCalls)
   expect((session as any).mock.calls).toEqual([
@@ -507,20 +510,21 @@ function testConfigureSession({
         resave: false,
         rolling: true,
         saveUninitialized: false,
-        secret: sessionSecret,
+        secret: resolvedSessionSecret,
         store: undefined,
       },
     ],
   ])
-  expect(promiseResolveSpy.mock.calls).toEqual([[DbConnector.getClient()]])
+  expect(dbConnectorGetClientSpy.mock.calls).toEqual([[]])
   expect(mongoStoreCreateSpy.mock.calls).toEqual([
     [
       {
-        clientPromise: resolvedPromise,
+        clientPromise: new Promise(() => {}),
         dbName: dbName,
       },
     ],
   ])
+  expect(getSessionSecretSpy.mock.calls).toEqual([[]])
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 

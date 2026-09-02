@@ -1,5 +1,6 @@
 import { Collection, Db, MongoClient, ProfilingLevel } from 'mongodb'
-import fs from 'fs-extra'
+import fs from 'fs/promises'
+import { fileExists, getFileJson } from '@gwent-oss/node-utils'
 import path from 'path'
 
 /**
@@ -71,7 +72,7 @@ export default class DbProfiler {
    * @param filePath The full file path (including name) to save results to.
    */
   async recordToFile(filePath: string) {
-    await fs.ensureDir(path.dirname(filePath))
+    await fileExists(path.dirname(filePath))
     const { collection } = await this.connect()
     const docs = await collection.find().toArray()
     await fs.writeFile(filePath, JSON.stringify(docs, null, 2))
@@ -84,9 +85,10 @@ export default class DbProfiler {
    * @returns A list of any operations which are unacceptable and need addressing.
    */
   async getViolations(profilingFilePath: string): Promise<string[]> {
-    const results = (await fs.readJson(profilingFilePath, {
-      encoding: 'utf-8',
-    })) as ProfileResult[]
+    const results = await getFileJson<ProfileResult[]>(profilingFilePath)
+    if (!results) {
+      throw Error(`No results found in file "${profilingFilePath}"`)
+    }
     const violations: string[] = []
     violations.push(
       ...this.getIndexViolations({

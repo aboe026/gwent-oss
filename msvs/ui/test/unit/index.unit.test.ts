@@ -9,7 +9,7 @@ jest.mock('log4js', () => ({
 
 describe('index', () => {
   it('exits with successful code if no error thrown', async () => {
-    jest.mock('../../src/server', () => ({
+    jest.mock('../../src/ui', () => ({
       run: jest.fn().mockResolvedValue(undefined),
     }))
     process.exitCode = 0
@@ -22,7 +22,7 @@ describe('index', () => {
     expect(process.exitCode).toEqual(0)
   }, 10000) // Needed to pass in CI
   it('exits with unsuccessful code if error thrown', async () => {
-    jest.mock('../../src/server', () => ({
+    jest.mock('../../src/ui', () => ({
       run: jest.fn().mockRejectedValue(undefined),
     }))
     process.exitCode = 0

@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/env",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "author": "Adam Boe",
   "description": "Parse process.env",
   "main": "build/src/env.js",

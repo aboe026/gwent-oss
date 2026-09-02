@@ -17,6 +17,7 @@ import randomizeOrder from './randomize-order'
 import setNestedProperty from './set-nested-property'
 import sleep from './sleep'
 import sortObjectArray from './sort'
+import startupText from './startup-text'
 import toTitleCase from './to-title-case'
 
 export {
@@ -40,5 +41,6 @@ export {
   setNestedProperty,
   sleep,
   sortObjectArray,
+  startupText,
   toTitleCase,
 }

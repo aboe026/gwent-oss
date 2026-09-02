@@ -6,7 +6,6 @@ import { createServer, Server } from 'http'
 import { Disposable } from 'graphql-ws'
 import express, { Express, Request, Response } from 'express'
 import { expressMiddleware } from '@as-integrations/express5'
-import figlet from 'figlet'
 import { getLogger } from 'log4js'
 import { GraphQLFormattedError } from 'graphql'
 import { json } from 'body-parser'
@@ -18,14 +17,17 @@ import { useServer } from 'graphql-ws/use/ws'
 import { WebSocketServer } from 'ws'
 
 import allUpgrades from './database/upgrades/all-upgrades'
-import AppInfo from './app-info'
+import { AppInfo } from '@gwent-oss/node-utils'
 import BasicAuth from './auth/basic-auth'
+import CorsUtil from './util/cors-util'
 import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
 import env from './env'
 import { NODE_ENV } from '@gwent-oss/env'
 import PresentableError from './util/presentable-error'
 import schema from './graphql/executable-schema'
+import SessionUtil from './util/session-util'
+import { startupText } from '@gwent-oss/utils'
 import { version } from '../package.json'
 import WebSocketAuth from './auth/websocket-auth'
 
@@ -51,7 +53,7 @@ export default class Api {
     Api.app = express()
     Api.httpServer = createServer(Api.app)
 
-    Api.configureSession()
+    await Api.configureSession()
     Api.exposePlainSchema()
     const subscriptionCleanup = Api.configureWebsocketServer()
     await Api.configureApolloServer(subscriptionCleanup)
@@ -63,13 +65,9 @@ export default class Api {
    * print relevant startup information.
    */
   private static async printStartupInfo() {
-    Api.logger.info(
-      `\n${figlet.textSync('gwent-oss', {
-        font: 'Tombstone',
-      })}`
-    )
+    Api.logger.info(startupText)
     Api.logger.info(`Version: "${version}"`)
-    Api.logger.debug(`Build: "${await AppInfo.getBuildNumber()}"`)
+    Api.logger.debug(`Build: "${await AppInfo.getBuildNumber(env().APP_INFO_FILE_PATH)}"`)
     Api.logger.trace(`NODE_ENV: "${env().NODE_ENV}"`)
     Api.logger.info(`LOG_LEVEL: "${env().LOG_LEVEL}"`)
   }
@@ -77,7 +75,7 @@ export default class Api {
   /**
    * Configure the server for user sessions.
    */
-  private static configureSession() {
+  private static async configureSession() {
     const isProduction = env().NODE_ENV === NODE_ENV.Prod
     const proxy = isProduction
     Api.logger.trace(`Session timeout: "${env().SESSION_TIMEOUT_SECONDS}" second(s)`)
@@ -109,7 +107,7 @@ export default class Api {
         resave: false,
         rolling: true,
         saveUninitialized: false,
-        secret: env().SESSION_SECRET,
+        secret: await SessionUtil.getSessionSecret(),
         store: Api.sessionMongoStore,
       })
     )
@@ -266,10 +264,11 @@ export default class Api {
   private static async serve() {
     Api.logger.trace(`GRAPHQL_PATH: "${env().GRAPHQL_PATH}"`)
     Api.logger.trace(`CORS_ORIGIN: "${env().CORS_ORIGIN}"`)
+    const corsOrigin = CorsUtil.resolveCorsOrigin(env().CORS_ORIGIN)
     Api.app.use(
       `/${env().GRAPHQL_PATH}`,
       cors({
-        origin: [env().CORS_ORIGIN],
+        origin: [corsOrigin],
         credentials: true,
       }),
       json({
@@ -279,7 +278,7 @@ export default class Api {
         context: Api.setContext,
       })
     )
-    Api.logger.debug(`CORS accepting requests from "${env().CORS_ORIGIN}"`)
+    Api.logger.debug(`CORS accepting requests from "${corsOrigin}"`)
     Api.logger.trace(`PORT: "${env().PORT}"`)
     await new Promise<void>((resolve) => Api.httpServer.listen({ port: env().PORT }, resolve))
     Api.logger.info(

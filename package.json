@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/core",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "author": "Adam Boe",
   "description": "An open-source recreation of the card game Gwent from The Witcher 3: Wild Hunt for online multiplayer.",
   "scripts": {
@@ -10,7 +10,7 @@
     "clean": "npm-run-all clean-children clean-root",
     "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent-oss/core run clean",
     "clean-root": "rimraf coverage results",
-    "compose-build": "cd compose && docker compose build",
+    "compose-build": "cd compose && docker compose build --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0}",
     "compose-start": "cd compose && docker compose start",
     "compose-stop": "cd compose && docker compose stop",
     "compose-up": "cd compose && docker compose up -d",
@@ -46,13 +46,12 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@gwent-oss/lcov-dark-mode": "workspace:*",
-    "@types/fs-extra": "11.0.4",
+    "@gwent-oss/node-utils": "workspace:*",
     "@types/jest": "30.0.0",
     "@types/node": "24.13.3",
     "cross-env": "10.1.0",
     "eslint": "10.8.0",
     "eslint-plugin-jsdoc": "63.3.2",
-    "fs-extra": "11.4.0",
     "jest": "30.4.2",
     "jest-environment-jsdom": "30.4.1",
     "jest-junit": "17.0.0",

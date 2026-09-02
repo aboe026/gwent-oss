@@ -1,8 +1,9 @@
 import { getLogger } from 'log4js'
 
-import AppInfo from '../../../app-info'
+import { AppInfo } from '@gwent-oss/node-utils'
 import { Application } from '@gwent-oss/graphql-schema/resolver-typings'
 import { Context } from '@gwent-oss/graphql-schema/context'
+import env from '../../../env'
 import { GraphQLResolveInfo } from 'graphql'
 import ResolverUtil from '../resolver-util'
 import { version } from '../../../../package.json'
@@ -32,7 +33,7 @@ export default class ApplicationQuery {
       info,
     })
 
-    const build = await AppInfo.getBuildNumber()
+    const build = await AppInfo.getBuildNumber(env().APP_INFO_FILE_PATH)
     if (ApplicationQuery.logger.isTraceEnabled()) {
       ApplicationQuery.logger.trace(`${logPrefix} build: "${build}"`)
       ApplicationQuery.logger.trace(`${logPrefix} version: "${version}"`)

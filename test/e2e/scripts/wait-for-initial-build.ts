@@ -1,6 +1,6 @@
-import fs from 'fs/promises'
 import path from 'path'
 
+import { fileExists } from '@gwent-oss/node-utils'
 import { sleep } from '@gwent-oss/utils'
 
 //
@@ -12,7 +12,7 @@ import { sleep } from '@gwent-oss/utils'
     while (!builtExists && (Date.now() - start) / 1000 < timeoutSeconds) {
       await sleep(1)
       try {
-        await fs.access(path.join(__dirname, '..', 'build', '.testcaferc.js'))
+        await fileExists(path.join(__dirname, '..', 'build', '.testcaferc.js'))
         builtExists = true
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err: unknown) {

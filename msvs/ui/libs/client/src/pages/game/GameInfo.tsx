@@ -458,7 +458,11 @@ function renderScore({
         } else {
           if (isSelf) {
             if (isTurn) {
-              passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+              if (player.reviving) {
+                passTitle = 'Cannot pass while reviving'
+              } else {
+                passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+              }
             } else {
               passTitle = 'Cannot pass while it is not your turn'
             }
@@ -498,7 +502,7 @@ function renderScore({
       sortedRounds.push(roundPlayed)
     }
   }
-  const canPass = isTurn && !playPassLoading && !playUnitLoading
+  const canPass = isTurn && !player.reviving && !playPassLoading && !playUnitLoading
 
   return (
     <div className="game-player-container">

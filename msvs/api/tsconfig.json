@@ -4,6 +4,7 @@
   "references": [
     { "path": "../../libs/constants" },
     { "path": "../../libs/env" },
+    { "path": "../../libs/node-utils" },
     { "path": "../../libs/graphql-schema" },
     { "path": "../../libs/test-utils" },
     { "path": "../../libs/utils" },

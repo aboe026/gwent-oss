@@ -5,7 +5,9 @@ import { parse } from 'cookie'
 import { SessionData } from 'express-session'
 import { signedCookie } from 'cookie-parser'
 
+import CorsUtil from '../util/cors-util'
 import env from '../env'
+import SessionUtil from '../util/session-util'
 import { UserDbObject } from '@gwent-oss/graphql-schema/database-typings'
 
 /**
@@ -30,9 +32,9 @@ export default class WebSocketAuth {
     req: IncomingMessage
     mongoStore: MongoStore
   }): Promise<UserDbObject | undefined> {
-    const corsOrigin = env().CORS_ORIGIN
+    const corsOrigin = CorsUtil.resolveCorsOrigin(env().CORS_ORIGIN)
     const sessionCookieName = env().SESSION_COOKIE_NAME
-    const sessionSecret = env().SESSION_SECRET
+    const sessionSecret = await SessionUtil.getSessionSecret()
 
     const origin = req.headers['origin']
     if (WebSocketAuth.logger.isTraceEnabled()) {

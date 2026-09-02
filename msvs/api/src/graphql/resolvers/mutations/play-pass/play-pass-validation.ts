@@ -69,6 +69,11 @@ export default class PlayPassValidation {
       PlayPassValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
+    if (player.reviving) {
+      const message = 'Cannot pass round while reviving unit.'
+      PlayPassValidation.logger.warn(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
 
     return {
       game,

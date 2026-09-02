@@ -1,12 +1,11 @@
-import fs from 'fs-extra'
-
 import DbProfiler from '../src/index'
+import { fileExists } from '@gwent-oss/node-utils'
 
 //
 ;(async () => {
   const file = process.argv[2]
   console.log(`Analyzing profiling file "${file}"`)
-  if (!(await fs.pathExists(file))) {
+  if (!(await fileExists(file))) {
     throw Error(`File "${file}" does not exist or is not accessible.`)
   }
 

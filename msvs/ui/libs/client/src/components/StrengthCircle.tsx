@@ -22,7 +22,13 @@ export default function StrengthCircle({
   const weatherSymbol = getWeatherImage(unit)
 
   let strengthCircleContainerClassModifier = ''
-  if (effectHighlight && effectiveStrength && unit.strength !== undefined && unit.strength !== null) {
+  if (
+    effectHighlight &&
+    effectiveStrength !== undefined &&
+    effectiveStrength !== null &&
+    unit.strength !== undefined &&
+    unit.strength !== null
+  ) {
     if (unit.hero) {
       strengthCircleContainerClassModifier = HTML_CLASSES.GameUnitStrengthCircleHero
     } else if (effectiveStrength !== unit.strength) {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.0 - 2026-09-02
+
+### Added
+
+- Production hardening ([#64](https://github.com/aboe026/gwent-oss/pull/64)) (Adam Boe)
+
 ## 0.26.0 - 2026-08-13
 
 ### Added

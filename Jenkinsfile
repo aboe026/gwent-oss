@@ -24,22 +24,33 @@ node {
     def exceptionThrown = false
     def packageJson
     def projectName
+    def gwentOssRepo = 'aboe026/'
     def dockerTag
     def dockerPushTag
     def uniqueName
     def composeYaml
+    def composeVars = []
     def mongoImage
     def testcafeVersion
     def testcafeImageTag
     def e2eDbName
-    def services = []
+    def mongoUser = 'root'
+    def mongoPass = 'password'
+    def mongoUserFile = 'compose/secrets/mongo_user'
+    def mongoPassFile = 'compose/secrets/mongo_pass'
+    def sessionSecret = 'SessionSecretFromFile'
+    def sessionSecretFile = 'compose/secrets/session'
+    def msvs = []
+    def retryAttempts = 5
 
     try {
-        timeout(time: 80, unit: 'MINUTES') {
+        timeout(time: 90, unit: 'MINUTES') {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
-                        checkout scm
+                        retry(retryAttempts) {
+                            checkout scm
+                        }
 
                         def nvmrc = readFile '.nvmrc'
                         nodeImage = "node:${nvmrc.trim()}"
@@ -70,13 +81,12 @@ node {
                         // determine host mounted directory for correct volume mounting of testcafe container
                         mountDir = dockerUtil.getHostMountDir(workDir: workDir)
 
-                        // get services to build
                         dir('msvs') {
-                            def serviceFiles = findFiles()
+                            def msvsFiles = findFiles()
 
-                            serviceFiles.each { serviceFile ->
-                                if (serviceFile.directory) {
-                                    services.push(serviceFile.name)
+                            msvsFiles.each { msvFile ->
+                                if (msvFile.directory) {
+                                    msvs.push(msvFile.name)
                                 }
                             }
                         }
@@ -86,30 +96,82 @@ node {
                             composeYaml = readYaml file: composeFileName
                         }
                         mongoImage = composeYaml.services.database.image
+                        writeFile(
+                            file: mongoUserFile,
+                            text: mongoUser
+                        )
+                        writeFile(
+                            file: mongoPassFile,
+                            text: mongoPass
+                        )
+                        writeFile(
+                            file: sessionSecretFile,
+                            text: sessionSecret
+                        )
+
+                        composeVars = [
+                            "COMPOSE_PROJECT_NAME=${uniqueName}",
+                            "GWENT_OSS_REPO=${gwentOssRepo}",
+                            "GWENT_OSS_TAG=${dockerTag}",
+                            "HOST_NAME=${uniqueName}-router-1",
+                            'LIMIT_HTTP_EVENTS_NOT_AUTH=100',
+                            'LIMIT_HTTP_EVENTS_YES_AUTH=100',
+                            'LIMIT_HTTP_BURST_NOT_AUTH=100',
+                            'LIMIT_HTTP_BURST_YES_AUTH=100',
+                            'LIMIT_WS_EVENTS_NOT_AUTH=1000',
+                            'LIMIT_WS_EVENTS_YES_AUTH=1000',
+                            'LIMIT_WS_BURST_NOT_AUTH=1000',
+                            'LIMIT_WS_BURST_YES_AUTH=1000',
+                            "MONGO_DB=${projectName}-e2e",
+                            "MONGO_USER_FILE=${mountDir}/${mongoUserFile}",
+                            "MONGO_PASS_FILE=${mountDir}/${mongoPassFile}",
+                            "NETWORK_NAME=${uniqueName}",
+                            'NETWORK_EXTERNAL=true',
+                            'RESTART_POLICY=no',
+                            "SESSION_SECRET_FILE=${mountDir}/${sessionSecretFile}",
+                            'SESSION_TIMEOUT_SECONDS=60'
+                        ]
                     }
                     stage('Install Compose') {
-                        sh "curl -L 'https://github.com/docker/compose/releases/download/v${composeVersion}/docker-compose-linux-x86_64' -o /usr/local/bin/docker-compose"
+                        retry(retryAttempts) {
+                            sh "curl -L 'https://github.com/docker/compose/releases/download/v${composeVersion}/docker-compose-linux-x86_64' -o /usr/local/bin/docker-compose"
+                        }
                         sh 'chmod +x /usr/local/bin/docker-compose'
                         sh 'docker-compose --version'
                         sh "docker network create ${uniqueName}"
                     }
                     stage('Pull Images') {
-                        sh "docker pull ${mongoImage}"
-                        sh "docker pull ${nodeImage}"
-                        sh "docker pull ${nodeImage}-alpine"
-                        sh "docker pull testcafe/testcafe:${testcafeVersion}"
+                        retry(retryAttempts) {
+                            sh "docker pull ${mongoImage}"
+                        }
+                        retry(retryAttempts) {
+                            sh "docker pull ${nodeImage}"
+                        }
+                        retry(retryAttempts) {
+                            sh "docker pull ${nodeImage}-alpine"
+                        }
+                        retry(retryAttempts) {
+                            sh "docker pull testcafe/testcafe:${testcafeVersion}"
+                        }
                     }
 
                     parallel(
                         'node': {
-                            docker.image(mongoImage).withRun("--name=${uniqueName}-mongo --network=${uniqueName}") {
+                            docker.image(mongoImage).withRun(""" \
+                                --name=${uniqueName}-mongo \
+                                --network=${uniqueName} \
+                                -e MONGO_INITDB_ROOT_USERNAME=${mongoUser} \
+                                -e MONGO_INITDB_ROOT_PASSWORD=${mongoPass} \
+                            """) {
                                 dockerVolumesToDelete.addAll(dockerUtil.getContainerVolumes(containerName: "${uniqueName}-mongo"))
                                 docker.image(nodeImage).inside("--network=${uniqueName}") {
                                     stage('Install') {
                                         sh 'node --version'
                                         sh 'yarn --version'
                                         sh 'corepack enable'
-                                        sh 'yarn install --immutable'
+                                        retry(retryAttempts) {
+                                            sh 'yarn install --immutable'
+                                        }
                                     }
                                     stage('Lint') {
                                         sh 'yarn lint'
@@ -146,7 +208,7 @@ node {
                                     stage('Func Test') {
                                         try {
                                             withEnv([
-                                                "MONGO_URL=mongodb://${uniqueName}-mongo:27017",
+                                                "MONGO_URL=mongodb://${mongoUser}:${mongoPass}@${uniqueName}-mongo:27017",
                                                 'MONGO_DB=gwent-func'
                                             ]) {
                                                 sh 'yarn test-func'
@@ -165,29 +227,30 @@ node {
                         'docker': {
                             stage('Build Images') {
                                 def dockerBuilds = [:]
-                                services.each { service ->
-                                    dockerBuilds[service] = {
-                                        dir("msvs/${service}") {
-                                            sh """docker build \
-                                                --tag=${projectName}-${service}:${dockerTag} \
-                                                --build-arg VERSION=${packageJson.version} \
-                                                --build-arg BUILD=${env.BUILD_ID} \
-                                                --no-cache \
-                                                --progress=plain \
-                                                --file=Dockerfile \
-                                                ../../
-                                            """
+                                dockerBuilds['compose'] = {
+                                    dir('compose') {
+                                        withEnv(composeVars) {
+                                            retry(retryAttempts) {
+                                                sh """docker-compose build \
+                                                    --build-arg VERSION=${packageJson.version} \
+                                                    --build-arg BUILD=${env.BUILD_ID} \
+                                                    --no-cache
+                                                """
+                                            }
                                         }
                                     }
                                 }
                                 dockerBuilds['testcafe'] = {
                                     dir('test/e2e') {
-                                        sh """docker build \
-                                            --tag=testcafe/testcafe:${testcafeImageTag} \
-                                            --no-cache \
-                                            --progress=plain \
-                                            .
-                                        """
+                                        retry(retryAttempts) {
+                                            sh """docker build \
+                                                --file=e2e.Dockerfile \
+                                                --tag=testcafe/testcafe:${testcafeImageTag} \
+                                                --no-cache \
+                                                --progress=plain \
+                                                .
+                                            """
+                                        }
                                     }
                                 }
                                 parallel dockerBuilds
@@ -197,41 +260,29 @@ node {
 
                     stage('Start') {
                         dir('compose') {
-                            // make unique to build
-                            sh "sed -i -e 's/COMPOSE_PROJECT_NAME=.*/COMPOSE_PROJECT_NAME=${uniqueName}/g' .env"
-                            sh "sed -i -e 's/HOST_NAME=.*/HOST_NAME=${uniqueName}-router-1/g' .env"
-                            composeYaml.services.router.image = "${projectName}-router:${dockerTag}"
                             composeYaml.services.router.remove('ports') // remove exposed port to avoid port conflicts
-                            services.each { service ->
-                                // refer to service images built earlier to avoid re-build
-                                composeYaml.services[service].image = "${projectName}-${service}:${dockerTag}"
-                            }
-                            composeYaml.services.router.volumes[0] = "${mountDir}/compose/nginx/nginx.conf:/etc/nginx/nginx.conf"
-                            composeYaml.services.api.environment.push("MONGO_DB=${projectName}-e2e")
-                            composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=60')
-                            composeYaml.networks = [
-                                default: [
-                                    name: uniqueName,
-                                    external: true
-                                ]
-                            ]
+                            composeYaml.services.router.volumes[0] = "${mountDir}/compose/caddy/Caddyfile:/etc/caddy/Caddyfile"
                             writeYaml file: composeFileName, data: composeYaml, overwrite: true
 
-                            sh 'docker-compose build router --no-cache'
-                            sh 'docker-compose up -d'
+                            withEnv(composeVars) {
+                                sh 'docker-compose up -d'
+                            }
                         }
                     }
 
                     e2eSuites.each { e2eSuite ->
-                        runE2eTest(
-                            "E2E ${e2eSuite.name}",
-                            "e2e-${e2eSuite.name.toLowerCase()}",
-                            e2eSuite.browser,
-                            uniqueName,
-                            mountDir,
-                            testcafeImageTag,
-                            e2eDbName
-                        )
+                        runE2eTest([
+                            displayName: "E2E ${e2eSuite.name}",
+                            suiteName: "e2e-${e2eSuite.name.toLowerCase()}",
+                            browser: e2eSuite.browser,
+                            uniqueName: uniqueName,
+                            mountDir: mountDir,
+                            testcafeImageTag: testcafeImageTag,
+                            dbName: e2eDbName,
+                            mongoUser: mongoUser,
+                            mongoPass: mongoPass,
+                            sessionSecret: sessionSecret
+                        ])
                     }
                     archiveArtifacts artifacts: 'test/e2e/screenshots/**/*', allowEmptyArchive: true
                     dockerVolumesToDelete.addAll(dockerUtil.getContainerVolumes(containerName: "${uniqueName}-database-1"))
@@ -241,16 +292,14 @@ node {
                             if (isBuildSucceeding()) {
                                 docker.withRegistry(dockerRegistry) {
                                     def dockerPushes = [:]
-                                    services.each { service ->
+                                    [*msvs, 'router'].each { service ->
                                         dockerPushes[service] = {
-                                            dir("msvs/${service}") {
-                                                def imageName = "${projectName}-${service}"
-                                                def pushImageName = "${dockerRegistry}/${imageName}"
-                                                sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
-                                                sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:latest"
-                                                sh "docker push ${pushImageName}:${dockerPushTag}"
-                                                sh "docker push ${pushImageName}:latest"
-                                            }
+                                            def imageName = "${projectName}-${service}"
+                                            def pushImageName = "${dockerRegistry}/${imageName}"
+                                            sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
+                                            sh "docker tag ${gwentOssRepo}${imageName}:${dockerTag} ${pushImageName}:latest"
+                                            sh "docker push ${pushImageName}:${dockerPushTag}"
+                                            sh "docker push ${pushImageName}:latest"
                                         }
                                     }
 
@@ -277,7 +326,9 @@ node {
         stage('Cleanup') {
             try {
                 dir("${workDir}/compose") {
-                    sh "docker-compose logs > ${uniqueName}-compose.log"
+                    withEnv(composeVars) {
+                        sh "docker-compose logs --no-color > ${uniqueName}-compose.log"
+                    }
                     archiveArtifacts artifacts: "${uniqueName}-compose.log", allowEmptyArchive: true
                 }
             } catch (err) {
@@ -285,14 +336,15 @@ node {
             }
             try {
                 dir("${workDir}/compose") {
-                    sh 'docker-compose down -v --rmi \'local\''
+                    withEnv(composeVars) {
+                        sh 'docker-compose down -v --rmi \'local\''
+                    }
                 }
             } catch (err) {
                 println 'Exception caught when trying to bring down compose containers'
                 println err
             }
-            services.addAll('router', 'database')
-            services.each { service ->
+            [*msvs, 'router', 'database'].each { service ->
                 def containerName = "${uniqueName}-${service}-1"
                 try {
                     sh "docker stop ${containerName}"
@@ -306,7 +358,9 @@ node {
                     println "non-fatal error trying to remove docker container ${containerName}"
                     println err
                 }
-                def imageName = "${projectName}-${service}:${dockerTag}"
+            }
+            [*msvs, 'router'].each { service ->
+                def imageName = "${gwentOssRepo}${projectName}-${service}:${dockerTag}"
                 try {
                     sh "docker rmi ${imageName}"
                 } catch (err) {
@@ -369,40 +423,41 @@ node {
     }
 }
 
-def runE2eTest(String displayName, String suiteName, String browser, String uniqueName, String mountDir, String testcafeImageTag, String dbName) {
+def runE2eTest(Map cfg) {
     def exceptionThrown = false
-    stage(displayName) {
+    stage(cfg.displayName) {
         try {
             sh """docker run \
                 --rm \
-                --name=${uniqueName}-${suiteName} \
+                --name=${cfg.uniqueName}-${cfg.suiteName} \
                 --shm-size=2g \
-                --network=${uniqueName} \
-                -v ${mountDir}:/app \
+                --network=${cfg.uniqueName} \
+                -v ${cfg.mountDir}:/app \
                 -w /app/test/e2e \
-                -e BASE_URL=https://${uniqueName}-router-1 \
-                -e API_BASE_URL=https://${uniqueName}-router-1 \
-                -e MONGO_URL=mongodb://${uniqueName}-database-1:27017 \
-                -e MONGO_DB=${dbName} \
+                -e BASE_URL=https://${cfg.uniqueName}-router-1 \
+                -e API_BASE_URL=https://${cfg.uniqueName}-router-1 \
+                -e MONGO_URL=mongodb://${cfg.mongoUser}:${cfg.mongoPass}@${cfg.uniqueName}-database-1:27017 \
+                -e MONGO_DB=${cfg.dbName} \
                 -e BUILD=${env.BUILD_ID} \
-                -e WEBGL_UNSUPPORTED=${browser == 'firefox' ? 'true' : 'false'} \
-                -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
+                -e WEBGL_UNSUPPORTED=${cfg.browser == 'firefox' ? 'true' : 'false'} \
                 -e CONCURRENCY=8 \
-                -i testcafe/testcafe:${testcafeImageTag} \
-                    \'${browser} --ignore-certificate-errors\' \
+                -e IGNORE_CERTIFICATE_ERRORS=true \
+                -e SESSION_SECRET=${cfg.sessionSecret} \
+                -i testcafe/testcafe:${cfg.testcafeImageTag} \
+                    \'${cfg.browser} --ignore-certificate-errors\' \
                     build/src/tests \
                     --config-file=build/.testcaferc.js \
-                    --reporter spec,xunit:results/${suiteName}.xml \
+                    --reporter spec,xunit:results/${cfg.suiteName}.xml \
                     --quarantine-mode \
                     --screenshots path=screenshots/,takeOnFails=true
             """
         } catch (err) {
             exceptionThrown = true
-            println "Exception was caught in try block of suite '${suiteName}' tests stage."
+            println "Exception was caught in try block of suite '${cfg.suiteName}' tests stage."
             println err
         } finally {
             dir('test/e2e') {
-                def filePath = "results/${suiteName}.xml"
+                def filePath = "results/${cfg.suiteName}.xml"
                 if (fileExists(filePath)) {
                     def contents = readFile filePath
                     if (contents) {
@@ -415,7 +470,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                                         testsuite.testcase.each { testcase ->
                                             def unstable = false
                                             def testcaseClass = testcase['@classname'].text()
-                                            testcase['@classname'] = "${suiteName}.${testcaseClass}".toString()
+                                            testcase['@classname'] = "${cfg.suiteName}.${testcaseClass}".toString()
                                             def testcaseName = testcase['@name'].text()
                                             if (testcaseName.contains('(unstable)')) {
                                                 unstable = true
@@ -441,23 +496,23 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                             }
                         } catch (er) {
                             exceptionThrown = true
-                            println "Exception caught in try block of finally block of suite '${suiteName}' tests stage."
+                            println "Exception caught in try block of finally block of suite '${cfg.suiteName}' tests stage."
                             println er
                         }
                         junit testResults: filePath
                     } else {
                         exceptionThrown = true
-                        println "Results file '${filePath}' for suite '${suiteName}' empty"
+                        println "Results file '${filePath}' for suite '${cfg.suiteName}' empty"
                     }
                 } else {
                     exceptionThrown = true
-                    println "Results file '${filePath}' for suite '${suiteName}' not found"
+                    println "Results file '${filePath}' for suite '${cfg.suiteName}' not found"
                 }
             }
         }
     }
     if (exceptionThrown) {
-        unstable(message: "Error occured running '${suiteName}' tests")
+        unstable(message: "Error occured running '${cfg.suiteName}' tests")
     }
 }
 

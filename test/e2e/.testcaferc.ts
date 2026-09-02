@@ -9,8 +9,21 @@ const profiler = new DbProfiler({
   mongoDb: env.MONGO_DB,
 })
 
+if (env.IGNORE_CERTIFICATE_ERRORS) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+}
+
+let browser = env.BROWSER
+if (env.IGNORE_CERTIFICATE_ERRORS) {
+  if (browser === 'chrome') {
+    browser += ' --ignore-certificate-errors --allow-insecure-localhost'
+  } else if (browser === 'edge') {
+    browser += ' --ignore-certificate-errors'
+  }
+}
+
 const config: any = {
-  browsers: [env.BROWSER],
+  browsers: [browser],
   concurrency: env.CONCURRENCY,
   hooks: {
     testRun: {
