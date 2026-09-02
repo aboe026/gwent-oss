@@ -96,7 +96,7 @@ export default function AboutPage() {
         <div id="when" className="about-section">
           <div className="about-section-title">When?</div>
           <div>
-            This project began in the autumn of 2023 and is finally released (in alpha form) in the summer of 2026.
+            This project began in the autumn of 2023 and is finally released (in alpha form) in the autumn of 2026.
             There are many things{' '}
             <a href={urljoin(window.env.GITHUB_LINK, 'blob/main/TODO.md')} target="_">
               to do

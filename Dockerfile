@@ -33,14 +33,10 @@ ARG BUILD
 ARG VERSION
 ARG TARGET
 
-ENV NODE_ENV=production
-
-LABEL build=${BUILD}
-LABEL version=${VERSION}
-
 COPY --from=base ${APP_DIR} ${APP_DIR}
-
 WORKDIR ${APP_DIR}/msvs/${TARGET}
+
+ENV NODE_ENV=production
 
 # Build microservice
 RUN corepack enable
@@ -72,19 +68,16 @@ ARG VERSION
 ARG TARGET
 
 ENV NODE_ENV=production
+ENV COREPACK_ENABLE_NETWORK=0
 
 LABEL build=${BUILD}
 LABEL version=${VERSION}
 
 RUN adduser --disabled-password --gecos "" gwent-oss
-
-COPY --chown=gwent-oss:gwent-oss --from=build ${APP_DIR} ${APP_DIR}
-
-WORKDIR ${APP_DIR}/msvs/${TARGET}
-
 USER gwent-oss
 
-ENV COREPACK_ENABLE_NETWORK=0
+COPY --chown=gwent-oss:gwent-oss --from=build ${APP_DIR} ${APP_DIR}
+WORKDIR ${APP_DIR}/msvs/${TARGET}
 
 EXPOSE 4000
 
@@ -103,19 +96,17 @@ ARG VERSION
 ARG TARGET
 
 ENV NODE_ENV=production
+ENV COREPACK_ENABLE_NETWORK=0
 
 LABEL build=${BUILD}
 LABEL version=${VERSION}
 
 RUN adduser --disabled-password --gecos "" gwent-oss
-
-COPY --chown=gwent-oss:gwent-oss --from=build ${APP_DIR} ${APP_DIR}
-
-WORKDIR ${APP_DIR}/msvs/${TARGET}
-
 USER gwent-oss
 
-ENV COREPACK_ENABLE_NETWORK=0
+COPY --chown=gwent-oss:gwent-oss --from=build ${APP_DIR} ${APP_DIR}
+WORKDIR ${APP_DIR}/msvs/${TARGET}
+
 ENV CLIENT_DIR=../../libs/client/build
 ENV IMAGES_DIR=../../images
 

@@ -35,7 +35,6 @@ export default class WebSocketAuth {
     const corsOrigin = CorsUtil.resolveCorsOrigin(env().CORS_ORIGIN)
     const sessionCookieName = env().SESSION_COOKIE_NAME
     const sessionSecret = await SessionUtil.getSessionSecret()
-    console.log(`TEST sessionSecret: "${sessionSecret}"`)
 
     const origin = req.headers['origin']
     if (WebSocketAuth.logger.isTraceEnabled()) {
@@ -57,9 +56,7 @@ export default class WebSocketAuth {
           WebSocketAuth.logger.trace(`encodedSessionId: "${encodedSessionId}"`)
         }
         if (encodedSessionId) {
-          console.log(`TEST encodedSessionId: "${encodedSessionId}"`)
           const sessionId = signedCookie(encodedSessionId, sessionSecret)
-          console.log(`TEST sessionId: "${sessionId}"`)
           if (WebSocketAuth.logger.isTraceEnabled()) {
             WebSocketAuth.logger.trace(`sessionId: "${sessionId}"`)
           }
