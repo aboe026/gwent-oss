@@ -308,7 +308,7 @@ There are several things to check when upgrading dependencies for this project.
 
 #### Upgrade Nodejs
 
-To upgrade [NodeJS](https://nodejs.org/), edit the [.nvmrc](./.nvmrc) file as well as any `Dockerfile`.
+To upgrade [NodeJS](https://nodejs.org/), edit the [.nvmrc](./.nvmrc) file as well as the `NODE_VERSION` arg in the [Dockerfile](./Dockerfile).
 
 Also, change `package.json` references of `@types/node` to match the new version.
 

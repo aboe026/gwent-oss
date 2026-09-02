@@ -18,7 +18,7 @@
     "watch-tsc": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "@jest/reporters": "30.4.1"
+    "@jest/reporters": "30.5.1"
   },
   "devDependencies": {
     "@types/node": "24.13.3",

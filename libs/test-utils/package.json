@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@gwent-oss/graphql-schema": "workspace:*",
-    "mongodb": "7.5.0"
+    "mongodb": "7.6.0"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",

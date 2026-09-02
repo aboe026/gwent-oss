@@ -31,7 +31,7 @@
     "@graphql-codegen/typescript": "5.0.10",
     "@graphql-codegen/typescript-graphql-request": "7.0.1",
     "@graphql-codegen/typescript-operations": "5.1.0",
-    "@graphql-tools/schema": "10.0.38",
+    "@graphql-tools/schema": "10.1.0",
     "@types/node": "22.18.0"
   }
 }

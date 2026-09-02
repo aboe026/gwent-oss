@@ -1,6 +1,6 @@
 ARG APP_DIR=/opt/gwent-oss
 ARG BUILD=0
-ARG NODE_VERSION=24.18.1
+ARG NODE_VERSION=24.20.0
 ARG TARGET=api
 
 #################
