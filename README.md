@@ -342,3 +342,5 @@ The following non-NodeJS related softwares should be monitored for upgrades:
   - Change the docker image tag in the [Caddy Dockerfile](./compose/caddy/caddy.Dockerfile)
 - [Docker Compose](https://docs.docker.com/compose/)
   - Change the `composeVersion` variable in the [Jenkinsfile](./Jenkinsfile)
+- [TestCafe Docker Image](https://hub.docker.com/r/testcafe/testcafe/)
+  - Change the image tag in the [TestCafe Dockerfile](./test/e2e/e2e.Dockerfile)
