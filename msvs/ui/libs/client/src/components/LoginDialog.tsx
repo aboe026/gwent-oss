@@ -119,7 +119,7 @@ export default function LoginDialog({
       )}
       <div id="loginDialogFields">
         <div className="login-dialog-field">
-          <label htmlFor="username">
+          <label htmlFor={HTML_IDS.LoginDialogUsername}>
             Username
             <span className="required-field">*</span>
           </label>
@@ -127,6 +127,7 @@ export default function LoginDialog({
             type="text"
             required
             autoFocus={!initialUsername}
+            autoComplete="username"
             id={HTML_IDS.LoginDialogUsername}
             name="username"
             value={username}
@@ -185,7 +186,7 @@ export default function LoginDialog({
             </div>
           ))}
         <div className="login-dialog-field">
-          <label htmlFor="password">
+          <label htmlFor={HTML_IDS.LoginDialogPassword}>
             Password
             <span className="required-field">*</span>
           </label>
@@ -193,6 +194,7 @@ export default function LoginDialog({
             type="password"
             id={HTML_IDS.LoginDialogPassword}
             autoFocus={!!initialUsername}
+            autoComplete={newUser ? 'new-password' : 'current-password'}
             name="password"
             value={password}
             required
