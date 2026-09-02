@@ -29,8 +29,6 @@ RUN echo "{\"buildNumber\": ${BUILD}}" > app-info.json
 FROM node:${NODE_VERSION}-alpine AS build
 
 ARG APP_DIR
-ARG BUILD
-ARG VERSION
 ARG TARGET
 
 COPY --from=base ${APP_DIR} ${APP_DIR}

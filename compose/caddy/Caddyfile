@@ -13,11 +13,28 @@
 {$HOST_NAME} {
   # --- Security Headers ---
   header {
+    # Enforces HTTPS for all future requests.
+    # Prevents downgrade attacks and ensures browsers never use HTTP again.
     Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Prevents browsers from MIME-sniffing content types.
+    # Stops them from interpreting files as something more dangerous (XSS vector).
     X-Content-Type-Options "nosniff"
+
+    # Blocks your site from being embedded in iframes.
+    # Prevents clickjacking attacks where a malicious site overlays your UI.
     X-Frame-Options "DENY"
+
+    # Controls how much referrer information is sent to other sites.
+    # Protects sensitive URL paths and query parameters from leaking.
     Referrer-Policy "strict-origin-when-cross-origin"
-    Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"
+
+    # Restrict all powerful browser APIs in one unified header.
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=(), fullscreen=(), picture-in-picture=(), autoplay=(), encrypted-media=()"
+
+    # Strongest defense against XSS.
+    # Limits where scripts, styles, images, etc. can load from.
+    Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'"
   }
 
   # --- Compression ---
