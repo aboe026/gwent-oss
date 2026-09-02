@@ -6,6 +6,8 @@
 
 An open-source recreation of the card game Gwent from The Witcher 3: Wild Hunt for online multiplayer.
 
+Visit the production instance at [gwent-oss.com](https://gwent-oss.com)
+
 <details>
 <summary><strong>Table of Contents</strong> (click to expand)</summary>
 
