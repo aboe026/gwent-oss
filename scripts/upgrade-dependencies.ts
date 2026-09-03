@@ -22,6 +22,7 @@ const DENY_LIST: string[] = [
   'cookie', // 2.0 switched to ESM, need to switch to ESM to be able to use
   'graphql', // 17 breaks codegen (need to upgrade codegen first, but can't since it's own upgrades requires ESM)
   'graphql-request', // 7.0.0 switched to ESM, need to switch to ESM to be able to use
+  'mongodb', // 7.6.0 broke func tests, caused MongoClient.connect to hang when in jest environment somehow
   'open', // 9.0 switched to ESM, need to switch to ESM to be able to use\
   'react-router', // 8.0 switched to ESM, need to switch to ESM to be able to use\
   'replace-in-file', // 8.0.0 switched to ESM, need to switch to ESM to be able to use

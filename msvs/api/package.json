@@ -43,7 +43,7 @@
     "graphql-subscriptions": "3.0.0",
     "graphql-ws": "6.2.1",
     "log4js": "6.9.1",
-    "mongodb": "7.6.0",
+    "mongodb": "7.5.0",
     "ws": "8.21.3"
   },
   "devDependencies": {

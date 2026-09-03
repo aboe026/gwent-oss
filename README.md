@@ -4,7 +4,7 @@
 ![coverage](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent-oss/main/coverage.json)
 [![Common Changelog](https://common-changelog.org/badge.svg)](https://common-changelog.org)
 
-An open-source recreation of the card game Gwent from The Witcher 3: Wild Hunt for online multiplayer.
+An open-source recreation of the card game Gwent with online multiplayer.
 
 Visit the production instance at [gwent-oss.com](https://gwent-oss.com)
 
