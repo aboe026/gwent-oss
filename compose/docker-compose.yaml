@@ -1,6 +1,6 @@
 services:
   database:
-    image: mongo:8.3.7
+    image: mongo:8.3.8
     restart: ${RESTART_POLICY}
     networks:
       - gwent-oss

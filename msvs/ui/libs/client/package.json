@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/client",
-  "version": "0.27.0",
+  "version": "0.27.1",
   "author": "Adam Boe",
   "description": "React bundle for gwent-oss website",
   "main": "src/index.ts",
@@ -18,7 +18,7 @@
     "watch-webpack": "webpack --watch --progress"
   },
   "dependencies": {
-    "@apollo/client": "4.2.9",
+    "@apollo/client": "4.2.12",
     "@gwent-oss/constants": "workspace:*",
     "@gwent-oss/graphql-schema": "workspace:*",
     "@gwent-oss/utils": "workspace:*",
@@ -30,7 +30,7 @@
     "react-router": "7.18.2",
     "rxjs": "7.8.2",
     "url-join": "4.0.1",
-    "ws": "8.21.1"
+    "ws": "8.21.3"
   },
   "devDependencies": {
     "@gwent-oss/client-env": "workspace:*",
@@ -38,20 +38,20 @@
     "@types/jest": "30.0.0",
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
-    "@types/react-dom": "19.2.4",
+    "@types/react-dom": "19.2.7",
     "@types/url-join": "4.0.3",
     "@types/ws": "8.18.1",
     "copy-webpack-plugin": "14.0.0",
-    "css-loader": "7.1.4",
-    "graphql-ws": "6.2.0",
+    "css-loader": "7.1.5",
+    "graphql-ws": "6.2.1",
     "html-webpack-plugin": "5.6.8",
     "jest-junit": "17.0.0",
     "mini-css-extract-plugin": "2.10.2",
     "ts-jest": "29.4.12",
     "ts-loader": "9.6.2",
     "ts-node": "10.9.2",
-    "webpack": "5.109.2",
-    "webpack-cli": "7.2.2",
+    "webpack": "5.110.3",
+    "webpack-cli": "7.2.3",
     "webpack-shell-plugin-next": "2.3.3"
   },
   "workspaces": [

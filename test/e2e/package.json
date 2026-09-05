@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/test-e2e",
-  "version": "0.27.0",
+  "version": "0.27.1",
   "author": "Adam Boe",
   "description": "E2E browser testing for gwent-oss website",
   "scripts": {
@@ -36,11 +36,11 @@
     "cross-env": "10.1.0",
     "graphql": "16.14.2",
     "graphql-request": "6.1.0",
-    "graphql-ws": "6.2.0",
+    "graphql-ws": "6.2.1",
     "mongodb": "7.5.0",
     "testcafe": "3.7.6",
     "url-join": "4.0.1",
-    "ws": "8.21.1"
+    "ws": "8.21.3"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
