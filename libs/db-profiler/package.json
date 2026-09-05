@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@gwent-oss/node-utils": "workspace:*",
-    "mongodb": "7.6.0"
+    "mongodb": "7.5.0"
   },
   "devDependencies": {
     "@types/node": "22.18.0"
