@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.27.1 - 2026-09-05
+
+### Fixed
+
+- Upgrade dependencies ([#65](https://github.com/aboe026/gwent-oss/pull/65)) (Adam Boe)
+
 ## 0.27.0 - 2026-09-02
 
 ### Added
