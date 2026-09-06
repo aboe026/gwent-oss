@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb'
 import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
 import DiscardRoundUnits from './discard-round-units'
 import EffectAvenger from '../play-unit/effect-avenger'
+import FactionNorthernRealmsAbility from './faction-northern-realms-ability'
 import {
   GameDbObject,
   GameUnitOrigin,
@@ -85,6 +86,11 @@ export default class PlayPassImplementation {
 
         initializeNewRound({
           game,
+        })
+
+        await FactionNorthernRealmsAbility.attemptAbility({
+          game,
+          logPrefix,
         })
 
         await PlayPassImplementation.summonAvengers({

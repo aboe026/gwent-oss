@@ -1,7 +1,7 @@
 [
   {
     "Name": "Monsters",
-    "Ability": "Keeps random Unit Card out after each round."
+    "Ability": "A random unit in play is carried over to the next round."
   },
   {
     "Name": "Neutral"
@@ -12,7 +12,7 @@
   },
   {
     "Name": "Northern Realms",
-    "Ability": "Grants an extra card upon winning a round."
+    "Ability": "Draw a card if you win a round."
   },
   {
     "Name": "Scoia'tael",
