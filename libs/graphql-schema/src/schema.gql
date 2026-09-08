@@ -290,6 +290,13 @@ type Impact @entity {
   source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
 }
 
+type MoveFaction @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
+  created: DateTime! @column
+  faction: Faction! @column(overrideType: "ObjectId")
+  "Other Units the Move impacted in the Game."
+  impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
+}
+
 type MoveLeader @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
   created: DateTime! @column
   leader: Leader! @column(overrideType: "ObjectId")
@@ -324,7 +331,7 @@ type GameUnitSource @entity {
   user: User @column(overrideType: "ObjectId")
 }
 
-union Move @union(discriminatorField: "type") = MoveLeader | MovePass | MoveUnit
+union Move @union(discriminatorField: "type") = MoveFaction | MoveLeader | MovePass | MoveUnit
 
 type PlayerRound @entity {
   close: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")

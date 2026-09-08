@@ -1,14 +1,24 @@
-import { EffectKey } from '@gwent-oss/graphql-schema/resolver-typings'
+import { EffectKey, FactionKey } from '@gwent-oss/graphql-schema/resolver-typings'
 
 /**
- * Gets the message text for when an impact of a given effect does not modify any units. Used to help user identify why no units impacted.
+ * Gets the message text for when an impact of a given effect or faction ability does not modify any units. Used to help user identify why no units impacted.
  *
  * @param config The configuration used to determine the message.
  * @param config.effectKey The Key of the Effect which caused the impact.
+ * @param config.factionKey The Key of the Faction which caused the impact.
  * @returns The message of why the impact did not modify any units.
  * @throws {Error} if Effect cannot have impact (Agile, Avenger, Berserker)
  */
-export default function getNoImpactMessage({ effectKey }: { effectKey: EffectKey }): string {
+export default function getNoImpactMessage({
+  effectKey,
+  factionKey,
+}: {
+  effectKey?: EffectKey
+  factionKey?: FactionKey
+}): string {
+  if (effectKey && factionKey) {
+    throw Error(`Cannot specify both effectKey (${effectKey}) and factionKey (${factionKey})`)
+  }
   if (effectKey === EffectKey.Bond) {
     return 'No similar units in row to bond with.'
   } else if (effectKey === EffectKey.Horn) {
@@ -27,6 +37,12 @@ export default function getNoImpactMessage({ effectKey }: { effectKey: EffectKey
     return 'No eligible units in Draw to add to Hand.'
   } else if (effectKey === EffectKey.Weather) {
     return 'No eligible units on battlefield to weaken.'
+  } else if (factionKey === FactionKey.Monsters) {
+    return 'No unit in play at end of last round.'
+  } else if (factionKey === FactionKey.NorthernRealms) {
+    return 'No unit in Draw pile to add to hand.'
+  } else if (factionKey === FactionKey.Skellige) {
+    return 'No units in Lost pile to move to battlefield.'
   }
   throw Error(`Effect "${effectKey}" is not impactable.`)
 }

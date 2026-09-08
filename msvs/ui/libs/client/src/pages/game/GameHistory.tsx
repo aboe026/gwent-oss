@@ -7,6 +7,7 @@ import { convertGameUnit, getUnitFromGameUnit } from '../../util/game-unit-util'
 import {
   DeckUnitFragment,
   EffectKey,
+  FactionKey,
   FieldUnitFragment,
   FieldUnitFragmentDoc,
   GameFragment,
@@ -30,6 +31,7 @@ import {
   useFragment,
   WeatherUnitFragment,
   WeatherUnitFragmentDoc,
+  MoveFactionFragmentDoc,
 } from '@gwent-oss/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getErrorMessages } from '../../util/error-util'
@@ -171,11 +173,23 @@ function PlayerHistoryMove({
   let pointable = false
   let impacts: ImpactFragment[] | undefined | null
   let gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined
+  let factionKey: FactionKey | undefined = undefined
   let cardPlayer = player
   let hasImpacts = false
   let moveReasonType: MoveReasonType | undefined = undefined
 
-  if (playerMove.move.__typename === 'MoveLeader') {
+  if (playerMove.move.__typename === 'MoveFaction') {
+    const factionMove = useFragment(MoveFactionFragmentDoc, playerMove.move)
+    factionKey = factionMove.faction.key
+    primaryText = factionMove.faction.name
+    secondaryText = 'triggered faction ability'
+    image = factionMove.faction.image
+    imageTitle = factionMove.faction.name
+    impacts = useFragment(ImpactFragmentDoc, factionMove.impacts)
+    if (factionMove.impacts) {
+      hasImpacts = true
+    }
+  } else if (playerMove.move.__typename === 'MoveLeader') {
     const leaderMove = useFragment(MoveLeaderFragmentDoc, playerMove.move)
     primaryText = `Activated leader ${leaderMove.leader.name} ability`
     image = leaderMove.leader.image
@@ -312,7 +326,7 @@ function PlayerHistoryMove({
           <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
             {image && (
               <img
-                className={HTML_CLASSES.GameHistoryMoveImage}
+                className={`${HTML_CLASSES.GameHistoryMoveImage} ${factionKey ? 'game-history-move-image-faction' : ''}`}
                 src={image}
                 title={imageTitle}
                 onClick={(event) => {
@@ -364,11 +378,12 @@ function PlayerHistoryMove({
           </div>
         </div>
       </div>
-      {gameUnit && hasImpacts && (
+      {(gameUnit || factionKey) && hasImpacts && (
         <MoveUnitImpact
           cardSelected={cardSelected}
           gameUnit={gameUnit}
           game={game}
+          factionKey={factionKey}
           impacts={impacts}
           moveReasonType={moveReasonType}
           self={self}
@@ -387,6 +402,7 @@ function MoveUnitImpact({
   cardSelected,
   gameUnit,
   game,
+  factionKey,
   impacts,
   moveReasonType,
   self,
@@ -394,8 +410,9 @@ function MoveUnitImpact({
   setFullUnits,
 }: {
   cardSelected: UnitForPlayer | undefined
-  gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment
+  gameUnit: DeckUnitFragment | FieldUnitFragment | WeatherUnitFragment | undefined
   game: GameFragment
+  factionKey?: FactionKey
   impacts: ImpactFragment[] | null | undefined
   moveReasonType: MoveReasonType | undefined
   self: GamePlayerFragment
@@ -404,18 +421,33 @@ function MoveUnitImpact({
 }) {
   const [expanded, setExpanded] = useState(false)
   const unitsImpacted = impacts ? impacts.length : 0
-  const { effect, error } =
-    moveReasonType === MoveReasonType.Summon
-      ? findEffectForMoveByPrefix({
-          gameUnit,
-          players: useFragment(GamePlayerFragmentDoc, game.players),
-        })
-      : getEffectForImpact({
-          gameUnit,
-        })
+  let expandToggleImage = ''
+  let expandToggleName = ''
+  let effectError = ''
+  let effectKey: EffectKey | undefined = undefined
+  if (gameUnit) {
+    const { effect, error } =
+      moveReasonType === MoveReasonType.Summon
+        ? findEffectForMoveByPrefix({
+            gameUnit,
+            players: useFragment(GamePlayerFragmentDoc, game.players),
+          })
+        : getEffectForImpact({
+            gameUnit,
+          })
+    effectError = error
+    if (effect) {
+      expandToggleImage = effect.image
+      expandToggleName = effect.name
+      effectKey = effect.key
+    }
+  } else if (factionKey) {
+    expandToggleName = 'Faction Ability'
+    expandToggleImage = 'images/stats/faction.png'
+  }
 
-  if (!effect) {
-    return <div className="error-text">{error}</div>
+  if (effectError || !expandToggleName || !expandToggleName) {
+    return <div className="error-text">{effectError || 'Could not determine expand details'}</div>
   }
   return (
     <div className={HTML_CLASSES.GameHistoryMoveImpactContainer}>
@@ -425,9 +457,9 @@ function MoveUnitImpact({
       >
         <div className={`move-impact-effect-member ${HTML_CLASSES.GameHistoryMoveImpactCount}`}>{unitsImpacted}</div>
         <img
-          src={effect.image}
-          title={effect.name}
-          className={`move-impact-effect-member ${HTML_CLASSES.MoveImpactEffectIcon}`}
+          src={expandToggleImage}
+          title={expandToggleName}
+          className={`move-impact-effect-member ${HTML_CLASSES.MoveImpactEffectIcon} ${factionKey ? 'move-impact-effect-icon-faction' : ''}`}
         />
         {expanded ? (
           <CgChevronUp className="move-impact-effect-member" color="black" title="Collapse" />
@@ -441,13 +473,15 @@ function MoveUnitImpact({
             {!impacts || impacts.length === 0 ? (
               <div className={HTML_CLASSES.MoveImpactNoUnits}>
                 {getNoImpactMessage({
-                  effectKey: effect.key,
+                  effectKey,
+                  factionKey,
                 })}
               </div>
             ) : (
               renderImpacts({
                 cardSelected,
-                effectKey: effect.key,
+                effectKey,
+                factionKey,
                 game,
                 impacts,
                 self,
@@ -471,6 +505,7 @@ function MoveUnitImpact({
 function renderImpacts({
   cardSelected,
   effectKey,
+  factionKey,
   game,
   impacts,
   self,
@@ -478,7 +513,8 @@ function renderImpacts({
   setFullUnits,
 }: {
   cardSelected: UnitForPlayer | undefined
-  effectKey: EffectKey
+  effectKey?: EffectKey
+  factionKey?: FactionKey
   game: GameFragment
   impacts: ImpactFragment[]
   self: GamePlayerFragment
@@ -529,6 +565,7 @@ function renderImpacts({
             const unitForImpact = getUnitFromGameUnit(gameUnitForImpact)
             const description = getImpactDescription({
               effectKey,
+              factionKey,
               origin: impactedUnit.source?.origin,
               name: unitForImpact?.name,
             })

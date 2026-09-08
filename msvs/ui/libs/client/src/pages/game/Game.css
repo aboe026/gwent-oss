@@ -701,6 +701,11 @@ th {
   border-radius: 10px;
 }
 
+.game-history-move-image,
+.game-history-move-image-faction {
+  height: auto;
+}
+
 .game-history-move-user-description {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,6 @@
 import { getLogger } from 'log4js'
 
+import FactionResolver from './faction-resolver'
 import {
   GameUnit,
   Leader,
@@ -14,6 +15,7 @@ import ImpactResolver from './impact-resolver'
 import LeaderResolver from './leader-resolver'
 import {
   MoveDbObject,
+  MoveFactionDbObject,
   MoveLeaderDbObject,
   MovePassDbObject,
   MoveUnitDbObject,
@@ -49,6 +51,26 @@ export default class MoveResolver {
     units?: Unit[]
     users?: User[]
   }): Promise<Move> {
+    if (move.type === MoveType.Faction) {
+      const factionMove = move as MoveFactionDbObject
+      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
+        moves: [factionMove],
+        presolvedUnits: units,
+        presolvedUsers: users,
+      })
+      return {
+        created: factionMove.created,
+        faction: await FactionResolver.fromId({
+          id: factionMove.faction,
+        }),
+        impacts: await ImpactResolver.fromArray({
+          impacts: factionMove.impacts,
+          units: resolvedUnits,
+          users: resolvedUsers,
+        }),
+        __typename: 'MoveFaction',
+      }
+    }
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
       return {
