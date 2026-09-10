@@ -40,7 +40,7 @@ export default function getNoImpactMessage({
   } else if (factionKey === FactionKey.Monsters) {
     return 'No unit in play at end of last round.'
   } else if (factionKey === FactionKey.NorthernRealms) {
-    return 'No unit in Draw pile to add to hand.'
+    return 'No unit in Draw pile to add to Hand.'
   } else if (factionKey === FactionKey.Skellige) {
     return 'No units in Lost pile to move to battlefield.'
   }

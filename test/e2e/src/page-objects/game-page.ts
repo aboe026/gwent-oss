@@ -7,6 +7,7 @@ import {
   DeckUnit,
   EffectKey,
   Faction,
+  FactionKey,
   MoveReasonType,
   GameUnitOrigin,
   UnitStats,
@@ -339,7 +340,12 @@ export default class GamePage {
         for (let j = 0; j < moves[i].length; j++) {
           const move = moves[i][j]
           if ('unitName' in move) {
-            const row = move.combatRow ? `as ${toTitleCase(move.combatRow)}` : 'to battlefield'
+            let row = ''
+            if (move.combatRow) {
+              row = ` as ${toTitleCase(move.combatRow)}`
+            } else if (!move.impacts?.factionKey) {
+              row = ' to battlefield'
+            }
             let action = 'deployed'
             let source = ''
             if (move.reason?.type === MoveReasonType.Muster) {
@@ -363,7 +369,10 @@ export default class GamePage {
                 action += ` to spy on ${move.targetUserName}`
               }
             }
-            let description = `${move.userName}: ${move.unitName} ${action} ${row}`
+            if (move.impacts?.factionKey) {
+              action = 'triggered faction ability'
+            }
+            let description = `${move.userName}: ${move.unitName} ${action}${row}`
             if (move.reason) {
               if (move.reason.type === MoveReasonType.Transform) {
                 description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
@@ -383,10 +392,13 @@ export default class GamePage {
               highlightedMoveFound = true
             }
             const dotted = selected && highlightedMove.dotted
-            const impacts =
-              move.impacts === undefined
-                ? ''
-                : ` impacts: ${move.impacts.number} ${toTitleCase(move.impacts.effectKey)}`
+            let impactText = ''
+            if (move.impacts?.effectKey) {
+              impactText = toTitleCase(move.impacts.effectKey)
+            } else if (move.impacts?.factionKey) {
+              impactText = 'Faction Ability'
+            }
+            const impacts = move.impacts === undefined ? '' : ` impacts: ${move.impacts.number} ${impactText}`
             expected.push(`${description}${impacts}${selected ? ' selected' : ''}${dotted ? ' dotted' : ''}`)
           } else {
             expected.push(`${move.userName}: Passed the rest of round ${move.round}`)
@@ -780,6 +792,7 @@ export default class GamePage {
         await t.expect(moveElement.find(`.${HTML_CLASSES.MoveImpactNoUnits}`).innerText).eql(
           getNoImpactMessage({
             effectKey: move.effectKey,
+            factionKey: move.factionKey,
           })
         )
       } else {
@@ -787,6 +800,7 @@ export default class GamePage {
         for (const impact of move.impacts) {
           const description = getImpactDescription({
             effectKey: move.effectKey,
+            factionKey: move.factionKey,
             origin: impact.origin,
             name: impact.unitName,
           })
@@ -1728,7 +1742,8 @@ export interface HistoryMove {
   unitName: string
   combatRow?: Combat
   impacts?: {
-    effectKey: EffectKey
+    effectKey?: EffectKey
+    factionKey?: FactionKey
     number: number
   }
   reason?: {
@@ -1743,7 +1758,8 @@ export interface HistoryImpactMoves {
   userName: string
   unitName: string
   round: number
-  effectKey: EffectKey
+  effectKey?: EffectKey
+  factionKey?: FactionKey
   instance?: number
   impacts: {
     username: string

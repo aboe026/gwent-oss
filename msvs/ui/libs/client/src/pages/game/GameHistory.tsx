@@ -446,7 +446,7 @@ function MoveUnitImpact({
     expandToggleImage = 'images/stats/faction.png'
   }
 
-  if (effectError || !expandToggleName || !expandToggleName) {
+  if (effectError || (effectKey && (!expandToggleName || !expandToggleImage))) {
     return <div className="error-text">{effectError || 'Could not determine expand details'}</div>
   }
   return (

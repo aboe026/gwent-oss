@@ -298,12 +298,14 @@ export class GameManager {
     verify,
     switchTurnsWith,
     avenging,
+    factionAbility,
     victors,
     deckPartSelected,
   }: {
     verify?: boolean
     switchTurnsWith?: GamePlayerExpected
     avenging?: AvengingExpected[]
+    factionAbility?: FactionAbility
     victors?: string[]
     deckPartSelected?: GameUnitOrigin
   }) {
@@ -363,6 +365,50 @@ export class GameManager {
       if (!this.victors) {
         this.moves.push([])
         this.round++
+      }
+      if (factionAbility) {
+        if (factionAbility.key === FactionKey.NorthernRealms) {
+          factionAbility.gamePlayer.hand = (factionAbility.gamePlayer.hand || 0) + factionAbility.impacts
+          factionAbility.gamePlayer.undrawn = (factionAbility.gamePlayer.undrawn || 0) - factionAbility.impacts
+          const factionPlayer =
+            factionAbility.gamePlayer.name === currentPlayer.gamePlayer.name ? currentPlayer : otherPlayer
+          const previousHands = factionPlayer.deck.hand
+          const previousUndrawns = factionPlayer.deck.undrawn
+          const newDeck = await factionPlayer.client.getGameDeck(this.gameId)
+          if (newDeck.hand.length !== previousHands.length + factionAbility.impacts) {
+            throw Error(
+              `New deck has "${newDeck.hand.length}" units in hand when "${previousHands.length - factionAbility.impacts}" expected`
+            )
+          }
+          if (newDeck.undrawn.length !== previousUndrawns.length - factionAbility.impacts) {
+            throw Error(
+              `New deck has "${newDeck.undrawn.length}" units in undrawn when "${previousUndrawns.length - factionAbility.impacts}" expected`
+            )
+          }
+          const undrawnsMoved = previousUndrawns.filter(
+            (prevUndrawn) => !newDeck.undrawn.some((undrawn) => undrawn.unit.id === prevUndrawn.unit.id)
+          )
+          if (undrawnsMoved.length !== factionAbility.impacts) {
+            throw Error(`Expected "${factionAbility.impacts}" undrawns moved but found "${undrawnsMoved.length}"`)
+          }
+          for (const undrawnMoved of undrawnsMoved) {
+            if (!newDeck.hand.some((handUnit) => handUnit.unit.id === undrawnMoved.unit.id)) {
+              throw Error(`Expected undrawn "${undrawnMoved.unit.name}" to be in hand but not found`)
+            }
+          }
+          factionPlayer.deck.hand = newDeck.hand
+          factionPlayer.deck.undrawn = newDeck.undrawn
+
+          this.moves[this.moves.length - 1].push({
+            userName: factionAbility.gamePlayer.name,
+            unitName: 'Northern Realms',
+            impacts: {
+              factionKey: FactionKey.NorthernRealms,
+              number: factionAbility.impacts,
+            },
+            origin: GameUnitOrigin.Undrawn,
+          })
+        }
       }
       if (avenging) {
         for (const avenge of avenging) {
@@ -751,4 +797,10 @@ interface GameManagerPlayer {
   deck: GameDeck
   client: ApiClient
   roundScores?: number[]
+}
+
+interface FactionAbility {
+  gamePlayer: GamePlayerExpected
+  key: FactionKey
+  impacts: number
 }
