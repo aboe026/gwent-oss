@@ -39,8 +39,12 @@ export default function getNoImpactMessage({
     return 'No eligible units on battlefield to weaken.'
   } else if (factionKey === FactionKey.Monsters) {
     return 'No unit in play at end of last round.'
+  } else if (factionKey === FactionKey.NilfgaardianEmpire) {
+    return 'Canceled out by another player with same faction.'
   } else if (factionKey === FactionKey.NorthernRealms) {
     return 'No unit in Draw pile to add to Hand.'
+  } else if (factionKey === FactionKey.ScoiaTael) {
+    return 'Canceled out by another player with same faction.'
   } else if (factionKey === FactionKey.Skellige) {
     return 'No units in Lost pile to move to battlefield.'
   }

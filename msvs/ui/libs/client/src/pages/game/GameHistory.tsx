@@ -79,7 +79,7 @@ export default function GameHistory({
 
   return (
     <div id={HTML_IDS.GameHistoryContainer} className="game-edge-container game-section">
-      {game.round === 0 ? (
+      {game.round === 0 || (movesByRounds.length === 1 && movesByRounds[0].playerMoves.length === 0) ? (
         <Centered classname="game-history-placeholder">
           <CgTime color="black" className={HTML_CLASSES.GameHistoryIcon} title="History" />
         </Centered>
@@ -522,10 +522,13 @@ function renderImpacts({
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment?.unit)
-  const groups = groupBy({
-    array: impacts,
-    property: 'user.name',
-  })
+  const groups =
+    factionKey === FactionKey.ScoiaTael
+      ? [impacts]
+      : groupBy({
+          array: impacts,
+          property: 'user.name',
+        })
   const units: UnitForPlayer[] = []
   for (const group of groups) {
     const sortedImpacts = sortObjectArray({
@@ -568,6 +571,7 @@ function renderImpacts({
               factionKey,
               origin: impactedUnit.source?.origin,
               name: unitForImpact?.name,
+              index,
             })
             const isSelected =
               cardSelectedUnit?.id === unitForImpact?.id && cardSelected?.playerName === impactedUnit.user.name
@@ -589,7 +593,12 @@ function renderImpacts({
                 }
               }
             }
-            const title = unitForImpact?.name || (effectKey === EffectKey.Medic ? 'Choosing...' : 'Secret')
+            let title = unitForImpact?.name
+            if (effectKey === EffectKey.Medic) {
+              title = 'Choosing...'
+            } else if (factionKey !== FactionKey.ScoiaTael) {
+              title = 'Secret'
+            }
             const knownUnit = unitForImpact && gameUnitForImpact
 
             return (
@@ -613,43 +622,47 @@ function renderImpacts({
                   }
                 }}
               >
-                <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
-                  {knownUnit ? (
-                    <img
-                      src={unitForImpact.images[convertGameUnit(gameUnitForImpact).artStyle - 1]}
-                      className="move-impact-unit-image"
-                      title={title}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        setFullUnits({
-                          currentIndex: units.findIndex(
-                            (unit) =>
-                              unit.playerName === impactedUnit.user.name &&
-                              useFragment(UnitFragmentDoc, unit.unitFragment.unit).id === unitForImpact.id
-                          ),
-                          units,
-                        })
-                        setCardSelected({
-                          unitFragment: convertGameUnit(gameUnitForImpact),
-                          playerName: impactedUnit.user.name,
-                        })
-                      }}
-                    />
-                  ) : (
-                    <div className="move-impact-unit-image move-impact-unit-unknown" title={title}>
-                      ?
-                    </div>
-                  )}
-                </ContainerFixedAspectRatio>
+                {factionKey !== FactionKey.ScoiaTael && (
+                  <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
+                    {knownUnit ? (
+                      <img
+                        src={unitForImpact.images[convertGameUnit(gameUnitForImpact).artStyle - 1]}
+                        className="move-impact-unit-image"
+                        title={title}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          setFullUnits({
+                            currentIndex: units.findIndex(
+                              (unit) =>
+                                unit.playerName === impactedUnit.user.name &&
+                                useFragment(UnitFragmentDoc, unit.unitFragment.unit).id === unitForImpact.id
+                            ),
+                            units,
+                          })
+                          setCardSelected({
+                            unitFragment: convertGameUnit(gameUnitForImpact),
+                            playerName: impactedUnit.user.name,
+                          })
+                        }}
+                      />
+                    ) : (
+                      <div className="move-impact-unit-image move-impact-unit-unknown" title={title}>
+                        ?
+                      </div>
+                    )}
+                  </ContainerFixedAspectRatio>
+                )}
                 <div className={infoClass}>
                   <div className={`${textClass} ${HTML_CLASSES.MoveImpactUserName}`} title={impactedUnit.user.name}>
                     {impactedUnit.user.name}
                   </div>
                   <div>
-                    <div className={`${textClass} ${HTML_CLASSES.MoveImpactUnitName}`} title={title}>
-                      {title}
-                    </div>
+                    {title && (
+                      <div className={`${textClass} ${HTML_CLASSES.MoveImpactUnitName}`} title={title}>
+                        {title}
+                      </div>
+                    )}
                     <div className={`${textClass} ${HTML_CLASSES.MoveImpactDescription}`} title={description}>
                       {description}
                     </div>

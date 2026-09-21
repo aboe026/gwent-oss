@@ -3,11 +3,13 @@ import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
 import { FactionKey, GameDbObject, GameDeckDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
+import FactionScoiaTaelAbility from '../set-order/faction-scoiatael-ability'
 import FactionStore from '../../../../database/stores/faction-store'
 import { Game } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameResolver from '../../types/game-resolver'
 import GameStore from '../../../../database/stores/game-store'
 import { getDuplicateItems, randomizeOrder } from '@gwent-oss/utils'
+import initializeNewRound from './initialize-new-round'
 import { OrderSetPayload } from '../../subscription-resolver'
 import PresentableError from '../../../../util/presentable-error'
 import { PubSubEvents } from '@gwent-oss/constants'
@@ -113,6 +115,18 @@ export default class SetGameTurnOrder {
       userIdsForOrder = randomizeOrder(game.players.map((gamePlayer) => gamePlayer.user.toString()))
     }
 
+    initializeNewRound({
+      game,
+    })
+
+    FactionScoiaTaelAbility.attemptAbility({
+      game,
+      logPrefix,
+      scoiaTaelFactionId: scoiaTaelId,
+      scoiaTaelPlayers,
+      userIdsForOrder,
+    })
+
     for (const gamePlayer of game.players) {
       gamePlayer.order = userIdsForOrder.indexOf(gamePlayer.user.toString())
     }
@@ -138,6 +152,7 @@ export default class SetGameTurnOrder {
       orderSet: resolvedGame,
     } as OrderSetPayload)
 
+    // TODO: hide at type resolver level?
     return GameResolver.maskSpiedHandUnits({
       game: resolvedGame,
       userId,

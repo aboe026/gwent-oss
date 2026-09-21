@@ -797,16 +797,20 @@ export default class GamePage {
         )
       } else {
         const expected: string[] = []
-        for (const impact of move.impacts) {
+        for (let i = 0; i < move.impacts.length; i++) {
+          const impact = move.impacts[i]
           const description = getImpactDescription({
             effectKey: move.effectKey,
             factionKey: move.factionKey,
+            index: i,
             origin: impact.origin,
             name: impact.unitName,
           })
           const selected = impact.highlighted ? ' selected' : ''
           const dotted = impact.dotted ? ' dotted' : ''
-          expected.push(`${impact.username}: ${impact.unitName} ${description}${selected}${dotted}`)
+          expected.push(
+            `${impact.username}: ${impact.unitName ? `${impact.unitName} ` : ''}${description}${selected}${dotted}`
+          )
         }
 
         const actual: string[] = []
@@ -815,12 +819,16 @@ export default class GamePage {
         for (let i = 0; i < childCount; i++) {
           const child = children.nth(i)
           const userName = await child.find(`.${HTML_CLASSES.MoveImpactUserName}`).innerText
-          const unitName = await child.find(`.${HTML_CLASSES.MoveImpactUnitName}`).innerText
+          const unitNameNode = child.find(`.${HTML_CLASSES.MoveImpactUnitName}`)
+          let unitName = ''
+          if (await unitNameNode.exists) {
+            unitName = `${await unitNameNode.innerText} `
+          }
           const description = await child.find(`.${HTML_CLASSES.MoveImpactDescription}`).innerText
           const highlighted = await child.hasClass(HTML_CLASSES.ItemHighlighted)
           const dotted = await E2eHelper.hasDottedBorder(child)
           actual.push(
-            `${userName}: ${unitName} ${description}${highlighted ? ' selected' : ''}${dotted ? ' dotted' : ''}`
+            `${userName}: ${unitName}${description}${highlighted ? ' selected' : ''}${dotted ? ' dotted' : ''}`
           )
         }
         await t
@@ -1763,7 +1771,7 @@ export interface HistoryImpactMoves {
   instance?: number
   impacts: {
     username: string
-    unitName: string
+    unitName?: string
     highlighted?: boolean
     dotted?: boolean
     origin?: GameUnitOrigin

@@ -1,6 +1,5 @@
 import addListsToMap from './add-lists-to-map'
 import combineUnitStats from './combine-unit-stats'
-import { humanizeDay, humanizeTime } from './humanize-date'
 import formatGameStatus from './format-game-status'
 import getDuplicateItems from './get-duplicate-items'
 import getImpactDescription from './get-impact-description'
@@ -12,6 +11,8 @@ import getRandomSubset from './get-random-subset'
 import getUniqueItems from './get-unique-items'
 import GetUnitStats from './get-unit-stats'
 import groupBy from './group-by'
+import { humanizeDay, humanizeTime } from './humanize-date'
+import ordinalizeNumber from './ordinalize-number'
 import RandomizeDeckUnits from './randomize-deck-units'
 import randomizeOrder from './randomize-order'
 import setNestedProperty from './set-nested-property'
@@ -36,6 +37,7 @@ export {
   groupBy,
   humanizeDay,
   humanizeTime,
+  ordinalizeNumber,
   RandomizeDeckUnits,
   randomizeOrder,
   setNestedProperty,

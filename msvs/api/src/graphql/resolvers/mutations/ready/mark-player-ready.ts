@@ -2,7 +2,6 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
-import initializeNewRound from '../util/initialize-new-round'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -38,10 +37,6 @@ export default class MarkPlayerReady {
           )
         }
         if (unreadyPlayers.length === 0) {
-          MarkPlayerReady.logger.debug(`${logPrefix} has all players ready, starting first round.`)
-          initializeNewRound({
-            game,
-          })
           game.status = GameStatus.Playing
         }
       }

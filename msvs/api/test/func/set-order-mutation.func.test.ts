@@ -369,7 +369,7 @@ describe('set-order-mutation', () => {
           ],
         })
       })
-      it('throws error if setting explicit order with deck that is not scoitael', async () => {
+      it('throws error if setting explicit order with deck that is not scoiatael', async () => {
         const name1 = `setOrder-1-${Date.now()}`
         const name2 = `setOrder-2-${Date.now()}`
         const user1 = await addUser(name1)
@@ -426,7 +426,7 @@ describe('set-order-mutation', () => {
           ],
         })
       })
-      it('throws error if setting implicit order with deck that is not scoitael', async () => {
+      it('throws error if setting implicit order with deck that is not scoiatael', async () => {
         const name1 = `setOrder-1-${Date.now()}`
         const name2 = `setOrder-2-${Date.now()}`
         const user1 = await addUser(name1)
@@ -893,7 +893,7 @@ describe('set-order-mutation', () => {
           },
         })
       })
-      it('implicit order', async () => {
+      it('random order with scoiatael', async () => {
         const name1 = `setOrder-1-${Date.now()}`
         const name2 = `setOrder-2-${Date.now()}`
         const user1 = await addUser(name1)

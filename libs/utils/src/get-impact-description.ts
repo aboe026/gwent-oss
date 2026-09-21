@@ -1,4 +1,5 @@
 import { EffectKey, FactionKey, GameUnitOrigin } from '@gwent-oss/graphql-schema/resolver-typings'
+import ordinalizeNumber from './ordinalize-number'
 
 /**
  * Gets the description text for an impact on a unit due to a given effect.
@@ -8,6 +9,7 @@ import { EffectKey, FactionKey, GameUnitOrigin } from '@gwent-oss/graphql-schema
  * @param config.factionKey The Key of the Faction which caused the impact.
  * @param config.origin The Origin of the unit which caused the impact.
  * @param config.name The name of the unit the mardroeme transformed the card into.
+ * @param config.index The zero-based index of the Impact for the Move.
  * @returns The description of the impact on a unit from the effect.
  * @throws {Error} if Effect cannot have impact (Agile, Avenger, Berserker)
  */
@@ -16,11 +18,13 @@ export default function getImpactDescription({
   factionKey,
   origin,
   name,
+  index,
 }: {
   effectKey?: EffectKey
   factionKey?: FactionKey
   origin?: GameUnitOrigin
   name?: string
+  index?: number
 }): string {
   if (effectKey && factionKey) {
     throw Error(`Cannot get description when both effectKey (${effectKey}) and factionKey (${factionKey}) specified.`)
@@ -67,6 +71,11 @@ export default function getImpactDescription({
     return 'won the round instead of sharing a draw'
   } else if (factionKey === FactionKey.NorthernRealms) {
     return 'handed from draw pile'
+  } else if (factionKey === FactionKey.ScoiaTael) {
+    if (index === undefined) {
+      throw Error(`Index required for Scoia'Tael faction description`)
+    }
+    return `ordered as ${ordinalizeNumber(index + 1)} player to take turn on game`
   } else if (factionKey === FactionKey.Skellige) {
     return 'fielded from lost pile'
   }
