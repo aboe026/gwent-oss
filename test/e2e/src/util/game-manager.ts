@@ -56,12 +56,14 @@ export class GameManager {
     opponent,
     verify = false,
     apiDriven = true,
+    moves = [[]],
   }: {
     gameId: string
     self: GameManagerPlayer
     opponent: GameManagerPlayer
     verify?: boolean
     apiDriven?: boolean
+    moves?: (HistoryMove | HistoryPass)[][]
   }) {
     this.gameId = gameId
     this.self = {
@@ -72,7 +74,7 @@ export class GameManager {
       ...opponent,
       roundScores: [],
     }
-    this.moves = [[]]
+    this.moves = moves
     this.shouldVerify = verify
     this.apiDriven = apiDriven
     this.round = 1
@@ -683,6 +685,7 @@ export default async function createGameManager({
 
   const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
   const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
+  const moves: (HistoryMove | HistoryPass)[][] = [[]]
   if (
     (selfFaction === FactionKey.ScoiaTael && opponentFaction !== FactionKey.ScoiaTael) ||
     (opponentFaction === FactionKey.ScoiaTael && selfFaction !== FactionKey.ScoiaTael)
@@ -691,6 +694,15 @@ export default async function createGameManager({
     await scoiataelClient.setOrder({
       gameId: game.id,
       userIds: [firstPlayerId, secondPlayerId],
+    })
+    moves[0].push({
+      round: 1,
+      unitName: "Scoia'tael",
+      userName: selfFaction === FactionKey.ScoiaTael ? selfUser.name : opponentUser.name,
+      impacts: {
+        factionKey: FactionKey.ScoiaTael,
+        number: 2,
+      },
     })
   } else {
     await setTurnOrder({
@@ -760,6 +772,7 @@ export default async function createGameManager({
         score: 0,
       }),
     },
+    moves,
   })
 }
 

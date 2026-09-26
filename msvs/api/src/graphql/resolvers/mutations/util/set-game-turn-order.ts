@@ -153,7 +153,7 @@ export default class SetGameTurnOrder {
     } as OrderSetPayload)
 
     // TODO: hide at type resolver level?
-    return GameResolver.maskSpiedHandUnits({
+    return GameResolver.maskScopedUnits({
       game: resolvedGame,
       userId,
     })

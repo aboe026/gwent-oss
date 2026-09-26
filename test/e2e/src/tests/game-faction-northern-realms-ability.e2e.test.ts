@@ -232,3 +232,56 @@ test('Does nothing if round won and no undrawn available', async (t) => {
     ],
   })
 })
+
+test('Hides unit on impact for opponent', async (t) => {
+  const unitName = 'Ves'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+    },
+    opponent: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName],
+    },
+  })
+  await gameManager.pass({})
+  await gameManager.deploy({ unitName })
+  const previousHandIds = gameManager.opponent.deck.hand.map((handUnit) => handUnit.unit.id)
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    factionAbility: {
+      gamePlayer: gameManager.opponent.gamePlayer,
+      key: FactionKey.NorthernRealms,
+      impacts: 1,
+    },
+  })
+  const handed = gameManager.opponent.deck.hand.find((handUnit) => !previousHandIds.includes(handUnit.unit.id))
+  if (!handed) {
+    throw Error('Could not get newly handed unit')
+  }
+
+  await GamePage.toggleImpacts({
+    userName: gameManager.opponent.gamePlayer.name,
+    round: gameManager.round,
+    unitName: 'Northern Realms',
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        userName: gameManager.opponent.gamePlayer.name,
+        round: gameManager.round,
+        unitName: 'Northern Realms',
+        factionKey: FactionKey.NorthernRealms,
+        impacts: [
+          {
+            unitName: 'Secret',
+            username: gameManager.opponent.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+})

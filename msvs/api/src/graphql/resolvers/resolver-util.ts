@@ -257,6 +257,12 @@ export default class ResolverUtil {
             userIdsToResolve.push(impactSourceUserId)
           }
         }
+        if (impact.scope) {
+          const impactScopeUserId = impact.scope.toString()
+          if (!userIdsToResolve.includes(impactScopeUserId)) {
+            userIdsToResolve.push(impactScopeUserId)
+          }
+        }
       }
     }
 

@@ -387,7 +387,7 @@ export default class SubscriptionResolver {
       throw Error(`${message}.`)
     }
 
-    const maskedGame = GameResolver.maskSpiedHandUnits({
+    const maskedGame = GameResolver.maskScopedUnits({
       game,
       userId,
     })

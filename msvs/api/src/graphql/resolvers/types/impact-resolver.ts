@@ -57,6 +57,15 @@ export default class ImpactResolver {
         throw Error(`${message}.`)
       }
     }
+    let scopeUser: User | undefined = undefined
+    if (impact.scope) {
+      scopeUser = resolvedUsers.find((user) => user.id === impact.scope?.toString())
+      if (!scopeUser) {
+        const message = `Could not find impact scope user "${impact.scope}"`
+        ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
+        throw Error(`${message}.`)
+      }
+    }
 
     return {
       unit: impact.unit
@@ -72,6 +81,7 @@ export default class ImpactResolver {
             user: sourceUser,
           }
         : undefined,
+      scope: scopeUser,
     }
   }
 

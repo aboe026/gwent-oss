@@ -43,7 +43,7 @@ export default class GamesQuery {
     const resolvedGames = await GameResolver.fromArray(games)
 
     return resolvedGames.map((resolvedGame) =>
-      GameResolver.maskSpiedHandUnits({
+      GameResolver.maskScopedUnits({
         game: resolvedGame,
         userId,
       })

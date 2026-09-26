@@ -73,6 +73,11 @@ export default class MoveResolver {
     }
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
+      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
+        moves: [leaderMove],
+        presolvedUnits: units,
+        presolvedUsers: users,
+      })
       return {
         created: leaderMove.created,
         leader:
@@ -80,6 +85,11 @@ export default class MoveResolver {
           (await LeaderResolver.fromId({
             id: leaderMove.leader,
           })),
+        impacts: await ImpactResolver.fromArray({
+          impacts: leaderMove.impacts,
+          units: resolvedUnits,
+          users: resolvedUsers,
+        }),
         __typename: 'MoveLeader',
       }
     } else if (move.type === MoveType.Pass) {

@@ -69,7 +69,7 @@ export default class PlayPassResolution {
       }
     }
 
-    return GameResolver.maskSpiedHandUnits({
+    return GameResolver.maskScopedUnits({
       game: resolvedGame,
       userId,
     })

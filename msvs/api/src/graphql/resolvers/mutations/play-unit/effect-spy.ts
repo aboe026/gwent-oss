@@ -98,6 +98,7 @@ export default class EffectSpy {
               type: GameUnitType.Deck,
             },
             user: self.user,
+            scope: self.user,
           })
         }
       } else {

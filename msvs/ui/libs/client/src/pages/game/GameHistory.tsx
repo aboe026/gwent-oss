@@ -596,7 +596,7 @@ function renderImpacts({
             let title = unitForImpact?.name
             if (effectKey === EffectKey.Medic) {
               title = 'Choosing...'
-            } else if (factionKey !== FactionKey.ScoiaTael) {
+            } else if (!title && factionKey !== FactionKey.ScoiaTael) {
               title = 'Secret'
             }
             const knownUnit = unitForImpact && gameUnitForImpact

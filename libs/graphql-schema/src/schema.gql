@@ -288,18 +288,22 @@ type Impact @entity {
   unit: GameUnit @column(overrideType: "GameUnitDbObject")
   user: User! @column(overrideType: "ObjectId")
   source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
+  "A potential limit on who can see the GameUnit associated with the Impact. Used to prevent opponents from seeing GameUnits added to hand."
+  scope: User @column(overrideType: "ObjectId")
 }
 
 type MoveFaction @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
   created: DateTime! @column
   faction: Faction! @column(overrideType: "ObjectId")
-  "Other Units the Move impacted in the Game."
+  "Other Units the Faction Ability impacted in the Game."
   impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
 }
 
 type MoveLeader @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
   created: DateTime! @column
   leader: Leader! @column(overrideType: "ObjectId")
+  "Other Units the Leader Ability impacted in the Game."
+  impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
 }
 
 type MovePass @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {

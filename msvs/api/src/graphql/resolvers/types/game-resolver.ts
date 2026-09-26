@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Game, GamePlayer, MoveReasonType, Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { Game, GamePlayer, Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -159,14 +159,14 @@ export default class GameResolver {
   }
 
   /**
-   * Remove the Unit on Impacts for spied hand cards of Opponents.
+   * Remove the GameUnit on Impacts which are scoped to a particular user. Prevents opponents from seeing GameUnits added to Hand.
    *
-   * @param config The configuration used to mask the Units on Impacts for opponents Spies.
-   * @param config.game The Game to mask spies for.
+   * @param config The configuration used to mask the GameUnit on Impacts.
+   * @param config.game The Game to mask Impacts.
    * @param config.userId The ID of the user the game is being returned for, and whose Impacts will be excluded from masking.
-   * @returns The Game with Opponents spied Impact Units removed.
+   * @returns The Game with Opponents scoped Impact GameUnits removed.
    */
-  static maskSpiedHandUnits({ game, userId }: { game: Game; userId: ObjectId | string }): Game {
+  static maskScopedUnits({ game, userId }: { game: Game; userId: ObjectId | string }): Game {
     return {
       ...game,
       players: game.players.map((player) => {
@@ -176,14 +176,15 @@ export default class GameResolver {
             return {
               ...round,
               moves: round.moves.map((move) => {
-                if (move.__typename === 'MoveUnit') {
+                if (
+                  move.__typename === 'MoveFaction' ||
+                  move.__typename === 'MoveLeader' ||
+                  move.__typename === 'MoveUnit'
+                ) {
                   return {
                     ...move,
                     impacts: move.impacts?.map((impact) => {
-                      const hideImpactUnit =
-                        move.target?.id &&
-                        impact.user.id !== userId.toString() &&
-                        move.reason.type !== MoveReasonType.Summon
+                      const hideImpactUnit = impact.scope && impact.scope.id !== userId.toString()
                       return {
                         ...impact,
                         unit: hideImpactUnit ? undefined : impact.unit,

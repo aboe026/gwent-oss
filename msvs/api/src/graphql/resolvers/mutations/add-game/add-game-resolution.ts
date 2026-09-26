@@ -49,7 +49,7 @@ export default class AddGameResolution {
       gameAdded: resolvedGame,
     } as GameAddedPayload)
 
-    return GameResolver.maskSpiedHandUnits({
+    return GameResolver.maskScopedUnits({
       game: resolvedGame,
       userId: creatorId,
     })

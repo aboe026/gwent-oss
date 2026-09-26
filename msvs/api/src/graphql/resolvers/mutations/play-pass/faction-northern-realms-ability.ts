@@ -86,6 +86,7 @@ export default class FactionNorthernRealmsAbility {
             source: {
               origin: GameUnitOrigin.Undrawn,
             },
+            scope: roundWinner.user,
           })
         } else {
           FactionNorthernRealmsAbility.logger.debug(

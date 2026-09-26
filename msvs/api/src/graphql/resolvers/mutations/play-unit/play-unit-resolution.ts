@@ -117,7 +117,7 @@ export default class PlayUnitResolution {
       },
     } as UnitPlayedFromDeckPayload)
 
-    return GameResolver.maskSpiedHandUnits({
+    return GameResolver.maskScopedUnits({
       game: resolvedGame,
       userId,
     })

@@ -43,7 +43,7 @@ export default class ReadyResolution {
       gameReady: resolvedGame,
     } as GameReadyPayload)
 
-    return GameResolver.maskSpiedHandUnits({
+    return GameResolver.maskScopedUnits({
       game: resolvedGame,
       userId,
     })
