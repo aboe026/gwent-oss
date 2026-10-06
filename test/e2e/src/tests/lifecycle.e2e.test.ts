@@ -9,7 +9,7 @@ import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import env from '../util/e2e-env'
 import { GameManager } from '../util/game-manager'
-import GamePage, { GamePlayerExpected } from '../page-objects/game-page'
+import GamePage, { GamePlayerExpected, HistoryMove } from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
@@ -20,9 +20,11 @@ import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
+const factionName = "Scoia'tael"
 
 fixture('Lifecycle').page(env.BASE_URL)
 
+// TODO: use gameManager earlier in these tests?
 test('Speed Run', async (t) => {
   // user 1 sign up
   const username1 = `${getScenario(t)}-user-1-${t.ctx.start}`
@@ -242,11 +244,24 @@ test('Speed Run', async (t) => {
 
   gamePlayer1.turn = undefined
   gamePlayer2.turn = PlayerTurn.Future
+  const moves: HistoryMove[][] = [
+    [
+      {
+        unitName: factionName,
+        userName: gamePlayer1.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: gameDeck1.hand,
     redraws: [],
+    moves,
   })
   await GamePage.ready()
   gamePlayer1.ready = true
@@ -255,6 +270,7 @@ test('Speed Run', async (t) => {
     opponent: gamePlayer2,
     hand: gameDeck1.hand,
     redraws: [],
+    moves,
   })
   await ensureUnitsInHand({
     gameId,
@@ -299,6 +315,7 @@ test('Speed Run', async (t) => {
     opponent: gamePlayer1,
     hand: gameDeck2.hand,
     redraws: [],
+    moves,
   })
   await GamePage.ready()
   gamePlayer2.ready = true
@@ -319,6 +336,7 @@ test('Speed Run', async (t) => {
     },
     apiDriven: false,
     verify: true,
+    moves,
   })
   await gameManager.verify({})
   const unitName1 = 'Rainfarn'
@@ -702,11 +720,24 @@ test('Scenic Route', async (t) => {
   })
   gamePlayer1.turn = PlayerTurn.Future
   gamePlayer2.turn = undefined
+  const moves: HistoryMove[][] = [
+    [
+      {
+        unitName: factionName,
+        userName: gamePlayer2.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: gameDeck2.hand,
     redraws: [],
+    moves,
   })
   const redraw1 = 'Barclay Els'
   await GamePage.redraw(redraw1)
@@ -715,6 +746,7 @@ test('Scenic Route', async (t) => {
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: redraw1GameDeck2.hand,
+    moves,
     redraws: [
       {
         from: {
@@ -733,6 +765,7 @@ test('Scenic Route', async (t) => {
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: redraw2GameDeck2.hand,
+    moves,
     redraws: [
       {
         from: {
@@ -758,6 +791,7 @@ test('Scenic Route', async (t) => {
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: redraw2GameDeck2.hand,
+    moves,
     redraws: [
       {
         from: {
@@ -805,6 +839,7 @@ test('Scenic Route', async (t) => {
     opponent: gamePlayer2,
     hand: gameDeck1.hand,
     redraws: [],
+    moves,
   })
 
   const redraw3 = 'Morteisen'
@@ -814,6 +849,7 @@ test('Scenic Route', async (t) => {
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: redraw3GameDeck1.hand,
+    moves,
     redraws: [
       {
         from: {
@@ -832,6 +868,7 @@ test('Scenic Route', async (t) => {
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: redraw4GameDeck1.hand,
+    moves,
     redraws: [
       {
         from: {
@@ -868,6 +905,7 @@ test('Scenic Route', async (t) => {
       deck: await client2.getGameDeck(gameId),
       gamePlayer: gamePlayer2,
     },
+    moves,
   })
   await gameManager.initialize({})
 

@@ -17,6 +17,7 @@ import {
   EffectKey,
   FactionKey,
   FieldUnit,
+  Game,
   GameDeck,
   GameUnit,
   GameUnitOrigin,
@@ -37,6 +38,7 @@ import GamePage, {
 } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
+import { RedrawPair } from '../components/redraw-units'
 import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 import { toTitleCase } from '@gwent-oss/utils'
 
@@ -549,12 +551,16 @@ export class GameManager {
     highlightedBattlefieldCard,
     highlightedHistory,
     deckPartSelected = GameUnitOrigin.Hand,
+    redraws,
+    turnOrder,
   }: {
     highlightedHandCard?: HighlightedHandCard
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
     impacts?: HistoryImpactMoves[]
     deckPartSelected?: GameUnitOrigin
+    redraws?: RedrawPair[]
+    turnOrder?: string[] | boolean
   }) {
     let deckPart: DeckUnit[]
     if (deckPartSelected === GameUnitOrigin.Hand) {
@@ -580,6 +586,8 @@ export class GameManager {
       highlightedBattlefieldCard,
       highlightedHistory,
       deckPartSelected,
+      redraws,
+      turnOrder,
     })
   }
 
@@ -616,11 +624,13 @@ export default async function createGameManager({
   self,
   opponent,
   opponentFirst,
+  ready = true,
 }: {
   label: string
   self?: GameManagerSetupPlayer
   opponent?: GameManagerSetupPlayer
   opponentFirst?: boolean
+  ready?: boolean
 }): Promise<GameManager> {
   const selfUser = await new ApiClient({}).addUser({
     name: `self-${label}`,
@@ -690,20 +700,22 @@ export default async function createGameManager({
     (selfFaction === FactionKey.ScoiaTael && opponentFaction !== FactionKey.ScoiaTael) ||
     (opponentFaction === FactionKey.ScoiaTael && selfFaction !== FactionKey.ScoiaTael)
   ) {
-    const scoiataelClient = selfFaction === FactionKey.ScoiaTael ? selfClient : opponentClient
-    await scoiataelClient.setOrder({
-      gameId: game.id,
-      userIds: [firstPlayerId, secondPlayerId],
-    })
-    moves[0].push({
-      round: 1,
-      unitName: "Scoia'tael",
-      userName: selfFaction === FactionKey.ScoiaTael ? selfUser.name : opponentUser.name,
-      impacts: {
-        factionKey: FactionKey.ScoiaTael,
-        number: 2,
-      },
-    })
+    if (ready !== false) {
+      const scoiataelClient = selfFaction === FactionKey.ScoiaTael ? selfClient : opponentClient
+      await scoiataelClient.setOrder({
+        gameId: game.id,
+        userIds: [firstPlayerId, secondPlayerId],
+      })
+      moves[0].push({
+        round: 1,
+        unitName: "Scoia'tael",
+        userName: selfFaction === FactionKey.ScoiaTael ? selfUser.name : opponentUser.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      })
+    }
   } else {
     await setTurnOrder({
       gameId: game.id,
@@ -713,8 +725,13 @@ export default async function createGameManager({
     })
   }
 
-  await selfClient.ready(game.id)
-  const updatedGame = await opponentClient.ready(game.id)
+  let updatedGame: Game
+  if (ready) {
+    await selfClient.ready(game.id)
+    updatedGame = await opponentClient.ready(game.id)
+  } else {
+    updatedGame = await selfClient.getGame(game.id)
+  }
 
   if (self?.handUnitNames) {
     await ensureUnitsInHand({
@@ -739,6 +756,7 @@ export default async function createGameManager({
 
   const selfGameDeck = await selfClient.getGameDeck(game.id)
   const opponentGameDeck = await opponentClient.getGameDeck(game.id)
+  const playerTurn = ready === false ? PlayerTurn.Future : PlayerTurn.Current
   return new GameManager({
     gameId: game.id,
     self: {
@@ -751,9 +769,9 @@ export default async function createGameManager({
           deck: selfDeck,
           gameDeck: selfGameDeck,
         },
-        turn: updatedGame.turn?.user.id === selfUser.id ? PlayerTurn.Current : undefined,
-        ready: true,
-        passed: false,
+        turn: updatedGame.turn?.user.id === selfUser.id ? playerTurn : undefined,
+        ready: ready === undefined ? true : ready,
+        passed: ready === false ? undefined : false,
         score: 0,
       }),
     },
@@ -767,8 +785,8 @@ export default async function createGameManager({
           deck: opponentDeck,
           gameDeck: opponentGameDeck,
         },
-        turn: updatedGame.turn?.user.id === opponentUser.id ? PlayerTurn.Current : undefined,
-        ready: true,
+        turn: updatedGame.turn?.user.id === opponentUser.id ? playerTurn : undefined,
+        ready: ready === undefined ? true : ready,
         score: 0,
       }),
     },

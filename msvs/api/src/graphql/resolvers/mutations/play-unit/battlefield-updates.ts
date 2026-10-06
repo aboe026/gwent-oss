@@ -233,13 +233,21 @@ export default class BattlefieldUpdates {
       const round = player.rounds[game.round - 1]
       if (player.user.toString() === game.turn?.toString()) {
         if (player.reviving) {
-          player.deck.discard = player.deck.discard.filter(
-            (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
+          const index = player.deck.discard.findIndex(
+            (discardUnit) => discardUnit.unit.toString() === newDeckUnit.unit.toString()
           )
+          if (index < 0) {
+            throw Error(`Could not find unit "${newDeckUnit.unit}" in discard to play`)
+          }
+          player.deck.discard.splice(index, 1)
         } else {
-          player.deck.hand = player.deck.hand.filter(
-            (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
+          const index = player.deck.hand.findIndex(
+            (handUnit) => handUnit.unit.toString() === newDeckUnit.unit.toString()
           )
+          if (index < 0) {
+            throw Error(`Could not find unit "${newDeckUnit.unit}" in hand to play`)
+          }
+          player.deck.hand.splice(index, 1)
         }
         if (!weather && !spy && combat) {
           const fieldUnit: FieldUnitDbObject = {

@@ -126,7 +126,6 @@ test('Can decoy weathered agile unit and play it in non weathered row for full s
     unitName: unitName3,
     decoying: {
       effectiveStrength: 1,
-      strength: 6,
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,

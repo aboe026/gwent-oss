@@ -7,7 +7,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effects Mixed Spy')
 
-test('Decoyed spy can be played again', async (t) => {
+test('Decoyed spy not already in hand can be played again', async (t) => {
   const unitName1 = 'Prince Stennis'
   const unitName2 = 'Decoy'
   const gameManager = await createGameManager({
@@ -15,6 +15,56 @@ test('Decoyed spy can be played again', async (t) => {
     self: {
       faction: FactionKey.NorthernRealms,
       handUnitNames: [unitName2],
+      excludeHandUnitNames: [unitName1],
+    },
+    opponent: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    spying: {
+      name: unitName1,
+      player: gameManager.opponent.gamePlayer,
+      opponent: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 5,
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      effectiveStrength: 5,
+      row: Combat.Close,
+    },
+  })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    spying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      opponent: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 5,
+    },
+  })
+})
+
+test('Decoyed spy already in hand can be played again', async (t) => {
+  const unitName1 = 'Prince Stennis'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2],
     },
     opponent: {
       faction: FactionKey.NorthernRealms,

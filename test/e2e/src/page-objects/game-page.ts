@@ -336,74 +336,72 @@ export default class GamePage {
       let highlightedMoveFound = false
       const expected: string[] = []
       for (let i = 0; i < moves.length; i++) {
-        if (moves[i].length > 0) {
-          expected.push(`Round ${i + 1}`)
-          for (let j = 0; j < moves[i].length; j++) {
-            const move = moves[i][j]
-            if ('unitName' in move) {
-              let row = ''
-              if (move.combatRow) {
-                row = ` as ${toTitleCase(move.combatRow)}`
-              } else if (!move.impacts?.factionKey) {
-                row = ' to battlefield'
-              }
-              let action = 'deployed'
-              let source = ''
-              if (move.reason?.type === MoveReasonType.Muster) {
-                action = 'mustered'
-                if (move.origin === GameUnitOrigin.Hand) {
-                  source = ' from Hand'
-                } else {
-                  source = ' from Draw pile'
-                }
-              } else if (move.reason?.type === MoveReasonType.Transform) {
-                action = 'transformed'
-              } else if (move.reason?.type === MoveReasonType.Summon) {
-                action = 'summoned'
-              } else if (move.reason?.type === MoveReasonType.Revive) {
-                action = 'revived'
-              }
-              if (move.targetUserName) {
-                if (move.reason?.type === MoveReasonType.Summon) {
-                  action += ` for ${move.targetUserName}`
-                } else {
-                  action += ` to spy on ${move.targetUserName}`
-                }
-              }
-              if (move.impacts?.factionKey) {
-                action = 'triggered faction ability'
-              }
-              let description = `${move.userName}: ${move.unitName} ${action}${row}`
-              if (move.reason) {
-                if (move.reason.type === MoveReasonType.Transform) {
-                  description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
-                }
-                if (move.reason.type !== MoveReasonType.Summon && move.reason.name) {
-                  description += ` by ${move.reason.name}${source}`
-                }
-              }
-              const selected =
-                highlightedMove &&
-                highlightedMove.playerName === move.userName &&
-                highlightedMove.row === move.combatRow &&
-                highlightedMove.unitName === move.unitName &&
-                highlightedMove.round === i + 1 &&
-                (!highlightedMove.targetUser || highlightedMove.targetUser === move.targetUserName)
-              if (selected) {
-                highlightedMoveFound = true
-              }
-              const dotted = selected && highlightedMove.dotted
-              let impactText = ''
-              if (move.impacts?.effectKey) {
-                impactText = toTitleCase(move.impacts.effectKey)
-              } else if (move.impacts?.factionKey) {
-                impactText = 'Faction Ability'
-              }
-              const impacts = move.impacts === undefined ? '' : ` impacts: ${move.impacts.number} ${impactText}`
-              expected.push(`${description}${impacts}${selected ? ' selected' : ''}${dotted ? ' dotted' : ''}`)
-            } else {
-              expected.push(`${move.userName}: Passed the rest of round ${move.round}`)
+        expected.push(`Round ${i + 1}`)
+        for (let j = 0; j < moves[i].length; j++) {
+          const move = moves[i][j]
+          if ('unitName' in move) {
+            let row = ''
+            if (move.combatRow) {
+              row = ` as ${toTitleCase(move.combatRow)}`
+            } else if (!move.impacts?.factionKey) {
+              row = ' to battlefield'
             }
+            let action = 'deployed'
+            let source = ''
+            if (move.reason?.type === MoveReasonType.Muster) {
+              action = 'mustered'
+              if (move.origin === GameUnitOrigin.Hand) {
+                source = ' from Hand'
+              } else {
+                source = ' from Draw pile'
+              }
+            } else if (move.reason?.type === MoveReasonType.Transform) {
+              action = 'transformed'
+            } else if (move.reason?.type === MoveReasonType.Summon) {
+              action = 'summoned'
+            } else if (move.reason?.type === MoveReasonType.Revive) {
+              action = 'revived'
+            }
+            if (move.targetUserName) {
+              if (move.reason?.type === MoveReasonType.Summon) {
+                action += ` for ${move.targetUserName}`
+              } else {
+                action += ` to spy on ${move.targetUserName}`
+              }
+            }
+            if (move.impacts?.factionKey) {
+              action = 'triggered faction ability'
+            }
+            let description = `${move.userName}: ${move.unitName} ${action}${row}`
+            if (move.reason) {
+              if (move.reason.type === MoveReasonType.Transform) {
+                description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+              }
+              if (move.reason.type !== MoveReasonType.Summon && move.reason.name) {
+                description += ` by ${move.reason.name}${source}`
+              }
+            }
+            const selected =
+              highlightedMove &&
+              highlightedMove.playerName === move.userName &&
+              highlightedMove.row === move.combatRow &&
+              highlightedMove.unitName === move.unitName &&
+              highlightedMove.round === i + 1 &&
+              (!highlightedMove.targetUser || highlightedMove.targetUser === move.targetUserName)
+            if (selected) {
+              highlightedMoveFound = true
+            }
+            const dotted = selected && highlightedMove.dotted
+            let impactText = ''
+            if (move.impacts?.effectKey) {
+              impactText = toTitleCase(move.impacts.effectKey)
+            } else if (move.impacts?.factionKey) {
+              impactText = 'Faction Ability'
+            }
+            const impacts = move.impacts === undefined ? '' : ` impacts: ${move.impacts.number} ${impactText}`
+            expected.push(`${description}${impacts}${selected ? ' selected' : ''}${dotted ? ' dotted' : ''}`)
+          } else {
+            expected.push(`${move.userName}: Passed the rest of round ${move.round}`)
           }
         }
       }
@@ -915,7 +913,8 @@ export default class GamePage {
       highlightedUnit: highlightedHandCard,
     })
     await GamePage.verifyHistory({
-      moves,
+      moves:
+        moves && moves.length > 0 && moves[0].length > 0 ? moves : !self.ready && !opponent.ready ? undefined : moves,
       waiting: opponent.turn === PlayerTurn.Current,
       highlightedMove: highlightedHistory,
     })
@@ -1820,7 +1819,7 @@ export interface CombatUnit {
   hero?: boolean
 }
 
-interface CombatRow {
+export interface CombatRow {
   score: number
   units: CombatUnit[]
 }

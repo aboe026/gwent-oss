@@ -338,18 +338,18 @@ test('Summoned avenger can be weathered', async (t) => {
 
 test('Can summon avenger after scorched to discard', async (t) => {
   const unitName1 = 'Cow'
-  const unitName2 = 'Ballista'
+  const unitName2 = 'Fire Elemental'
   const unitName3 = 'Bovine Defense Force'
   const unitName4 = 'Scorch'
-  const unitName5 = 'Dun Banner Medic'
+  const unitName5 = 'Etolian Auxiliary Archers'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName4, unitName5],
     },
     opponent: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.Monsters,
       handUnitNames: [unitName2],
     },
   })
@@ -413,18 +413,18 @@ test('Can summon avenger after scorched to discard', async (t) => {
 
 test('Can summon avenger after decoyed to hand', async (t) => {
   const unitName1 = 'Cow'
-  const unitName2 = 'Ballista'
+  const unitName2 = 'Fire Elemental'
   const unitName3 = 'Bovine Defense Force'
   const unitName4 = 'Decoy'
-  const unitName5 = 'Dun Banner Medic'
+  const unitName5 = 'Etolian Auxiliary Archers'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName4, unitName5],
     },
     opponent: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.Monsters,
       handUnitNames: [unitName2],
     },
   })

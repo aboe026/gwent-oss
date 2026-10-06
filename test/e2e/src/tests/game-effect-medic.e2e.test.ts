@@ -44,12 +44,12 @@ test('Medic has no effect if no units in discard', async (t) => {
 })
 
 test('Medic has no effect if only hero in discard', async (t) => {
-  const unitName1 = 'Vernon Roche'
-  const unitName2 = 'Dun Banner Medic'
+  const unitName1 = 'Letho of Gulet'
+  const unitName2 = 'Siege Technician'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName2],
     },
   })
@@ -64,7 +64,6 @@ test('Medic has no effect if only hero in discard', async (t) => {
 
   await gameManager.deploy({
     unitName: unitName2,
-    combat: Combat.Siege,
     medicing: false,
   })
 

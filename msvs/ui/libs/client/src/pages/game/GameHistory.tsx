@@ -79,7 +79,10 @@ export default function GameHistory({
 
   return (
     <div id={HTML_IDS.GameHistoryContainer} className="game-edge-container game-section">
-      {game.round === 0 || (movesByRounds.length === 1 && movesByRounds[0].playerMoves.length === 0) ? (
+      {game.round === 0 ||
+      (movesByRounds.length === 1 &&
+        movesByRounds[0].playerMoves.length === 0 &&
+        game.status !== GameStatus.Playing) ? (
         <Centered classname="game-history-placeholder">
           <CgTime color="black" className={HTML_CLASSES.GameHistoryIcon} title="History" />
         </Centered>
@@ -594,7 +597,7 @@ function renderImpacts({
               }
             }
             let title = unitForImpact?.name
-            if (effectKey === EffectKey.Medic) {
+            if (!title && effectKey === EffectKey.Medic) {
               title = 'Choosing...'
             } else if (!title && factionKey !== FactionKey.ScoiaTael) {
               title = 'Secret'

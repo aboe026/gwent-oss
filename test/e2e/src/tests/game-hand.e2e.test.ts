@@ -246,11 +246,11 @@ test('Playing all units in hand shows message to user to pass or activate leader
 })
 
 test('Unit gets added to lost pile when round ends', async (t) => {
-  const unitName = 'Ves'
+  const unitName = 'Rainfarn'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName],
     },
   })
@@ -432,12 +432,12 @@ test('Units get removed from undrawn pile when spying', async (t) => {
 })
 
 test('Unit gets removed from discard pile when revived', async (t) => {
-  const unitName1 = 'Ves'
-  const unitName2 = 'Dun Banner Medic'
+  const unitName1 = 'Rainfarn'
+  const unitName2 = 'Siege Technician'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName2],
     },
   })
@@ -479,16 +479,16 @@ test('Avenger summoned from discard pile gets removed from it on scorch', async 
   const unitName1 = 'Cow'
   const unitName2 = 'Scorch'
   const unitName3 = 'Bovine Defense Force'
-  const unitName4 = 'Dun Banner Medic'
+  const unitName4 = 'Siege Technician'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName4],
     },
     opponent: {
-      faction: FactionKey.NilfgaardianEmpire,
-      handUnitNames: [unitName2, unitName2, unitName2],
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName2, unitName2],
     },
   })
   await gameManager.deploy({
@@ -528,18 +528,6 @@ test('Avenger summoned from discard pile gets removed from it on scorch', async 
     combat: Combat.Ranged,
     revivedBy: unitName4,
   })
-  await gameManager.deploy({
-    unitName: unitName2,
-    scorching: [
-      {
-        name: unitName4,
-        player: gameManager.self.gamePlayer,
-        row: Combat.Siege,
-        strength: 5,
-      },
-    ],
-  })
-  await gameManager.pass({})
   await gameManager.initialize({})
 
   await GamePage.switchDeckPartSelected(GameUnitOrigin.Discard)
@@ -555,6 +543,11 @@ test('Avenger summoned from discard pile gets removed from it on scorch', async 
         name: unitName1,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
+      },
+      {
+        name: unitName4,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
       },
     ],
     avenging: [
@@ -580,15 +573,15 @@ test('Avenger summoned from discard pile gets removed from it on round end', asy
   const unitName1 = 'Cow'
   const unitName2 = 'Scorch'
   const unitName3 = 'Bovine Defense Force'
-  const unitName4 = 'Dun Banner Medic'
+  const unitName4 = 'Siege Technician'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName4],
     },
     opponent: {
-      faction: FactionKey.NilfgaardianEmpire,
+      faction: FactionKey.Monsters,
       handUnitNames: [unitName2, unitName2, unitName2],
     },
   })
@@ -646,6 +639,7 @@ test('Avenger summoned from discard pile gets removed from it on round end', asy
   })
 
   await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
     avenging: [
       {
         name: unitName3,
@@ -769,16 +763,16 @@ test('Avenger summoned from hand gets removed from it on round end', async (t) =
   const unitName1 = 'Cow'
   const unitName2 = 'Scorch'
   const unitName3 = 'Bovine Defense Force'
-  const unitName4 = 'Dun Banner Medic'
+  const unitName4 = 'Siege Technician'
   const unitName5 = 'Decoy'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName4, unitName5],
     },
     opponent: {
-      faction: FactionKey.NilfgaardianEmpire,
+      faction: FactionKey.Monsters,
       handUnitNames: [unitName2, unitName2, unitName2],
     },
   })
@@ -832,7 +826,6 @@ test('Avenger summoned from hand gets removed from it on round end', async (t) =
   await gameManager.initialize({})
 
   await gameManager.pass({
-    switchTurnsWith: gameManager.self.gamePlayer,
     avenging: [
       {
         name: unitName3,

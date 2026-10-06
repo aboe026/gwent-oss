@@ -123,13 +123,13 @@ test('Avenging units can be revived', async (t) => {
 })
 
 test('Bonded units can rebond after revival', async (t) => {
-  const unitName1 = 'Blue Stripes Commando'
-  const unitName2 = 'Dun Banner Medic'
-  const unitName3 = 'Yennefer of Vengerberg'
+  const unitName1 = 'Young Emissary'
+  const unitName2 = 'Siege Technician'
+  const unitName3 = 'Etolian Auxiliary Archers'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName1, unitName2, unitName3],
     },
   })
@@ -140,13 +140,13 @@ test('Bonded units can rebond after revival', async (t) => {
   await gameManager.pass({})
   await gameManager.deploy({
     unitName: unitName1,
-    effectiveStrength: 8,
+    effectiveStrength: 10,
     bonding: [
       {
         name: unitName1,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        effectiveStrength: 8,
+        effectiveStrength: 10,
       },
     ],
   })
@@ -173,13 +173,13 @@ test('Bonded units can rebond after revival', async (t) => {
   })
   await gameManager.deploy({
     unitName: unitName1,
-    effectiveStrength: 8,
+    effectiveStrength: 10,
     bonding: [
       {
         name: unitName1,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        effectiveStrength: 8,
+        effectiveStrength: 10,
       },
     ],
     revivedBy: unitName3,
@@ -187,13 +187,13 @@ test('Bonded units can rebond after revival', async (t) => {
 })
 
 test('Revived unit can be decoyed', async (t) => {
-  const unitName1 = 'Ves'
-  const unitName2 = 'Dun Banner Medic'
+  const unitName1 = 'Rainfarn'
+  const unitName2 = 'Siege Technician'
   const unitName3 = 'Decoy'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName2, unitName3],
     },
   })
@@ -219,7 +219,6 @@ test('Revived unit can be decoyed', async (t) => {
     unitName: unitName3,
     decoying: {
       name: unitName1,
-      effectiveStrength: 5,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
     },
@@ -227,15 +226,15 @@ test('Revived unit can be decoyed', async (t) => {
 })
 
 test('Decoyed medic can revive another unit', async (t) => {
-  const unitName1 = 'Ves'
-  const unitName2 = 'Vesemir'
-  const unitName3 = 'Dun Banner Medic'
+  const unitName1 = 'Rainfarn'
+  const unitName2 = 'Vreemde'
+  const unitName3 = 'Siege Technician'
   const unitName4 = 'Decoy'
 
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName2, unitName3, unitName4],
     },
   })
@@ -265,7 +264,6 @@ test('Decoyed medic can revive another unit', async (t) => {
     combat: Combat.Siege,
     decoying: {
       name: unitName3,
-      effectiveStrength: 5,
       player: gameManager.self.gamePlayer,
       row: Combat.Siege,
     },
@@ -560,11 +558,11 @@ test('Moraled units can do not retain morale after revival', async (t) => {
 
 test('Mustered units can be revived and does not muster other discarded musters', async (t) => {
   const unitName1 = "Gaunter O'Dimm Darkness"
-  const unitName2 = 'Dun Banner Medic'
+  const unitName2 = 'Siege Technician'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName2],
       excludeHandUnitNames: [unitName1],
       ignoreUnitNames: [unitName1],
@@ -594,6 +592,7 @@ test('Mustered units can be revived and does not muster other discarded musters'
 
   await gameManager.deploy({
     unitName: unitName2,
+    combat: Combat.Siege,
     medicing: true,
   })
   await gameManager.deploy({
@@ -605,13 +604,13 @@ test('Mustered units can be revived and does not muster other discarded musters'
 
 test('Mustered units can muster revived muster if decoyed into hand', async (t) => {
   const unitName1 = "Gaunter O'Dimm Darkness"
-  const unitName2 = 'Dun Banner Medic'
+  const unitName2 = 'Siege Technician'
   const unitName3 = 'Decoy'
-  const unitName4 = 'Yennefer of Vengerberg'
+  const unitName4 = 'Etolian Auxiliary Archers'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName2, unitName3, unitName4],
       excludeHandUnitNames: [unitName1],
       ignoreUnitNames: [unitName1],
@@ -640,6 +639,7 @@ test('Mustered units can muster revived muster if decoyed into hand', async (t) 
 
   await gameManager.deploy({
     unitName: unitName2,
+    combat: Combat.Siege,
     medicing: true,
   })
   await gameManager.deploy({
@@ -662,6 +662,7 @@ test('Mustered units can muster revived muster if decoyed into hand', async (t) 
 
   await gameManager.deploy({
     unitName: unitName4,
+    combat: Combat.Ranged,
     medicing: true,
   })
   await gameManager.deploy({

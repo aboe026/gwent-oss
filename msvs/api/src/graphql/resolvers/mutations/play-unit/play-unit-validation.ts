@@ -85,10 +85,6 @@ export default class PlayUnitValidation {
       const message = `Unit not in ${pile}.`
       PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
-    } else if (deckUnits.length > 1) {
-      const message = `Found more than 1 unit with ID "${unitId}" in ${pile}`
-      PlayUnitValidation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`)
-      throw new PresentableError(`${message}.`)
     }
     const deckUnit = deckUnits[0]
 

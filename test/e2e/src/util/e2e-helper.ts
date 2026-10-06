@@ -11,7 +11,7 @@ import {
   GameUnitOrigin,
   User,
 } from '@gwent-oss/node-client'
-import { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
+import { CombatRow, CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PASSWORD } from './e2e-constants'
 import { PlayerTurn } from '../components/game-player-info'
@@ -210,7 +210,7 @@ export class E2eHelper {
     player.weathering.push(unitName)
   }
 
-  static removeUnitFromGamePlayer({
+  static removeUnitsFromGamePlayer({
     player,
     unitName,
     strength,
@@ -222,43 +222,64 @@ export class E2eHelper {
     strength?: number
     row: Combat
     instances?: number
-  }): void {
-    let removed = 0
-    if (row === Combat.Close) {
-      player.close = {
-        score: (player.close?.score || 0) - (strength || 0),
-        units: [...(player.close?.units || [])].filter((unit) => {
-          if (unit.name === unitName && (removed < instances || instances === -1)) {
-            removed++
-            return false
-          }
-          return true
-        }),
-      }
-    } else if (row === Combat.Ranged) {
-      player.ranged = {
-        score: (player.ranged?.score || 0) - (strength || 0),
-        units: [...(player.ranged?.units || [])].filter((unit) => {
-          if (unit.name === unitName && (removed < instances || instances === -1)) {
-            removed++
-            return false
-          }
-          return true
-        }),
-      }
-    } else if (row === Combat.Siege) {
-      player.siege = {
-        score: (player.siege?.score || 0) - (strength || 0),
-        units: [...(player.siege?.units || [])].filter((unit) => {
-          if (unit.name === unitName && (removed < instances || instances === -1)) {
-            removed++
-            return false
-          }
-          return true
-        }),
-      }
+  }): CombatUnit[] {
+    const removed: CombatUnit[] = []
+    let newScore = player.score || 0
+    if (row === Combat.Close && player.close) {
+      newScore += E2eHelper.removeUnitsFromPlayerRow({
+        row: player.close,
+        removed,
+        unitName,
+        instances,
+        strength,
+      })
+    } else if (row === Combat.Ranged && player.ranged) {
+      newScore += E2eHelper.removeUnitsFromPlayerRow({
+        row: player.ranged,
+        removed,
+        unitName,
+        instances,
+        strength,
+      })
+    } else if (row === Combat.Siege && player.siege) {
+      newScore += E2eHelper.removeUnitsFromPlayerRow({
+        row: player.siege,
+        removed,
+        unitName,
+        instances,
+        strength,
+      })
     }
-    player.score = (player.score || 0) - (strength || 0)
+    player.score = newScore
+    return removed
+  }
+
+  static removeUnitsFromPlayerRow({
+    row,
+    unitName,
+    strength,
+    removed,
+    instances = 1,
+  }: {
+    row: CombatRow
+    unitName: string
+    strength?: number
+    removed: CombatUnit[]
+    instances?: number
+  }): number {
+    const oldScore = row.score || 0
+    let newScore = row.score || 0
+    row.units = [...(row.units || [])].filter((unit) => {
+      if (unit.name === unitName && (removed.length < instances || instances === -1)) {
+        newScore -= (strength === undefined ? unit.effectiveStrength || unit.strength : strength) || 0
+        removed.push(unit)
+      } else {
+        return true
+      }
+    })
+    row.score = newScore
+
+    return newScore - oldScore
   }
 
   static removeWeatherFromGamePlayer({ player, unitName }: { player: GamePlayerExpected; unitName: string }) {
@@ -463,7 +484,7 @@ export class E2eHelper {
           row: mardroeme.row,
           unitName: mardroeme.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker',
         })
-        E2eHelper.removeUnitFromGamePlayer({
+        E2eHelper.removeUnitsFromGamePlayer({
           player: mardroeme.player,
           row: mardroeme.row,
           unitName: berserker.name,
@@ -547,7 +568,7 @@ export class E2eHelper {
       for (const scorch of scorching) {
         const scorchee = scorch.player
         scorchee.discard = (scorchee.discard || 0) + 1
-        E2eHelper.removeUnitFromGamePlayer({
+        E2eHelper.removeUnitsFromGamePlayer({
           player: scorchee,
           row: scorch.row,
           unitName: scorch.name,
@@ -557,19 +578,21 @@ export class E2eHelper {
       }
     }
     if (decoying) {
-      E2eHelper.removeUnitFromGamePlayer({
+      const decoyedUnit = E2eHelper.removeUnitsFromGamePlayer({
         player: decoying.player,
         row: decoying.row,
         unitName: decoying.name,
         strength: decoying.effectiveStrength,
         instances: decoying.instance,
       })
+      // TODO: see if can get the "default" strength working, else revert that change and require it to be explicit
+      // TODO: if get working, go through and remove them all where not needed (remove all strengths that are not altered)
       decoying.player.hand = (decoying.player.hand || 0) + 1
       gameDeck.hand.push({
         artStyle: 1,
         unit: {
           name: decoying.name,
-          strength: decoying.strength !== undefined ? decoying.strength : decoying.effectiveStrength,
+          strength: decoyedUnit[0].strength,
         } as any,
       })
     }
@@ -867,8 +890,7 @@ export interface DecoyingExpected {
   player: GamePlayerExpected
   name: string
   row: Combat
-  strength?: number
-  effectiveStrength: number
+  effectiveStrength?: number
   instance?: number
 }
 
