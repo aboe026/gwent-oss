@@ -40,7 +40,6 @@ test('Decoyed spy not already in hand can be played again', async (t) => {
     decoying: {
       name: unitName1,
       player: gameManager.self.gamePlayer,
-      effectiveStrength: 5,
       row: Combat.Close,
     },
   })
@@ -89,7 +88,6 @@ test('Decoyed spy already in hand can be played again', async (t) => {
     decoying: {
       name: unitName1,
       player: gameManager.self.gamePlayer,
-      effectiveStrength: 5,
       row: Combat.Close,
     },
   })

@@ -585,8 +585,6 @@ export class E2eHelper {
         strength: decoying.effectiveStrength,
         instances: decoying.instance,
       })
-      // TODO: see if can get the "default" strength working, else revert that change and require it to be explicit
-      // TODO: if get working, go through and remove them all where not needed (remove all strengths that are not altered)
       decoying.player.hand = (decoying.player.hand || 0) + 1
       gameDeck.hand.push({
         artStyle: 1,

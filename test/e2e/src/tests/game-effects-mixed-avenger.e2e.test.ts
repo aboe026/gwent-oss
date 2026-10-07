@@ -31,7 +31,6 @@ test('Cannot summon avenger by decoying', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Ranged,
-      effectiveStrength: 0,
     },
   })
 })
@@ -69,7 +68,6 @@ test('Summoned avenger can be decoyed and played again', async (t) => {
   await gameManager.deploy({
     unitName: unitName3,
     decoying: {
-      effectiveStrength: 8,
       name: unitName2,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
@@ -454,7 +452,6 @@ test('Can summon avenger after decoyed to hand', async (t) => {
     unitName: unitName4,
     decoying: {
       name: unitName3,
-      effectiveStrength: 8,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
     },

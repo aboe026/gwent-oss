@@ -704,7 +704,6 @@ test('Avenger summoned from hand gets removed from it on scorch', async (t) => {
     unitName: unitName3,
     decoying: {
       name: unitName5,
-      effectiveStrength: 8,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
     },
@@ -803,7 +802,6 @@ test('Avenger summoned from hand gets removed from it on round end', async (t) =
     unitName: unitName5,
     decoying: {
       name: unitName3,
-      effectiveStrength: 8,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
     },

@@ -22,7 +22,6 @@ test('Agile unit can be decoyed and played again as same combat', async (t) => {
   await gameManager.deploy({
     unitName: unitName2,
     decoying: {
-      effectiveStrength: 6,
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
@@ -48,7 +47,6 @@ test('Agile unit can be decoyed and played again as different combat', async (t)
   await gameManager.deploy({
     unitName: unitName2,
     decoying: {
-      effectiveStrength: 6,
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,

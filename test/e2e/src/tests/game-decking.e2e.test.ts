@@ -10,6 +10,8 @@ import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 
+// TODO: replace with gamemanager
+// TODO: find other "extends E2eCtx" that can be replaced by gamemanager
 interface GameDeckingTestCtx extends E2eCtx {
   self: {
     user: User

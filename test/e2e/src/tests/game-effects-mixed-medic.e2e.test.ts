@@ -652,7 +652,6 @@ test('Mustered units can muster revived muster if decoyed into hand', async (t) 
     unitName: unitName3,
     combat: Combat.Ranged,
     decoying: {
-      effectiveStrength: 4,
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Ranged,
