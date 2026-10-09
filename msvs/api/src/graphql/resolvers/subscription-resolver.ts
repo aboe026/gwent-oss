@@ -4,8 +4,7 @@ import { withFilter } from 'graphql-subscriptions'
 import { Context } from '@gwent-oss/graphql-schema/context'
 import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent-oss/graphql-schema/resolver-typings'
 import EventManager from '../event-manager'
-import GameResolver from './types/game-resolver'
-import { getNestedProperty, setNestedProperty } from '@gwent-oss/utils'
+import { getNestedProperty } from '@gwent-oss/utils'
 import { PubSubEvents } from '@gwent-oss/constants'
 
 /**
@@ -387,17 +386,7 @@ export default class SubscriptionResolver {
       throw Error(`${message}.`)
     }
 
-    const maskedGame = GameResolver.maskScopedUnits({
-      game,
-      userId,
-    })
-
-    setNestedProperty({
-      obj: payload,
-      path: nestedProperty,
-      value: maskedGame,
-    })
-
+    // TODO: can this be accomplished in field resolver like impact.unit?
     if (nestedDiscardPath && payload[subscriptionName][nestedDiscardPath]) {
       payload[subscriptionName][nestedDiscardPath] = payload[subscriptionName][nestedDiscardPath][userId] || []
     }

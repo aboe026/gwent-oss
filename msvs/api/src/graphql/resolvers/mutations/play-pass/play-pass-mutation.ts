@@ -37,7 +37,6 @@ export default class PlayPassMutation {
       game: updatedGame,
       logPrefix,
       roundOver,
-      userId,
     })
   }
 }

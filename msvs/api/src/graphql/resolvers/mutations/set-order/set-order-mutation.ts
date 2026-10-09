@@ -21,8 +21,7 @@ export default class SetOrderMutation {
       game,
       gameDeck,
       logPrefix,
-      userIds,
-      userId, //
+      userIds, //
     } = await SetOrderValidation.setOrderValidation(args, context, info)
 
     return SetGameTurnOrder.setGameTurnOrder({
@@ -31,7 +30,6 @@ export default class SetOrderMutation {
       userIds,
       allowImplicit: true,
       logPrefix,
-      userId,
     })
   }
 }

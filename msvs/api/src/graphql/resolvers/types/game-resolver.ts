@@ -157,47 +157,4 @@ export default class GameResolver {
       game: game as GameDbObject,
     })
   }
-
-  /**
-   * Remove the GameUnit on Impacts which are scoped to a particular user. Prevents opponents from seeing GameUnits added to Hand.
-   *
-   * @param config The configuration used to mask the GameUnit on Impacts.
-   * @param config.game The Game to mask Impacts.
-   * @param config.userId The ID of the user the game is being returned for, and whose Impacts will be excluded from masking.
-   * @returns The Game with Opponents scoped Impact GameUnits removed.
-   */
-  static maskScopedUnits({ game, userId }: { game: Game; userId: ObjectId | string }): Game {
-    return {
-      ...game,
-      players: game.players.map((player) => {
-        return {
-          ...player,
-          rounds: player.rounds.map((round) => {
-            return {
-              ...round,
-              moves: round.moves.map((move) => {
-                if (
-                  move.__typename === 'MoveFaction' ||
-                  move.__typename === 'MoveLeader' ||
-                  move.__typename === 'MoveUnit'
-                ) {
-                  return {
-                    ...move,
-                    impacts: move.impacts?.map((impact) => {
-                      const hideImpactUnit = impact.scope && impact.scope.id !== userId.toString()
-                      return {
-                        ...impact,
-                        unit: hideImpactUnit ? undefined : impact.unit,
-                      }
-                    }),
-                  }
-                }
-                return move
-              }),
-            }
-          }),
-        }
-      }),
-    }
-  }
 }

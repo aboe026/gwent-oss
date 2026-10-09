@@ -5,6 +5,7 @@ import ApplicationQuery from './queries/application-query'
 import CurrentUserQuery from './queries/current-user-query'
 import DecksQuery from './queries/decks-query'
 import FactionsQuery from './queries/factions-query'
+import Fields from './fields/fields'
 import GameDeckQuery from './queries/game-deck-query'
 import GameQuery from './queries/game-query'
 import GamesQuery from './queries/games-query'
@@ -28,6 +29,7 @@ import UsernameAvailableQuery from './queries/username-available'
  * The definition of all resolvers defined on the GraphQL schema.
  */
 export const resolvers: Resolvers = {
+  // TODO: refactor into ./mutations/mutations.ts and same for queries
   Mutation: {
     addDeck: async (parent, args, context, info) => AddDeckMutation.addDeckMutation(args, context, info),
     addGame: async (parent, args, context, info) => AddGameMutation.addGameMutation(args, context, info),
@@ -56,6 +58,7 @@ export const resolvers: Resolvers = {
       UsernameAvailableQuery.usernameAvailable(args, context, info),
   },
   Subscription: SubscriptionResolver.getResolvers(),
+  ...Fields.getFields(),
   ...scalars,
 }
 
