@@ -39,12 +39,18 @@ export default class FactionNorthernRealmsAbility {
     }
     if (roundWinners.length > 0) {
       if (roundWinners.length > 1) {
-        // TODO: throw error
+        const message = 'Found more than 1 round winner'
+        FactionNorthernRealmsAbility.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(roundWinners)}"`)
+        throw Error(`${message}.`)
       }
 
       const roundWinner = roundWinners[0]
       if (!roundWinner.deck.from) {
-        // TODO: throw error
+        const message = `Could not find deck for round winner "${roundWinner.user}"`
+        FactionNorthernRealmsAbility.logger.error(
+          `${logPrefix} failed: ${message}: "${JSON.stringify(roundWinner.deck)}"`
+        )
+        throw Error(`${message}.`)
       }
       const factions = await FactionStore.get({
         keys: [FactionKey.NorthernRealms],
@@ -52,11 +58,15 @@ export default class FactionNorthernRealmsAbility {
       if (FactionNorthernRealmsAbility.logger.isTraceEnabled()) {
         FactionNorthernRealmsAbility.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
       }
-      if (!factions) {
-        // TODO: throw error
+      if (factions.length === 0) {
+        const message = `Could not find faction "${FactionKey.NorthernRealms}".`
+        FactionNorthernRealmsAbility.logger.error(`${logPrefix} failed: ${message}`)
+        throw Error(`${message}.`)
       }
       if (factions.length > 1) {
-        // TODO: throw error
+        const message = `Found more than 1 faction for "${FactionKey.NorthernRealms}"`
+        FactionNorthernRealmsAbility.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
+        throw Error(`${message}.`)
       }
       const northernRealmsFaction = factions[0]
       if (roundWinner.deck.from?.faction.toString() === northernRealmsFaction._id.toString()) {
@@ -69,7 +79,7 @@ export default class FactionNorthernRealmsAbility {
         if (roundWinner.deck.undrawn.length > 0) {
           const index = getRandomNumber({
             min: 0,
-            max: roundWinner.deck.undrawn.length,
+            max: roundWinner.deck.undrawn.length - 1,
           })
           FactionNorthernRealmsAbility.logger.trace(`${logPrefix} index: "${index}"`)
           const undrawnToDraw = roundWinner.deck.undrawn.splice(index, 1)[0]

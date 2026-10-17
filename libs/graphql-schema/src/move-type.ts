@@ -2,7 +2,7 @@
  * The type of movement made by a user during their turn.
  */
 export enum MoveType {
-  Faction = 'Faction',
+  Faction = 'FACTION',
   Leader = 'LEADER',
   Pass = 'PASS',
   Unit = 'UNIT',

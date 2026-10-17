@@ -51,6 +51,7 @@ Existing problems in the codebase that need to be fixed.
 - improve UX around game player info (username, score, rounds, passed)
 - message to clear filters in DeckEditor when filter shows none
 - shared component for card "accordion" container
+- refactor into Object-Oriented Programming (using codegen types as interfaces for classes with methods)
 - Use bespoke weather effects (eg icicles for Biting Frost, haze for Impenetrable Fog, raindrops for Torrential Rain) on combat rows instead of generic red
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations

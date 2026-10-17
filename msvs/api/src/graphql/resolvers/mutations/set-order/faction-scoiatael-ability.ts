@@ -26,7 +26,7 @@ export default class FactionScoiaTaelAbility {
    * @param config.scoiaTaelPlayers All players who chose a Scoia'Tael deck for the game.
    * @param config.userIdsForOrder The User IDs in turn order for the game.
    */
-  static async attemptAbility({
+  static attemptAbility({
     game,
     logPrefix,
     scoiaTaelFactionId,
@@ -44,11 +44,11 @@ export default class FactionScoiaTaelAbility {
         `${logPrefix} no players with Scoia'Tael faction "${scoiaTaelFactionId}", not triggering faction ability.`
       )
     } else {
-      FactionScoiaTaelAbility.logger.debug(
-        `${logPrefix} found "${scoiaTaelPlayers.length}" players with Scoia'Tael faction "${scoiaTaelFactionId}", attempting faction ability.`
-      )
       const impacts: ImpactDbObject[] = []
       if (scoiaTaelPlayers.length === 1) {
+        FactionScoiaTaelAbility.logger.debug(
+          `${logPrefix} found single player with Scoia'Tael faction "${scoiaTaelFactionId}", triggering faction ability to set order.`
+        )
         for (const userIdForOrder of userIdsForOrder) {
           impacts.push({
             user: new ObjectId(userIdForOrder),
@@ -56,7 +56,7 @@ export default class FactionScoiaTaelAbility {
         }
       } else {
         FactionScoiaTaelAbility.logger.debug(
-          `${logPrefix} found "${scoiaTaelPlayers.length}" more than 1 player with Scoia'Tael faction "${scoiaTaelFactionId}", not triggering faction ability.`
+          `${logPrefix} found multiple players with Scoia'Tael faction "${scoiaTaelFactionId}", not triggering faction ability.`
         )
       }
 

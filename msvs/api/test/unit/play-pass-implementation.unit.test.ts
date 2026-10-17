@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
 import DiscardRoundUnits from '../../src/graphql/resolvers/mutations/play-pass/discard-round-units'
 import EffectAvenger from '../../src/graphql/resolvers/mutations/play-unit/effect-avenger'
+import FactionNorthernRealmsAbility from '../../src/graphql/resolvers/mutations/play-pass/faction-northern-realms-ability'
 import GameStore from '../../src/database/stores/game-store'
 import { GameUnitOrigin, MoveReasonType } from '@gwent-oss/graphql-schema/database-typings'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/util/get-round-units'
@@ -128,6 +129,7 @@ async function testPlayPassImplementation({
   const setGameVictorsSpy = jest.spyOn(SetGameVictors, 'setGameVictors').mockImplementation()
   const setTurnForNextRoundSpy = jest.spyOn(SetTurnForNextRound, 'setTurnForNextRound').mockImplementation()
   const initializeNewRoundSpy = jest.spyOn(initializeNewRound, 'default').mockImplementation()
+  const northernRealmsAbilitySpy = jest.spyOn(FactionNorthernRealmsAbility, 'attemptAbility').mockResolvedValue()
   const summonAvengersSpy = jest.spyOn(PlayPassImplementation as any, 'summonAvengers').mockImplementation()
   const setNextTurnForCurrentRoundSpy = jest
     .spyOn(SetNextTurnForCurrentRound, 'setNextTurnForCurrentRound')
@@ -230,6 +232,18 @@ async function testPlayPassImplementation({
           [
             {
               game,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(northernRealmsAbilitySpy.mock.calls).toEqual(
+    roundOver && !gameOver
+      ? [
+          [
+            {
+              game,
+              logPrefix,
             },
           ],
         ]

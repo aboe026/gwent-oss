@@ -8,10 +8,12 @@ import {
   GameStatus,
 } from '@gwent-oss/graphql-schema/database-typings'
 import { FactionKey } from '@gwent-oss/graphql-schema/resolver-typings'
+import FactionScoiaTaelAbility from '../../src/graphql/resolvers/mutations/set-order/faction-scoiatael-ability'
 import FactionStore from '../../src/database/stores/faction-store'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent-oss/utils'
+import * as initializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 import { PubSubEvents } from '@gwent-oss/constants'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
 import TestUtil from '../util/test-util'
@@ -536,14 +538,15 @@ async function testSetGameTurnOrder({
   traceCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const userId = new ObjectId()
   const getFactionByKeySpy = jest.spyOn(FactionStore, 'getByKey').mockResolvedValue(factionByKeyResponse)
   const randomizeOrderSpy = jest.spyOn(gwentUtils, 'randomizeOrder')
-  const randomPlayers: string[] = []
+  const randomPlayerIds: string[] = []
   for (const player of game.players) {
-    randomPlayers.push(player.user.toString())
+    randomPlayerIds.push(player.user.toString())
   }
-  randomizeOrderSpy.mockReturnValue(randomPlayers)
+  randomizeOrderSpy.mockReturnValue(randomPlayerIds)
+  const initializeNewRoundSpy = jest.spyOn(initializeNewRound, 'default').mockImplementation()
+  const scoiataelAbilitySpy = jest.spyOn(FactionScoiaTaelAbility, 'attemptAbility').mockImplementation()
   const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse || undefined)
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   let resolvedGame
@@ -553,9 +556,7 @@ async function testSetGameTurnOrder({
     })
     resolveGameSpy.mockResolvedValue(resolvedGame)
   }
-  const maskedGame = TestUtil.getGame({})
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
@@ -574,12 +575,11 @@ async function testSetGameTurnOrder({
     userIds,
     logPrefix,
     allowImplicit,
-    userId,
   })
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(promise).resolves.toEqual(maskedGame)
+    await expect(promise).resolves.toEqual(resolvedGame)
   }
 
   expect(getFactionByKeySpy.mock.calls).toEqual([
@@ -591,6 +591,41 @@ async function testSetGameTurnOrder({
     ],
   ])
   expect(randomizeOrderSpy.mock.calls).toEqual(randomizeOrderCalls)
+  expect(initializeNewRoundSpy.mock.calls).toEqual(
+    saveCalls.length === 0
+      ? []
+      : [
+          [
+            {
+              game,
+            },
+          ],
+        ]
+  )
+  expect(scoiataelAbilitySpy.mock.calls).toEqual(
+    saveCalls.length === 0
+      ? []
+      : [
+          [
+            {
+              game,
+              logPrefix,
+              scoiaTaelFactionId: factionByKeyResponse._id.toString(),
+              scoiaTaelPlayers: game.players.filter(
+                (gamePlayer) => gamePlayer.deck.from?.faction.toString() === factionByKeyResponse._id.toString()
+              ),
+              userIdsForOrder: saveResponse
+                ? gwentUtils
+                    .sortObjectArray({
+                      array: saveResponse?.players,
+                      sortProperties: ['order'],
+                    })
+                    .map((player) => player.user.toString())
+                : game.players.map((player) => player.user.toString()),
+            },
+          ],
+        ]
+  )
   expect(saveSpy.mock.calls).toEqual(saveCalls)
   expect(publishSpy.mock.calls).toEqual(
     error
@@ -600,18 +635,6 @@ async function testSetGameTurnOrder({
             PubSubEvents.OrderSet,
             {
               orderSet: resolvedGame,
-            },
-          ],
-        ]
-  )
-  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual(
-    error
-      ? []
-      : [
-          [
-            {
-              game: resolvedGame,
-              userId,
             },
           ],
         ]

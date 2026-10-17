@@ -44,10 +44,12 @@ import {
   GameDbObject,
   GameDeckDbObject,
   GamePlayerDbObject,
+  GameUnitDbObject,
   GameUnitSourceDbObject,
   ImpactDbObject,
   LeaderDbObject,
   MoveDbObject,
+  MoveFactionDbObject,
   MoveLeaderDbObject,
   MovePassDbObject,
   MoveReasonType,
@@ -57,7 +59,6 @@ import {
   PlayerRoundDbObject,
   RedrawDbObject,
   RoundResult,
-  GameUnitDbObject,
   UnitDbObject,
   UserDbObject,
   WeatherUnitDbObject,
@@ -860,6 +861,7 @@ export default class TestUtil {
     },
     unit = TestUtil.getDbGameUnit({}),
     leaderId = new ObjectId(),
+    factionId = new ObjectId(),
     impacts,
     target,
   }: {
@@ -868,6 +870,7 @@ export default class TestUtil {
     source?: GameUnitSourceDbObject
     unit?: GameUnitDbObject
     leaderId?: ObjectId
+    factionId?: ObjectId
     impacts?: ImpactDbObject[]
     target?: ObjectId
   }): MoveDbObject {
@@ -889,6 +892,14 @@ export default class TestUtil {
         type: MoveType.Leader,
       }
       return leaderMove
+    } else if (type === MoveType.Faction) {
+      const factionMove: MoveFactionDbObject = {
+        created: new Date(),
+        faction: factionId,
+        type: MoveType.Faction,
+        impacts,
+      }
+      return factionMove
     } else {
       const passMove: MovePassDbObject = {
         created: new Date(),
@@ -1171,10 +1182,12 @@ export default class TestUtil {
     unit,
     user = new ObjectId(),
     source,
+    scope,
   }: {
     unit?: GameUnitDbObject | null
     user?: ObjectId
     source?: GameUnitSourceDbObject
+    scope?: ObjectId
   }): ImpactDbObject {
     return {
       unit: unit
@@ -1186,22 +1199,26 @@ export default class TestUtil {
           : undefined,
       user,
       source,
+      scope,
     }
   }
 
   static getImpact({
-    unit,
+    unit = null,
     user,
     source = null,
+    scope = null,
   }: {
-    unit: GameUnit
+    unit?: GameUnit | null
     user: User
     source?: GameUnitSource | null
+    scope?: User | null
   }): Impact {
     return {
       unit,
       user,
       source,
+      scope,
     }
   }
 

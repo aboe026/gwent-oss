@@ -128,7 +128,6 @@ async function testPlayPassMutation({
               game: updatedGame,
               logPrefix,
               roundOver: !!roundOver,
-              userId,
             },
           ],
         ]

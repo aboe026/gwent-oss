@@ -1,5 +1,4 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent-oss/graphql-schema/context'
 import { GameDbObject, GameDeckDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
@@ -67,7 +66,6 @@ export default class SetOrderValidation {
       gameDeck: player.deck,
       logPrefix,
       userIds,
-      userId,
     }
   }
 }
@@ -77,5 +75,4 @@ export interface ValidatedSetOrder {
   gameDeck: GameDeckDbObject
   logPrefix: string
   userIds?: string[] | null
-  userId: ObjectId
 }

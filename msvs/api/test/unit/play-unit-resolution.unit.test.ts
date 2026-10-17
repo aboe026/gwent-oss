@@ -57,7 +57,6 @@ async function testPlayUnitResolution({
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
-  const maskedGame = TestUtil.getGame({})
   const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
     deckUnit,
   })
@@ -88,7 +87,6 @@ async function testPlayUnitResolution({
     .mockResolvedValueOnce(resolvedDiscarded)
     .mockResolvedValueOnce(resolvedUndiscarded)
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const traceSpy = jest.fn().mockImplementation()
   PlayUnitResolution['logger'] = {
     trace: traceSpy,
@@ -107,7 +105,7 @@ async function testPlayUnitResolution({
       undiscards,
       unhands,
     })
-  ).resolves.toEqual(maskedGame)
+  ).resolves.toEqual(resolvedGame)
 
   expect(gameResolverFromObjectSpy.mock.calls).toEqual([
     [
@@ -172,14 +170,6 @@ async function testPlayUnitResolution({
           discarded: resolvedDiscarded,
           undiscarded: resolvedUndiscarded,
         },
-      },
-    ],
-  ])
-  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual([
-    [
-      {
-        game: resolvedGame,
-        userId,
       },
     ],
   ])

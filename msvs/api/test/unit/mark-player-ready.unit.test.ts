@@ -84,7 +84,7 @@ describe('mark-player-ready', () => {
         userId,
         expectedReadyUserIds: [userId.toString(), opponentId.toString()],
         expectedStatus: GameStatus.Playing,
-        debugCalls: [[`${logPrefix} has all players ready, starting first round.`]],
+        debugCalls: [[`${logPrefix} all players ready, setting game status to "${GameStatus.Playing}"`]],
       })
     })
     it('logs to trace if enabled', () => {
@@ -173,7 +173,7 @@ describe('mark-player-ready', () => {
         userId,
         expectedReadyUserIds: [opponentId.toString(), userId.toString()],
         expectedStatus: GameStatus.Playing,
-        debugCalls: [[`${logPrefix} has all players ready, starting first round.`]],
+        debugCalls: [[`${logPrefix} all players ready, setting game status to "${GameStatus.Playing}"`]],
       })
     })
     it('logs to trace if enabled', () => {
@@ -264,24 +264,8 @@ function testMarkPlayerReady({
       return {
         ...player,
         ready: expectedReadyUserIds.includes(player.user.toString()) ? true : false,
-        rounds:
-          expectedStatus === GameStatus.Playing
-            ? [
-                ...player.rounds,
-                {
-                  close: TestUtil.getDbPlayerCombatRow({}),
-                  moves: [],
-                  passed: false,
-                  ranged: TestUtil.getDbPlayerCombatRow({}),
-                  score: 0,
-                  siege: TestUtil.getDbPlayerCombatRow({}),
-                  weathers: [],
-                },
-              ]
-            : player.rounds,
       }
     }),
-    round: expectedStatus === GameStatus.Playing ? origGame.round + 1 : origGame.round,
     status: expectedStatus,
   })
   expect(errorSpy.mock.calls).toEqual(errorCalls)

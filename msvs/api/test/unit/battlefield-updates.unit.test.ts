@@ -462,6 +462,66 @@ describe('battlefield-updates', () => {
     })
   })
   describe('addNewUnitToBattlefield', () => {
+    const logPrefix = 'log-prefix'
+    describe('invalid', () => {
+      it('throws error if unit not found in discard', () => {
+        const newDeckUnit = TestUtil.getDbDeckUnit({})
+        const newUnit = TestUtil.getDbUnit({})
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [],
+          }),
+          rounds: [TestUtil.getDbPlayerRound({})],
+          reviving: true,
+        })
+        const opponent = TestUtil.getDbGamePlayer({
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        const game = TestUtil.getDbGame({
+          players: [self, opponent],
+          round: 1,
+          turn: self.user,
+        })
+        const message = `Could not find unit "${newDeckUnit.unit}" in discard to play`
+
+        testAddNewUnitToBattlefield({
+          logPrefix,
+          game,
+          newDeckUnit,
+          newUnit,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, "${JSON.stringify(game)}"`]],
+        })
+      })
+      it('throws error if unit not found in hand', () => {
+        const newDeckUnit = TestUtil.getDbDeckUnit({})
+        const newUnit = TestUtil.getDbUnit({})
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [],
+          }),
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        const opponent = TestUtil.getDbGamePlayer({
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        const game = TestUtil.getDbGame({
+          players: [self, opponent],
+          round: 1,
+          turn: self.user,
+        })
+        const message = `Could not find unit "${newDeckUnit.unit}" in hand to play`
+
+        testAddNewUnitToBattlefield({
+          logPrefix,
+          game,
+          newDeckUnit,
+          newUnit,
+          expected: Error(`${message}.`),
+          errorCalls: [[`${logPrefix} failed: ${message}, "${JSON.stringify(game)}"`]],
+        })
+      })
+    })
     describe('close combat', () => {
       const combat = Combat.Close
       describe('only unit', () => {
@@ -502,6 +562,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -547,6 +608,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -606,6 +668,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -665,6 +728,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -723,6 +787,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -781,6 +846,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -839,6 +905,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -892,6 +959,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -944,6 +1012,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1011,6 +1080,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1078,6 +1148,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1144,6 +1215,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1210,6 +1282,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1276,6 +1349,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1322,6 +1396,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1367,6 +1442,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1427,6 +1503,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1487,6 +1564,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1546,6 +1624,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1605,6 +1684,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1664,6 +1744,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1713,6 +1794,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1758,6 +1840,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1817,6 +1900,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1876,6 +1960,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1934,6 +2019,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -1992,6 +2078,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2050,6 +2137,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2103,6 +2191,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2155,6 +2244,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2222,6 +2312,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2289,6 +2380,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2355,6 +2447,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2421,6 +2514,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2487,6 +2581,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2533,6 +2628,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2578,6 +2674,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2638,6 +2735,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2698,6 +2796,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2757,6 +2856,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2816,6 +2916,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2875,6 +2976,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2924,6 +3026,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -2969,6 +3072,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3028,6 +3132,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3087,6 +3192,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3145,6 +3251,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3203,6 +3310,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3261,6 +3369,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3314,6 +3423,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3366,6 +3476,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3433,6 +3544,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3500,6 +3612,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3566,6 +3679,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3632,6 +3746,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3698,6 +3813,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3744,6 +3860,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3789,6 +3906,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3849,6 +3967,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3909,6 +4028,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -3968,6 +4088,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4027,6 +4148,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4086,6 +4208,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4135,6 +4258,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4180,6 +4304,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4225,6 +4350,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4270,6 +4396,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4315,6 +4442,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4368,6 +4496,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4420,6 +4549,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4473,6 +4603,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4526,6 +4657,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4578,6 +4710,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4624,6 +4757,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4669,6 +4803,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4715,6 +4850,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4761,6 +4897,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4806,6 +4943,7 @@ describe('battlefield-updates', () => {
           }
 
           testAddNewUnitToBattlefield({
+            logPrefix,
             combat,
             game,
             newDeckUnit,
@@ -4971,6 +5109,7 @@ async function testModifyBattlefieldWithNewUnit({
       {
         combat,
         game,
+        logPrefix,
         newDeckUnit,
         newUnit,
         weather: isWeather,
@@ -5086,29 +5225,54 @@ function testAddNewUnitToBattlefield({
   combat,
   newDeckUnit,
   newUnit,
+  logPrefix,
   weather = false,
   spy = false,
   game,
   expected,
+  errorCalls = [],
 }: {
-  combat: Combat | null
+  combat?: Combat | null
   newDeckUnit: DeckUnitDbObject
   newUnit: UnitDbObject
+  logPrefix: string
   weather?: boolean
   spy?: boolean
   game: GameDbObject
-  expected: GameDbObject
+  expected: GameDbObject | Error
+  errorCalls?: string[][]
 }) {
-  expect(
-    BattlefieldUpdates.addNewUnitToBattlefield({
-      combat,
-      game,
-      newDeckUnit,
-      newUnit,
-      weather,
-      spy,
-    })
-  ).toEqual(undefined)
+  const errorSpy = jest.fn().mockImplementation()
+  BattlefieldUpdates['logger'] = {
+    error: errorSpy,
+  } as any
 
-  expect(game).toEqual(expected)
+  if (expected instanceof Error) {
+    expect(() =>
+      BattlefieldUpdates.addNewUnitToBattlefield({
+        combat,
+        game,
+        logPrefix,
+        newDeckUnit,
+        newUnit,
+        weather,
+        spy,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      BattlefieldUpdates.addNewUnitToBattlefield({
+        combat,
+        game,
+        logPrefix,
+        newDeckUnit,
+        newUnit,
+        weather,
+        spy,
+      })
+    ).toEqual(undefined)
+    expect(game).toEqual(expected)
+  }
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

@@ -64,6 +64,29 @@ describe('impact-resolver', () => {
         errorCalls: [[`${message}, impact: "${JSON.stringify(impact)}"`]],
       })
     })
+    it('throws error if scope user not found', async () => {
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+        scope: new ObjectId(),
+      }
+      const message = `Could not find impact scope user "${impact.scope?.toString()}"`
+      await testFromObject({
+        impact,
+        resolvedUnits: [
+          TestUtil.getUnit({
+            id: impact.unit?.unit,
+          }),
+        ],
+        resolvedUsers: [
+          TestUtil.getUser({
+            id: impact.user,
+          }),
+        ],
+        expected: Error(`${message}.`),
+        errorCalls: [[`${message}, impact: "${JSON.stringify(impact)}"`]],
+      })
+    })
     it('reaches out to resolve users and units if not provided without impact unit', async () => {
       const unit = TestUtil.getUnit({})
       const impact: ImpactDbObject = {
@@ -191,6 +214,35 @@ describe('impact-resolver', () => {
             origin,
             user: sourceUser,
           },
+        },
+      })
+    })
+    it('returns scope user if set', async () => {
+      const impactUser = TestUtil.getUser({})
+      const scopeUser = TestUtil.getUser({})
+      const unit = TestUtil.getUnit({})
+      const fieldUnit = TestUtil.getFieldUnit({
+        unit,
+      })
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({
+          artStyle: fieldUnit.artStyle,
+          effectiveStrength: fieldUnit.effectiveStrength,
+          id: fieldUnit.unit.id,
+          row: fieldUnit.row,
+        }),
+        scope: new ObjectId(scopeUser.id),
+        user: new ObjectId(impactUser.id),
+      }
+      await testFromObject({
+        impact,
+        resolvedUsers: [impactUser, scopeUser],
+        resolvedUnits: [unit],
+        resolvedGameUnit: fieldUnit,
+        expected: {
+          unit: fieldUnit,
+          user: impactUser,
+          scope: scopeUser,
         },
       })
     })

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
-import FactionResolver from './faction-resolver'
 import {
+  Faction,
   GameUnit,
   Leader,
   Move,
@@ -10,6 +10,7 @@ import {
   User,
   Unit,
 } from '@gwent-oss/graphql-schema/resolver-typings'
+import FactionResolver from './faction-resolver'
 import GameUnitResolver from './game-unit-resolver'
 import ImpactResolver from './impact-resolver'
 import LeaderResolver from './leader-resolver'
@@ -35,6 +36,7 @@ export default class MoveResolver {
    * @param config The configuration used to resolve the Move.
    * @param config.move The database object to resolve to its GraphQL type.
    * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the database to resolve.
+   * @param config.faction An optional pre-resolved Faction. If not specified, will retreive the Faction from the database to resolve.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @returns The resolved Move object matching its GraphQL schema definition.
@@ -43,11 +45,13 @@ export default class MoveResolver {
   static async fromObject({
     move,
     leader,
+    faction,
     units,
     users,
   }: {
     move: MoveDbObject
     leader?: Leader
+    faction?: Faction
     units?: Unit[]
     users?: User[]
   }): Promise<Move> {
@@ -60,9 +64,11 @@ export default class MoveResolver {
       })
       return {
         created: factionMove.created,
-        faction: await FactionResolver.fromId({
-          id: factionMove.faction,
-        }),
+        faction:
+          faction ||
+          (await FactionResolver.fromId({
+            id: factionMove.faction,
+          })),
         impacts: await ImpactResolver.fromArray({
           impacts: factionMove.impacts,
           units: resolvedUnits,
@@ -189,6 +195,7 @@ export default class MoveResolver {
     })
 
     const leaderIds: string[] = []
+    const factionIds: string[] = []
     for (const move of moves) {
       if (move.type === MoveType.Leader) {
         const leaderMove = move as MoveLeaderDbObject
@@ -196,15 +203,25 @@ export default class MoveResolver {
         if (!leaderIds.includes(leaderId)) {
           leaderIds.push(leaderId)
         }
+      } else if (move.type === MoveType.Faction) {
+        const factionMove = move as MoveFactionDbObject
+        const factionId = factionMove.faction.toString()
+        if (!factionIds.includes(factionId)) {
+          factionIds.push(factionId)
+        }
       }
     }
     const resolvedLeaders = await LeaderResolver.fromIds({
       ids: leaderIds,
     })
+    const resolvedFactions = await FactionResolver.fromIds({
+      ids: factionIds,
+    })
 
     const resolvedMoves: Move[] = []
     for (const move of moves) {
       let leader: Leader | undefined = undefined
+      let faction: Faction | undefined = undefined
       if (move.type === MoveType.Leader) {
         const leaderMove = move as MoveLeaderDbObject
         leader = resolvedLeaders.find((leader) => leader.id === leaderMove.leader.toString())
@@ -213,11 +230,20 @@ export default class MoveResolver {
           MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
           throw Error(`${message}.`)
         }
+      } else if (move.type === MoveType.Faction) {
+        const factionMove = move as MoveFactionDbObject
+        faction = resolvedFactions.find((faction) => faction.id === factionMove.faction.toString())
+        if (!faction) {
+          const message = `Could not find move faction "${factionMove.faction}"`
+          MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
+          throw Error(`${message}.`)
+        }
       }
       resolvedMoves.push(
         await MoveResolver.fromObject({
           move,
           leader,
+          faction,
           units: resolvedUnits,
           users: resolvedUsers,
         })

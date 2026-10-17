@@ -38,7 +38,7 @@ export default function getNoImpactMessage({
   } else if (effectKey === EffectKey.Weather) {
     return 'No eligible units on battlefield to weaken.'
   } else if (factionKey === FactionKey.Monsters) {
-    return 'No unit in play at end of last round.'
+    return 'No unit in play at end of previous round.'
   } else if (factionKey === FactionKey.NilfgaardianEmpire) {
     return 'Canceled out by another player with same faction.'
   } else if (factionKey === FactionKey.NorthernRealms) {

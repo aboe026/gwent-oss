@@ -9,12 +9,12 @@ export default function ordinalizeNumber(num: number): string {
 
   if (cardinal.endsWith('1') && !cardinal.endsWith('11')) {
     cardinal += 'st'
-  }
-  if (cardinal.endsWith('2') && !cardinal.endsWith('12')) {
+  } else if (cardinal.endsWith('2') && !cardinal.endsWith('12')) {
     cardinal += 'nd'
-  }
-  if (cardinal.endsWith('3') && !cardinal.endsWith('13')) {
+  } else if (cardinal.endsWith('3') && !cardinal.endsWith('13')) {
     cardinal += 'rd'
+  } else {
+    cardinal += 'th'
   }
 
   return cardinal

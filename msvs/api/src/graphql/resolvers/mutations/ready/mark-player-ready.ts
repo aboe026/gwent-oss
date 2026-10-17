@@ -37,7 +37,9 @@ export default class MarkPlayerReady {
           )
         }
         if (unreadyPlayers.length === 0) {
-          game.status = GameStatus.Playing
+          const playingStatus = GameStatus.Playing
+          MarkPlayerReady.logger.debug(`${logPrefix} all players ready, setting game status to "${playingStatus}"`)
+          game.status = playingStatus
         }
       }
     } else {

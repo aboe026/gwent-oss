@@ -269,8 +269,11 @@ describe('resolver-util', () => {
       TestUtil.getDbUnit({}),
       TestUtil.getDbUnit({}),
       TestUtil.getDbUnit({}),
+      TestUtil.getDbUnit({}),
     ]
     const users = [
+      TestUtil.getDbUser({}),
+      TestUtil.getDbUser({}),
       TestUtil.getDbUser({}),
       TestUtil.getDbUser({}),
       TestUtil.getDbUser({}),
@@ -364,6 +367,39 @@ describe('resolver-util', () => {
       TestUtil.getDbMove({
         type: MoveType.Leader,
       }),
+      TestUtil.getDbMove({
+        type: MoveType.Faction,
+      }),
+      TestUtil.getDbMove({
+        type: MoveType.Faction,
+        impacts: [
+          {
+            user: users[6]._id,
+            unit: TestUtil.getDbGameUnit({
+              id: units[6]._id,
+            }),
+          },
+        ],
+      }),
+      TestUtil.getDbMove({
+        type: MoveType.Faction,
+        impacts: [
+          {
+            user: users[4]._id,
+            unit: TestUtil.getDbGameUnit({
+              id: units[4]._id,
+            }),
+            scope: users[7]._id,
+          },
+          {
+            user: users[5]._id,
+            unit: TestUtil.getDbGameUnit({
+              id: units[5]._id,
+            }),
+            scope: users[6]._id,
+          },
+        ],
+      }),
     ]
     it('returns empty arrays if presolved are empty arrays', async () => {
       await testresolveUsersAndUnits({
@@ -450,7 +486,7 @@ describe('resolver-util', () => {
       })
     })
     it('reaches out to resolve units and users', async () => {
-      const usersSubset = [users[0], users[5], users[1], users[2], users[3]]
+      const usersSubset = [users[0], users[5], users[1], users[2], users[3], users[6], users[4], users[7]]
       const resolvedUnits = units.map((dbUnit) =>
         TestUtil.getUnitFromDbUnit({
           unit: dbUnit,
@@ -535,7 +571,7 @@ describe('resolver-util', () => {
       })
     })
     it('only resolves users if units presolved', async () => {
-      const usersSubset = [users[0], users[5], users[1], users[2], users[3]]
+      const usersSubset = [users[0], users[5], users[1], users[2], users[3], users[6], users[4], users[7]]
       const resolvedUnits = units.map((dbUnit) =>
         TestUtil.getUnitFromDbUnit({
           unit: dbUnit,
