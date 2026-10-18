@@ -1,62 +1,16 @@
-import AddDeckMutation from './mutations/add-deck/add-deck-mutation'
-import AddGameMutation from './mutations/add-game/add-game-mutation'
-import AddUserMutation from './mutations/add-user/add-user-mutation'
-import ApplicationQuery from './queries/application-query'
-import CurrentUserQuery from './queries/current-user-query'
-import DecksQuery from './queries/decks-query'
-import FactionsQuery from './queries/factions-query'
 import Fields from './fields/fields'
-import GameDeckQuery from './queries/game-deck-query'
-import GameQuery from './queries/game-query'
-import GamesQuery from './queries/games-query'
-import LeadersQuery from './queries/leaders-query'
-import LoginMutation from './mutations/login/login-mutation'
-import LogoutMutation from './mutations/logout/logout-mutation'
-import PlayPassMutation from './mutations/play-pass/play-pass-mutation'
-import PlayUnitMutation from './mutations/play-unit/play-unit-mutation'
-import ReadyMutation from './mutations/ready/ready-mutation'
-import RedrawMutation from './mutations/redraw/redraw-mutation'
+import Mutations from './mutations/mutations'
+import Queries from './queries/queries'
 import { Resolvers } from '@gwent-oss/graphql-schema/resolver-typings'
 import { scalars } from '@gwent-oss/graphql-schema'
-import SetDeckMutation from './mutations/set-deck/set-deck-mutation'
-import SetOrderMutation from './mutations/set-order/set-order-mutation'
-import SettingsQuery from './queries/settings-query'
 import SubscriptionResolver from './subscription-resolver'
-import UnitsQuery from './queries/units-query'
-import UsernameAvailableQuery from './queries/username-available'
 
 /**
  * The definition of all resolvers defined on the GraphQL schema.
  */
 export const resolvers: Resolvers = {
-  // TODO: refactor into ./mutations/mutations.ts and same for queries
-  Mutation: {
-    addDeck: async (parent, args, context, info) => AddDeckMutation.addDeckMutation(args, context, info),
-    addGame: async (parent, args, context, info) => AddGameMutation.addGameMutation(args, context, info),
-    addUser: async (parent, args, context, info) => AddUserMutation.addUserMutation(args, info),
-    login: async (parent, args, context, info) => LoginMutation.loginMutation(args, context, info),
-    logout: async (parent, args, context, info) => LogoutMutation.logoutMutation(context, info),
-    playPass: async (parent, args, context, info) => PlayPassMutation.playPassMutation(args, context, info),
-    playUnit: async (parent, args, context, info) => PlayUnitMutation.playUnitMutation(args, context, info),
-    ready: async (parent, args, context, info) => ReadyMutation.readyMutation(args, context, info),
-    redraw: async (parent, args, context, info) => RedrawMutation.redrawMutation(args, context, info),
-    setDeck: async (parent, args, context, info) => SetDeckMutation.setDeckMutation(args, context, info),
-    setOrder: async (parent, args, context, info) => SetOrderMutation.setOrderMutation(args, context, info),
-  },
-  Query: {
-    application: async (parent, args, context, info) => ApplicationQuery.application(context, info),
-    currentUser: async (parent, args, context, info) => CurrentUserQuery.currentUser(context, info),
-    decks: async (parent, args, context, info) => DecksQuery.decks(context, info),
-    factions: async (parent, args, context, info) => FactionsQuery.factions(args, context, info),
-    game: async (parent, args, context, info) => GameQuery.game(args, context, info),
-    gameDeck: async (parent, args, context, info) => GameDeckQuery.gameDeck(args, context, info),
-    games: async (parent, args, context, info) => GamesQuery.games(context, info),
-    leaders: async (parent, args, context, info) => LeadersQuery.leaders(args, context, info),
-    settings: async (parent, args, context, info) => SettingsQuery.settings(context, info),
-    units: async (parent, args, context, info) => UnitsQuery.units(args, context, info),
-    usernameAvailable: async (parent, args, context, info) =>
-      UsernameAvailableQuery.usernameAvailable(args, context, info),
-  },
+  Mutation: Mutations.getMutations(),
+  Query: Queries.getQueries(),
   Subscription: SubscriptionResolver.getResolvers(),
   ...Fields.getFields(),
   ...scalars,

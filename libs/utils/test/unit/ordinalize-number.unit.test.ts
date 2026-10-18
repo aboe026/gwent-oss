@@ -32,8 +32,7 @@ describe('ordinalize-number', () => {
     [102, '102nd'],
     [103, '103rd'],
     [104, '104th'],
-    // TODO: get test title correct
-  ])('returns %i for %i', (num, expected) => {
+  ])('given %i return %i', (num, expected) => {
     expect(ordinalizeNumber(num)).toEqual(expected)
   })
 })
