@@ -130,15 +130,6 @@ export default class SubscriptionResolver {
               nestedGamePath: 'game',
             })
         ),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: RoundEndedForDeckPayload, args: any, ctx: Context, info: any) => {
-          return SubscriptionResolver.scopeToUser({
-            ctx,
-            payload,
-            subscriptionName: 'roundEndedForDeck',
-            nestedGamePath: 'game',
-          })
-        },
       },
       unitPlayedFromDeck: {
         subscribe: withFilter(
@@ -157,15 +148,6 @@ export default class SubscriptionResolver {
               nestedGamePath: 'game',
             })
         ),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-        resolve: (payload: UnitPlayedFromDeckPayload, args: any, ctx: Context, info: any) => {
-          return SubscriptionResolver.scopeToUser({
-            ctx,
-            payload,
-            subscriptionName: 'unitPlayedFromDeck',
-            nestedGamePath: 'game',
-          })
-        },
       },
       unitPlayedOnGame: {
         subscribe: withFilter(
@@ -184,7 +166,6 @@ export default class SubscriptionResolver {
             ctx,
             payload,
             subscriptionName: 'unitPlayedOnGame',
-            nestedGamePath: 'game',
             nestedDiscardPath: 'discarded',
             nestedUndiscardPath: 'undiscarded',
             nestedUnhandPath: 'unhanded',
@@ -334,7 +315,6 @@ export default class SubscriptionResolver {
    * @param config.payload The payload to be returned to the Subscription.
    * @param config.ctx The context containing the User the Subscription will be returned to.
    * @param config.subscriptionName The name of the subscription being executed.
-   * @param config.nestedGamePath The optional path of the property within the payload which contains the game.
    * @param config.nestedDiscardPath The optional path of the property within the payload which contains the units added to the discard pile for the current player.
    * @param config.nestedUndiscardPath The optional path of the property within the payload which contains the units removed from the discard pile for the current player.
    * @param config.nestedUnhandPath The optional path of the property within the payload which contains the units removed from the hand pile for the current player.
@@ -344,7 +324,6 @@ export default class SubscriptionResolver {
     payload,
     ctx,
     subscriptionName,
-    nestedGamePath,
     nestedDiscardPath,
     nestedUndiscardPath,
     nestedUnhandPath,
@@ -352,7 +331,6 @@ export default class SubscriptionResolver {
     payload: any // eslint-disable-line @typescript-eslint/no-explicit-any
     ctx: Context
     subscriptionName: string
-    nestedGamePath?: string
     nestedDiscardPath?: string
     nestedUndiscardPath?: string
     nestedUnhandPath?: string
@@ -361,32 +339,15 @@ export default class SubscriptionResolver {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`${subscriptionName} scopeToUser payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`${subscriptionName} scopeToUser ctx: "${JSON.stringify(ctx)}"`)
-      SubscriptionResolver.logger.trace(`${subscriptionName} scopeToUser nestedGamePath: "${nestedGamePath}"`)
     }
-    const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`
     const userId = ctx.session?.user?._id.toString()
 
     if (!userId) {
       const message = `Could not find user in context for subscription "${subscriptionName}"`
-      SubscriptionResolver.logger.error(
-        `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
-      )
+      SubscriptionResolver.logger.error(`${message}, payload: "${JSON.stringify(payload)}"`)
       throw Error(`${message}.`)
     }
 
-    const game = getNestedProperty<Game>({
-      obj: payload,
-      nestedProperty,
-    })
-    if (!game) {
-      const message = `Could not find game in payload for subscription "${subscriptionName}"`
-      SubscriptionResolver.logger.error(
-        `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
-      )
-      throw Error(`${message}.`)
-    }
-
-    // TODO: can this be accomplished in field resolver like impact.unit?
     if (nestedDiscardPath && payload[subscriptionName][nestedDiscardPath]) {
       payload[subscriptionName][nestedDiscardPath] = payload[subscriptionName][nestedDiscardPath][userId] || []
     }

@@ -24,7 +24,6 @@ const factionName = "Scoia'tael"
 
 fixture('Lifecycle').page(env.BASE_URL)
 
-// TODO: use gameManager earlier in these tests?
 test('Speed Run', async (t) => {
   // user 1 sign up
   const username1 = `${getScenario(t)}-user-1-${t.ctx.start}`

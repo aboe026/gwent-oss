@@ -13,7 +13,6 @@ A list of things to be done in the future.
 Existing problems in the codebase that need to be fixed.
 
 - upgrade script for faction ability name changes.
-- E2E test northern realms ability with avenger effect at sime time
 
 - Medic sometimes does not show all cards that can be revived?
   - requires page refresh to fix, so must be problem with cache. Related to having lost cards from previous rounds interfering?
@@ -47,6 +46,7 @@ Existing problems in the codebase that need to be fixed.
 - have node-client export class instead of function (attempted to but lost typings)
 - restrict/filter subscriptions to just active game?
 - use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
+- move "scopeToUser" logic in subscription-resolver to be on "fields" resolver for subscription type
 - How to handle multiple spies in hand (e.g. decoying opponents spy into hand when already have same one in hand)? add "owner" property to GameUnit types?
 - improve UX around game player info (username, score, rounds, passed)
 - message to clear filters in DeckEditor when filter shows none

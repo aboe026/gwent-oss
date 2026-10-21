@@ -98,7 +98,6 @@ export default class EffectMuster {
       }
 
       for (const musterableUnit of musterableUnits) {
-        // TODO: E2E test for mustering roach and verifying Roach has no impacts
         if (
           musterableUnit.effects &&
           musterableUnit.effects.some((effect) => effect.toString() === musterEffect._id.toString())

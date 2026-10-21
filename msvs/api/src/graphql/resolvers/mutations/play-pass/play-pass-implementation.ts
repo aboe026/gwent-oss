@@ -45,13 +45,12 @@ export default class PlayPassImplementation {
    * @throws {PresentableError} if known problem playing pass.
    */
   static async playPassImplementation({ game, logPrefix, userId }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
-    const passingDate = new Date()
     passCurrentPlayer(game)
 
     UpdateHistory.addMoveToPlayer({
       game,
       move: {
-        created: passingDate,
+        created: new Date(),
         type: MoveType.Pass,
       } as MovePassDbObject,
       logPrefix,
@@ -96,7 +95,6 @@ export default class PlayPassImplementation {
         await PlayPassImplementation.summonAvengers({
           game,
           logPrefix,
-          passingDate,
           passingPlayerId: userId,
         })
       }
@@ -127,18 +125,15 @@ export default class PlayPassImplementation {
    * @param config The configuration used to determine potential avengers to summon.
    * @param config.game The game being passed on.
    * @param config.logPrefix What to prepend log statements with.
-   * @param config.passingDate The Date the passing move was played, so summoned avengers history time lines up with it.
    * @param config.passingPlayerId The ID of the player performing the pass for the round.
    */
   private static async summonAvengers({
     game,
     logPrefix,
-    passingDate,
     passingPlayerId,
   }: {
     game: GameDbObject
     logPrefix: string
-    passingDate: Date
     passingPlayerId: ObjectId
   }) {
     const previousRoundUnits = await getRoundUnits({
@@ -170,11 +165,12 @@ export default class PlayPassImplementation {
       logPrefix,
       removedGameUnits,
     })
+    const created = new Date()
     for (const avengerUnitId of Object.keys(avengers)) {
       const avengees = avengers[avengerUnitId]
       for (const avengee of avengees) {
         UpdateHistory.newUnitIndirect({
-          created: passingDate,
+          created,
           game,
           logPrefix,
           avengers: {

@@ -256,7 +256,6 @@ async function testPlayPassImplementation({
             {
               game,
               logPrefix,
-              passingDate,
               passingPlayerId: userId,
             },
           ],
@@ -306,7 +305,6 @@ async function testSummonAvengers({ avengers }: { avengers?: ImpactsByUnitId }) 
     round: 2,
   })
   const logPrefix = 'log-prefix'
-  const passingDate = new Date()
   const previousRoundUnits = [TestUtil.getDbUnit({})]
   const unitEffects = [TestUtil.getDbEffect({})]
   const avengedUnits = [TestUtil.getDbUnit({})]
@@ -326,12 +324,13 @@ async function testSummonAvengers({ avengers }: { avengers?: ImpactsByUnitId }) 
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
     .mockImplementation()
   const setGameScoresSpy = jest.spyOn(setGameScores, 'default').mockImplementation()
+  const created = new Date()
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
 
   await expect(
     PlayPassImplementation['summonAvengers']({
       game,
       logPrefix,
-      passingDate,
       passingPlayerId,
     })
   ).resolves.toEqual(undefined)
@@ -382,7 +381,7 @@ async function testSummonAvengers({ avengers }: { avengers?: ImpactsByUnitId }) 
       for (const avengee of avengees) {
         newUnitIndirectCalls.push([
           {
-            created: passingDate,
+            created,
             game,
             logPrefix,
             avengers: {
@@ -414,4 +413,5 @@ async function testSummonAvengers({ avengers }: { avengers?: ImpactsByUnitId }) 
     ],
   ])
   expect(setGameScoresSpy.mock.calls).toEqual([[game]])
+  expect(dateSpy.mock.calls).toEqual([[]])
 }

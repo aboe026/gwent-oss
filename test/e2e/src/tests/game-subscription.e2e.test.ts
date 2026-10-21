@@ -31,7 +31,6 @@ interface GameSubscriptionTestCtx extends E2eCtx {
 const fixture = getFixtureCtx<E2eCtx, GameSubscriptionTestCtx>()
 const test = getTestCtx<E2eCtx, GameSubscriptionTestCtx>()
 
-// TODO: switch to use gamemanager?
 fixture('Game Subscription')
   .page(HomePage.getUrl())
   .beforeEach(async (t) => {
