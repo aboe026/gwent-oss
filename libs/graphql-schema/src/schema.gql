@@ -288,7 +288,7 @@ type Impact @entity {
   unit: GameUnit @column(overrideType: "GameUnitDbObject")
   user: User! @column(overrideType: "ObjectId")
   source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
-  "A potential limit on who can see the GameUnit associated with the Impact. Used to prevent opponents from seeing GameUnits added to hand."
+  "A potential limit on who can see the GameUnit associated with the Impact. Used to prevent opponents seeing things they shouldn't, such as GameUnits added to hand."
   scope: User @column(overrideType: "ObjectId")
 }
 

@@ -1,4 +1,4 @@
-import { Document, Filter, ObjectId, WithoutId } from 'mongodb'
+import { Document, Filter, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { EffectDbObject, EffectKey } from '@gwent-oss/graphql-schema/database-typings'
@@ -18,7 +18,7 @@ export default class EffectStore extends Store {
    * @param config.ability The Ability the Effect possesses.
    * @param config.image The icon representing the Effect.
    * @param config.key The unique Key to identify the Effect.
-   * @param config.name The name of the Faction to add.
+   * @param config.name The name of the Effect to add.
    * @returns The Effect database document.
    */
   static async add({ ability, image, key, name }: AddEffectInput): Promise<EffectDbObject> {
@@ -64,6 +64,35 @@ export default class EffectStore extends Store {
     }
     return EffectStore.readMany<EffectDbObject[]>({ filter })
   }
+
+  /**
+   * Update an effect.
+   *
+   * @param options The options for the update.
+   * @param options.id The ObjectId of the effect to update.
+   * @param options.ability The ability to replace on the effect.
+   * @returns The updated effect database document.
+   */
+  static async edit({ id, ability }: EditEffectInput): Promise<EffectDbObject> {
+    EffectStore.logger.debug(`Editing effect with id "${id}"`)
+    const filter: Filter<Document> = {
+      _id: new ObjectId(id),
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {},
+    }
+    if (ability && update.$set) {
+      update.$set.ability = ability
+    }
+    if (EffectStore.logger.isTraceEnabled()) {
+      EffectStore.logger.trace(`edit filter for ID "${id}": "${JSON.stringify(filter)}"`)
+      EffectStore.logger.trace(`edit update for ID "${id}": "${JSON.stringify(update)}"`)
+    }
+    return EffectStore.update({
+      filter,
+      update,
+    })
+  }
 }
 
 export interface AddEffectInput {
@@ -76,4 +105,9 @@ export interface AddEffectInput {
 export interface GetEffectsInput {
   ids?: (string | ObjectId)[]
   keys?: EffectKey[]
+}
+
+export interface EditEffectInput {
+  id: string | ObjectId
+  ability?: string
 }

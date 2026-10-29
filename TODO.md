@@ -12,7 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- upgrade script for faction ability name changes.
+- Func tests for upgrade script (use old db dumps in downloads)
 
 - Medic sometimes does not show all cards that can be revived?
   - requires page refresh to fix, so must be problem with cache. Related to having lost cards from previous rounds interfering?
@@ -93,6 +93,7 @@ Existing problems in the codebase that need to be fixed.
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - replace "effectiveStrength" with "score" for GameUnit
   - rename "CalculateGameEffectiveStrengths" to just "UnitScores"
+  - update resource descriptions to use "score" instead of "strength"
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
   - update places in UI code which check user/player by ".name" and switch them to ".id"
 - Have "DateTime" on resolver object map to javascript Date object?
@@ -152,6 +153,10 @@ New things that should be added to the codebase.
 - "spectator" mode
   - allow anyone or select users to view game
   - hide Game Hands
+- Multi-opponent games
+- "War" game mode
+  - like Condottiere, series of battles over territories from the Witcher map
+  - change "game" references in UI/resources.json (and maybe API?) to "battle" instead
 - game history improvements
   - search bar (unit name?)
   - expand/collapse all

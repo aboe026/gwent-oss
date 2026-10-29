@@ -1,26 +1,26 @@
 [
   {
     "Name": "Monsters",
-    "Ability": "A random unit in play is carried over to the next round."
+    "Ability": "A random Unit (excluding opponents) remains on the battlefield between rounds."
   },
   {
     "Name": "Neutral"
   },
   {
     "Name": "Nilfgaardian Empire",
-    "Ability": "Wins any round that ends in a draw."
+    "Ability": "Win any round that ends in a draw (if only player with this faction)."
   },
   {
     "Name": "Northern Realms",
-    "Ability": "Draw a card if you win a round."
+    "Ability": "Hand a Unit from your Undrawn pile when you win a round."
   },
   {
     "Name": "Scoia'tael",
-    "Ability": "Decides who takes first turn."
+    "Ability": "Decide order turns are taken to start the game (if only player with this faction)."
   },
   {
     "Name": "Skellige",
     "DLC": "Blood and Wine",
-    "Ability": "Up to 2 random cards from your Lost pile are placed on the battlefield at the start of the third round."
+    "Ability": "Up to 2 random Units are revived from your Lost pile at the start of the third round."
   }
 ]

@@ -1,4 +1,4 @@
-import { Document, Filter, FindOptions, ObjectId, WithoutId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { LeaderDbObject } from '@gwent-oss/graphql-schema/database-typings'
@@ -99,25 +99,54 @@ export default class LeaderStore extends Store {
       ids: [id],
     })
     if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
+      LeaderStore.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
     }
     if (!leaders || leaders.length === 0) {
       const message = `Could not find leader with ID "${id}".`
-      this.logger.error(`${logPrefix} failed: ${message}`)
+      LeaderStore.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     if (leaders.length > 1) {
       const message = `Found more than 1 leader with ID "${id}"`
-      this.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
+      LeaderStore.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
       throw new PresentableError(message)
     }
     const leader = leaders[0]
     if (leader._id.toString() !== id.toString()) {
       const message = `Leader ID of "${leader._id}" does not match requestd ID of "${id}".`
-      this.logger.error(`${logPrefix} failed: ${message}`)
+      LeaderStore.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     return leader
+  }
+
+  /**
+   * Update a leader.
+   *
+   * @param options The options for the update.
+   * @param options.id The ObjectId of the leader to update.
+   * @param options.ability The ability to replace on the effect.
+   * @returns The updated leader database document.
+   */
+  static async edit({ id, ability }: EditLeaderInput): Promise<LeaderDbObject> {
+    LeaderStore.logger.debug(`Editing leader with id "${id}"`)
+    const filter: Filter<Document> = {
+      _id: new ObjectId(id),
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {},
+    }
+    if (ability && update.$set) {
+      update.$set.ability = ability
+    }
+    if (LeaderStore.logger.isTraceEnabled()) {
+      LeaderStore.logger.trace(`edit filter for ID "${id}": "${JSON.stringify(filter)}"`)
+      LeaderStore.logger.trace(`edit update for ID "${id}": "${JSON.stringify(update)}"`)
+    }
+    return LeaderStore.update({
+      filter,
+      update,
+    })
   }
 }
 
@@ -133,4 +162,9 @@ export interface AddLeaderInput {
 export interface GetLeadersInput {
   factionIds?: (string | ObjectId)[]
   ids?: (string | ObjectId)[]
+}
+
+export interface EditLeaderInput {
+  id: string | ObjectId
+  ability?: string
 }

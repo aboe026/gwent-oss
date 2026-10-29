@@ -70,17 +70,22 @@ export default class FactionStore extends Store {
    * @param options The options for the update.
    * @param options.id The ObjectId of the faction to update.
    * @param options.stats The new stats to replace on the faction.
+   * @param options.ability The ability to replace on the faction.
    * @returns The updated faction database document.
    */
-  static async edit({ id, stats }: EditFactionInput): Promise<FactionDbObject> {
+  static async edit({ id, stats, ability }: EditFactionInput): Promise<FactionDbObject> {
     FactionStore.logger.debug(`Editing faction with id "${id}"`)
     const filter: Filter<Document> = {
       _id: new ObjectId(id),
     }
     const update: UpdateFilter<Document> = {
-      $set: {
-        stats,
-      },
+      $set: {},
+    }
+    if (stats && update.$set) {
+      update.$set.stats = stats
+    }
+    if (ability && update.$set) {
+      update.$set.ability = ability
     }
     if (FactionStore.logger.isTraceEnabled()) {
       FactionStore.logger.trace(`edit filter for ID "${id}": "${JSON.stringify(filter)}"`)
@@ -167,7 +172,8 @@ export interface AddFactionInput {
 
 export interface EditFactionInput {
   id: string | ObjectId
-  stats: UnitStats
+  stats?: UnitStats
+  ability?: string
 }
 
 export interface GetFactionsInput {
