@@ -94,7 +94,7 @@ export default class LeaderStore extends Store {
    * @returns The leader with the given ID.
    * @throws {PresentableError} if there is a problem getting the leader.
    */
-  static async getById({ id, logPrefix }: { id: string | ObjectId; logPrefix: string }): Promise<LeaderDbObject> {
+  static async getById({ id, logPrefix = '' }: { id: string | ObjectId; logPrefix?: string }): Promise<LeaderDbObject> {
     const leaders = await LeaderStore.get({
       ids: [id],
     })
@@ -113,7 +113,7 @@ export default class LeaderStore extends Store {
     }
     const leader = leaders[0]
     if (leader._id.toString() !== id.toString()) {
-      const message = `Leader ID of "${leader._id}" does not match requestd ID of "${id}".`
+      const message = `Leader ID of "${leader._id}" does not match requested ID of "${id}".`
       LeaderStore.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

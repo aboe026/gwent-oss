@@ -182,7 +182,7 @@ describe('faction-store', () => {
       const faction = TestUtil.getDbFaction({
         key: FactionKey.Monsters,
       })
-      const message = `Faction key of "${faction.key}" does not match requestd key of "${key}".`
+      const message = `Faction key of "${faction.key}" does not match requested key of "${key}".`
       await testGetByKey({
         key,
         logPrefix,

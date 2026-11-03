@@ -2,6 +2,7 @@ import { Document, Filter, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { EffectDbObject, EffectKey } from '@gwent-oss/graphql-schema/database-typings'
+import PresentableError from '../../util/presentable-error'
 import Store from './store'
 
 /**
@@ -63,6 +64,41 @@ export default class EffectStore extends Store {
       EffectStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
     return EffectStore.readMany<EffectDbObject[]>({ filter })
+  }
+
+  /**
+   * Gets an effect with the given key.
+   *
+   * @param config The configuration for getting the effect.
+   * @param config.key The key corresponding to the effect to get.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   * @returns The Effect database object with the given key.
+   * @throws {PresentableError} if there is a problem getting the effect.
+   */
+  static async getByKey({ key, logPrefix = '' }: { key: EffectKey; logPrefix?: string }): Promise<EffectDbObject> {
+    const effects = await EffectStore.get({
+      keys: [key],
+    })
+    if (this.logger.isTraceEnabled()) {
+      this.logger.trace(`${logPrefix} effects: "${JSON.stringify(effects)}"`)
+    }
+    if (!effects || effects.length === 0) {
+      const message = `Could not find effect with key "${key}".`
+      this.logger.error(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+    if (effects.length > 1) {
+      const message = `Found more than 1 effect with key "${key}"`
+      this.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(effects)}"`)
+      throw new PresentableError(message)
+    }
+    const effect = effects[0]
+    if (effect.key !== key) {
+      const message = `Effect key of "${effects[0].key}" does not match requested key of "${key}".`
+      this.logger.error(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+    return effect
   }
 
   /**

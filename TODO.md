@@ -12,7 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- Func tests for upgrade script (use old db dumps in downloads)
+- change "Undrawn pile" to "Draw pile" in faction/effect/leader ability text
 
 - Medic sometimes does not show all cards that can be revived?
   - requires page refresh to fix, so must be problem with cache. Related to having lost cards from previous rounds interfering?

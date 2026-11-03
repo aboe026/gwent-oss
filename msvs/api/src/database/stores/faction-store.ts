@@ -135,7 +135,7 @@ export default class FactionStore extends Store {
    * @returns The Faction database object with the given key.
    * @throws {PresentableError} if there is a problem getting the faction.
    */
-  static async getByKey({ key, logPrefix }: { key: FactionKey; logPrefix: string }): Promise<FactionDbObject> {
+  static async getByKey({ key, logPrefix = '' }: { key: FactionKey; logPrefix?: string }): Promise<FactionDbObject> {
     const factions = await FactionStore.get({
       keys: [key],
     })
@@ -154,7 +154,7 @@ export default class FactionStore extends Store {
     }
     const faction = factions[0]
     if (faction.key !== key) {
-      const message = `Faction key of "${factions[0].key}" does not match requestd key of "${key}".`
+      const message = `Faction key of "${factions[0].key}" does not match requested key of "${key}".`
       this.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

@@ -161,7 +161,7 @@ describe('leader-store', () => {
     })
     it('throws error if returned leader id does not match', async () => {
       const leader = TestUtil.getDbLeader({})
-      const message = `Leader ID of "${leader._id}" does not match requestd ID of "${id}".`
+      const message = `Leader ID of "${leader._id}" does not match requested ID of "${id}".`
       await testGetById({
         id: id,
         logPrefix,
