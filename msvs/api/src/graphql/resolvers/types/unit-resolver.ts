@@ -2,6 +2,7 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Combat, Effect, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
+import { CONJUNCTION, prettyPrintList } from '../../../util/string-util'
 import {
   DlcDbObject,
   EffectDbObject,
@@ -16,7 +17,6 @@ import EffectStore from '../../../database/stores/effect-store'
 import FactionResolver from './faction-resolver'
 import FactionStore from '../../../database/stores/faction-store'
 import { getUniqueItems, toTitleCase } from '@gwent-oss/utils'
-import { prettyPrintList } from '../../../util/string-util'
 import UnitStore from '../../../database/stores/unit-store'
 import Verifier from '../../../util/verifier'
 
@@ -222,24 +222,25 @@ export default class UnitResolver {
         if (effect.key === EffectKey.Weather) {
           if (unit.combats && unit.combats.length > 0) {
             ability = effect.ability.replace(
-              'given row(s)',
+              'given Row(s)',
               prettyPrintList({
                 items: unit.combats.map((combat) => toTitleCase(combat)),
-                labelPlural: 'rows',
-                labelSingular: 'row',
+                labelPlural: 'combat Row',
+                labelSingular: 'combat Row',
+                conjunction: CONJUNCTION.Or,
               })
             )
           } else {
-            ability = 'Remove all weather effects which are active on the battlefield, including your own.'
+            ability = 'Remove all Weather effects which are active on the battlefield (including your own).'
           }
         } else if (effect.key === EffectKey.Muster && unit.effectPrefix) {
           ability = effect.ability.replace('same name', `"${unit.effectPrefix}" prefix`)
         } else if (effect.key === EffectKey.Scorch) {
           if (unit.scorchScope) {
             const combat = toTitleCase(unit.scorchScope)
-            ability = `Destroys your enemy's strongest ${combat} Combat unit(s)`
+            ability = `Send opponents strongest Unit(s) on their ${combat} combat Row to their Lost pile`
             if (unit.scorchMin) {
-              ability += ` if the combined strength of all their ${combat} Combat units is ${unit.scorchMin} or more`
+              ability += ` if their ${combat} combat Row score is ${unit.scorchMin} or more`
             }
             ability += '.'
           }

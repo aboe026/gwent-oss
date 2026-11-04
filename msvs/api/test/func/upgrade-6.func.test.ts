@@ -426,15 +426,15 @@ async function verifyUpdatedResources() {
   const effects = await EffectStore.get({})
   expect(effects.find((effect) => effect.key === EffectKey.Agile)).toHaveProperty(
     'ability',
-    'Place in either the Close or Ranged combat Rows.'
+    'Place in either the Close or Ranged combat Row.'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Avenger)).toHaveProperty(
     'ability',
-    'When sent to the Lost pile, a powerful new Unit is summoned to the battlefield.'
+    'When sent to the Lost pile, summon a powerful new Unit to the battlefield.'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Berserker)).toHaveProperty(
     'ability',
-    'Transform into a bear when a Mardroeme is on its row.'
+    'Transform into a bear when a Mardroeme is on its Row.'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Bond)).toHaveProperty(
     'ability',
@@ -446,11 +446,11 @@ async function verifyUpdatedResources() {
   )
   expect(effects.find((effect) => effect.key === EffectKey.Horn)).toHaveProperty(
     'ability',
-    'Double the strength of all Units in that row (limited to 1 per row).'
+    'Double the strength of all Units in that Row (limited to 1 per Row).'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Mardroeme)).toHaveProperty(
     'ability',
-    'Trigger transformation of all (including future) Berserkers on the same row.'
+    'Trigger transformation of all (including future) Berserkers in the same Row.'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Medic)).toHaveProperty(
     'ability',
@@ -458,7 +458,7 @@ async function verifyUpdatedResources() {
   )
   expect(effects.find((effect) => effect.key === EffectKey.Morale)).toHaveProperty(
     'ability',
-    'Add +1 to all Units in the row (excluding itself).'
+    'Increase strength by 1 of all Units in the same Row (excluding itself).'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Muster)).toHaveProperty(
     'ability',
@@ -466,7 +466,7 @@ async function verifyUpdatedResources() {
   )
   expect(effects.find((effect) => effect.key === EffectKey.Scorch)).toHaveProperty(
     'ability',
-    'Send the highest strength Unit(s) on the battlefield to their respective players Lost pile.'
+    'Send the strongest Unit(s) on the battlefield to their respective players Lost pile.'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Spy)).toHaveProperty(
     'ability',
@@ -474,7 +474,7 @@ async function verifyUpdatedResources() {
   )
   expect(effects.find((effect) => effect.key === EffectKey.Weather)).toHaveProperty(
     'ability',
-    'Reduce the strength of all Units in the given Row(s) on the battlefield to 1, including your own.'
+    'Reduce the strength of all Units in a given Row(s) on the battlefield to 1 (including your own).'
   )
 
   const leaders = await LeaderStore.get({})
@@ -548,7 +548,7 @@ async function verifyUpdatedResources() {
   )
   expect(leaders.find((leader) => leader.name === 'Francesca Findabair Hope of the Aen Seidhe')).toHaveProperty(
     'ability',
-    'Move Agile units to whichever valid row maximizes their strength.'
+    'Move Agile units to whichever valid Row maximizes their strength.'
   )
   expect(leaders.find((leader) => leader.name === 'Francesca Findabair Pureblood Elf')).toHaveProperty(
     'ability',
