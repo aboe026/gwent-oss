@@ -411,7 +411,7 @@ async function verifyUpdatedResources() {
   )
   expect(factions.find((faction) => faction.key === FactionKey.NorthernRealms)).toHaveProperty(
     'ability',
-    'Hand a Unit from your Undrawn pile when you win a round.'
+    'Hand a Unit from your Draw pile when you win a round.'
   )
   expect(factions.find((faction) => faction.key === FactionKey.ScoiaTael)).toHaveProperty(
     'ability',
@@ -462,7 +462,7 @@ async function verifyUpdatedResources() {
   )
   expect(effects.find((effect) => effect.key === EffectKey.Muster)).toHaveProperty(
     'ability',
-    'Summon any Units with the same name from your Hand or Undrawn pile to the battlefield.'
+    'Summon any Units with the same name from your Hand or Draw pile to the battlefield.'
   )
   expect(effects.find((effect) => effect.key === EffectKey.Scorch)).toHaveProperty(
     'ability',
@@ -470,7 +470,7 @@ async function verifyUpdatedResources() {
   )
   expect(effects.find((effect) => effect.key === EffectKey.Spy)).toHaveProperty(
     'ability',
-    "Place on an opponent's battlefield (counts towards their total) and Hand up to 2 random Units from your Undrawn pile."
+    "Place on an opponent's battlefield (counts towards their total) and Hand up to 2 random Units from your Draw pile."
   )
   expect(effects.find((effect) => effect.key === EffectKey.Weather)).toHaveProperty(
     'ability',
@@ -480,7 +480,7 @@ async function verifyUpdatedResources() {
   const leaders = await LeaderStore.get({})
   expect(leaders.find((leader) => leader.name === 'Crach an Craite')).toHaveProperty(
     'ability',
-    "Shuffle all Units from each player's Lost pile back into their Undrawn pile."
+    "Shuffle all Units from each player's Lost pile back into their Draw pile."
   )
   expect(leaders.find((leader) => leader.name === 'Emhyr var Emreis Emperor of Nilfgaard')).toHaveProperty(
     'ability',
@@ -488,7 +488,7 @@ async function verifyUpdatedResources() {
   )
   expect(leaders.find((leader) => leader.name === 'Emhyr var Emreis His Imperial Majesty')).toHaveProperty(
     'ability',
-    'Move a Torrential Rain from your Undrawn pile to the battlefield.'
+    'Move a Torrential Rain from your Draw pile to the battlefield.'
   )
   expect(leaders.find((leader) => leader.name === 'Emhyr var Emreis Invader of the North')).toHaveProperty(
     'ability',
@@ -516,15 +516,15 @@ async function verifyUpdatedResources() {
   )
   expect(leaders.find((leader) => leader.name === 'Eredin Destroyer of Worlds')).toHaveProperty(
     'ability',
-    'Remove 2 Units from Hand to Lost pile and move 1 Unit from Undrawn pile to Hand.'
+    'Remove 2 Units from Hand to Lost pile and move 1 Unit from Draw pile to Hand.'
   )
   expect(leaders.find((leader) => leader.name === 'Eredin King of the Wild Hunt')).toHaveProperty(
     'ability',
-    'Move a Weather Unit from your Undrawn pile to the battlefield.'
+    'Move a Weather Unit from your Draw pile to the battlefield.'
   )
   expect(leaders.find((leader) => leader.name === 'Foltest King of Temeria')).toHaveProperty(
     'ability',
-    'Move an Impenetrable Fog from your Undrawn pile to the battlefield.'
+    'Move an Impenetrable Fog from your Draw pile to the battlefield.'
   )
   expect(leaders.find((leader) => leader.name === 'Foltest Lord Commander of the North')).toHaveProperty(
     'ability',
@@ -552,7 +552,7 @@ async function verifyUpdatedResources() {
   )
   expect(leaders.find((leader) => leader.name === 'Francesca Findabair Pureblood Elf')).toHaveProperty(
     'ability',
-    'Move a Biting Frost from your Undrawn pile to the battlefield.'
+    'Move a Biting Frost from your Draw pile to the battlefield.'
   )
   expect(leaders.find((leader) => leader.name === 'Francesca Findabair Queen of Dol Blathanna')).toHaveProperty(
     'ability',

@@ -3,7 +3,7 @@
     "Name": "Crach an Craite",
     "Faction": "Skellige",
     "DLC": "Blood and Wine",
-    "Ability": "Shuffle all Units from each player's Lost pile back into their Undrawn pile.",
+    "Ability": "Shuffle all Units from each player's Lost pile back into their Draw pile.",
     "Quote": "\"A king's gotta be wise. A king's gotta command respect. A king's gotta have stones.\""
   },
   {
@@ -15,7 +15,7 @@
   {
     "Name": "Emhyr var Emreis His Imperial Majesty",
     "Faction": "Nilfgaardian Empire",
-    "Ability": "Move a Torrential Rain from your Undrawn pile to the battlefield.",
+    "Ability": "Move a Torrential Rain from your Draw pile to the battlefield.",
     "Quote": "\"The skies wept when my Pavetta died. They will not weep for me.\""
   },
   {
@@ -59,19 +59,19 @@
   {
     "Name": "Eredin Destroyer of Worlds",
     "Faction": "Monsters",
-    "Ability": "Remove 2 Units from Hand to Lost pile and move 1 Unit from Undrawn pile to Hand.",
+    "Ability": "Remove 2 Units from Hand to Lost pile and move 1 Unit from Draw pile to Hand.",
     "Quote": "\"It is unavoidable.\""
   },
   {
     "Name": "Eredin King of the Wild Hunt",
     "Faction": "Monsters",
-    "Ability": "Move a Weather Unit from your Undrawn pile to the battlefield.",
+    "Ability": "Move a Weather Unit from your Draw pile to the battlefield.",
     "Quote": "\"I've long awaited this…\""
   },
   {
     "Name": "Foltest King of Temeria",
     "Faction": "Northern Realms",
-    "Ability": "Move an Impenetrable Fog from your Undrawn pile to the battlefield.",
+    "Ability": "Move an Impenetrable Fog from your Draw pile to the battlefield.",
     "Quote": "\"It is natural and beautiful that a man should love his sister.\""
   },
   {
@@ -115,7 +115,7 @@
   {
     "Name": "Francesca Findabair Pureblood Elf",
     "Faction": "Scoia'tael",
-    "Ability": "Move a Biting Frost from your Undrawn pile to the battlefield.",
+    "Ability": "Move a Biting Frost from your Draw pile to the battlefield.",
     "Quote": "\"Ash shall fertilize the soil. By spring, the valley shall bloom once more.\""
   },
   {

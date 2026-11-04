@@ -37,7 +37,7 @@
   },
   {
     "Name": "Muster",
-    "Ability": "Summon any Units with the same name from your Hand or Undrawn pile to the battlefield."
+    "Ability": "Summon any Units with the same name from your Hand or Draw pile to the battlefield."
   },
   {
     "Name": "Scorch",
@@ -45,7 +45,7 @@
   },
   {
     "Name": "Spy",
-    "Ability": "Place on an opponent's battlefield (counts towards their total) and Hand up to 2 random Units from your Undrawn pile."
+    "Ability": "Place on an opponent's battlefield (counts towards their total) and Hand up to 2 random Units from your Draw pile."
   },
   {
     "Name": "Weather",
