@@ -49,6 +49,6 @@
   },
   {
     "Name": "Weather",
-    "Ability": "Reduce the strength of all Units in a given Row(s) on the battlefield to 1 (including your own)."
+    "Ability": "Reduce the strength of any Units in a given Row(s) on the battlefield to 1 (including your own)."
   }
 ]
