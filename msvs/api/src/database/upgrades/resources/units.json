@@ -48,7 +48,7 @@
   },
   {
     "Name": "Ballista",
-    "Occurrences": 1,
+    "Occurrences": 2,
     "Deckable": "Yes",
     "Faction": "Northern Realms",
     "Hero": "No",
@@ -318,7 +318,7 @@
   },
   {
     "Name": "Clear Weather",
-    "Occurrences": 2,
+    "Occurrences": 3,
     "Deckable": "Yes",
     "Faction": "Neutral",
     "Hero": "No",
@@ -989,7 +989,7 @@
   },
   {
     "Name": "Kaedweni Siege Expert",
-    "Occurrences": 1,
+    "Occurrences": 3,
     "Deckable": "Yes",
     "Faction": "Northern Realms",
     "Hero": "No",
@@ -1572,7 +1572,7 @@
   },
   {
     "Name": "Torrential Rain",
-    "Occurrences": 2,
+    "Occurrences": 3,
     "Deckable": "Yes",
     "Faction": "Neutral",
     "Hero": "No",
