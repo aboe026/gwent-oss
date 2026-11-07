@@ -26,6 +26,7 @@ export default class EffectResolver {
       image: effect.image,
       key: effect.key as EffectKey,
       name: effect.name,
+      updated: effect.updated,
     }
   }
 

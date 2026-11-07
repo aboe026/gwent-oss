@@ -22,11 +22,13 @@ export default class DlcStore extends Store {
    */
   static async add({ image, key, name }: AddDlcInput): Promise<DlcDbObject> {
     DlcStore.logger.debug(`Adding DLC with name "${name}"`)
+    const created = new Date()
     const dlc: WithoutId<DlcDbObject> = {
-      created: new Date(),
+      created,
       image,
       key,
       name,
+      updated: created,
     }
     if (DlcStore.logger.isTraceEnabled()) {
       DlcStore.logger.trace(`Adding dlc: "${JSON.stringify(dlc)}"`)

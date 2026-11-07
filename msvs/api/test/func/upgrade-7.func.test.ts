@@ -14,8 +14,8 @@ import EffectStore from '../../src/database/stores/effect-store'
 import FactionStore from '../../src/database/stores/faction-store'
 import LeaderStore from '../../src/database/stores/leader-store'
 
-describe('upgrade-6', () => {
-  const upgradeNumber = 6
+describe('upgrade-7', () => {
+  const upgradeNumber = 7
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
   })

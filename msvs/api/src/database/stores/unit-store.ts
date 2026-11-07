@@ -50,9 +50,10 @@ export default class UnitStore extends Store {
     strength,
   }: AddUnitInput): Promise<UnitDbObject> {
     UnitStore.logger.debug(`Adding unit with name "${name}"`)
+    const created = new Date()
     const unit: WithoutId<UnitDbObject> = {
       combats,
-      created: new Date(),
+      created,
       deckable: !!deckable,
       dlc: dlc ? new ObjectId(dlc) : undefined,
       effectPrefix,
@@ -67,6 +68,7 @@ export default class UnitStore extends Store {
       scorchScope,
       special,
       strength,
+      updated: created,
     }
     if (UnitStore.logger.isTraceEnabled()) {
       UnitStore.logger.trace(`Adding unit: "${JSON.stringify(unit)}"`)

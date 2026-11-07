@@ -25,9 +25,10 @@ export default class FactionStore extends Store {
    */
   static async add({ ability, dlc, image, key, name }: AddFactionInput): Promise<FactionDbObject> {
     FactionStore.logger.debug(`Adding faction with name "${name}"`)
+    const created = new Date()
     const faction: WithoutId<FactionDbObject> = {
       ability,
-      created: new Date(),
+      created,
       dlc: dlc ? new ObjectId(dlc) : undefined,
       image,
       key,
@@ -57,6 +58,7 @@ export default class FactionStore extends Store {
         units: 0,
         weather: 0,
       },
+      updated: created,
     }
     if (FactionStore.logger.isTraceEnabled()) {
       FactionStore.logger.trace(`Adding faction: "${JSON.stringify(faction)}"`)

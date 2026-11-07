@@ -1,15 +1,18 @@
+import { Db } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import effects from './resources/effects.json'
+import DbConnector from '../db-connector'
+import DeckStore from '../stores/deck-store'
+import DlcStore from '../stores/dlc-store'
 import EffectStore from '../stores/effect-store'
-import factions from './resources/factions.json'
 import FactionStore from '../stores/faction-store'
-import leaders from './resources/leaders.json'
 import LeaderStore from '../stores/leader-store'
+import UnitStore from '../stores/unit-store'
 import Upgrade from './upgrade'
+import UserStore from '../stores/user-store'
 
 /**
- * Updates ability text for Effects, Factions and Leaders.
+ * Adds the "updated" field to collections missing it.
  */
 export default class Upgrade6 extends Upgrade {
   static logger = getLogger('Upgrade6')
@@ -19,68 +22,32 @@ export default class Upgrade6 extends Upgrade {
    */
   async run() {
     Upgrade6.logger.debug('Connecting to database')
-    Upgrade6.logger.debug('Updating ability text for Effects')
-    await Upgrade6.updateAbilities({
-      label: 'effect',
-      store: EffectStore,
-      newResources: effects,
-    })
-    Upgrade6.logger.debug('Updating ability text for Factions')
-    await Upgrade6.updateAbilities({
-      label: 'faction',
-      store: FactionStore,
-      newResources: factions,
-    })
-    Upgrade6.logger.debug('Updating ability text for Leaders')
-    await Upgrade6.updateAbilities({
-      label: 'leader',
-      store: LeaderStore,
-      newResources: leaders,
-    })
+    const db = await DbConnector.connect()
+    Upgrade6.logger.debug('Adding "updated" field to documents')
+
+    await Upgrade6.setCreateds(db, DeckStore.COLLECTION_NAME)
+    await Upgrade6.setCreateds(db, DlcStore.COLLECTION_NAME)
+    await Upgrade6.setCreateds(db, EffectStore.COLLECTION_NAME)
+    await Upgrade6.setCreateds(db, FactionStore.COLLECTION_NAME)
+    await Upgrade6.setCreateds(db, LeaderStore.COLLECTION_NAME)
+    await Upgrade6.setCreateds(db, UnitStore.COLLECTION_NAME)
+    await Upgrade6.setCreateds(db, UserStore.COLLECTION_NAME)
   }
 
   /**
-   * Update the abilities text for a given resource.
+   * Adds an "updated" field to all documents in a collection whose value is equal to their "created" field
    *
-   * @param config The configuration used to update the abilities for the resources.
-   * @param config.store The Store for the resource to interact with the database.
-   * @param config.newResources The JSON file containing new definitions for the resource.
-   * @param config.label What to label log statements with.
+   * @param db The Database instance to perform operations against.
+   * @param collectionName The name of the collection whose documents should get updated.
    */
-  private static async updateAbilities({
-    store,
-    newResources,
-    label,
-  }: {
-    store: typeof EffectStore | typeof FactionStore | typeof LeaderStore
-    newResources: {
-      Name: string
-      Ability?: string | undefined
-    }[]
-    label: string
-  }) {
-    const oldResources = await store.get({})
-    if (Upgrade6.logger.isTraceEnabled()) {
-      Upgrade6.logger.trace(`oldResources for "${label}": "${JSON.stringify(oldResources)}"`)
-    }
-    for (const oldResource of oldResources) {
-      const newResource = newResources.find((newResource) => newResource.Name === oldResource.name)
-      if (!newResource) {
-        const message = `Could not find current ${label} definition for database ${label} with name "${oldResource}"`
-        Upgrade6.logger.error(`${message}, ${label}s: "${JSON.stringify(factions)}"`)
-        throw Error(message)
-      }
-      if (oldResource.ability !== newResource.Ability) {
-        Upgrade6.logger.trace(`Updating ${label} "${oldResource._id}" to have ability text "${newResource.Ability}"`)
-        await store.edit({
-          id: oldResource._id,
-          ability: newResource.Ability,
-        })
-      } else {
-        Upgrade6.logger.trace(
-          `Not updating ${label} ability for "${oldResource._id}" since old ability "${oldResource.ability}" matches new ability "${newResource.Ability}"`
-        )
-      }
-    }
+  private static async setCreateds(db: Db, collectionName: string): Promise<void> {
+    Upgrade6.logger.trace(`Setting "updated" field equal to "created" field for "${collectionName}" documents`)
+    await db.collection(collectionName).updateMany({}, [
+      {
+        $set: {
+          updated: '$created',
+        },
+      },
+    ])
   }
 }

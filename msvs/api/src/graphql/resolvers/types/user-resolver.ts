@@ -23,6 +23,7 @@ export default class UserResolver {
       created: user.created,
       id: user._id.toString(),
       name: user.name,
+      updated: user.updated,
     }
   }
 

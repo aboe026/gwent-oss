@@ -26,14 +26,16 @@ export default class LeaderStore extends Store {
    */
   static async add({ ability, dlc, faction, image, name, quote }: AddLeaderInput): Promise<LeaderDbObject> {
     LeaderStore.logger.debug(`Adding leader with name "${name}"`)
+    const created = new Date()
     const leader: WithoutId<LeaderDbObject> = {
       ability,
-      created: new Date(),
+      created,
       dlc: dlc ? new ObjectId(dlc) : undefined,
       faction: new ObjectId(faction),
       image,
       name,
       quote,
+      updated: created,
     }
     if (LeaderStore.logger.isTraceEnabled()) {
       LeaderStore.logger.trace(`Adding leader: "${JSON.stringify(leader)}"`)

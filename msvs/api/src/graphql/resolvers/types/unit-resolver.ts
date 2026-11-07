@@ -76,6 +76,7 @@ export default class UnitResolver {
       scorchScope: unit.scorchScope as Combat | undefined,
       special: unit.special,
       strength: unit.strength,
+      updated: unit.updated,
     }
   }
 

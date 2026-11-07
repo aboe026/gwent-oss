@@ -24,12 +24,14 @@ export default class EffectStore extends Store {
    */
   static async add({ ability, image, key, name }: AddEffectInput): Promise<EffectDbObject> {
     EffectStore.logger.debug(`Adding effect with name "${name}"`)
+    const created = new Date()
     const effect: WithoutId<EffectDbObject> = {
       ability,
-      created: new Date(),
+      created,
       image,
       key,
       name,
+      updated: created,
     }
     if (EffectStore.logger.isTraceEnabled()) {
       EffectStore.logger.trace(`Adding effect: "${JSON.stringify(effect)}"`)

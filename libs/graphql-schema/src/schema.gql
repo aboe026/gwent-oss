@@ -145,6 +145,7 @@ type Deck @entity {
   stats: UnitStats! @column
   units: [DeckUnit!]! @column(overrideType: "Array<DeckUnitDbObject>")
   user: User! @column(overrideType: "ObjectId")
+  updated: DateTime! @column
 }
 
 "A Unit in a user created Deck."
@@ -159,6 +160,7 @@ type Dlc @entity {
   image: String! @column
   key: DlcKey! @column
   name: String! @column
+  updated: DateTime! @column
 }
 
 type Effect @entity {
@@ -168,6 +170,7 @@ type Effect @entity {
   image: String! @column
   key: EffectKey! @column
   name: String! @column
+  updated: DateTime! @column
 }
 
 type Faction @entity {
@@ -179,6 +182,7 @@ type Faction @entity {
   key: FactionKey! @column
   name: String! @column
   stats: UnitStats! @column
+  updated: DateTime! @column
 }
 
 type Game @entity {
@@ -281,6 +285,7 @@ type Leader @entity {
   image: String! @column
   name: String! @column
   quote: String! @column
+  updated: DateTime! @column
 }
 
 "A unit which was impacted by another unit."
@@ -384,6 +389,7 @@ type Unit @entity {
   scorchScope: Combat @column
   special: Boolean @column
   strength: Int @column
+  updated: DateTime! @column
 }
 
 type UnitStats {
@@ -415,6 +421,7 @@ type User @entity(additionalFields: [{ path: "password", type: "string" }]) {
   created: DateTime! @column(overrideType: "Date")
   id: ID! @id
   name: String! @column
+  updated: DateTime! @column
 }
 
 type GameDeckSet {
