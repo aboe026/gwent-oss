@@ -50,10 +50,9 @@ export default class UnitStore extends Store {
     strength,
   }: AddUnitInput): Promise<UnitDbObject> {
     UnitStore.logger.debug(`Adding unit with name "${name}"`)
-    const created = new Date()
     const unit: WithoutId<UnitDbObject> = {
       combats,
-      created,
+      created: new Date(),
       deckable: !!deckable,
       dlc: dlc ? new ObjectId(dlc) : undefined,
       effectPrefix,

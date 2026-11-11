@@ -25,10 +25,9 @@ export default class FactionStore extends Store {
    */
   static async add({ ability, dlc, image, key, name }: AddFactionInput): Promise<FactionDbObject> {
     FactionStore.logger.debug(`Adding faction with name "${name}"`)
-    const created = new Date()
     const faction: WithoutId<FactionDbObject> = {
       ability,
-      created,
+      created: new Date(),
       dlc: dlc ? new ObjectId(dlc) : undefined,
       image,
       key,
@@ -131,7 +130,7 @@ export default class FactionStore extends Store {
    * @returns The Faction database object with the given key.
    * @throws {PresentableError} if there is a problem getting the faction.
    */
-  static async getByKey({ key, logPrefix }: { key: FactionKey; logPrefix?: string }): Promise<FactionDbObject> {
+  static async getByKey({ key, logPrefix }: { key: FactionKey; logPrefix: string }): Promise<FactionDbObject> {
     const factions = await FactionStore.get({
       keys: [key],
     })

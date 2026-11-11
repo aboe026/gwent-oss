@@ -26,10 +26,9 @@ export default class LeaderStore extends Store {
    */
   static async add({ ability, dlc, faction, image, name, quote }: AddLeaderInput): Promise<LeaderDbObject> {
     LeaderStore.logger.debug(`Adding leader with name "${name}"`)
-    const created = new Date()
     const leader: WithoutId<LeaderDbObject> = {
       ability,
-      created,
+      created: new Date(),
       dlc: dlc ? new ObjectId(dlc) : undefined,
       faction: new ObjectId(faction),
       image,
@@ -95,7 +94,7 @@ export default class LeaderStore extends Store {
    * @returns The leader with the given ID.
    * @throws {PresentableError} if there is a problem getting the leader.
    */
-  static async getById({ id, logPrefix }: { id: string | ObjectId; logPrefix?: string }): Promise<LeaderDbObject> {
+  static async getById({ id, logPrefix }: { id: string | ObjectId; logPrefix: string }): Promise<LeaderDbObject> {
     const leaders = await LeaderStore.get({
       ids: [id],
     })

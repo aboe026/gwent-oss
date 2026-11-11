@@ -23,10 +23,9 @@ export default class EffectStore extends Store {
    */
   static async add({ ability, image, key, name }: AddEffectInput): Promise<EffectDbObject> {
     EffectStore.logger.debug(`Adding effect with name "${name}"`)
-    const created = new Date()
     const effect: WithoutId<EffectDbObject> = {
       ability,
-      created,
+      created: new Date(),
       image,
       key,
       name,

@@ -24,11 +24,10 @@ export default class UserStore extends Store {
   static async add(name: string, password: string): Promise<UserDbObject> {
     UserStore.logger.debug(`Adding user with name "${name}"`)
     try {
-      const created = new Date()
       const user = await UserStore.create<UserDbObject>({
         name,
         password: await PasswordHasher.hash(password),
-        created,
+        created: new Date(),
       })
       user.password = '' // for security, ensure password isn't exposed
       return user

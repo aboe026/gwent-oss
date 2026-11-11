@@ -25,9 +25,8 @@ export default class DeckStore extends Store {
    */
   static async add({ factionId, leaderId, name, stats, units, userId }: AddDeckInput): Promise<DeckDbObject> {
     DeckStore.logger.debug(`Adding deck named "${name}" for user "${userId}"`)
-    const created = new Date()
     const deck: WithoutId<DeckDbObject> = {
-      created,
+      created: new Date(),
       faction: new ObjectId(factionId),
       leader: new ObjectId(leaderId),
       name,

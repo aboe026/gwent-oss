@@ -22,9 +22,8 @@ export default class DlcStore extends Store {
    */
   static async add({ image, key, name }: AddDlcInput): Promise<DlcDbObject> {
     DlcStore.logger.debug(`Adding DLC with name "${name}"`)
-    const created = new Date()
     const dlc: WithoutId<DlcDbObject> = {
-      created,
+      created: new Date(),
       image,
       key,
       name,
