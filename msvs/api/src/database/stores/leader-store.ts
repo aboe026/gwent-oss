@@ -1,4 +1,4 @@
-import { Document, Filter, FindOptions, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { LeaderDbObject } from '@gwent-oss/graphql-schema/database-typings'
@@ -35,7 +35,6 @@ export default class LeaderStore extends Store {
       image,
       name,
       quote,
-      updated: created,
     }
     if (LeaderStore.logger.isTraceEnabled()) {
       LeaderStore.logger.trace(`Adding leader: "${JSON.stringify(leader)}"`)
@@ -96,7 +95,7 @@ export default class LeaderStore extends Store {
    * @returns The leader with the given ID.
    * @throws {PresentableError} if there is a problem getting the leader.
    */
-  static async getById({ id, logPrefix = '' }: { id: string | ObjectId; logPrefix?: string }): Promise<LeaderDbObject> {
+  static async getById({ id, logPrefix }: { id: string | ObjectId; logPrefix?: string }): Promise<LeaderDbObject> {
     const leaders = await LeaderStore.get({
       ids: [id],
     })
@@ -121,35 +120,6 @@ export default class LeaderStore extends Store {
     }
     return leader
   }
-
-  /**
-   * Update a leader.
-   *
-   * @param options The options for the update.
-   * @param options.id The ObjectId of the leader to update.
-   * @param options.ability The ability to replace on the effect.
-   * @returns The updated leader database document.
-   */
-  static async edit({ id, ability }: EditLeaderInput): Promise<LeaderDbObject> {
-    LeaderStore.logger.debug(`Editing leader with id "${id}"`)
-    const filter: Filter<Document> = {
-      _id: new ObjectId(id),
-    }
-    const update: UpdateFilter<Document> = {
-      $set: {},
-    }
-    if (ability && update.$set) {
-      update.$set.ability = ability
-    }
-    if (LeaderStore.logger.isTraceEnabled()) {
-      LeaderStore.logger.trace(`edit filter for ID "${id}": "${JSON.stringify(filter)}"`)
-      LeaderStore.logger.trace(`edit update for ID "${id}": "${JSON.stringify(update)}"`)
-    }
-    return LeaderStore.update({
-      filter,
-      update,
-    })
-  }
 }
 
 export interface AddLeaderInput {
@@ -164,9 +134,4 @@ export interface AddLeaderInput {
 export interface GetLeadersInput {
   factionIds?: (string | ObjectId)[]
   ids?: (string | ObjectId)[]
-}
-
-export interface EditLeaderInput {
-  id: string | ObjectId
-  ability?: string
 }

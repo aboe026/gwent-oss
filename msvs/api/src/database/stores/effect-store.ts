@@ -1,8 +1,7 @@
-import { Document, Filter, ObjectId, UpdateFilter, WithoutId } from 'mongodb'
+import { Document, Filter, ObjectId, WithoutId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { EffectDbObject, EffectKey } from '@gwent-oss/graphql-schema/database-typings'
-import PresentableError from '../../util/presentable-error'
 import Store from './store'
 
 /**
@@ -31,7 +30,6 @@ export default class EffectStore extends Store {
       image,
       key,
       name,
-      updated: created,
     }
     if (EffectStore.logger.isTraceEnabled()) {
       EffectStore.logger.trace(`Adding effect: "${JSON.stringify(effect)}"`)
@@ -67,70 +65,6 @@ export default class EffectStore extends Store {
     }
     return EffectStore.readMany<EffectDbObject[]>({ filter })
   }
-
-  /**
-   * Gets an effect with the given key.
-   *
-   * @param config The configuration for getting the effect.
-   * @param config.key The key corresponding to the effect to get.
-   * @param config.logPrefix The prefix to prepend to log statements.
-   * @returns The Effect database object with the given key.
-   * @throws {PresentableError} if there is a problem getting the effect.
-   */
-  static async getByKey({ key, logPrefix = '' }: { key: EffectKey; logPrefix?: string }): Promise<EffectDbObject> {
-    const effects = await EffectStore.get({
-      keys: [key],
-    })
-    if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${logPrefix} effects: "${JSON.stringify(effects)}"`)
-    }
-    if (!effects || effects.length === 0) {
-      const message = `Could not find effect with key "${key}".`
-      this.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    if (effects.length > 1) {
-      const message = `Found more than 1 effect with key "${key}"`
-      this.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(effects)}"`)
-      throw new PresentableError(message)
-    }
-    const effect = effects[0]
-    if (effect.key !== key) {
-      const message = `Effect key of "${effects[0].key}" does not match requested key of "${key}".`
-      this.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    return effect
-  }
-
-  /**
-   * Update an effect.
-   *
-   * @param options The options for the update.
-   * @param options.id The ObjectId of the effect to update.
-   * @param options.ability The ability to replace on the effect.
-   * @returns The updated effect database document.
-   */
-  static async edit({ id, ability }: EditEffectInput): Promise<EffectDbObject> {
-    EffectStore.logger.debug(`Editing effect with id "${id}"`)
-    const filter: Filter<Document> = {
-      _id: new ObjectId(id),
-    }
-    const update: UpdateFilter<Document> = {
-      $set: {},
-    }
-    if (ability && update.$set) {
-      update.$set.ability = ability
-    }
-    if (EffectStore.logger.isTraceEnabled()) {
-      EffectStore.logger.trace(`edit filter for ID "${id}": "${JSON.stringify(filter)}"`)
-      EffectStore.logger.trace(`edit update for ID "${id}": "${JSON.stringify(update)}"`)
-    }
-    return EffectStore.update({
-      filter,
-      update,
-    })
-  }
 }
 
 export interface AddEffectInput {
@@ -143,9 +77,4 @@ export interface AddEffectInput {
 export interface GetEffectsInput {
   ids?: (string | ObjectId)[]
   keys?: EffectKey[]
-}
-
-export interface EditEffectInput {
-  id: string | ObjectId
-  ability?: string
 }

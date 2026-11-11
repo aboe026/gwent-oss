@@ -32,7 +32,6 @@ export default class FactionResolver {
       stats: faction.stats,
       ability: faction.ability,
       dlc: faction.dlc && (dlc || (await DlcResolver.fromId(faction.dlc))),
-      updated: faction.updated,
     }
   }
 

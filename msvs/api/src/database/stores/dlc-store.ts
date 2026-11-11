@@ -28,7 +28,6 @@ export default class DlcStore extends Store {
       image,
       key,
       name,
-      updated: created,
     }
     if (DlcStore.logger.isTraceEnabled()) {
       DlcStore.logger.trace(`Adding dlc: "${JSON.stringify(dlc)}"`)

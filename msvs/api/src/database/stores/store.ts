@@ -91,7 +91,6 @@ export default abstract class Store {
    * @param config.update The update operation to apply to the document.
    * @param config.options The options to use when updating the document.
    * @param config.verifyExistence Whether or not an Error should be thrown if no document updated.
-   * @param config.incrementUpdated Whether or not the "updated" field on the document should be set to the current time.
    * @returns The updated document.
    * @throws {Error} if the document do not exist and verifyExistence is true.
    */
@@ -100,26 +99,15 @@ export default abstract class Store {
     update,
     options = {},
     verifyExistence = true,
-    incrementUpdated = true,
   }: {
     filter: Filter<Document>
     update: UpdateFilter<Document>
     options?: FindOneAndUpdateOptions
     verifyExistence?: boolean
-    incrementUpdated?: boolean
   }): Promise<T> {
     const collection = await Store.getCollection<T>(this.COLLECTION_NAME)
     if (!options.returnDocument) {
       options.returnDocument = ReturnDocument.AFTER
-    }
-    if (incrementUpdated) {
-      if (!update) {
-        update = {}
-      }
-      if (!update.$set) {
-        update.$set = {}
-      }
-      update.$set.updated = new Date()
     }
     const response = await collection.findOneAndUpdate(filter, update, options)
     if (verifyExistence && response === null && filter._id) {

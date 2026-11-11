@@ -58,7 +58,6 @@ export default class DeckResolver {
         (await DeckUnitResolver.fromArray({
           deckUnits: deck.units,
         })),
-      updated: deck.updated,
       user: user || (await UserResolver.fromId(deck.user)),
     }
   }

@@ -46,7 +46,6 @@ export default class LeaderResolver {
       image: leader.image,
       name: leader.name,
       quote: leader.quote,
-      updated: leader.updated,
     }
   }
 

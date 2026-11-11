@@ -12,8 +12,11 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- change "Undrawn pile" to "Draw pile" in faction/effect/leader ability text
+- ensure test files are getting linted properly
+- add effects precedence diagram
 
+- fix occurrences for some cards to be correct
+- update text on abilities to be clearer
 - Medic sometimes does not show all cards that can be revived?
   - requires page refresh to fix, so must be problem with cache. Related to having lost cards from previous rounds interfering?
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
@@ -47,6 +50,7 @@ Existing problems in the codebase that need to be fixed.
 - restrict/filter subscriptions to just active game?
 - use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
 - move "scopeToUser" logic in subscription-resolver to be on "fields" resolver for subscription type
+- move "effectAbilities" logic in unit-resolver to be on "fields" resolver for Unit (or Effect?) type
 - How to handle multiple spies in hand (e.g. decoying opponents spy into hand when already have same one in hand)? add "owner" property to GameUnit types?
 - improve UX around game player info (username, score, rounds, passed)
 - message to clear filters in DeckEditor when filter shows none
@@ -114,7 +118,7 @@ Existing problems in the codebase that need to be fixed.
 - dynamically set scenario name for e2e tests based on their fixture name, have it set on context
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
-- change game.round to 0 based indexing?
+- change game.round to 0 based indexing? especially since no longer rely on value of "0" to be before game starts (relying strickly on game status for that)
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
 - have non-gwent images (Caddy, Mongo) run as non-root

@@ -9,6 +9,7 @@ import {
   EffectKey,
   FactionDbObject,
   FactionKey,
+  UnitDbObject,
 } from '@gwent-oss/graphql-schema/database-typings'
 import dlcs from './resources/dlcs.json'
 import DlcStore, { AddDlcInput } from '../stores/dlc-store'
@@ -16,7 +17,6 @@ import effects from './resources/effects.json'
 import EffectStore, { AddEffectInput } from '../stores/effect-store'
 import factions from './resources/factions.json'
 import FactionStore, { AddFactionInput } from '../stores/faction-store'
-import { FactionUnits } from './upgrade-util'
 import { GetUnitStats } from '@gwent-oss/utils'
 import leaders from './resources/leaders.json'
 import LeaderStore, { AddLeaderInput } from '../stores/leader-store'
@@ -757,6 +757,10 @@ export interface UnitJson {
 
 export interface KeyIdMap {
   [name: string]: ObjectId
+}
+
+export interface FactionUnits {
+  [x: string]: UnitDbObject[]
 }
 
 export enum ImageType {

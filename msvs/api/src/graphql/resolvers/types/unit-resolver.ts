@@ -2,7 +2,6 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Combat, Effect, Unit } from '@gwent-oss/graphql-schema/resolver-typings'
-import { CONJUNCTION, prettyPrintList } from '../../../util/string-util'
 import {
   DlcDbObject,
   EffectDbObject,
@@ -17,6 +16,7 @@ import EffectStore from '../../../database/stores/effect-store'
 import FactionResolver from './faction-resolver'
 import FactionStore from '../../../database/stores/faction-store'
 import { getUniqueItems, toTitleCase } from '@gwent-oss/utils'
+import { prettyPrintList } from '../../../util/string-util'
 import UnitStore from '../../../database/stores/unit-store'
 import Verifier from '../../../util/verifier'
 
@@ -76,7 +76,6 @@ export default class UnitResolver {
       scorchScope: unit.scorchScope as Combat | undefined,
       special: unit.special,
       strength: unit.strength,
-      updated: unit.updated,
     }
   }
 
@@ -223,25 +222,24 @@ export default class UnitResolver {
         if (effect.key === EffectKey.Weather) {
           if (unit.combats && unit.combats.length > 0) {
             ability = effect.ability.replace(
-              'given Row(s)',
+              'given row(s)',
               prettyPrintList({
                 items: unit.combats.map((combat) => toTitleCase(combat)),
-                labelPlural: 'combat Row',
-                labelSingular: 'combat Row',
-                conjunction: CONJUNCTION.Or,
+                labelPlural: 'rows',
+                labelSingular: 'row',
               })
             )
           } else {
-            ability = 'Remove all Weather effects which are active on the battlefield (including your own).'
+            ability = 'Remove all weather effects which are active on the battlefield, including your own.'
           }
         } else if (effect.key === EffectKey.Muster && unit.effectPrefix) {
           ability = effect.ability.replace('same name', `"${unit.effectPrefix}" prefix`)
         } else if (effect.key === EffectKey.Scorch) {
           if (unit.scorchScope) {
             const combat = toTitleCase(unit.scorchScope)
-            ability = `Send opponents strongest Unit(s) on their ${combat} combat Row to their Lost pile`
+            ability = `Destroys your enemy's strongest ${combat} Combat unit(s)`
             if (unit.scorchMin) {
-              ability += ` if their ${combat} combat Row score is ${unit.scorchMin} or more`
+              ability += ` if the combined strength of all their ${combat} Combat units is ${unit.scorchMin} or more`
             }
             ability += '.'
           }

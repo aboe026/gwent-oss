@@ -38,7 +38,6 @@ export default class DeckStore extends Store {
           unit: new ObjectId(unit.unit),
         }
       }),
-      updated: created,
       user: new ObjectId(userId),
     }
     if (DeckStore.logger.isTraceEnabled()) {

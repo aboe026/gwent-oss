@@ -29,7 +29,6 @@ export default class UserStore extends Store {
         name,
         password: await PasswordHasher.hash(password),
         created,
-        updated: created,
       })
       user.password = '' // for security, ensure password isn't exposed
       return user

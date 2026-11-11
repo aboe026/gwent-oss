@@ -25,7 +25,6 @@ export default class DlcResolver {
       image: dlc.image,
       key: dlc.key as DlcKey,
       name: dlc.name,
-      updated: dlc.updated,
     }
   }
 

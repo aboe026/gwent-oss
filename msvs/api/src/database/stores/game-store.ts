@@ -119,6 +119,7 @@ export default class GameStore extends Store {
     const update: UpdateFilter<Document> = {
       $set: {
         ...game,
+        updated: new Date(),
       },
     }
     if (GameStore.logger.isTraceEnabled()) {

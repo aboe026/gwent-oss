@@ -68,7 +68,6 @@ export default class UnitStore extends Store {
       scorchScope,
       special,
       strength,
-      updated: created,
     }
     if (UnitStore.logger.isTraceEnabled()) {
       UnitStore.logger.trace(`Adding unit: "${JSON.stringify(unit)}"`)

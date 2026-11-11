@@ -58,7 +58,6 @@ export default class FactionStore extends Store {
         units: 0,
         weather: 0,
       },
-      updated: created,
     }
     if (FactionStore.logger.isTraceEnabled()) {
       FactionStore.logger.trace(`Adding faction: "${JSON.stringify(faction)}"`)
@@ -72,22 +71,17 @@ export default class FactionStore extends Store {
    * @param options The options for the update.
    * @param options.id The ObjectId of the faction to update.
    * @param options.stats The new stats to replace on the faction.
-   * @param options.ability The ability to replace on the faction.
    * @returns The updated faction database document.
    */
-  static async edit({ id, stats, ability }: EditFactionInput): Promise<FactionDbObject> {
+  static async edit({ id, stats }: EditFactionInput): Promise<FactionDbObject> {
     FactionStore.logger.debug(`Editing faction with id "${id}"`)
     const filter: Filter<Document> = {
       _id: new ObjectId(id),
     }
     const update: UpdateFilter<Document> = {
-      $set: {},
-    }
-    if (stats && update.$set) {
-      update.$set.stats = stats
-    }
-    if (ability && update.$set) {
-      update.$set.ability = ability
+      $set: {
+        stats,
+      },
     }
     if (FactionStore.logger.isTraceEnabled()) {
       FactionStore.logger.trace(`edit filter for ID "${id}": "${JSON.stringify(filter)}"`)
@@ -137,7 +131,7 @@ export default class FactionStore extends Store {
    * @returns The Faction database object with the given key.
    * @throws {PresentableError} if there is a problem getting the faction.
    */
-  static async getByKey({ key, logPrefix = '' }: { key: FactionKey; logPrefix?: string }): Promise<FactionDbObject> {
+  static async getByKey({ key, logPrefix }: { key: FactionKey; logPrefix?: string }): Promise<FactionDbObject> {
     const factions = await FactionStore.get({
       keys: [key],
     })
@@ -174,8 +168,7 @@ export interface AddFactionInput {
 
 export interface EditFactionInput {
   id: string | ObjectId
-  stats?: UnitStats
-  ability?: string
+  stats: UnitStats
 }
 
 export interface GetFactionsInput {
