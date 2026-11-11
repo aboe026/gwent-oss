@@ -17,6 +17,7 @@ import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import {
   expectizeGame,
   expectizeGamePlayer,
+  expectizeMoveFaction,
   expectizeMovePass,
   expectizeMoveUnit,
   expectizePlayerRound,
@@ -722,7 +723,20 @@ describe('effect-decoy', () => {
                 rounds: [
                   expectizePlayerRound({
                     passed: true,
-                    moves: [expectizeMovePass()],
+                    moves: [
+                      expectizeMoveFaction({
+                        faction: deckOpponent.faction,
+                        impacts: [
+                          TestUtil.getImpact({
+                            user: self,
+                          }),
+                          TestUtil.getImpact({
+                            user: opponent,
+                          }),
+                        ],
+                      }),
+                      expectizeMovePass(),
+                    ],
                   }),
                 ],
               }),
@@ -855,7 +869,20 @@ describe('effect-decoy', () => {
                 rounds: [
                   expectizePlayerRound({
                     passed: true,
-                    moves: [expectizeMovePass()],
+                    moves: [
+                      expectizeMoveFaction({
+                        faction: deckOpponent.faction,
+                        impacts: [
+                          TestUtil.getImpact({
+                            user: self,
+                          }),
+                          TestUtil.getImpact({
+                            user: opponent,
+                          }),
+                        ],
+                      }),
+                      expectizeMovePass(),
+                    ],
                   }),
                 ],
               }),

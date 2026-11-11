@@ -185,6 +185,15 @@ export function getGameUnitFragment(): string {
 
 export function getMoveFragment() {
   return `
+    ... on MoveFaction {
+      created
+      faction {
+        ${getFactionFragment()}
+      }
+      impacts {
+        ${getImpactFragment()}
+      }
+    }
     ... on MoveLeader {
       created
       leader {
@@ -232,6 +241,9 @@ export function getImpactFragment(): string {
     user {
       ${getUserFragment()}
     }
+    scope {
+      ${getUserFragment()}
+    }
     source {
       ${getSourceFragment()}
     }
@@ -253,6 +265,7 @@ export function getGamePlayerFragment(): string {
     }
     order
     ready
+    reviving
     rounds {
       close {
         ${getPlayerCombatRowFragment()}

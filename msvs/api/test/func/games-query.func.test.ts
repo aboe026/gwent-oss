@@ -4,12 +4,13 @@ import { ObjectId } from 'mongodb'
 import { addDeck, addGame, addUser, getGameDeck, playUnit, ready, setDeck, setOrder } from './util/graphql-util'
 import { Combat, FactionKey, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent-oss/test-utils'
-import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer, expectizeMoveFaction, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 import { sortObjectArray } from '@gwent-oss/utils'
 import Store from '../../src/database/stores/store'
+import TestUtil from '../util/test-util'
 
 describe('games-query', () => {
   describe('games', () => {
@@ -521,11 +522,29 @@ describe('games-query', () => {
         gameDeck: gameDeck1,
         user: user1,
         order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+        rounds: [expectizePlayerRound({})],
       })
       const gamePlayer2 = expectizeGamePlayer({
         gameDeck: gameDeck2,
         user: user2,
         order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+        rounds: [
+          expectizePlayerRound({
+            moves: [
+              expectizeMoveFaction({
+                faction: deck2.faction,
+                impacts: [
+                  TestUtil.getImpact({
+                    user: updatedGame.turn?.user.id === user1.id ? user1 : user2,
+                  }),
+                  TestUtil.getImpact({
+                    user: updatedGame.turn?.user.id === user1.id ? user2 : user1,
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
       })
       await expect(
         graphql({
@@ -551,6 +570,7 @@ describe('games-query', () => {
               status: GameStatus.Redrawing,
               players: [gamePlayer1, gamePlayer2],
               turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+              round: 1,
             }),
           ],
         },
@@ -1018,6 +1038,16 @@ describe('games-query', () => {
             },
           },
         ],
+        // factions for first game scoiatael move (can be hoisted for batching)
+        [
+          {
+            filter: {
+              _id: {
+                $in: [new ObjectId(deckSelf.faction.id)],
+              },
+            },
+          },
+        ],
         // factions for second game decks (can be hoisted for batching)
         [
           {
@@ -1053,6 +1083,16 @@ describe('games-query', () => {
             filter: {
               _id: {
                 $in: [new ObjectId(deckOpponent2.leader.dlc?.id)],
+              },
+            },
+          },
+        ],
+        // factions for second game scoiatael move (can be hoisted for batching)
+        [
+          {
+            filter: {
+              _id: {
+                $in: [new ObjectId(deckSelf.faction.id)],
               },
             },
           },

@@ -1012,11 +1012,13 @@ export default class TestUtil {
     score = 0,
     moves = [],
     weathers = [],
+    result,
   }: {
     passed?: boolean
     score?: number
     moves?: Move[]
     weathers?: WeatherUnit[]
+    result?: RoundResult
   }): PlayerRound {
     return {
       close: TestUtil.getPlayerCombatRow({}),
@@ -1026,6 +1028,7 @@ export default class TestUtil {
       score,
       siege: TestUtil.getPlayerCombatRow({}),
       weathers,
+      result: result || null,
     }
   }
 

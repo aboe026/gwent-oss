@@ -13,7 +13,13 @@ import {
 } from './util/graphql-util'
 import { Deck, FactionKey, Game, GamePlayer, GameStatus, User } from '@gwent-oss/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent-oss/test-utils'
-import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
+import {
+  expectizeGame,
+  expectizeGamePlayer,
+  expectizeMoveFaction,
+  expectizeMoveUnit,
+  expectizePlayerRound,
+} from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
@@ -21,7 +27,7 @@ import TestUtil from '../util/test-util'
 
 describe('effect-scorch', () => {
   it('scorch unit played by itself does not effect battlefield', async () => {
-    const { game, opponent, self } = await setupGame({})
+    const { deckSelf, game, opponent, self } = await setupGame({})
     const unitName1 = 'Scorch'
     await ensureUnitsInHand({
       gameId: game.id,
@@ -75,6 +81,17 @@ describe('effect-scorch', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
+                    expectizeMoveFaction({
+                      faction: deckSelf.faction,
+                      impacts: [
+                        TestUtil.getImpact({
+                          user: self,
+                        }),
+                        TestUtil.getImpact({
+                          user: opponent,
+                        }),
+                      ],
+                    }),
                     expectizeMoveUnit({
                       unit: unitSelf1,
                       impacts: [],
@@ -96,7 +113,7 @@ describe('effect-scorch', () => {
     })
   })
   it('scorch unit removes opponents unit from battlefield', async () => {
-    const { game, opponent, self } = await setupGame({
+    const { deckSelf, game, opponent, self } = await setupGame({
       opponentFirst: true,
     })
     const unitName1 = 'Siegfried of Denesle'
@@ -245,6 +262,17 @@ describe('effect-scorch', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
+                    expectizeMoveFaction({
+                      faction: deckSelf.faction,
+                      impacts: [
+                        TestUtil.getImpact({
+                          user: opponent,
+                        }),
+                        TestUtil.getImpact({
+                          user: self,
+                        }),
+                      ],
+                    }),
                     expectizeMoveUnit({
                       unit: unitSelf1,
                       impacts: [
@@ -271,7 +299,7 @@ describe('effect-scorch', () => {
     })
   })
   it('scorch does not effect hero unit', async () => {
-    const { game, opponent, self } = await setupGame({
+    const { deckSelf, game, opponent, self } = await setupGame({
       opponentFirst: true,
     })
     const unitName1 = 'Vernon Roche'
@@ -399,6 +427,17 @@ describe('effect-scorch', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
+                    expectizeMoveFaction({
+                      faction: deckSelf.faction,
+                      impacts: [
+                        TestUtil.getImpact({
+                          user: opponent,
+                        }),
+                        TestUtil.getImpact({
+                          user: self,
+                        }),
+                      ],
+                    }),
                     expectizeMoveUnit({
                       unit: unitSelf1,
                       impacts: [],

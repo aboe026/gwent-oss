@@ -2,7 +2,7 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, ready, setDeck } from './util/graphql-util'
-import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import { FactionKey, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
@@ -236,11 +236,13 @@ describe('ready-mutation', () => {
           user: user1,
           order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
           ready: true,
+          rounds: [expectizePlayerRound({})],
         })
         const gamePlayerOpponent = expectizeGamePlayer({
           gameDeck: gameDeckOpponent,
           user: user2,
           order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+          rounds: [expectizePlayerRound({})],
         })
         const response = await graphql({
           schema,
@@ -264,6 +266,7 @@ describe('ready-mutation', () => {
               players: [gamePlayerSelf, gamePlayerOpponent],
               status: GameStatus.Redrawing,
               turn: updatedGame.turn?.user.id === user1.id ? gamePlayerSelf : gamePlayerOpponent,
+              round: 1,
             }),
           },
         })
@@ -325,12 +328,14 @@ describe('ready-mutation', () => {
           gameDeck: gameDeckCreator,
           user: user2,
           order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+          rounds: [expectizePlayerRound({})],
         })
         const gamePlayerOpponent = expectizeGamePlayer({
           gameDeck: gameDeckOpponent,
           user: user1,
           order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
           ready: true,
+          rounds: [expectizePlayerRound({})],
         })
         expect(response).toEqual({
           data: {
@@ -339,6 +344,7 @@ describe('ready-mutation', () => {
               players: [gamePlayerCreator, gamePlayerOpponent],
               status: GameStatus.Redrawing,
               turn: updatedGame.turn?.user.id === user2.id ? gamePlayerCreator : gamePlayerOpponent,
+              round: 1,
             }),
           },
         })
