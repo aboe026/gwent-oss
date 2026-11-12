@@ -12,9 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- ensure test files are getting linted properly
-- add effects precedence diagram
-
+- ensure test files are getting linted properly (also regular files dont seem to error on typescript errors?)
 - fix occurrences for some cards to be correct
 - update text on abilities to be clearer
 - Medic sometimes does not show all cards that can be revived?
@@ -103,6 +101,7 @@ Existing problems in the codebase that need to be fixed.
   - update places in UI code which check user/player by ".name" and switch them to ".id"
 - Have "DateTime" on resolver object map to javascript Date object?
 - Make Combat a type (because of image)
+- show non-deckable units when creating/editing deck (just don't let them be select-able). Will help people know what they are (like for avenger/mardroeme effects)
 - If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
 - have log4js config be dynamic
   - target log level of specific classes/loggers
