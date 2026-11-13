@@ -23,7 +23,13 @@ import {
   User,
 } from '@gwent-oss/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent-oss/test-utils'
-import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
+import {
+  expectizeGame,
+  expectizeGamePlayer,
+  expectizeMoveFaction,
+  expectizeMoveUnit,
+  expectizePlayerRound,
+} from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
@@ -449,7 +455,23 @@ describe('effect-medic', () => {
         gameDeck: gameDeckOpponent,
         ready: true,
         order: 1,
-        rounds: [expectizePlayerRound({})],
+        rounds: [
+          expectizePlayerRound({
+            moves: [
+              expectizeMoveFaction({
+                faction: deckOpponent.faction,
+                impacts: [
+                  TestUtil.getImpact({
+                    user: self,
+                  }),
+                  TestUtil.getImpact({
+                    user: opponent,
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
       })
 
       await expect(
@@ -586,6 +608,17 @@ describe('effect-medic', () => {
         rounds: [
           expectizePlayerRound({
             moves: [
+              expectizeMoveFaction({
+                faction: deckOpponent.faction,
+                impacts: [
+                  TestUtil.getImpact({
+                    user: self,
+                  }),
+                  TestUtil.getImpact({
+                    user: opponent,
+                  }),
+                ],
+              }),
               expectizeMoveUnit({
                 unit: unitOpponent1,
                 impacts: [
@@ -795,6 +828,17 @@ describe('effect-medic', () => {
         rounds: [
           expectizePlayerRound({
             moves: [
+              expectizeMoveFaction({
+                faction: deckOpponent.faction,
+                impacts: [
+                  TestUtil.getImpact({
+                    user: self,
+                  }),
+                  TestUtil.getImpact({
+                    user: opponent,
+                  }),
+                ],
+              }),
               expectizeMoveUnit({
                 unit: unitOpponent1,
                 impacts: [

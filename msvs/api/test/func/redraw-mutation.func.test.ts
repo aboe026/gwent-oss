@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, ready, redraw, setDeck } from './util/graphql-util'
 import { DeckUnit, FactionKey, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
-import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import { getDeckUnitFragment } from './util/fragment-util'
 import { MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
 import schema from '../../src/graphql/executable-schema'
@@ -494,11 +494,13 @@ describe('redraw-mutation', () => {
           gameDeck: gameDeck1,
           user: user1,
           order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+          rounds: [expectizePlayerRound({})],
         })
         const gamePlayer2 = expectizeGamePlayer({
           gameDeck: gameDeck2,
           user: user2,
           order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+          rounds: [expectizePlayerRound({})],
         })
         expect(updatedGame).toEqual(
           expectizeGame({
@@ -506,6 +508,7 @@ describe('redraw-mutation', () => {
             players: [gamePlayer1, gamePlayer2],
             status: GameStatus.Redrawing,
             turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+            round: 1,
           })
         )
         expect(updatedGame.updated.getTime()).toBeGreaterThan(game.updated.getTime())
@@ -568,6 +571,7 @@ describe('redraw-mutation', () => {
             players: [gamePlayer1, gamePlayer2],
             status: GameStatus.Redrawing,
             turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+            round: 1,
           })
         )
         expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame.updated.getTime())
@@ -634,6 +638,7 @@ describe('redraw-mutation', () => {
             players: [gamePlayer1, gamePlayer2],
             status: GameStatus.Redrawing,
             turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+            round: 1,
           })
         )
         expect(updatedGame3.updated.getTime()).toBeGreaterThan(updatedGame2.updated.getTime())
@@ -696,6 +701,7 @@ describe('redraw-mutation', () => {
             players: [gamePlayer1, gamePlayer2],
             status: GameStatus.Redrawing,
             turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+            round: 1,
           })
         )
         expect(updatedGame4.updated.getTime()).toBeGreaterThan(updatedGame3.updated.getTime())
@@ -762,6 +768,7 @@ describe('redraw-mutation', () => {
             players: [gamePlayer1, gamePlayer2],
             status: GameStatus.Redrawing,
             turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+            round: 1,
           })
         )
         expect(updatedGame5.updated.getTime()).toBeGreaterThan(updatedGame4.updated.getTime())

@@ -1,6 +1,7 @@
-import { Combat, FactionKey, GameUnitOrigin } from '@gwent-oss/node-client'
+import { Combat, EffectKey, FactionKey, GameUnitOrigin } from '@gwent-oss/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
+import GamePage from '../page-objects/game-page'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
@@ -31,7 +32,6 @@ test('Cannot summon avenger by decoying', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Ranged,
-      effectiveStrength: 0,
     },
   })
 })
@@ -69,7 +69,6 @@ test('Summoned avenger can be decoyed and played again', async (t) => {
   await gameManager.deploy({
     unitName: unitName3,
     decoying: {
-      effectiveStrength: 8,
       name: unitName2,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
@@ -338,18 +337,18 @@ test('Summoned avenger can be weathered', async (t) => {
 
 test('Can summon avenger after scorched to discard', async (t) => {
   const unitName1 = 'Cow'
-  const unitName2 = 'Ballista'
+  const unitName2 = 'Fire Elemental'
   const unitName3 = 'Bovine Defense Force'
   const unitName4 = 'Scorch'
-  const unitName5 = 'Dun Banner Medic'
+  const unitName5 = 'Etolian Auxiliary Archers'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName4, unitName5],
     },
     opponent: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.Monsters,
       handUnitNames: [unitName2],
     },
   })
@@ -413,18 +412,18 @@ test('Can summon avenger after scorched to discard', async (t) => {
 
 test('Can summon avenger after decoyed to hand', async (t) => {
   const unitName1 = 'Cow'
-  const unitName2 = 'Ballista'
+  const unitName2 = 'Fire Elemental'
   const unitName3 = 'Bovine Defense Force'
   const unitName4 = 'Decoy'
-  const unitName5 = 'Dun Banner Medic'
+  const unitName5 = 'Etolian Auxiliary Archers'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName4, unitName5],
     },
     opponent: {
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.Monsters,
       handUnitNames: [unitName2],
     },
   })
@@ -454,7 +453,6 @@ test('Can summon avenger after decoyed to hand', async (t) => {
     unitName: unitName4,
     decoying: {
       name: unitName3,
-      effectiveStrength: 8,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
     },
@@ -550,6 +548,102 @@ test('Cannot summon avenger already on battlefield', async (t) => {
         name: unitName1,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
+      },
+    ],
+  })
+})
+
+test('Avenger summoned and Northern Realms faction ability triggered at round end', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Ves'
+  const unitName3 = 'Bovine Defense Force'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+  })
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+    avenging: [
+      {
+        effectiveStrength: 8,
+        name: unitName3,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        turn: gameManager.self.gamePlayer,
+      },
+    ],
+    factionAbility: {
+      gamePlayer: gameManager.self.gamePlayer,
+      key: FactionKey.NorthernRealms,
+      impacts: 1,
+    },
+  })
+  await GamePage.toggleImpacts({
+    round: gameManager.round,
+    unitName: unitName3,
+    userName: gameManager.self.gamePlayer.name,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Avenger,
+        round: gameManager.round,
+        unitName: unitName3,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+  await GamePage.selectImpactCard({
+    move: {
+      round: gameManager.round,
+      unitName: unitName3,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    impact: {
+      unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
+    },
+  })
+  await gameManager.verify({
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round - 1,
+      row: Combat.Ranged,
+      unitName: unitName1,
+      dotted: true,
+    },
+    impacts: [
+      {
+        effectKey: EffectKey.Avenger,
+        round: gameManager.round,
+        unitName: unitName3,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+            dotted: true,
+          },
+        ],
       },
     ],
   })

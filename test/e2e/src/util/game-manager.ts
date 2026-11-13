@@ -17,6 +17,7 @@ import {
   EffectKey,
   FactionKey,
   FieldUnit,
+  Game,
   GameDeck,
   GameUnit,
   GameUnitOrigin,
@@ -37,6 +38,7 @@ import GamePage, {
 } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
+import { RedrawPair } from '../components/redraw-units'
 import { STARTING_HAND_SIZE } from '@gwent-oss/constants'
 import { toTitleCase } from '@gwent-oss/utils'
 
@@ -56,12 +58,14 @@ export class GameManager {
     opponent,
     verify = false,
     apiDriven = true,
+    moves = [[]],
   }: {
     gameId: string
     self: GameManagerPlayer
     opponent: GameManagerPlayer
     verify?: boolean
     apiDriven?: boolean
+    moves?: (HistoryMove | HistoryPass)[][]
   }) {
     this.gameId = gameId
     this.self = {
@@ -72,7 +76,7 @@ export class GameManager {
       ...opponent,
       roundScores: [],
     }
-    this.moves = [[]]
+    this.moves = moves
     this.shouldVerify = verify
     this.apiDriven = apiDriven
     this.round = 1
@@ -298,12 +302,14 @@ export class GameManager {
     verify,
     switchTurnsWith,
     avenging,
+    factionAbility,
     victors,
     deckPartSelected,
   }: {
     verify?: boolean
     switchTurnsWith?: GamePlayerExpected
     avenging?: AvengingExpected[]
+    factionAbility?: FactionAbility
     victors?: string[]
     deckPartSelected?: GameUnitOrigin
   }) {
@@ -363,6 +369,50 @@ export class GameManager {
       if (!this.victors) {
         this.moves.push([])
         this.round++
+      }
+      if (factionAbility) {
+        if (factionAbility.key === FactionKey.NorthernRealms) {
+          factionAbility.gamePlayer.hand = (factionAbility.gamePlayer.hand || 0) + factionAbility.impacts
+          factionAbility.gamePlayer.undrawn = (factionAbility.gamePlayer.undrawn || 0) - factionAbility.impacts
+          const factionPlayer =
+            factionAbility.gamePlayer.name === currentPlayer.gamePlayer.name ? currentPlayer : otherPlayer
+          const previousHands = factionPlayer.deck.hand
+          const previousUndrawns = factionPlayer.deck.undrawn
+          const newDeck = await factionPlayer.client.getGameDeck(this.gameId)
+          if (newDeck.hand.length !== previousHands.length + factionAbility.impacts) {
+            throw Error(
+              `New deck has "${newDeck.hand.length}" units in hand when "${previousHands.length - factionAbility.impacts}" expected`
+            )
+          }
+          if (newDeck.undrawn.length !== previousUndrawns.length - factionAbility.impacts) {
+            throw Error(
+              `New deck has "${newDeck.undrawn.length}" units in undrawn when "${previousUndrawns.length - factionAbility.impacts}" expected`
+            )
+          }
+          const undrawnsMoved = previousUndrawns.filter(
+            (prevUndrawn) => !newDeck.undrawn.some((undrawn) => undrawn.unit.id === prevUndrawn.unit.id)
+          )
+          if (undrawnsMoved.length !== factionAbility.impacts) {
+            throw Error(`Expected "${factionAbility.impacts}" undrawns moved but found "${undrawnsMoved.length}"`)
+          }
+          for (const undrawnMoved of undrawnsMoved) {
+            if (!newDeck.hand.some((handUnit) => handUnit.unit.id === undrawnMoved.unit.id)) {
+              throw Error(`Expected undrawn "${undrawnMoved.unit.name}" to be in hand but not found`)
+            }
+          }
+          factionPlayer.deck.hand = newDeck.hand
+          factionPlayer.deck.undrawn = newDeck.undrawn
+
+          this.moves[this.moves.length - 1].push({
+            userName: factionAbility.gamePlayer.name,
+            unitName: 'Northern Realms',
+            impacts: {
+              factionKey: FactionKey.NorthernRealms,
+              number: factionAbility.impacts,
+            },
+            origin: GameUnitOrigin.Undrawn,
+          })
+        }
       }
       if (avenging) {
         for (const avenge of avenging) {
@@ -501,12 +551,16 @@ export class GameManager {
     highlightedBattlefieldCard,
     highlightedHistory,
     deckPartSelected = GameUnitOrigin.Hand,
+    redraws,
+    turnOrder,
   }: {
     highlightedHandCard?: HighlightedHandCard
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
     impacts?: HistoryImpactMoves[]
     deckPartSelected?: GameUnitOrigin
+    redraws?: RedrawPair[]
+    turnOrder?: string[] | boolean
   }) {
     let deckPart: DeckUnit[]
     if (deckPartSelected === GameUnitOrigin.Hand) {
@@ -532,6 +586,8 @@ export class GameManager {
       highlightedBattlefieldCard,
       highlightedHistory,
       deckPartSelected,
+      redraws,
+      turnOrder,
     })
   }
 
@@ -568,11 +624,13 @@ export default async function createGameManager({
   self,
   opponent,
   opponentFirst,
+  ready = true,
 }: {
   label: string
   self?: GameManagerSetupPlayer
   opponent?: GameManagerSetupPlayer
   opponentFirst?: boolean
+  ready?: boolean
 }): Promise<GameManager> {
   const selfUser = await new ApiClient({}).addUser({
     name: `self-${label}`,
@@ -637,15 +695,27 @@ export default async function createGameManager({
 
   const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
   const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
+  const moves: (HistoryMove | HistoryPass)[][] = [[]]
   if (
     (selfFaction === FactionKey.ScoiaTael && opponentFaction !== FactionKey.ScoiaTael) ||
     (opponentFaction === FactionKey.ScoiaTael && selfFaction !== FactionKey.ScoiaTael)
   ) {
-    const scoiataelClient = selfFaction === FactionKey.ScoiaTael ? selfClient : opponentClient
-    await scoiataelClient.setOrder({
-      gameId: game.id,
-      userIds: [firstPlayerId, secondPlayerId],
-    })
+    if (ready !== false) {
+      const scoiataelClient = selfFaction === FactionKey.ScoiaTael ? selfClient : opponentClient
+      await scoiataelClient.setOrder({
+        gameId: game.id,
+        userIds: [firstPlayerId, secondPlayerId],
+      })
+      moves[0].push({
+        round: 1,
+        unitName: "Scoia'tael",
+        userName: selfFaction === FactionKey.ScoiaTael ? selfUser.name : opponentUser.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      })
+    }
   } else {
     await setTurnOrder({
       gameId: game.id,
@@ -655,8 +725,13 @@ export default async function createGameManager({
     })
   }
 
-  await selfClient.ready(game.id)
-  const updatedGame = await opponentClient.ready(game.id)
+  let updatedGame: Game
+  if (ready) {
+    await selfClient.ready(game.id)
+    updatedGame = await opponentClient.ready(game.id)
+  } else {
+    updatedGame = await selfClient.getGame(game.id)
+  }
 
   if (self?.handUnitNames) {
     await ensureUnitsInHand({
@@ -681,6 +756,7 @@ export default async function createGameManager({
 
   const selfGameDeck = await selfClient.getGameDeck(game.id)
   const opponentGameDeck = await opponentClient.getGameDeck(game.id)
+  const playerTurn = ready === false ? PlayerTurn.Future : PlayerTurn.Current
   return new GameManager({
     gameId: game.id,
     self: {
@@ -693,9 +769,9 @@ export default async function createGameManager({
           deck: selfDeck,
           gameDeck: selfGameDeck,
         },
-        turn: updatedGame.turn?.user.id === selfUser.id ? PlayerTurn.Current : undefined,
-        ready: true,
-        passed: false,
+        turn: updatedGame.turn?.user.id === selfUser.id ? playerTurn : undefined,
+        ready: ready === undefined ? true : ready,
+        passed: ready === false ? undefined : false,
         score: 0,
       }),
     },
@@ -709,11 +785,12 @@ export default async function createGameManager({
           deck: opponentDeck,
           gameDeck: opponentGameDeck,
         },
-        turn: updatedGame.turn?.user.id === opponentUser.id ? PlayerTurn.Current : undefined,
-        ready: true,
+        turn: updatedGame.turn?.user.id === opponentUser.id ? playerTurn : undefined,
+        ready: ready === undefined ? true : ready,
         score: 0,
       }),
     },
+    moves,
   })
 }
 
@@ -751,4 +828,10 @@ interface GameManagerPlayer {
   deck: GameDeck
   client: ApiClient
   roundScores?: number[]
+}
+
+interface FactionAbility {
+  gamePlayer: GamePlayerExpected
+  key: FactionKey
+  impacts: number
 }

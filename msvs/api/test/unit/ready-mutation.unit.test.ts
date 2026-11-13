@@ -111,7 +111,6 @@ async function testReadyMutation({
             {
               game: updatedGame,
               logPrefix,
-              userId: user._id,
             },
           ],
         ]

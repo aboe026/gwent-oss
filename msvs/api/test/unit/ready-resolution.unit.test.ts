@@ -24,10 +24,8 @@ async function testReadyResolution({ traceEnabled }: { traceEnabled?: boolean })
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
-  const maskedGame = TestUtil.getGame({})
   const gameResolverFromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits').mockReturnValue(maskedGame)
   const traceSpy = jest.fn().mockImplementation()
   ReadyResolution['logger'] = {
     trace: traceSpy,
@@ -40,7 +38,7 @@ async function testReadyResolution({ traceEnabled }: { traceEnabled?: boolean })
       logPrefix,
       userId,
     })
-  ).resolves.toEqual(maskedGame)
+  ).resolves.toEqual(resolvedGame)
 
   expect(gameResolverFromObjectSpy.mock.calls).toEqual([
     [
@@ -54,14 +52,6 @@ async function testReadyResolution({ traceEnabled }: { traceEnabled?: boolean })
       PubSubEvents.GameReady,
       {
         gameReady: resolvedGame,
-      },
-    ],
-  ])
-  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual([
-    [
-      {
-        game: resolvedGame,
-        userId,
       },
     ],
   ])

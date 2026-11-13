@@ -305,10 +305,12 @@ describe('effect-spy', () => {
                           TestUtil.getImpact({
                             unit: spied1[0],
                             user: self,
+                            scope: self,
                           }),
                           TestUtil.getImpact({
                             unit: spied2[0],
                             user: self,
+                            scope: self,
                           }),
                         ],
                       }),
@@ -420,10 +422,12 @@ describe('effect-spy', () => {
                           TestUtil.getImpact({
                             unit: spied1[0],
                             user: self,
+                            scope: self,
                           }),
                           TestUtil.getImpact({
                             unit: spied2[0],
                             user: self,
+                            scope: self,
                           }),
                         ],
                       }),

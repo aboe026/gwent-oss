@@ -4,7 +4,6 @@ import { ObjectId } from 'mongodb'
 import { Context } from '@gwent-oss/graphql-schema/context'
 import { Deck, Game } from '@gwent-oss/graphql-schema/resolver-typings'
 import EventManager from '../../src/graphql/event-manager'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import { PubSubEvents } from '@gwent-oss/constants'
 import SubscriptionResolver, {
   DeckAddedPayload,
@@ -56,11 +55,9 @@ describe('subscription-resolver', () => {
         },
         roundEndedForDeck: {
           subscribe: expect.any(Function),
-          resolve: expect.any(Function),
         },
         unitPlayedFromDeck: {
           subscribe: expect.any(Function),
-          resolve: expect.any(Function),
         },
         unitPlayedOnGame: {
           subscribe: expect.any(Function),
@@ -200,8 +197,6 @@ describe('subscription-resolver', () => {
         withFilterSpy.mock.calls[10][1](unitRedrawnPayload, undefined, context)
 
         expect((result.passPlayed as any).resolve(passPlayedPayload, undefined, context)).toEqual({})
-        expect((result.roundEndedForDeck as any).resolve(roundEndedForDeckPayload, undefined, context)).toEqual({})
-        expect((result.unitPlayedFromDeck as any).resolve(unitPlayedFromDeckPayload, undefined, context)).toEqual({})
         expect((result.unitPlayedOnGame as any).resolve(unitPlayedOnGamePayload, undefined, context)).toEqual({})
 
         expect(filterDeckOwnerSpy.mock.calls).toEqual([
@@ -333,25 +328,8 @@ describe('subscription-resolver', () => {
           [
             {
               ctx: context,
-              payload: roundEndedForDeckPayload,
-              subscriptionName: 'roundEndedForDeck',
-              nestedGamePath: 'game',
-            },
-          ],
-          [
-            {
-              ctx: context,
-              payload: unitPlayedFromDeckPayload,
-              subscriptionName: 'unitPlayedFromDeck',
-              nestedGamePath: 'game',
-            },
-          ],
-          [
-            {
-              ctx: context,
               payload: unitPlayedOnGamePayload,
               subscriptionName: 'unitPlayedOnGame',
-              nestedGamePath: 'game',
               nestedDiscardPath: 'discarded',
               nestedUndiscardPath: 'undiscarded',
               nestedUnhandPath: 'unhanded',
@@ -535,28 +513,11 @@ describe('subscription-resolver', () => {
         payload,
         subscriptionName: 'testSubscriptionName',
         expected: Error(`${message}.`),
-        errorCalls: [[`${message}, nestedProperty: "testSubscriptionName", payload: "${JSON.stringify(payload)}"`]],
-      })
-    })
-    it('throws error if no game in payload', () => {
-      const payload = {
-        testSubscriptionName: undefined,
-      }
-      const message = `Could not find game in payload for subscription "testSubscriptionName"`
-      testScopeToUser({
-        ctx: {
-          session: {
-            user: TestUtil.getDbUser({}),
-          },
-        },
-        payload,
-        subscriptionName: 'testSubscriptionName',
-        expected: Error(`${message}.`),
-        errorCalls: [[`${message}, nestedProperty: "testSubscriptionName", payload: "${JSON.stringify(payload)}"`]],
+        errorCalls: [[`${message}, payload: "${JSON.stringify(payload)}"`]],
       })
     })
     it('returns masked game if no errors without nestedGamePath', () => {
-      const maskedGame = TestUtil.getGame({})
+      const game = TestUtil.getGame({})
       testScopeToUser({
         ctx: {
           session: {
@@ -564,36 +525,14 @@ describe('subscription-resolver', () => {
           },
         },
         payload: {
-          testSubscriptionName: TestUtil.getGame({}),
+          testSubscriptionName: game,
         },
         subscriptionName: 'testSubscriptionName',
-        maskedGame,
-        expected: maskedGame,
-      })
-    })
-    it('returns masked game if no errors with nestedGamePath', () => {
-      const maskedGame = TestUtil.getGame({})
-      testScopeToUser({
-        ctx: {
-          session: {
-            user: TestUtil.getDbUser({}),
-          },
-        },
-        payload: {
-          testSubscriptionName: {
-            testNestedGamePath: TestUtil.getGame({}),
-          },
-        },
-        subscriptionName: 'testSubscriptionName',
-        nestedGamePath: 'testNestedGamePath',
-        maskedGame,
-        expected: {
-          testNestedGamePath: maskedGame,
-        },
+        expected: game,
       })
     })
     it('returns masked game if no errors with nested deck paths if nothing for user', () => {
-      const maskedGame = TestUtil.getGame({})
+      const game = TestUtil.getGame({})
       const userId = new ObjectId().toString()
       testScopeToUser({
         ctx: {
@@ -605,7 +544,7 @@ describe('subscription-resolver', () => {
         },
         payload: {
           testSubscriptionName: {
-            testNestedGamePath: TestUtil.getGame({}),
+            game,
             discarded: {
               [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
             },
@@ -618,13 +557,11 @@ describe('subscription-resolver', () => {
           },
         },
         subscriptionName: 'testSubscriptionName',
-        nestedGamePath: 'testNestedGamePath',
         nestedDiscardPath: 'discarded',
         nestedUndiscardPath: 'undiscarded',
         nestedUnhandPath: 'unhanded',
-        maskedGame,
         expected: {
-          testNestedGamePath: maskedGame,
+          game,
           discarded: [],
           undiscarded: [],
           unhanded: [],
@@ -632,7 +569,7 @@ describe('subscription-resolver', () => {
       })
     })
     it('returns masked game if no errors with nested deck paths filtering to user', () => {
-      const maskedGame = TestUtil.getGame({})
+      const game = TestUtil.getGame({})
       const userId = new ObjectId().toString()
       const deckUnit1 = TestUtil.getDeckUnit({})
       const deckUnit2 = TestUtil.getDeckUnit({})
@@ -647,7 +584,7 @@ describe('subscription-resolver', () => {
         },
         payload: {
           testSubscriptionName: {
-            testNestedGamePath: TestUtil.getGame({}),
+            game,
             discarded: {
               [new ObjectId().toString()]: [TestUtil.getDeckUnit({})],
               [userId]: [deckUnit1],
@@ -664,13 +601,11 @@ describe('subscription-resolver', () => {
           },
         },
         subscriptionName: 'testSubscriptionName',
-        nestedGamePath: 'testNestedGamePath',
         nestedDiscardPath: 'discarded',
         nestedUndiscardPath: 'undiscarded',
         nestedUnhandPath: 'unhanded',
-        maskedGame,
         expected: {
-          testNestedGamePath: maskedGame,
+          game,
           discarded: [deckUnit1],
           undiscarded: [deckUnit2],
           unhanded: [deckUnit3],
@@ -685,24 +620,20 @@ describe('subscription-resolver', () => {
       }
       const payload = {
         testSubscriptionName: {
-          testNestedGamePath: TestUtil.getGame({}),
+          game: TestUtil.getGame({}),
         },
       }
-      const maskedGame = TestUtil.getGame({})
       testScopeToUser({
         ctx,
         payload,
         subscriptionName: 'testSubscriptionName',
-        maskedGame,
-        nestedGamePath: 'testNestedGamePath',
         expected: {
-          testNestedGamePath: maskedGame,
+          game: payload.testSubscriptionName.game,
         },
         traceEnabled: true,
         traceCalls: [
           [`testSubscriptionName scopeToUser payload: "${JSON.stringify(payload)}"`],
           [`testSubscriptionName scopeToUser ctx: "${JSON.stringify(ctx)}"`],
-          [`testSubscriptionName scopeToUser nestedGamePath: "testNestedGamePath"`],
         ],
       })
     })
@@ -885,11 +816,9 @@ function testScopeToUser({
   payload,
   ctx,
   subscriptionName,
-  nestedGamePath,
   nestedDiscardPath,
   nestedUndiscardPath,
   nestedUnhandPath,
-  maskedGame,
   expected,
   traceEnabled,
   errorCalls = [],
@@ -898,23 +827,14 @@ function testScopeToUser({
   payload: any
   ctx: Context
   subscriptionName: string
-  nestedGamePath?: string
   nestedDiscardPath?: string
   nestedUndiscardPath?: string
   nestedUnhandPath?: string
-  maskedGame?: Game
   expected?: any | Error
   traceEnabled?: boolean
   errorCalls?: string[][]
   traceCalls?: string[][]
 }) {
-  const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`
-  const maskSpiedHandUnitsSpy = jest.spyOn(GameResolver, 'maskSpiedHandUnits')
-  if (maskedGame) {
-    maskSpiedHandUnitsSpy.mockReturnValue(maskedGame)
-  }
-  const getNestedPropertySpy = jest.spyOn(utils, 'getNestedProperty')
-  const setNestedPropertySpy = jest.spyOn(utils, 'setNestedProperty')
   const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   SubscriptionResolver['logger'] = {
@@ -929,7 +849,6 @@ function testScopeToUser({
         ctx,
         payload,
         subscriptionName,
-        nestedGamePath,
         nestedDiscardPath,
         nestedUndiscardPath,
         nestedUnhandPath,
@@ -941,51 +860,12 @@ function testScopeToUser({
         ctx,
         payload,
         subscriptionName,
-        nestedGamePath,
         nestedDiscardPath,
         nestedUndiscardPath,
         nestedUnhandPath,
       })
     ).toEqual(expected)
   }
-
-  expect(maskSpiedHandUnitsSpy.mock.calls).toEqual(
-    maskedGame
-      ? [
-          [
-            {
-              game: getNestedPropertySpy.mock.results[0].value,
-              userId: ctx.session?.user?._id.toString(),
-            },
-          ],
-        ]
-      : []
-  )
-  expect(getNestedPropertySpy.mock.calls).toEqual(
-    ctx.session?.user?._id
-      ? [
-          [
-            {
-              obj: payload,
-              nestedProperty,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(setNestedPropertySpy.mock.calls).toEqual(
-    expected instanceof Error
-      ? []
-      : [
-          [
-            {
-              obj: payload,
-              path: nestedProperty,
-              value: maskedGame,
-            },
-          ],
-        ]
-  )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

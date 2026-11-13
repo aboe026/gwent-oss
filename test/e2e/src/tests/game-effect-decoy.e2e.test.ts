@@ -90,7 +90,6 @@ test('Cannot decoy another decoy', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await gameManager.initialize({})
@@ -135,7 +134,6 @@ test('Decoy close combat unit', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await GamePage.fullscreenCombatCard({
@@ -170,7 +168,6 @@ test('Decoy ranged combat unit', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Ranged,
-      effectiveStrength: 6,
     },
   })
   await GamePage.fullscreenCombatCard({
@@ -205,7 +202,6 @@ test('Decoy siege combat unit', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Siege,
-      effectiveStrength: 10,
     },
   })
   await GamePage.fullscreenCombatCard({
@@ -241,7 +237,6 @@ test('Decoy one of many', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await GamePage.fullscreenCombatCard({
@@ -277,7 +272,6 @@ test('Decoy one of same name', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Ranged,
-      effectiveStrength: 10,
     },
   })
   await GamePage.fullscreenCombatCard({
@@ -320,7 +314,6 @@ test('Decoy unit when opponent has same deployed', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await GamePage.fullscreenCombatCard({
@@ -352,7 +345,6 @@ test('Can redeploy decoyed unit', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await gameManager.initialize({})
@@ -396,7 +388,6 @@ test('Game and hand updated if decoy performed via API', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await GamePage.fullscreenCombatCard({
@@ -428,7 +419,6 @@ test('Selecting hand unit after Decoy highlights history, impact and hand unit',
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await gameManager.initialize({})
@@ -492,7 +482,6 @@ test('Selecting history after Decoy highlights history, impact and hand unit', a
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await gameManager.initialize({})
@@ -560,7 +549,6 @@ test('Selecting impact after Decoy highlights history, impact and hand unit', as
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
   await gameManager.initialize({})

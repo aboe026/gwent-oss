@@ -14,6 +14,7 @@ import {
   Impact,
   Leader,
   Move,
+  MoveFaction,
   MoveReasonType,
   MoveUnit,
   MoveUnitReason,
@@ -398,6 +399,7 @@ export function expectizeGame({
     leader?: Leader | null
     ready?: boolean
     rounds?: PlayerRound[]
+    reviving?: boolean
     user: User
     order?: number | null
   }[]
@@ -427,6 +429,9 @@ export function expectizeGame({
       }
       if (!player.ready) {
         player.ready = false
+      }
+      if (!player.reviving) {
+        player.reviving = false
       }
       if (player.order === undefined) {
         player.order = null
@@ -530,12 +535,14 @@ export function expectizeGamePlayer({
   order = null,
   ready = false,
   rounds = [],
+  reviving = false,
 }: {
   user: User
   gameDeck: GameDeck
   order?: number | null
   ready?: boolean
   rounds?: PlayerRound[]
+  reviving?: boolean
 }): GamePlayer {
   return {
     ready,
@@ -549,6 +556,7 @@ export function expectizeGamePlayer({
     faction: gameDeck.from?.faction,
     leader: gameDeck.from?.leader,
     order,
+    reviving,
   }
 }
 
@@ -600,6 +608,15 @@ export function expectizeMoveUnit({
     reason,
     impacts,
     source,
+  }
+  return move
+}
+
+export function expectizeMoveFaction({ faction, impacts }: { faction: Faction; impacts?: Impact[] }) {
+  const move: MoveFaction = {
+    created: expect.any(Date),
+    faction,
+    impacts,
   }
   return move
 }

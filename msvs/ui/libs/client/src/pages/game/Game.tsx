@@ -10,8 +10,6 @@ import {
   DeckUnitFragmentDoc,
   EffectKey,
   FieldUnitEffectFragmentDoc,
-  FieldUnitFragment,
-  FieldUnitFragmentDoc,
   FragmentType,
   GameDeckDocument,
   GameDeckFragmentDoc,
@@ -26,7 +24,6 @@ import {
   GameStatus,
   MoveFragmentDoc,
   MoveUnitFragmentDoc,
-  PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
   PlayPassDocument,
   PlayUnitDocument,
@@ -266,7 +263,18 @@ export default function GamePage() {
               })
               if (handUnitIndex >= 0) {
                 unitDeployed = newHand[handUnitIndex]
-                newHand.splice(handUnitIndex, 1)
+                const unitDeployedEffects = useFragment(
+                  UnitEffectFragmentDoc,
+                  useFragment(UnitFragmentDoc, unitDeployed.unit).effects
+                )
+                // assume spied hand unit will get removed by subscription
+                // otherwise risk potential "double remove" if someone
+                // had both their own spy and an idential spy from an opponent they decoyed into their hand
+                // this should eventually be correctly avoided by adding "owner/originator" to GameUnit cards
+                // so can match on both that and id to determine if it should be removed from hand or not
+                if (!unitDeployedEffects || !unitDeployedEffects.some((effect) => effect.key === EffectKey.Spy)) {
+                  newHand.splice(handUnitIndex, 1)
+                }
               } else {
                 const discardUnitIndex = previous.gameDeck.discard.findIndex((deckUnit) => {
                   return deckUnit.unit.id === variables?.unit
@@ -295,64 +303,85 @@ export default function GamePage() {
               }
 
               // add decoyed unit to hand
-              if (
-                cardSelectedUnit.effects &&
-                cardSelectedUnit.effects.some(
-                  (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy
-                )
-              ) {
-                const previousGame = useFragment(GameFragmentDoc, gameData?.game)
-                if (previousGame) {
-                  const previousPlayer = useFragment(GamePlayerFragmentDoc, previousGame.players).find(
-                    (player) => player.user.name === user.name
-                  )
-                  if (!previousPlayer) {
-                    throw Error(
-                      `Could not find previous player "${user.name}" among game players "${JSON.stringify(data.playUnit.players)}`
-                    )
-                  }
-                  const previousPlayerRound = useFragment(
-                    PlayerRoundFragmentDoc,
-                    previousPlayer.rounds[previousGame.round - 1]
-                  )
-                  const previousBattlefieldUnits: FieldUnitFragment[] = [
-                    ...useFragment(
-                      FieldUnitFragmentDoc,
-                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.close).units
-                    ),
-                    ...useFragment(
-                      FieldUnitFragmentDoc,
-                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.ranged).units
-                    ),
-                    ...useFragment(
-                      FieldUnitFragmentDoc,
-                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
-                    ),
-                  ]
-                  let targetUnit: DeckUnitFragment | undefined = undefined
-                  for (let i = 0; i < previousBattlefieldUnits.length && !targetUnit; i++) {
-                    const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
-                    const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
-                    if (previousBattlefieldUnit.id === variables?.target) {
-                      targetUnit = {
-                        __typename: 'DeckUnit',
-                        artStyle: previousBattlefieldGameUnit.artStyle,
-                        unit: previousBattlefieldUnit,
-                      }
-                    }
-                  }
-                  if (!targetUnit) {
-                    throw Error(`Could not find target unit "${variables?.target}" in previous game`)
-                  }
-                  if (
-                    !newHand
-                      .map((handUnit) => handUnit.unit.id)
-                      .includes(useFragment(UnitFragmentDoc, targetUnit.unit).id)
-                  ) {
-                    newHand.push(targetUnit as DeckUnitRaw)
-                  }
-                }
-              }
+
+              // assume decoyed target unit will get added by subscription
+              // otherwise risk potential "double add" if someone
+              // had both their own spy and an idential spy from an opponent they decoy into their hand
+              // this should eventually be correctly avoided by adding "owner/originator" to GameUnit cards
+              // so can match on both that and id to determine if it should be removed from hand or not
+
+              // if (
+              //   cardSelectedUnit.effects &&
+              //   cardSelectedUnit.effects.some(
+              //     (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy
+              //   )
+              // ) {
+              //   const previousGame = useFragment(GameFragmentDoc, gameData?.game)
+              //   if (previousGame) {
+              //     const previousPlayer = useFragment(GamePlayerFragmentDoc, previousGame.players).find(
+              //       (player) => player.user.name === user.name
+              //     )
+              //     if (!previousPlayer) {
+              //       throw Error(
+              //         `Could not find previous player "${user.name}" among game players "${JSON.stringify(data.playUnit.players)}`
+              //       )
+              //     }
+              //     const previousPlayerRound = useFragment(
+              //       PlayerRoundFragmentDoc,
+              //       previousPlayer.rounds[previousGame.round - 1]
+              //     )
+              //     const previousBattlefieldUnits: FieldUnitFragment[] = [
+              //       ...useFragment(
+              //         FieldUnitFragmentDoc,
+              //         useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.close).units
+              //       ),
+              //       ...useFragment(
+              //         FieldUnitFragmentDoc,
+              //         useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.ranged).units
+              //       ),
+              //       ...useFragment(
+              //         FieldUnitFragmentDoc,
+              //         useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
+              //       ),
+              //     ]
+              //     let targetDeckUnit: DeckUnitFragment | undefined = undefined
+              //     for (let i = 0; i < previousBattlefieldUnits.length && !targetDeckUnit; i++) {
+              //       const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
+              //       const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
+              //       if (previousBattlefieldUnit.id === variables?.target) {
+              //         targetDeckUnit = {
+              //           __typename: 'DeckUnit',
+              //           artStyle: previousBattlefieldGameUnit.artStyle,
+              //           unit: previousBattlefieldUnit,
+              //         }
+              //       }
+              //     }
+              //     if (!targetDeckUnit) {
+              //       throw Error(`Could not find target unit "${variables?.target}" in previous game`)
+              //     }
+              //     const targetUnit = useFragment(UnitFragmentDoc, targetDeckUnit.unit)
+              //     const targetUnitIsSpy =
+              //       targetUnit.effects &&
+              //       targetUnit.effects.some(
+              //         (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Spy
+              //       )
+              //     const targetUnitsInOldHand = previous.gameDeck.hand.filter(
+              //       (handUnit) => handUnit.unit.id === targetUnit.id
+              //     )
+              //     const targetUnitsInNewHand = newHand.filter((handUnit) => handUnit.unit.id === targetUnit.id)
+              //     // since a spy is the only card that can come from another player
+              //     // and therefore the only card that can already be in your hand
+              //     // add a decoyed spy to hand even if it is already in hand
+              //     // should be updated in future to key off "owner/originator" of card
+              //     // for a bullet-proof solution instead of this mostly working assumption
+              //     if (
+              //       (!targetUnitIsSpy && targetUnitsInNewHand.length < targetUnitsInOldHand.length) ||
+              //       (targetUnitIsSpy && targetUnitsInNewHand.length === targetUnitsInOldHand.length)
+              //     ) {
+              //       newHand.push(targetDeckUnit as DeckUnitRaw)
+              //     }
+              //   }
+              // }
 
               return {
                 gameDeck: {

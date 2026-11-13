@@ -67,7 +67,7 @@ fixture('Games Status')
     t.ctx.game = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
   })
 
-test('Automatically updated with ordering status if decks set through API and self is scoitael', async (t) => {
+test('Automatically updated with ordering status if decks set through API and self is scoiatael', async (t) => {
   const selfDeck = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
   const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
@@ -104,7 +104,7 @@ test('Automatically updated with ordering status if decks set through API and se
   })
 })
 
-test('Automatically updated with ordering status if decks set through API and opponent is scoitael', async (t) => {
+test('Automatically updated with ordering status if decks set through API and opponent is scoiatael', async (t) => {
   const selfDeck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
   const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.self.client.setDeck({

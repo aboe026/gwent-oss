@@ -130,57 +130,6 @@ describe('play-unit-validation', () => {
           warnCalls: [[`${logPrefix} failed: ${message}`]],
         })
       })
-      it('throws error if unit is in hand more than once', async () => {
-        const deckUnit = TestUtil.getDbDeckUnit({})
-        const game = TestUtil.getDbGame({
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                hand: [deckUnit, deckUnit],
-              }),
-            }),
-          ],
-        })
-        const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-        const message = `Found more than 1 unit with ID "${deckUnit.unit}" in hand`
-        await testPlayUnitValidation({
-          isAuthenticatedResponse: user,
-          isGamePlayerResponse: {
-            game,
-            player: game.players[0],
-          },
-          unitId: deckUnit.unit.toString(),
-          logPrefix,
-          expectedError: Error(`${message}.`),
-          errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([deckUnit, deckUnit])}"`]],
-        })
-      })
-      it('throws error if unit is in discard more than once', async () => {
-        const deckUnit = TestUtil.getDbDeckUnit({})
-        const game = TestUtil.getDbGame({
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                discard: [deckUnit, deckUnit],
-              }),
-              reviving: true,
-            }),
-          ],
-        })
-        const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-        const message = `Found more than 1 unit with ID "${deckUnit.unit}" in discard`
-        await testPlayUnitValidation({
-          isAuthenticatedResponse: user,
-          isGamePlayerResponse: {
-            game,
-            player: game.players[0],
-          },
-          unitId: deckUnit.unit.toString(),
-          logPrefix,
-          expectedError: Error(`${message}.`),
-          errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([deckUnit, deckUnit])}"`]],
-        })
-      })
       it('throws error if unit does not exist', async () => {
         const deckUnit = TestUtil.getDbDeckUnit({})
         const game = TestUtil.getDbGame({
@@ -354,6 +303,75 @@ describe('play-unit-validation', () => {
           units: [unit],
           logPrefix,
           expectedDeckUnit: deckUnit,
+        })
+      })
+      it('uses first hand unit if multiple in hand with same id', async () => {
+        const deckUnit1 = TestUtil.getDbDeckUnit({
+          artStyle: 1,
+        })
+        const deckUnit2 = TestUtil.getDbDeckUnit({
+          id: deckUnit1.unit,
+          artStyle: 2,
+        })
+        const game = TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [deckUnit1, deckUnit2],
+              }),
+            }),
+          ],
+        })
+        const unit = TestUtil.getDbUnit({
+          id: deckUnit1.unit,
+        })
+        const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit1.unit}" on game "${game._id}"`
+        await testPlayUnitValidation({
+          isAuthenticatedResponse: user,
+          isGamePlayerResponse: {
+            game,
+            player: game.players[0],
+          },
+          unitId: deckUnit1.unit.toString(),
+          units: [unit],
+          logPrefix,
+          expectedDeckUnit: deckUnit1,
+          validateCombatResponse: Combat.Close,
+        })
+      })
+      it('uses first discard unit if multiple in discard with same id', async () => {
+        const deckUnit1 = TestUtil.getDbDeckUnit({
+          artStyle: 1,
+        })
+        const deckUnit2 = TestUtil.getDbDeckUnit({
+          id: deckUnit1.unit,
+          artStyle: 2,
+        })
+        const game = TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                discard: [deckUnit1, deckUnit2],
+              }),
+              reviving: true,
+            }),
+          ],
+        })
+        const unit = TestUtil.getDbUnit({
+          id: deckUnit1.unit,
+        })
+        const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit1.unit}" on game "${game._id}"`
+        await testPlayUnitValidation({
+          isAuthenticatedResponse: user,
+          isGamePlayerResponse: {
+            game,
+            player: game.players[0],
+          },
+          unitId: deckUnit1.unit.toString(),
+          units: [unit],
+          logPrefix,
+          expectedDeckUnit: deckUnit1,
+          validateCombatResponse: Combat.Close,
         })
       })
       it('overwrites combat and sets roundUnits if valid decoy', async () => {

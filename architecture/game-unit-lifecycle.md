@@ -10,7 +10,6 @@ title: Game Unit Lifecycle
 ---
 flowchart TB
   subgraph Self
-    direction TB
     undrawn[Undrawn] --> |Game Start #124; Redraw #124; Spy| hand[Hand]
     undrawn --> |Muster| field[Field]
     hand --> |Redraw| undrawn
@@ -22,10 +21,9 @@ flowchart TB
     discard --> |Revive #124; Summon| field
   end
   subgraph Opponent
-    direction TB
     opponentHand[Hand] -.-> |Spy| field[Field]
     hand --> |Spy| opponentField[Field]
-    discard --> |Spy| opponentField[Field]
-    opponentDiscard[Discard] -.-> |Spy| field[Field]
+    discard --> |Revive Spy| opponentField[Field]
+    opponentDiscard[Discard] -.-> |Revive Spy| field[Field]
   end
 ```

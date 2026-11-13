@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.28.0 - 2026-11-12
+
+### Added
+
+- Norther Realms faction ability ([#66](https://github.com/aboe026/gwent-oss/pull/66)) (Adam Boe)
+
 ## 0.27.1 - 2026-09-05
 
 ### Fixed

@@ -12,6 +12,9 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- ensure test files are getting linted properly (also regular files dont seem to error on typescript errors?)
+- fix occurrences for some cards to be correct
+- update text on abilities to be clearer
 - Medic sometimes does not show all cards that can be revived?
   - requires page refresh to fix, so must be problem with cache. Related to having lost cards from previous rounds interfering?
 - show what caused avengee to leave battlefield (scorch unit or round ending)?
@@ -44,10 +47,14 @@ Existing problems in the codebase that need to be fixed.
 - have node-client export class instead of function (attempted to but lost typings)
 - restrict/filter subscriptions to just active game?
 - use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
+- move "scopeToUser" logic in subscription-resolver to be on "fields" resolver for subscription type
+- move "effectAbilities" logic in unit-resolver to be on "fields" resolver for Unit (or Effect?) type
 - How to handle multiple spies in hand (e.g. decoying opponents spy into hand when already have same one in hand)? add "owner" property to GameUnit types?
 - improve UX around game player info (username, score, rounds, passed)
 - message to clear filters in DeckEditor when filter shows none
 - shared component for card "accordion" container
+- replace homemade database upgrader with third party db migration package (migrate-mongo?)
+- refactor into Object-Oriented Programming (using codegen types as interfaces for classes with methods)
 - Use bespoke weather effects (eg icicles for Biting Frost, haze for Impenetrable Fog, raindrops for Torrential Rain) on combat rows instead of generic red
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations
@@ -89,10 +96,12 @@ Existing problems in the codebase that need to be fixed.
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - replace "effectiveStrength" with "score" for GameUnit
   - rename "CalculateGameEffectiveStrengths" to just "UnitScores"
+  - update resource descriptions to use "score" instead of "strength"
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
   - update places in UI code which check user/player by ".name" and switch them to ".id"
 - Have "DateTime" on resolver object map to javascript Date object?
 - Make Combat a type (because of image)
+- show non-deckable units when creating/editing deck (just don't let them be select-able). Will help people know what they are (like for avenger/mardroeme effects)
 - If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
 - have log4js config be dynamic
   - target log level of specific classes/loggers
@@ -108,7 +117,7 @@ Existing problems in the codebase that need to be fixed.
 - dynamically set scenario name for e2e tests based on their fixture name, have it set on context
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
-- change game.round to 0 based indexing?
+- change game.round to 0 based indexing? especially since no longer rely on value of "0" to be before game starts (relying strickly on game status for that)
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
 - have non-gwent images (Caddy, Mongo) run as non-root
@@ -148,6 +157,10 @@ New things that should be added to the codebase.
 - "spectator" mode
   - allow anyone or select users to view game
   - hide Game Hands
+- Multi-opponent games
+- "War" game mode
+  - like Condottiere, series of battles over territories from the Witcher map
+  - change "game" references in UI/resources.json (and maybe API?) to "battle" instead
 - game history improvements
   - search bar (unit name?)
   - expand/collapse all

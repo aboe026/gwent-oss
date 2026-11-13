@@ -2,7 +2,14 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, setDeck } from './util/graphql-util'
-import { expectizeGame, expectizeGameDeck, expectizeGamePlayer, verifyGameDeckSet } from './util/expect-util'
+import {
+  expectizeGame,
+  expectizeGameDeck,
+  expectizeGamePlayer,
+  expectizeMoveFaction,
+  expectizePlayerRound,
+  verifyGameDeckSet,
+} from './util/expect-util'
 import { FactionKey, GameDeck, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 import { getGameDeckFragment } from './util/fragment-util'
 import { NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
@@ -913,11 +920,13 @@ describe('set-deck-mutation', () => {
           gameDeck: response1.data?.setDeck as GameDeck,
           user: user1,
           order: updatedGame2.turn?.user.id === user1.id ? 0 : 1,
+          rounds: [expectizePlayerRound({})],
         })
         const gamePlayer2 = expectizeGamePlayer({
           gameDeck: response2.data?.setDeck as GameDeck,
           user: user2,
           order: updatedGame2.turn?.user.id === user2.id ? 0 : 1,
+          rounds: [expectizePlayerRound({})],
         })
         expect(updatedGame2).toEqual(
           expectizeGame({
@@ -925,6 +934,7 @@ describe('set-deck-mutation', () => {
             players: [gamePlayer1, gamePlayer2],
             status: GameStatus.Redrawing,
             turn: updatedGame2.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+            round: 1,
           })
         )
         expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame1.updated.getTime())
@@ -1057,11 +1067,31 @@ describe('set-deck-mutation', () => {
           gameDeck: response1.data?.setDeck as GameDeck,
           user: user1,
           order: updatedGame2.turn?.user.id === user1.id ? 0 : 1,
+          rounds: [
+            expectizePlayerRound({
+              moves: [
+                expectizeMoveFaction({
+                  faction: deck1.faction,
+                  impacts: [],
+                }),
+              ],
+            }),
+          ],
         })
         const gamePlayer2 = expectizeGamePlayer({
           gameDeck: response2.data?.setDeck as GameDeck,
           user: user2,
           order: updatedGame2.turn?.user.id === user2.id ? 0 : 1,
+          rounds: [
+            expectizePlayerRound({
+              moves: [
+                expectizeMoveFaction({
+                  faction: deck2.faction,
+                  impacts: [],
+                }),
+              ],
+            }),
+          ],
         })
         expect(updatedGame2).toEqual(
           expectizeGame({
@@ -1069,6 +1099,7 @@ describe('set-deck-mutation', () => {
             players: [gamePlayer1, gamePlayer2],
             status: GameStatus.Redrawing,
             turn: updatedGame2.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+            round: 1,
           })
         )
         expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame1.updated.getTime())

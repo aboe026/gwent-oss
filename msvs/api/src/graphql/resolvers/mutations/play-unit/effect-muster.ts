@@ -77,7 +77,7 @@ export default class EffectMuster {
     const hasMusterEffect =
       musterEffect &&
       newUnit.effects &&
-      newUnit.effects.map((id) => id.toString()).includes(musterEffect._id.toString())
+      newUnit.effects.some((effect) => effect.toString() === musterEffect._id.toString())
     if (EffectMuster.logger.isTraceEnabled()) {
       EffectMuster.logger.trace(`${logPrefix} hasMusterEffect: "${hasMusterEffect}"`)
     }
@@ -98,7 +98,12 @@ export default class EffectMuster {
       }
 
       for (const musterableUnit of musterableUnits) {
-        impacts[musterableUnit._id.toString()] = []
+        if (
+          musterableUnit.effects &&
+          musterableUnit.effects.some((effect) => effect.toString() === musterEffect._id.toString())
+        ) {
+          impacts[musterableUnit._id.toString()] = []
+        }
         const { impact, origin } = EffectMuster.getMusterImpact({
           game,
           logPrefix,

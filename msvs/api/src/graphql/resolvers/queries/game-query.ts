@@ -46,9 +46,6 @@ export default class GameQuery {
       game,
     })
 
-    return GameResolver.maskSpiedHandUnits({
-      game: resolvedGame,
-      userId,
-    })
+    return resolvedGame
   }
 }

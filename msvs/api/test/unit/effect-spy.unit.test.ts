@@ -222,6 +222,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -312,6 +313,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
                 {
                   unit: TestUtil.getDbGameUnit({
@@ -320,6 +322,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -419,6 +422,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
                 {
                   unit: TestUtil.getDbGameUnit({
@@ -427,6 +431,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -591,6 +596,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -681,6 +687,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
                 {
                   unit: TestUtil.getDbGameUnit({
@@ -689,6 +696,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -788,6 +796,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
                 {
                   unit: TestUtil.getDbGameUnit({
@@ -796,6 +805,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -960,6 +970,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -1050,6 +1061,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
                 {
                   unit: TestUtil.getDbGameUnit({
@@ -1058,6 +1070,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },
@@ -1157,6 +1170,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
                 {
                   unit: TestUtil.getDbGameUnit({
@@ -1165,6 +1179,7 @@ describe('effect-spy', () => {
                     type: GameUnitType.Deck,
                   }),
                   user: self.user,
+                  scope: self.user,
                 },
               ],
             },

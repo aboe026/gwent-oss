@@ -33,7 +33,6 @@ export default class ReadyMutation {
     return ReadyResolution.readyResolution({
       game: updatedGame,
       logPrefix,
-      userId,
     })
   }
 }

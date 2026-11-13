@@ -2,20 +2,24 @@ import { ObjectId } from 'mongodb'
 
 import {
   DeckUnit,
+  Faction,
   FieldUnit,
   Impact,
   Leader,
   Move,
+  MoveFaction,
   MoveLeader,
   MovePass,
   Unit,
   User,
 } from '@gwent-oss/graphql-schema/resolver-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
+import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FieldUnitResolver from '../../src/graphql/resolvers/types/field-unit-resolver'
 import {
   GameUnitOrigin,
   MoveDbObject,
+  MoveFactionDbObject,
   MoveLeaderDbObject,
   MovePassDbObject,
   MoveReasonType,
@@ -40,20 +44,76 @@ describe('move-resolver', () => {
         error: Error(`Invalid Move type "${type}".`),
       })
     })
+    describe('faction', () => {
+      it('calls to resolve faction if FactionMove and no faction provided', async () => {
+        const faction = TestUtil.getFaction({})
+        const move: MoveFactionDbObject = {
+          created: new Date(),
+          faction: new ObjectId(faction.id),
+          impacts: [],
+          type: MoveType.Faction,
+        }
+        const impacts = [
+          TestUtil.getImpact({
+            unit: TestUtil.getFieldUnit({}),
+            user: TestUtil.getUser({}),
+          }),
+        ]
+        await testFromObject({
+          move,
+          factionFromIdResponse: faction,
+          impactFromArrayResponse: impacts,
+          expected: {
+            created: move.created,
+            faction,
+            impacts,
+            __typename: 'MoveFaction',
+          } as MoveFaction,
+        })
+      })
+      it('does not call to resolve faction if FactionMove and faction provided', async () => {
+        const faction = TestUtil.getFaction({})
+        const move: MoveFactionDbObject = {
+          created: new Date(),
+          faction: new ObjectId(faction.id),
+          impacts: [],
+          type: MoveType.Faction,
+        }
+        await testFromObject({
+          move,
+          faction,
+          expected: {
+            created: move.created,
+            faction,
+            impacts: [],
+            __typename: 'MoveFaction',
+          } as MoveFaction,
+        })
+      })
+    })
     describe('leader', () => {
       it('calls to resolve leader if LeaderMove and no leader provided', async () => {
         const leader = TestUtil.getLeader({})
         const move: MoveLeaderDbObject = {
           created: new Date(),
           leader: new ObjectId(leader.id),
+          impacts: [],
           type: MoveType.Leader,
         }
+        const impacts = [
+          TestUtil.getImpact({
+            unit: TestUtil.getFieldUnit({}),
+            user: TestUtil.getUser({}),
+          }),
+        ]
         await testFromObject({
           move,
           leaderFromIdResponse: leader,
+          impactFromArrayResponse: impacts,
           expected: {
             created: move.created,
             leader,
+            impacts,
             __typename: 'MoveLeader',
           } as MoveLeader,
         })
@@ -63,6 +123,7 @@ describe('move-resolver', () => {
         const move: MoveLeaderDbObject = {
           created: new Date(),
           leader: new ObjectId(leader.id),
+          impacts: [],
           type: MoveType.Leader,
         }
         await testFromObject({
@@ -71,6 +132,7 @@ describe('move-resolver', () => {
           expected: {
             created: move.created,
             leader,
+            impacts: [],
             __typename: 'MoveLeader',
           } as MoveLeader,
         })
@@ -107,6 +169,7 @@ describe('move-resolver', () => {
           reason: {
             type: MoveReasonType.Deploy,
           },
+          impacts: [],
           source: {
             origin: GameUnitOrigin.Hand,
           },
@@ -133,6 +196,7 @@ describe('move-resolver', () => {
             type: MoveReasonType.Deploy,
             unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
+          impacts: [],
           source: {
             origin: GameUnitOrigin.Hand,
           },
@@ -163,6 +227,7 @@ describe('move-resolver', () => {
           reason: {
             type: MoveReasonType.Deploy,
           },
+          impacts: [],
           source: {
             origin: GameUnitOrigin.Hand,
             user: userId,
@@ -194,6 +259,7 @@ describe('move-resolver', () => {
           reason: {
             type: MoveReasonType.Deploy,
           },
+          impacts: [],
           source: {
             origin: GameUnitOrigin.Hand,
           },
@@ -224,6 +290,7 @@ describe('move-resolver', () => {
           reason: {
             type: MoveReasonType.Deploy,
           },
+          impacts: [],
           source: {
             origin: GameUnitOrigin.Hand,
           },
@@ -278,6 +345,7 @@ describe('move-resolver', () => {
             type: MoveReasonType.Deploy,
             unit: TestUtil.convertDeckDbUnitToGameDbUnit(deckUnit),
           },
+          impacts: [],
           source: {
             origin: GameUnitOrigin.Hand,
             user: new ObjectId(sourceUser.id),
@@ -342,6 +410,7 @@ describe('move-resolver', () => {
             origin: GameUnitOrigin.Hand,
             user: new ObjectId(sourceUser.id),
           },
+          impacts: [],
           target: new ObjectId(targetUser.id),
         }
         await testFromObject({
@@ -447,6 +516,13 @@ describe('move-resolver', () => {
             },
           ],
         ],
+        factionsFromIdsCalls: [
+          [
+            {
+              ids: [],
+            },
+          ],
+        ],
         moveFromObjectCalls: [
           [
             {
@@ -476,15 +552,10 @@ describe('move-resolver', () => {
         errorCalls: [[`${message}, move: "${JSON.stringify(leaderMove1)}"`]],
       })
     })
-    it('returns empty array if given one', async () => {
-      await testFromArray({
-        moves: [],
-      })
-    })
-    it('returns moves without optional inputs', async () => {
+    it('throws error if faction not found', async () => {
       const fieldUnits = [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})]
       const userId = new ObjectId()
-      const leaderId = new ObjectId()
+      const faction = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
         unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
@@ -519,13 +590,13 @@ describe('move-resolver', () => {
           origin: GameUnitOrigin.Hand,
         },
       })
-      const leaderMove1 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
+      const factionMove1 = TestUtil.getDbMove({
+        type: MoveType.Faction,
+        factionId: faction,
       })
-      const leaderMove2 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
+      const factionMove2 = TestUtil.getDbMove({
+        type: MoveType.Faction,
+        factionId: faction,
       })
       const resolvedUnits = [
         TestUtil.getUnit({
@@ -540,20 +611,23 @@ describe('move-resolver', () => {
           id: userId,
         }),
       ]
-      const resolvedLeaders = [
-        TestUtil.getLeader({
-          id: leaderId,
-        }),
-      ]
+      const message = `Could not find move faction "${faction}"`
       await testFromArray({
-        moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
+        moves: [unitMove1, unitMove2, unitMove3, factionMove1, factionMove2],
         resolvedUnits,
         resolvedUsers,
-        resolvedLeaders,
+        error: Error(`${message}.`),
         leadersFromIdsCalls: [
           [
             {
-              ids: [leaderId.toString()],
+              ids: [],
+            },
+          ],
+        ],
+        factionsFromIdsCalls: [
+          [
+            {
+              ids: [faction.toString()],
             },
           ],
         ],
@@ -582,29 +656,20 @@ describe('move-resolver', () => {
               users: resolvedUsers,
             },
           ],
-          [
-            {
-              move: leaderMove1,
-              leader: resolvedLeaders[0],
-              units: resolvedUnits,
-              users: resolvedUsers,
-            },
-          ],
-          [
-            {
-              move: leaderMove1,
-              leader: resolvedLeaders[0],
-              units: resolvedUnits,
-              users: resolvedUsers,
-            },
-          ],
         ],
+        errorCalls: [[`${message}, move: "${JSON.stringify(factionMove1)}"`]],
       })
     })
-    it('returns moves with optional inputs', async () => {
+    it('returns empty array if given one', async () => {
+      await testFromArray({
+        moves: [],
+      })
+    })
+    it('returns moves without optional inputs', async () => {
       const fieldUnits = [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})]
       const userId = new ObjectId()
       const leaderId = new ObjectId()
+      const factionId = new ObjectId()
       const unitMove1 = TestUtil.getDbMove({
         type: MoveType.Unit,
         unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
@@ -647,6 +712,14 @@ describe('move-resolver', () => {
         type: MoveType.Leader,
         leaderId,
       })
+      const factionMove1 = TestUtil.getDbMove({
+        type: MoveType.Faction,
+        factionId,
+      })
+      const factionMove2 = TestUtil.getDbMove({
+        type: MoveType.Faction,
+        factionId,
+      })
       const resolvedUnits = [
         TestUtil.getUnit({
           id: fieldUnits[0].unit,
@@ -665,15 +738,193 @@ describe('move-resolver', () => {
           id: leaderId,
         }),
       ]
+      const resolvedFactions = [
+        TestUtil.getFaction({
+          id: factionId,
+        }),
+      ]
       await testFromArray({
-        moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
-        units: resolvedUnits,
-        users: resolvedUsers,
+        moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2, factionMove1, factionMove2],
+        resolvedUnits,
+        resolvedUsers,
         resolvedLeaders,
+        resolvedFactions,
         leadersFromIdsCalls: [
           [
             {
               ids: [leaderId.toString()],
+            },
+          ],
+        ],
+        factionsFromIdsCalls: [
+          [
+            {
+              ids: [factionId.toString()],
+            },
+          ],
+        ],
+        moveFromObjectCalls: [
+          [
+            {
+              move: unitMove1,
+              leader: undefined,
+              faction: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+          [
+            {
+              move: unitMove2,
+              leader: undefined,
+              faction: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+          [
+            {
+              move: unitMove3,
+              leader: undefined,
+              faction: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+          [
+            {
+              move: leaderMove1,
+              leader: resolvedLeaders[0],
+              faction: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+          [
+            {
+              move: leaderMove1,
+              leader: resolvedLeaders[0],
+              faction: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+          [
+            {
+              move: factionMove1,
+              faction: resolvedFactions[0],
+              leader: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+          [
+            {
+              move: factionMove2,
+              faction: resolvedFactions[0],
+              leader: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns moves with optional inputs', async () => {
+      const fieldUnits = [TestUtil.getDbFieldUnit({}), TestUtil.getDbFieldUnit({})]
+      const userId = new ObjectId()
+      const leaderId = new ObjectId()
+      const factionId = new ObjectId()
+      const unitMove1 = TestUtil.getDbMove({
+        type: MoveType.Unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
+        reason: {
+          type: MoveReasonType.Deploy,
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+          user: userId,
+        },
+      })
+      const unitMove2 = TestUtil.getDbMove({
+        type: MoveType.Unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
+        reason: {
+          type: MoveReasonType.Deploy,
+          unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[1]),
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+          user: userId,
+        },
+      })
+      const unitMove3 = TestUtil.getDbMove({
+        type: MoveType.Unit,
+        unit: TestUtil.convertFieldDbUnitToGameDbUnit(fieldUnits[0]),
+        reason: {
+          type: MoveReasonType.Deploy,
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+        },
+      })
+      const leaderMove1 = TestUtil.getDbMove({
+        type: MoveType.Leader,
+        leaderId,
+      })
+      const leaderMove2 = TestUtil.getDbMove({
+        type: MoveType.Leader,
+        leaderId,
+      })
+      const factionMove1 = TestUtil.getDbMove({
+        type: MoveType.Faction,
+        factionId,
+      })
+      const factionMove2 = TestUtil.getDbMove({
+        type: MoveType.Faction,
+        factionId,
+      })
+      const resolvedUnits = [
+        TestUtil.getUnit({
+          id: fieldUnits[0].unit,
+        }),
+        TestUtil.getUnit({
+          id: fieldUnits[1].unit,
+        }),
+      ]
+      const resolvedUsers = [
+        TestUtil.getUser({
+          id: userId,
+        }),
+      ]
+      const resolvedLeaders = [
+        TestUtil.getLeader({
+          id: leaderId,
+        }),
+      ]
+      const resolvedFactions = [
+        TestUtil.getFaction({
+          id: factionId,
+        }),
+      ]
+      await testFromArray({
+        moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2, factionMove1, factionMove2],
+        units: resolvedUnits,
+        users: resolvedUsers,
+        resolvedLeaders,
+        resolvedFactions,
+        leadersFromIdsCalls: [
+          [
+            {
+              ids: [leaderId.toString()],
+            },
+          ],
+        ],
+        factionsFromIdsCalls: [
+          [
+            {
+              ids: [factionId.toString()],
             },
           ],
         ],
@@ -718,6 +969,22 @@ describe('move-resolver', () => {
               users: resolvedUsers,
             },
           ],
+          [
+            {
+              move: factionMove1,
+              faction: resolvedFactions[0],
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
+          [
+            {
+              move: factionMove2,
+              faction: resolvedFactions[0],
+              units: resolvedUnits,
+              users: resolvedUsers,
+            },
+          ],
         ],
       })
     })
@@ -727,11 +994,13 @@ describe('move-resolver', () => {
 async function testFromObject({
   move,
   leader,
+  faction,
   units,
   users,
   resolvedUnits = [],
   resolvedUsers = [],
   leaderFromIdResponse,
+  factionFromIdResponse,
   fieldUnitFromObjectResponse,
   impactFromArrayResponse = [],
   deckUnitFromObjectResponse,
@@ -740,11 +1009,13 @@ async function testFromObject({
 }: {
   move: MoveDbObject
   leader?: Leader
+  faction?: Faction
   units?: Unit[]
   users?: User[]
   resolvedUnits?: Unit[]
   resolvedUsers?: User[]
   leaderFromIdResponse?: Leader
+  factionFromIdResponse?: Faction
   fieldUnitFromObjectResponse?: FieldUnit
   impactFromArrayResponse?: Impact[]
   deckUnitFromObjectResponse?: DeckUnit
@@ -754,6 +1025,10 @@ async function testFromObject({
   const leaderFromIdSpy = jest.spyOn(LeaderResolver, 'fromId')
   if (leaderFromIdResponse) {
     leaderFromIdSpy.mockResolvedValue(leaderFromIdResponse)
+  }
+  const factionFromIdSpy = jest.spyOn(FactionResolver, 'fromId')
+  if (factionFromIdResponse) {
+    factionFromIdSpy.mockResolvedValue(factionFromIdResponse)
   }
   const fieldUnitFromObjectSpy = jest.spyOn(FieldUnitResolver, 'fromObject')
   if (fieldUnitFromObjectResponse) {
@@ -772,6 +1047,7 @@ async function testFromObject({
   const promise = MoveResolver.fromObject({
     move,
     leader,
+    faction,
     units,
     users,
   })
@@ -792,8 +1068,19 @@ async function testFromObject({
         ]
       : []
   )
+  expect(factionFromIdSpy.mock.calls).toEqual(
+    factionFromIdResponse
+      ? [
+          [
+            {
+              id: (move as MoveFactionDbObject).faction,
+            },
+          ],
+        ]
+      : []
+  )
   expect(resolveUsersAndUnitsSpy.mock.calls).toEqual(
-    move.type === MoveType.Unit
+    move.type === MoveType.Faction || move.type === MoveType.Leader || move.type === MoveType.Unit
       ? [
           [
             {
@@ -818,11 +1105,11 @@ async function testFromObject({
       : []
   )
   expect(impactFromArraySpy.mock.calls).toEqual(
-    fieldUnitFromObjectResponse
+    (move as any).impacts && !error
       ? [
           [
             {
-              impacts: (move as MoveUnitDbObject).impacts,
+              impacts: (move as any).impacts,
               units: units || resolvedUnits,
               users: users || resolvedUsers,
             },
@@ -851,8 +1138,10 @@ async function testFromArray({
   resolvedUnits = [],
   resolvedUsers = [],
   resolvedLeaders = [],
+  resolvedFactions = [],
   error,
   leadersFromIdsCalls = [],
+  factionsFromIdsCalls = [],
   moveFromObjectCalls = [],
   errorCalls = [],
 }: {
@@ -862,8 +1151,10 @@ async function testFromArray({
   resolvedUnits?: Unit[]
   resolvedUsers?: User[]
   resolvedLeaders?: Leader[]
+  resolvedFactions?: Faction[]
   error?: Error
   leadersFromIdsCalls?: any[][]
+  factionsFromIdsCalls?: any[][]
   moveFromObjectCalls?: any[][]
   errorCalls?: string[][]
 }) {
@@ -872,6 +1163,7 @@ async function testFromArray({
     users: users || resolvedUsers,
   })
   const leadersFromIdsSpy = jest.spyOn(LeaderResolver, 'fromIds').mockResolvedValue(resolvedLeaders)
+  const factionsFromIdsSpy = jest.spyOn(FactionResolver, 'fromIds').mockResolvedValue(resolvedFactions)
   const moveFromObjectSpy = jest.spyOn(MoveResolver, 'fromObject')
   const resolvedMoves: Move[] = []
   for (const move of moves) {
@@ -920,6 +1212,7 @@ async function testFromArray({
         ]
   )
   expect(leadersFromIdsSpy.mock.calls).toEqual(leadersFromIdsCalls)
+  expect(factionsFromIdsSpy.mock.calls).toEqual(factionsFromIdsCalls)
   expect(moveFromObjectSpy.mock.calls).toEqual(moveFromObjectCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

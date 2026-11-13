@@ -1,5 +1,3 @@
-import { ObjectId } from 'mongodb'
-
 import EventManager from '../../src/graphql/event-manager'
 import { FactionKey, GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
@@ -75,7 +73,6 @@ async function testSetDeckResolution({
   errorCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const userId = new ObjectId()
   const gameDeck = TestUtil.getDbGameDeck({})
   const resolvedGame = TestUtil.getGameFromDbGame({ game })
   const resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
@@ -102,7 +99,6 @@ async function testSetDeckResolution({
     game,
     gameDeck,
     logPrefix,
-    userId,
   })
   if (error) {
     await expect(promise).rejects.toThrow(error)
@@ -153,7 +149,6 @@ async function testSetDeckResolution({
               gameDeck,
               logPrefix: `setOrder via ${logPrefix}`,
               allowImplicit: false,
-              userId,
             },
           ],
         ]

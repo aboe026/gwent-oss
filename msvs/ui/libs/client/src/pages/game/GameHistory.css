@@ -31,6 +31,11 @@
   margin-bottom: -3px;
 }
 
+.move-impact-effect-icon,
+.move-impact-effect-icon-faction {
+  opacity: 50%;
+}
+
 .move-impact-units-container {
   display: flex;
   flex-direction: column;

@@ -255,6 +255,18 @@ test('Page automatically updates if user with ScoiaTael deck uses API to make se
     },
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves: [
+      [
+        {
+          unitName: "Scoia'tael",
+          userName: selfPlayer.name,
+          impacts: {
+            factionKey: FactionKey.ScoiaTael,
+            number: 2,
+          },
+        },
+      ],
+    ],
   })
 })
 
@@ -307,6 +319,18 @@ test('Page automatically updates if user with ScoiaTael deck uses API to make op
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves: [
+      [
+        {
+          unitName: "Scoia'tael",
+          userName: selfPlayer.name,
+          impacts: {
+            factionKey: FactionKey.ScoiaTael,
+            number: 2,
+          },
+        },
+      ],
+    ],
   })
 })
 
@@ -383,6 +407,18 @@ test('Page automatically updates if user with ScoiaTael deck uses API to make se
     },
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves: [
+      [
+        {
+          unitName: "Scoia'tael",
+          userName: selfPlayer.name,
+          impacts: {
+            factionKey: FactionKey.ScoiaTael,
+            number: 2,
+          },
+        },
+      ],
+    ],
   })
 })
 
@@ -459,6 +495,18 @@ test('Page automatically updates if user with ScoiaTael deck uses API to make op
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves: [
+      [
+        {
+          unitName: "Scoia'tael",
+          userName: selfPlayer.name,
+          impacts: {
+            factionKey: FactionKey.ScoiaTael,
+            number: 2,
+          },
+        },
+      ],
+    ],
   })
 })
 
@@ -549,6 +597,18 @@ test('Page automatically updates after game ready via API before opponent ready 
     },
     turn: won ? undefined : PlayerTurn.Future,
   })
+  const moves = [
+    [
+      {
+        unitName: "Scoia'tael",
+        userName: selfPlayer.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -558,6 +618,7 @@ test('Page automatically updates after game ready via API before opponent ready 
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves,
   })
   await t.ctx.self.client.ready(t.ctx.game.id)
   await GamePage.verify({
@@ -567,6 +628,7 @@ test('Page automatically updates after game ready via API before opponent ready 
       ready: true,
     },
     hand: gameDeckSelf.hand,
+    moves,
   })
 })
 
@@ -605,6 +667,18 @@ test('Page automatically updates after game ready via API after opponent ready o
     ready: true,
     score: 0,
   })
+  const moves = [
+    [
+      {
+        unitName: "Scoia'tael",
+        userName: selfPlayer.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
@@ -615,6 +689,7 @@ test('Page automatically updates after game ready via API after opponent ready o
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves,
   })
   await t.ctx.self.client.ready(t.ctx.game.id)
   if (won) {
@@ -630,7 +705,7 @@ test('Page automatically updates after game ready via API after opponent ready o
       passed: false,
     },
     hand: gameDeckSelf.hand,
-    moves: [[]],
+    moves,
   })
 })
 
@@ -666,6 +741,18 @@ test('Page automatically updates after game ready via API before opponent ready 
     },
     turn: won ? undefined : PlayerTurn.Future,
   })
+  const moves = [
+    [
+      {
+        unitName: "Scoia'tael",
+        userName: selfPlayer.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -675,6 +762,7 @@ test('Page automatically updates after game ready via API before opponent ready 
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves,
   })
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
@@ -708,6 +796,7 @@ test('Page automatically updates after game ready via API before opponent ready 
       ready: true,
     },
     hand: gameDeckSelf.hand,
+    moves,
   })
 })
 
@@ -746,6 +835,18 @@ test('Page automatically updates after game ready via API after opponent ready o
     ready: true,
     score: 0,
   })
+  const moves = [
+    [
+      {
+        unitName: "Scoia'tael",
+        userName: selfPlayer.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
@@ -756,6 +857,7 @@ test('Page automatically updates after game ready via API after opponent ready o
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves,
   })
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
@@ -795,7 +897,7 @@ test('Page automatically updates after game ready via API after opponent ready o
       passed: false,
     },
     hand: gameDeckSelf.hand,
-    moves: [[]],
+    moves,
   })
 })
 
@@ -831,6 +933,18 @@ test('Game not marked as ready if use API to mark other game as ready', async (t
     },
     turn: won ? undefined : PlayerTurn.Future,
   })
+  const moves = [
+    [
+      {
+        unitName: "Scoia'tael",
+        userName: selfPlayer.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -840,6 +954,7 @@ test('Game not marked as ready if use API to mark other game as ready', async (t
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves,
   })
   const game2 = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
   await t.ctx.self.client.setDeck({
@@ -860,6 +975,7 @@ test('Game not marked as ready if use API to mark other game as ready', async (t
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+    moves,
   })
 })
 

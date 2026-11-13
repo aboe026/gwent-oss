@@ -1,89 +1,136 @@
-import { EffectKey } from '@gwent-oss/graphql-schema/resolver-typings'
+import { EffectKey, FactionKey } from '@gwent-oss/graphql-schema/resolver-typings'
 import getNoImpactMessage from '../../src/get-no-impact-message'
 
 describe('getNoImpactMessage', () => {
-  it('throws error if Agile', () => {
+  it('throws error if both effectKey and factionKey specified', () => {
     expect(() =>
       getNoImpactMessage({
         effectKey: EffectKey.Agile,
+        factionKey: FactionKey.Monsters,
       })
-    ).toThrow(`Effect "${EffectKey.Agile}" is not impactable.`)
+    ).toThrow(`Cannot specify both effectKey (${EffectKey.Agile}) and factionKey (${FactionKey.Monsters})`)
   })
-  it('throws error if Avenger', () => {
-    expect(() =>
-      getNoImpactMessage({
-        effectKey: EffectKey.Avenger,
-      })
-    ).toThrow(`Effect "${EffectKey.Avenger}" is not impactable.`)
+  describe('effectKey', () => {
+    it('throws error if Agile', () => {
+      expect(() =>
+        getNoImpactMessage({
+          effectKey: EffectKey.Agile,
+        })
+      ).toThrow(`Effect "${EffectKey.Agile}" is not impactable.`)
+    })
+    it('throws error if Avenger', () => {
+      expect(() =>
+        getNoImpactMessage({
+          effectKey: EffectKey.Avenger,
+        })
+      ).toThrow(`Effect "${EffectKey.Avenger}" is not impactable.`)
+    })
+    it('throws error if Berserker', () => {
+      expect(() =>
+        getNoImpactMessage({
+          effectKey: EffectKey.Berserker,
+        })
+      ).toThrow(`Effect "${EffectKey.Berserker}" is not impactable.`)
+    })
+    it('returns correct text for Bond', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Bond,
+        })
+      ).toEqual('No similar units in row to bond with.')
+    })
+    it('returns correct text for Horn', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Horn,
+        })
+      ).toEqual('No eligible units in row to strengthen.')
+    })
+    it('returns correct text for Mardroeme', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Mardroeme,
+        })
+      ).toEqual('No Berserkers in row to transform.')
+    })
+    it('returns correct text for Medic', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Medic,
+        })
+      ).toEqual('No eligible units in Lost to revive.')
+    })
+    it('returns correct text for Muster', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Muster,
+        })
+      ).toEqual('No eligible units in Draw to muster.')
+    })
+    it('returns correct text for Morale', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Morale,
+        })
+      ).toEqual('No eligible units in row to strengthen.')
+    })
+    it('returns correct text for Scorch', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Scorch,
+        })
+      ).toEqual('No eligible units on battlefield to scorch.')
+    })
+    it('returns correct text for Spy', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Spy,
+        })
+      ).toEqual('No eligible units in Draw to add to Hand.')
+    })
+    it('returns correct text for Weather', () => {
+      expect(
+        getNoImpactMessage({
+          effectKey: EffectKey.Weather,
+        })
+      ).toEqual('No eligible units on battlefield to weaken.')
+    })
   })
-  it('throws error if Berserker', () => {
-    expect(() =>
-      getNoImpactMessage({
-        effectKey: EffectKey.Berserker,
-      })
-    ).toThrow(`Effect "${EffectKey.Berserker}" is not impactable.`)
-  })
-  it('returns correct text for Bond', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Bond,
-      })
-    ).toEqual('No similar units in row to bond with.')
-  })
-  it('returns correct text for Horn', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Horn,
-      })
-    ).toEqual('No eligible units in row to strengthen.')
-  })
-  it('returns correct text for Mardroeme', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Mardroeme,
-      })
-    ).toEqual('No Berserkers in row to transform.')
-  })
-  it('returns correct text for Medic', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Medic,
-      })
-    ).toEqual('No eligible units in Lost to revive.')
-  })
-  it('returns correct text for Muster', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Muster,
-      })
-    ).toEqual('No eligible units in Draw to muster.')
-  })
-  it('returns correct text for Morale', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Morale,
-      })
-    ).toEqual('No eligible units in row to strengthen.')
-  })
-  it('returns correct text for Scorch', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Scorch,
-      })
-    ).toEqual('No eligible units on battlefield to scorch.')
-  })
-  it('returns correct text for Spy', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Spy,
-      })
-    ).toEqual('No eligible units in Draw to add to Hand.')
-  })
-  it('returns correct text for Weather', () => {
-    expect(
-      getNoImpactMessage({
-        effectKey: EffectKey.Weather,
-      })
-    ).toEqual('No eligible units on battlefield to weaken.')
+  describe('factionKey', () => {
+    it('returns correct text for Monsters', () => {
+      expect(
+        getNoImpactMessage({
+          factionKey: FactionKey.Monsters,
+        })
+      ).toEqual('No unit in play at end of previous round.')
+    })
+    it('returns correct text for Nilfgaardian Empire', () => {
+      expect(
+        getNoImpactMessage({
+          factionKey: FactionKey.NilfgaardianEmpire,
+        })
+      ).toEqual('Canceled out by another player with same faction.')
+    })
+    it('returns correct text for Northern Realms', () => {
+      expect(
+        getNoImpactMessage({
+          factionKey: FactionKey.NorthernRealms,
+        })
+      ).toEqual('No unit in Draw pile to add to Hand.')
+    })
+    it('returns correct text for ScoiaTael', () => {
+      expect(
+        getNoImpactMessage({
+          factionKey: FactionKey.ScoiaTael,
+        })
+      ).toEqual('Canceled out by another player with same faction.')
+    })
+    it('returns correct text for Skellige', () => {
+      expect(
+        getNoImpactMessage({
+          factionKey: FactionKey.Skellige,
+        })
+      ).toEqual('No units in Lost pile to move to battlefield.')
+    })
   })
 })

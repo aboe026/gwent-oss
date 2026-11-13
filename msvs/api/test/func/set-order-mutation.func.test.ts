@@ -2,11 +2,12 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, setDeck, setOrder } from './util/graphql-util'
-import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer, expectizeMoveFaction, expectizePlayerRound } from './util/expect-util'
 import { FactionKey, Game, GameStatus } from '@gwent-oss/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHORIZED_MESSAGE } from '@gwent-oss/constants'
 import schema from '../../src/graphql/executable-schema'
+import TestUtil from '../util/test-util'
 
 describe('set-order-mutation', () => {
   describe('setOrder', () => {
@@ -369,7 +370,7 @@ describe('set-order-mutation', () => {
           ],
         })
       })
-      it('throws error if setting explicit order with deck that is not scoitael', async () => {
+      it('throws error if setting explicit order with deck that is not scoiatael', async () => {
         const name1 = `setOrder-1-${Date.now()}`
         const name2 = `setOrder-2-${Date.now()}`
         const user1 = await addUser(name1)
@@ -426,7 +427,7 @@ describe('set-order-mutation', () => {
           ],
         })
       })
-      it('throws error if setting implicit order with deck that is not scoitael', async () => {
+      it('throws error if setting implicit order with deck that is not scoiatael', async () => {
         const name1 = `setOrder-1-${Date.now()}`
         const name2 = `setOrder-2-${Date.now()}`
         const user1 = await addUser(name1)
@@ -804,6 +805,23 @@ describe('set-order-mutation', () => {
           gameDeck: gameDeck1,
           user: user1,
           order: 0,
+          rounds: [
+            expectizePlayerRound({
+              moves: [
+                expectizeMoveFaction({
+                  faction: deck1.faction,
+                  impacts: [
+                    TestUtil.getImpact({
+                      user: user1,
+                    }),
+                    TestUtil.getImpact({
+                      user: user2,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
         })
         expect(response).toEqual({
           data: {
@@ -815,10 +833,12 @@ describe('set-order-mutation', () => {
                   gameDeck: gameDeck2,
                   user: user2,
                   order: 1,
+                  rounds: [expectizePlayerRound({})],
                 }),
               ],
               status: GameStatus.Redrawing,
               turn: gamePlayer1,
+              round: 1,
             }),
           },
         })
@@ -874,6 +894,7 @@ describe('set-order-mutation', () => {
           gameDeck: gameDeck2,
           user: user2,
           order: 0,
+          rounds: [expectizePlayerRound({})],
         })
         expect(response).toEqual({
           data: {
@@ -884,16 +905,34 @@ describe('set-order-mutation', () => {
                   gameDeck: gameDeck1,
                   user: user1,
                   order: 1,
+                  rounds: [
+                    expectizePlayerRound({
+                      moves: [
+                        expectizeMoveFaction({
+                          faction: deck1.faction,
+                          impacts: [
+                            TestUtil.getImpact({
+                              user: user2,
+                            }),
+                            TestUtil.getImpact({
+                              user: user1,
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                  ],
                 }),
                 gamePlayer2,
               ],
               status: GameStatus.Redrawing,
               turn: gamePlayer2,
+              round: 1,
             }),
           },
         })
       })
-      it('implicit order', async () => {
+      it('random order with scoiatael', async () => {
         const name1 = `setOrder-1-${Date.now()}`
         const name2 = `setOrder-2-${Date.now()}`
         const user1 = await addUser(name1)
@@ -944,11 +983,29 @@ describe('set-order-mutation', () => {
           gameDeck: gameDeck1,
           user: user1,
           order: selfFirst ? 0 : 1,
+          rounds: [
+            expectizePlayerRound({
+              moves: [
+                expectizeMoveFaction({
+                  faction: deck1.faction,
+                  impacts: [
+                    TestUtil.getImpact({
+                      user: selfFirst ? user1 : user2,
+                    }),
+                    TestUtil.getImpact({
+                      user: selfFirst ? user2 : user1,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
         })
         const gamePlayer2 = expectizeGamePlayer({
           gameDeck: gameDeck2,
           user: user2,
           order: selfFirst ? 1 : 0,
+          rounds: [expectizePlayerRound({})],
         })
         expect(response).toEqual({
           data: {
@@ -957,6 +1014,7 @@ describe('set-order-mutation', () => {
               players: [gamePlayer1, gamePlayer2],
               status: GameStatus.Redrawing,
               turn: selfFirst ? gamePlayer1 : gamePlayer2,
+              round: 1,
             }),
           },
         })

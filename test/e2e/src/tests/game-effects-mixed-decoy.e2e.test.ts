@@ -35,12 +35,12 @@ test('Decoy bonded unit removes bond effect on other bonded unit', async (t) => 
 
   await gameManager.deploy({
     unitName: unitName2,
-    effectiveStrength: -10,
+    effectiveStrength: -5,
     decoying: {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 5,
+      effectiveStrength: 10,
     },
   })
 })
@@ -78,7 +78,6 @@ test('Decoy horning unit removes horn effect on other unit', async (t) => {
       name: unitName2,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 2,
     },
   })
 })
@@ -104,7 +103,6 @@ test('Decoy berserker unit prevents transformation of until played later', async
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Ranged,
-      effectiveStrength: 2,
     },
   })
   await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged, mardroeming: [] })
@@ -168,7 +166,6 @@ test('Decoy vildkaarl allows it to be played again', async (t) => {
       name: unitName3,
       player: gameManager.self.gamePlayer,
       row: Combat.Ranged,
-      effectiveStrength: 8,
     },
   })
   await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged, bonding: [] })
@@ -207,7 +204,6 @@ test('Decoy moraling unit removes morale effect on other unit', async (t) => {
       name: unitName2,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 6,
     },
   })
 })
@@ -251,7 +247,6 @@ test('Decoy mustered unit allows it to be played again', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Siege,
-      effectiveStrength: 6,
     },
   })
   await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege, mustering: [] })
@@ -276,7 +271,6 @@ test('Decoy not effected by scorch', async (t) => {
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,
-      effectiveStrength: 3,
     },
   })
   await gameManager.initialize({})

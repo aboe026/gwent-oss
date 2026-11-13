@@ -18,7 +18,7 @@ export default class EffectStore extends Store {
    * @param config.ability The Ability the Effect possesses.
    * @param config.image The icon representing the Effect.
    * @param config.key The unique Key to identify the Effect.
-   * @param config.name The name of the Faction to add.
+   * @param config.name The name of the Effect to add.
    * @returns The Effect database document.
    */
   static async add({ ability, image, key, name }: AddEffectInput): Promise<EffectDbObject> {

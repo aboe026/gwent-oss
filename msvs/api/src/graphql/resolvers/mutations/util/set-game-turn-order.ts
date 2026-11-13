@@ -3,11 +3,13 @@ import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
 import { FactionKey, GameDbObject, GameDeckDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
+import FactionScoiaTaelAbility from '../set-order/faction-scoiatael-ability'
 import FactionStore from '../../../../database/stores/faction-store'
 import { Game } from '@gwent-oss/graphql-schema/resolver-typings'
 import GameResolver from '../../types/game-resolver'
 import GameStore from '../../../../database/stores/game-store'
 import { getDuplicateItems, randomizeOrder } from '@gwent-oss/utils'
+import initializeNewRound from './initialize-new-round'
 import { OrderSetPayload } from '../../subscription-resolver'
 import PresentableError from '../../../../util/presentable-error'
 import { PubSubEvents } from '@gwent-oss/constants'
@@ -27,7 +29,6 @@ export default class SetGameTurnOrder {
    * @param config.userIds The ObjectIds of the users to set the turn order for in the game, in order.
    * @param config.logPrefix The prefix to put before logging statements. Overrides class-level logPrefix.
    * @param config.allowImplicit Whether or not the User is allowed to implicitly set game turn order (without explicitly setting "userIds" input).
-   * @param config.userId The ID of the user setting the Game turn order.
    * @returns The updated Game if the user is allowed to set the game turn order.
    * @throws {PresentableError} if problem setting the turn order on the game.
    */
@@ -37,14 +38,12 @@ export default class SetGameTurnOrder {
     userIds,
     allowImplicit,
     logPrefix,
-    userId,
   }: {
     game: GameDbObject
     gameDeck: GameDeckDbObject
     userIds?: string[] | null
     allowImplicit: boolean
     logPrefix: string
-    userId: ObjectId
   }): Promise<Game> {
     const scoiaTaelFaction = await FactionStore.getByKey({
       key: FactionKey.ScoiaTael,
@@ -113,6 +112,18 @@ export default class SetGameTurnOrder {
       userIdsForOrder = randomizeOrder(game.players.map((gamePlayer) => gamePlayer.user.toString()))
     }
 
+    initializeNewRound({
+      game,
+    })
+
+    FactionScoiaTaelAbility.attemptAbility({
+      game,
+      logPrefix,
+      scoiaTaelFactionId: scoiaTaelId,
+      scoiaTaelPlayers,
+      userIdsForOrder,
+    })
+
     for (const gamePlayer of game.players) {
       gamePlayer.order = userIdsForOrder.indexOf(gamePlayer.user.toString())
     }
@@ -138,9 +149,6 @@ export default class SetGameTurnOrder {
       orderSet: resolvedGame,
     } as OrderSetPayload)
 
-    return GameResolver.maskSpiedHandUnits({
-      game: resolvedGame,
-      userId,
-    })
+    return resolvedGame
   }
 }

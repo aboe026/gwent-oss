@@ -1,4 +1,7 @@
 fragment Move on Move {
+  ... on MoveFaction {
+    ...MoveFaction
+  }
   ... on MoveLeader {
     ...MoveLeader
   }

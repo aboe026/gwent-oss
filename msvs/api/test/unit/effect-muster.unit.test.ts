@@ -309,6 +309,60 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [],
+            },
+            musteredUnits: [],
+            musteredOrigins: {},
+          },
+          unitStoreGetCalls: [
+            [
+              {
+                namePrefix: undefined,
+                names: [newUnit.name],
+                ignoreIds: [newUnit._id],
+              },
+            ],
+          ],
+          getMusterImpactCalls: [
+            [
+              {
+                game,
+                combat,
+                logPrefix,
+                potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+        })
+      })
+      it('sets impact on musterable unit if it also has muster effect', async () => {
+        const newDeckUnit = TestUtil.getDbDeckUnit({})
+        const musterEffect = TestUtil.getDbEffect({})
+        const newUnit = TestUtil.getDbUnit({
+          id: newDeckUnit.unit,
+          effects: [musterEffect._id],
+        })
+        const musterableUnit = TestUtil.getDbUnit({
+          combats: [combat],
+          effects: [musterEffect._id],
+        })
+        await testMusterBattlefield({
+          logPrefix,
+          game,
+          battlefieldUnits: [newUnit],
+          newDeckUnit,
+          combat,
+          musterEffect,
+          musterableUnits: [musterableUnit],
+          getMusterImpactResponses: [
+            {
+              impact: undefined,
+              origin: undefined,
+            },
+          ],
+          expected: {
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
               [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [],
@@ -368,7 +422,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
-              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -440,7 +493,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
-              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -529,8 +581,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact2, impact1],
-              [musterableUnit1._id.toString()]: [],
-              [musterableUnit2._id.toString()]: [],
             },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
@@ -616,6 +666,60 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [],
+            },
+            musteredUnits: [],
+            musteredOrigins: {},
+          },
+          unitStoreGetCalls: [
+            [
+              {
+                namePrefix: undefined,
+                names: [newUnit.name],
+                ignoreIds: [newUnit._id],
+              },
+            ],
+          ],
+          getMusterImpactCalls: [
+            [
+              {
+                game,
+                combat,
+                logPrefix,
+                potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+        })
+      })
+      it('sets impact on musterable unit if it also has muster effect', async () => {
+        const newDeckUnit = TestUtil.getDbDeckUnit({})
+        const musterEffect = TestUtil.getDbEffect({})
+        const newUnit = TestUtil.getDbUnit({
+          id: newDeckUnit.unit,
+          effects: [musterEffect._id],
+        })
+        const musterableUnit = TestUtil.getDbUnit({
+          combats: [combat],
+          effects: [musterEffect._id],
+        })
+        await testMusterBattlefield({
+          logPrefix,
+          game,
+          battlefieldUnits: [newUnit],
+          newDeckUnit,
+          combat,
+          musterEffect,
+          musterableUnits: [musterableUnit],
+          getMusterImpactResponses: [
+            {
+              impact: undefined,
+              origin: undefined,
+            },
+          ],
+          expected: {
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
               [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [],
@@ -675,7 +779,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
-              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -747,7 +850,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
-              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -836,8 +938,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact2, impact1],
-              [musterableUnit1._id.toString()]: [],
-              [musterableUnit2._id.toString()]: [],
             },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
@@ -923,6 +1023,60 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [],
+            },
+            musteredUnits: [],
+            musteredOrigins: {},
+          },
+          unitStoreGetCalls: [
+            [
+              {
+                namePrefix: undefined,
+                names: [newUnit.name],
+                ignoreIds: [newUnit._id],
+              },
+            ],
+          ],
+          getMusterImpactCalls: [
+            [
+              {
+                game,
+                combat,
+                logPrefix,
+                potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+        })
+      })
+      it('sets impact on musterable unit if it also has muster effect', async () => {
+        const newDeckUnit = TestUtil.getDbDeckUnit({})
+        const musterEffect = TestUtil.getDbEffect({})
+        const newUnit = TestUtil.getDbUnit({
+          id: newDeckUnit.unit,
+          effects: [musterEffect._id],
+        })
+        const musterableUnit = TestUtil.getDbUnit({
+          combats: [combat],
+          effects: [musterEffect._id],
+        })
+        await testMusterBattlefield({
+          logPrefix,
+          game,
+          battlefieldUnits: [newUnit],
+          newDeckUnit,
+          combat,
+          musterEffect,
+          musterableUnits: [musterableUnit],
+          getMusterImpactResponses: [
+            {
+              impact: undefined,
+              origin: undefined,
+            },
+          ],
+          expected: {
+            impacts: {
+              [newDeckUnit.unit.toString()]: [],
               [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [],
@@ -982,7 +1136,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
-              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -1054,7 +1207,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact],
-              [musterableUnit._id.toString()]: [],
             },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
@@ -1143,8 +1295,6 @@ describe('effect-muster', () => {
           expected: {
             impacts: {
               [newDeckUnit.unit.toString()]: [impact2, impact1],
-              [musterableUnit1._id.toString()]: [],
-              [musterableUnit2._id.toString()]: [],
             },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
@@ -1229,7 +1379,6 @@ describe('effect-muster', () => {
         expected: {
           impacts: {
             [newUnit._id.toString()]: [],
-            [musterableUnit._id.toString()]: [],
           },
           musteredUnits: [],
           musteredOrigins: {},

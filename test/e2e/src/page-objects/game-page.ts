@@ -7,6 +7,7 @@ import {
   DeckUnit,
   EffectKey,
   Faction,
+  FactionKey,
   MoveReasonType,
   GameUnitOrigin,
   UnitStats,
@@ -339,7 +340,12 @@ export default class GamePage {
         for (let j = 0; j < moves[i].length; j++) {
           const move = moves[i][j]
           if ('unitName' in move) {
-            const row = move.combatRow ? `as ${toTitleCase(move.combatRow)}` : 'to battlefield'
+            let row = ''
+            if (move.combatRow) {
+              row = ` as ${toTitleCase(move.combatRow)}`
+            } else if (!move.impacts?.factionKey) {
+              row = ' to battlefield'
+            }
             let action = 'deployed'
             let source = ''
             if (move.reason?.type === MoveReasonType.Muster) {
@@ -363,7 +369,10 @@ export default class GamePage {
                 action += ` to spy on ${move.targetUserName}`
               }
             }
-            let description = `${move.userName}: ${move.unitName} ${action} ${row}`
+            if (move.impacts?.factionKey) {
+              action = 'triggered faction ability'
+            }
+            let description = `${move.userName}: ${move.unitName} ${action}${row}`
             if (move.reason) {
               if (move.reason.type === MoveReasonType.Transform) {
                 description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
@@ -383,10 +392,13 @@ export default class GamePage {
               highlightedMoveFound = true
             }
             const dotted = selected && highlightedMove.dotted
-            const impacts =
-              move.impacts === undefined
-                ? ''
-                : ` impacts: ${move.impacts.number} ${toTitleCase(move.impacts.effectKey)}`
+            let impactText = ''
+            if (move.impacts?.effectKey) {
+              impactText = toTitleCase(move.impacts.effectKey)
+            } else if (move.impacts?.factionKey) {
+              impactText = 'Faction Ability'
+            }
+            const impacts = move.impacts === undefined ? '' : ` impacts: ${move.impacts.number} ${impactText}`
             expected.push(`${description}${impacts}${selected ? ' selected' : ''}${dotted ? ' dotted' : ''}`)
           } else {
             expected.push(`${move.userName}: Passed the rest of round ${move.round}`)
@@ -780,19 +792,25 @@ export default class GamePage {
         await t.expect(moveElement.find(`.${HTML_CLASSES.MoveImpactNoUnits}`).innerText).eql(
           getNoImpactMessage({
             effectKey: move.effectKey,
+            factionKey: move.factionKey,
           })
         )
       } else {
         const expected: string[] = []
-        for (const impact of move.impacts) {
+        for (let i = 0; i < move.impacts.length; i++) {
+          const impact = move.impacts[i]
           const description = getImpactDescription({
             effectKey: move.effectKey,
+            factionKey: move.factionKey,
+            index: i,
             origin: impact.origin,
             name: impact.unitName,
           })
           const selected = impact.highlighted ? ' selected' : ''
           const dotted = impact.dotted ? ' dotted' : ''
-          expected.push(`${impact.username}: ${impact.unitName} ${description}${selected}${dotted}`)
+          expected.push(
+            `${impact.username}: ${impact.unitName ? `${impact.unitName} ` : ''}${description}${selected}${dotted}`
+          )
         }
 
         const actual: string[] = []
@@ -801,12 +819,16 @@ export default class GamePage {
         for (let i = 0; i < childCount; i++) {
           const child = children.nth(i)
           const userName = await child.find(`.${HTML_CLASSES.MoveImpactUserName}`).innerText
-          const unitName = await child.find(`.${HTML_CLASSES.MoveImpactUnitName}`).innerText
+          const unitNameNode = child.find(`.${HTML_CLASSES.MoveImpactUnitName}`)
+          let unitName = ''
+          if (await unitNameNode.exists) {
+            unitName = `${await unitNameNode.innerText} `
+          }
           const description = await child.find(`.${HTML_CLASSES.MoveImpactDescription}`).innerText
           const highlighted = await child.hasClass(HTML_CLASSES.ItemHighlighted)
           const dotted = await E2eHelper.hasDottedBorder(child)
           actual.push(
-            `${userName}: ${unitName} ${description}${highlighted ? ' selected' : ''}${dotted ? ' dotted' : ''}`
+            `${userName}: ${unitName}${description}${highlighted ? ' selected' : ''}${dotted ? ' dotted' : ''}`
           )
         }
         await t
@@ -891,7 +913,8 @@ export default class GamePage {
       highlightedUnit: highlightedHandCard,
     })
     await GamePage.verifyHistory({
-      moves,
+      moves:
+        moves && moves.length > 0 && moves[0].length > 0 ? moves : !self.ready && !opponent.ready ? undefined : moves,
       waiting: opponent.turn === PlayerTurn.Current,
       highlightedMove: highlightedHistory,
     })
@@ -1728,7 +1751,8 @@ export interface HistoryMove {
   unitName: string
   combatRow?: Combat
   impacts?: {
-    effectKey: EffectKey
+    effectKey?: EffectKey
+    factionKey?: FactionKey
     number: number
   }
   reason?: {
@@ -1743,11 +1767,12 @@ export interface HistoryImpactMoves {
   userName: string
   unitName: string
   round: number
-  effectKey: EffectKey
+  effectKey?: EffectKey
+  factionKey?: FactionKey
   instance?: number
   impacts: {
     username: string
-    unitName: string
+    unitName?: string
     highlighted?: boolean
     dotted?: boolean
     origin?: GameUnitOrigin
@@ -1794,7 +1819,7 @@ export interface CombatUnit {
   hero?: boolean
 }
 
-interface CombatRow {
+export interface CombatRow {
   score: number
   units: CombatUnit[]
 }

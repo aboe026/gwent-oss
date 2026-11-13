@@ -153,7 +153,6 @@ test('Scorch ignores decoyed to determine strongest', async (t) => {
   await gameManager.deploy({
     unitName: unitName3,
     decoying: {
-      effectiveStrength: 6,
       name: unitName1,
       player: gameManager.self.gamePlayer,
       row: Combat.Close,

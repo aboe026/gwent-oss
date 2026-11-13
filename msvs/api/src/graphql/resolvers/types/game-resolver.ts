@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Game, GamePlayer, MoveReasonType, Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
+import { Game, GamePlayer, Unit, User } from '@gwent-oss/graphql-schema/resolver-typings'
 import { GameDbObject, GameStatus } from '@gwent-oss/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -156,47 +156,5 @@ export default class GameResolver {
     return GameResolver.fromObject({
       game: game as GameDbObject,
     })
-  }
-
-  /**
-   * Remove the Unit on Impacts for spied hand cards of Opponents.
-   *
-   * @param config The configuration used to mask the Units on Impacts for opponents Spies.
-   * @param config.game The Game to mask spies for.
-   * @param config.userId The ID of the user the game is being returned for, and whose Impacts will be excluded from masking.
-   * @returns The Game with Opponents spied Impact Units removed.
-   */
-  static maskSpiedHandUnits({ game, userId }: { game: Game; userId: ObjectId | string }): Game {
-    return {
-      ...game,
-      players: game.players.map((player) => {
-        return {
-          ...player,
-          rounds: player.rounds.map((round) => {
-            return {
-              ...round,
-              moves: round.moves.map((move) => {
-                if (move.__typename === 'MoveUnit') {
-                  return {
-                    ...move,
-                    impacts: move.impacts?.map((impact) => {
-                      const hideImpactUnit =
-                        move.target?.id &&
-                        impact.user.id !== userId.toString() &&
-                        move.reason.type !== MoveReasonType.Summon
-                      return {
-                        ...impact,
-                        unit: hideImpactUnit ? undefined : impact.unit,
-                      }
-                    }),
-                  }
-                }
-                return move
-              }),
-            }
-          }),
-        }
-      }),
-    }
   }
 }

@@ -1,0 +1,11 @@
+fragment MoveFaction on MoveFaction {
+  created
+  faction {
+    image
+    key
+    name
+  }
+  impacts {
+    ...Impact
+  }
+}

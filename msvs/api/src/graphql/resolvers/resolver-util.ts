@@ -8,6 +8,7 @@ import {
   GameStatus,
   ImpactDbObject,
   MoveDbObject,
+  MoveFactionDbObject,
   MoveUnitDbObject,
   WeatherUnitDbObject,
 } from '@gwent-oss/graphql-schema/database-typings'
@@ -197,6 +198,14 @@ export default class ResolverUtil {
 
     if (moves && (!presolvedUnits || !presolvedUsers)) {
       for (const move of moves) {
+        if (move.type === MoveType.Faction) {
+          const factionMove = move as MoveFactionDbObject
+          if (factionMove.impacts && !impacts) {
+            for (const impact of factionMove.impacts) {
+              impactsToResolve.push(impact)
+            }
+          }
+        }
         if (move.type === MoveType.Unit) {
           const unitMove = move as MoveUnitDbObject
           const unitId = unitMove.unit.unit.toString()
@@ -246,6 +255,12 @@ export default class ResolverUtil {
           const impactSourceUserId = impact.source.user.toString()
           if (!userIdsToResolve.includes(impactSourceUserId)) {
             userIdsToResolve.push(impactSourceUserId)
+          }
+        }
+        if (impact.scope) {
+          const impactScopeUserId = impact.scope.toString()
+          if (!userIdsToResolve.includes(impactScopeUserId)) {
+            userIdsToResolve.push(impactScopeUserId)
           }
         }
       }

@@ -11,6 +11,7 @@ import {
   DeckSetDocument,
   DeckUnitFragmentDoc,
   DeckUnitRemovedFragmentDoc,
+  EffectKey,
   GameAddedDocument,
   GameDeckDocument,
   GameDeckQuery,
@@ -29,6 +30,7 @@ import {
   UnitPlayedOnGameDocument,
   UnitRedrawnDocument,
   useFragment,
+  UnitEffectFragmentDoc,
   UnitFragmentDoc,
 } from '@gwent-oss/graphql-schema/apollo-typings'
 import {
@@ -252,9 +254,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           },
           (previous) => {
             if (previous?.gameDeck) {
-              const newHand = [...previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)]
+              const newHand = [...previous.gameDeck.hand]
               const newDiscard = [...previous.gameDeck.discard]
               const newUndrawn = [...previous.gameDeck.undrawn]
+              // in future also key this off "owner/originator" to remove "correct" one
               const existingHandIndex = newHand.findIndex((deckUnit) => deckUnit.unit.id === playedUnit.id)
               if (existingHandIndex >= 0) {
                 newHand.splice(existingHandIndex, 1)
@@ -268,8 +271,20 @@ export default function Subscriptions({ children }: PropsWithChildren) {
                 const currentHandIds = newHand.map((handUnit) => handUnit.unit.id)
                 for (const rehand of handed) {
                   const deckUnit = useFragment(DeckUnitFragmentDoc, rehand)
-                  const rehandedUnitId = useFragment(UnitFragmentDoc, deckUnit.unit).id
-                  if (!currentHandIds.includes(rehandedUnitId)) {
+                  const rehandedUnit = useFragment(UnitFragmentDoc, deckUnit.unit)
+                  // always add handed spies even if already in hand
+                  // because spies are the only card which user can have
+                  // "duplicates" of (because they can come from opponent via decoy)
+                  // rework logic in the future to be correct/accurate by taking into
+                  // account card "owner/originator"
+                  const rehandedIsSpy =
+                    rehandedUnit.effects &&
+                    rehandedUnit.effects.some(
+                      (effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Spy
+                    )
+                  const rehandedUnitId = rehandedUnit.id
+                  // in future also key this off "owner/originator" to prevent a failure to correctly add it to hand
+                  if (rehandedIsSpy || !currentHandIds.includes(rehandedUnitId)) {
                     newHand.push(deckUnit as DeckUnitRaw)
                   }
                   const undrawnIndex = newUndrawn.findIndex((undrawnUnit) => undrawnUnit.unit.id === rehandedUnitId)

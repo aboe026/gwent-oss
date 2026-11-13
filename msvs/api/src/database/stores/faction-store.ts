@@ -149,7 +149,7 @@ export default class FactionStore extends Store {
     }
     const faction = factions[0]
     if (faction.key !== key) {
-      const message = `Faction key of "${factions[0].key}" does not match requestd key of "${key}".`
+      const message = `Faction key of "${factions[0].key}" does not match requested key of "${key}".`
       this.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

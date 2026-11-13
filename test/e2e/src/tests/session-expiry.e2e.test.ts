@@ -7,9 +7,7 @@ import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
 import { E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, E2ETestController, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
-import e2eEnv from '../util/e2e-env'
 import E2eUtil from '../util/e2e-util'
-import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
@@ -585,203 +583,96 @@ test('Create deck for game after session expires', async (t) => {
 })
 
 test('Set game order after session expires', async (t) => {
-  const scenario = 'exp-game-ready'
-  const username = `${scenario}-user-${t.ctx.start}`
-  const opponentName = `${scenario}-opponent-${t.ctx.start}`
-  const self = await new ApiClient({}).addUser({
-    name: username,
-  })
-  const opponent = await new ApiClient({}).addUser({
-    name: opponentName,
-  })
-  const clientSelf = new ApiClient({ username })
-  const clientOpponent = new ApiClient({ username: opponentName })
-  const game = await clientSelf.addGame([opponentName])
-  const deckSelf = await clientSelf.addDeck({
-    faction: t.fixtureCtx.faction.key,
-    leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.fixtureCtx.units,
-  })
-  const deckOpponent = await clientOpponent.addDeck({
-    faction: FactionKey.NorthernRealms,
-    leaderName: 'Foltest Son of Medell',
-    name: `${scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: [
-      'Ballista',
-      'Blue Stripes Commando',
-      'Blue Stripes Commando',
-      'Blue Stripes Commando',
-      'Catapult',
-      'Catapult',
-      'Cirilla Fiona Elen Riannon',
-      "Commander's Horn",
-      'Crinfrid Reavers Dragon Hunter',
-      'Crinfrid Reavers Dragon Hunter',
-      'Crinfrid Reavers Dragon Hunter',
-      'Esterad Thyssen',
-      'John Natalis',
-      'Poor Fucking Infantry',
-      'Poor Fucking Infantry',
-      'Poor Fucking Infantry',
-      'Prince Stennis',
-      'Redanian Foot Soldier',
-      'Redanian Foot Soldier',
-      'Siegfried of Denesle',
-      'Thaler',
-      'Yarpen Zigrin',
-    ],
-  })
-  const gameDeckSelf = await clientSelf.setDeck({
-    deckId: deckSelf.id,
-    gameId: game.id,
-  })
-  const gameDeckOpponent = await clientOpponent.setDeck({
-    deckId: deckOpponent.id,
-    gameId: game.id,
-  })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: clientSelf,
-      deck: deckSelf,
-      gameDeck: gameDeckSelf,
-      user: self,
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
     },
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: clientOpponent,
-      deck: deckOpponent,
-      gameDeck: gameDeckOpponent,
-      user: opponent,
+    opponent: {
+      faction: FactionKey.NorthernRealms,
     },
+    ready: false,
   })
-  await E2eUtil.goTo(LoginPage.getUrl())
-  await LoginPage.login({
-    username,
+  await gameManager.initialize({
+    verify: false,
   })
-  await E2eUtil.goTo(GamePage.getUrl(game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    turnOrder: game.players.map((player) => player.user.name),
+
+  await gameManager.verify({
+    turnOrder: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
   })
   await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
   await GamePage.setOrder()
-  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(gameManager.gameId))
   await GamePage.verifyOrderError(`Error setting order: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username, t)
-  const updatedGame = await clientSelf.getGame(game.id)
-  selfPlayer.turn = updatedGame.turn?.user.id === self.id ? PlayerTurn.Future : undefined
-  opponentPlayer.turn = updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Future : undefined
+  await reAuthenticate(gameManager.self.gamePlayer.name, t)
+  const updatedGame = await gameManager.self.client.getGame(gameManager.gameId)
+  gameManager.self.gamePlayer.turn =
+    updatedGame.turn?.user.name === gameManager.self.gamePlayer.name ? PlayerTurn.Future : undefined
+  gameManager.opponent.gamePlayer.turn =
+    updatedGame.turn?.user.name === gameManager.opponent.gamePlayer.name ? PlayerTurn.Future : undefined
   await GamePage.verifyCoinToss({
-    won: updatedGame.turn?.user.id === self.id,
+    won: updatedGame.turn?.user.name === gameManager.self.gamePlayer.name,
   })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
+  gameManager.moves = [
+    [
+      {
+        unitName: "Scoia'tael",
+        userName: gameManager.self.gamePlayer.name,
+        impacts: {
+          factionKey: FactionKey.ScoiaTael,
+          number: 2,
+        },
+      },
+    ],
+  ]
+  await gameManager.verify({
     redraws: [],
   })
 })
 
 test('Redraw unit for game after session expires', async (t) => {
-  const scenario = 'exp-game-redraw'
-  const username = `${scenario}-user-${t.ctx.start}`
-  const opponentName = `${scenario}-opponent-${t.ctx.start}`
-  const unitName1 = 'Toruviel'
-  const self = await new ApiClient({}).addUser({
-    name: username,
-  })
-  const opponent = await new ApiClient({}).addUser({
-    name: opponentName,
-  })
-  const clientSelf = new ApiClient({ username })
-  const clientOpponent = new ApiClient({ username: opponentName })
-  const game = await clientSelf.addGame([opponentName])
-  const deckSelf = await clientSelf.addDeck({
-    faction: t.fixtureCtx.faction.key,
-    leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.fixtureCtx.units,
-  })
-  const deckOpponent = await clientOpponent.addDeck({
-    faction: t.fixtureCtx.faction.key,
-    leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.fixtureCtx.units,
-  })
-  await clientSelf.setDeck({
-    deckId: deckSelf.id,
-    gameId: game.id,
-  })
-  const gameDeckOpponent = await clientOpponent.setDeck({
-    deckId: deckOpponent.id,
-    gameId: game.id,
-  })
-  await ensureUnitsInHand({
-    gameId: game.id,
-    mongoConnectionString: e2eEnv.MONGO_URL,
-    mongoDatabaseName: e2eEnv.MONGO_DB,
-    unitNames: [unitName1],
-    userId: self.id,
-  })
-  const gameDeckSelf = await clientSelf.getGameDeck(game.id)
-  const updatedGame = await clientSelf.getGame(game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: clientSelf,
-      deck: deckSelf,
-      gameDeck: await clientOpponent.getGameDeck(game.id),
-      user: self,
+  const unitName = 'Ves'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName],
     },
-    turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Future : undefined,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: clientOpponent,
-      deck: deckOpponent,
-      gameDeck: gameDeckOpponent,
-      user: opponent,
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
     },
-    turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Future : undefined,
+    ready: false,
   })
-  await E2eUtil.goTo(LoginPage.getUrl())
-  await LoginPage.login({
-    username,
+  await gameManager.initialize({
+    verify: false,
   })
-  await E2eUtil.goTo(GamePage.getUrl(game.id))
+
   await GamePage.verifyCoinToss({
-    won: updatedGame.turn?.user.id === self.id,
+    won: true,
   })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
+  await gameManager.verify({
     redraws: [],
   })
   await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
-  const unitFrom = E2eHelper.getHandUnit({
-    name: unitName1,
-    deck: gameDeckSelf,
-  })
-  await GamePage.redraw(unitFrom.unit.name)
-  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
+  await GamePage.redraw(unitName)
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(gameManager.gameId))
   await GamePage.verifyRedrawError(`Error redrawing card: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username, t)
-  const updatedGameDeck = await clientSelf.getGameDeck(game.id)
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: updatedGameDeck.hand,
+  await reAuthenticate(gameManager.self.gamePlayer.name, t)
+  const updatedGameDeck = await gameManager.self.client.getGameDeck(gameManager.gameId)
+  const redraw = updatedGameDeck.redraws[0].to.unit
+  gameManager.self.deck.hand = gameManager.self.deck.hand.filter((handUnit) => handUnit.unit.name !== unitName)
+  gameManager.self.deck.hand.push({
+    artStyle: 1,
+    unit: redraw,
+  })
+  await gameManager.verify({
     redraws: [
       {
         from: {
-          unitName: unitFrom.unit.name,
+          unitName: unitName,
         },
         to: {
-          unitName: updatedGameDeck.redraws[0].to.unit.name,
+          unitName: redraw.name,
         },
       },
     ],
@@ -789,82 +680,37 @@ test('Redraw unit for game after session expires', async (t) => {
 })
 
 test('Ready game after session expires', async (t) => {
-  const scenario = 'exp-game-ready'
-  const username = `${scenario}-user-${t.ctx.start}`
-  const opponentName = `${scenario}-opponent-${t.ctx.start}`
-  const self = await new ApiClient({}).addUser({
-    name: username,
-  })
-  const opponent = await new ApiClient({}).addUser({
-    name: opponentName,
-  })
-  const clientSelf = new ApiClient({ username })
-  const clientOpponent = new ApiClient({ username: opponentName })
-  const game = await clientSelf.addGame([opponentName])
-  const deckSelf = await clientSelf.addDeck({
-    faction: t.fixtureCtx.faction.key,
-    leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.fixtureCtx.units,
-  })
-  const deckOpponent = await clientOpponent.addDeck({
-    faction: t.fixtureCtx.faction.key,
-    leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.fixtureCtx.units,
-  })
-  const gameDeckSelf = await clientSelf.setDeck({
-    deckId: deckSelf.id,
-    gameId: game.id,
-  })
-  const gameDeckOpponent = await clientOpponent.setDeck({
-    deckId: deckOpponent.id,
-    gameId: game.id,
-  })
-  const updatedGame = await clientSelf.getGame(game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: clientSelf,
-      deck: deckSelf,
-      gameDeck: gameDeckSelf,
-      user: self,
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
     },
-    turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Future : undefined,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: clientOpponent,
-      deck: deckOpponent,
-      gameDeck: gameDeckOpponent,
-      user: opponent,
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
     },
-    turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Future : undefined,
+    ready: false,
   })
-  await E2eUtil.goTo(LoginPage.getUrl())
-  await LoginPage.login({
-    username,
+  await gameManager.initialize({
+    verify: false,
   })
-  await E2eUtil.goTo(GamePage.getUrl(game.id))
+
   await GamePage.verifyCoinToss({
-    won: updatedGame.turn?.user.name === username,
+    won: true,
   })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
+  await gameManager.verify({
     redraws: [],
   })
+  await gameManager.opponent.client.ready(gameManager.gameId)
+  gameManager.opponent.gamePlayer.ready = true
+  gameManager.self.gamePlayer.turn = PlayerTurn.Current
+  gameManager.self.gamePlayer.passed = false
   await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
   await GamePage.ready()
-  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(gameManager.gameId))
   await GamePage.verifyReadyError(`Error marking self ready: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username, t)
-  selfPlayer.ready = true
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-  })
+  await reAuthenticate(gameManager.self.gamePlayer.name, t)
+  gameManager.self.gamePlayer.ready = true
+  await gameManager.verify({})
 })
 
 test('Change user after session expires shows new users data', async (t) => {

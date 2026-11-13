@@ -96,6 +96,7 @@ export default class BattlefieldUpdates {
 
     BattlefieldUpdates.addNewUnitToBattlefield({
       combat,
+      logPrefix,
       game,
       newDeckUnit,
       newUnit,
@@ -209,6 +210,7 @@ export default class BattlefieldUpdates {
    * @param config The configuration used to add the DeckUnit to the battlefield.
    * @param config.combat The row on the battlefield to add the DeckUnit to.
    * @param config.game The Game whose battlefield the DeckUnit should be added to.
+   * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The DeckUnit to add to the battlefield.
    * @param config.newUnit The new Unit being introduced to the battlefield.
    * @param config.weather Whether or not the new unit being added to the battlefield has the Weather effect.
@@ -217,6 +219,7 @@ export default class BattlefieldUpdates {
   static addNewUnitToBattlefield({
     combat,
     game,
+    logPrefix,
     newDeckUnit,
     newUnit,
     weather,
@@ -224,6 +227,7 @@ export default class BattlefieldUpdates {
   }: {
     combat?: Combat | null
     game: GameDbObject
+    logPrefix: string
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
     weather: boolean
@@ -233,13 +237,25 @@ export default class BattlefieldUpdates {
       const round = player.rounds[game.round - 1]
       if (player.user.toString() === game.turn?.toString()) {
         if (player.reviving) {
-          player.deck.discard = player.deck.discard.filter(
-            (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
+          const index = player.deck.discard.findIndex(
+            (discardUnit) => discardUnit.unit.toString() === newDeckUnit.unit.toString()
           )
+          if (index < 0) {
+            const message = `Could not find unit "${newDeckUnit.unit}" in discard to play`
+            BattlefieldUpdates.logger.error(`${logPrefix} failed: ${message}, "${JSON.stringify(game)}"`)
+            throw Error(`${message}.`)
+          }
+          player.deck.discard.splice(index, 1)
         } else {
-          player.deck.hand = player.deck.hand.filter(
-            (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
+          const index = player.deck.hand.findIndex(
+            (handUnit) => handUnit.unit.toString() === newDeckUnit.unit.toString()
           )
+          if (index < 0) {
+            const message = `Could not find unit "${newDeckUnit.unit}" in hand to play`
+            BattlefieldUpdates.logger.error(`${logPrefix} failed: ${message}, "${JSON.stringify(game)}"`)
+            throw Error(`${message}.`)
+          }
+          player.deck.hand.splice(index, 1)
         }
         if (!weather && !spy && combat) {
           const fieldUnit: FieldUnitDbObject = {

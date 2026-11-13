@@ -27,6 +27,7 @@ import { ensureUnitsInHand } from '@gwent-oss/test-utils'
 import {
   expectizeGame,
   expectizeGamePlayer,
+  expectizeMoveFaction,
   expectizeMovePass,
   expectizeMoveUnit,
   expectizePlayerRound,
@@ -414,7 +415,20 @@ describe('play-pass-mutation', () => {
                   ready: true,
                   rounds: [
                     expectizePlayerRound({
-                      moves: [expectizeMovePass()],
+                      moves: [
+                        expectizeMoveFaction({
+                          faction: deckSelf.faction,
+                          impacts: [
+                            TestUtil.getImpact({
+                              user: self,
+                            }),
+                            TestUtil.getImpact({
+                              user: opponent,
+                            }),
+                          ],
+                        }),
+                        expectizeMovePass(),
+                      ],
                       passed: true,
                     }),
                   ],
@@ -508,6 +522,17 @@ describe('play-pass-mutation', () => {
                   rounds: [
                     expectizePlayerRound({
                       moves: [
+                        expectizeMoveFaction({
+                          faction: deckSelf.faction,
+                          impacts: [
+                            TestUtil.getImpact({
+                              user: self,
+                            }),
+                            TestUtil.getImpact({
+                              user: opponent,
+                            }),
+                          ],
+                        }),
                         expectizeMoveUnit({
                           unit: TestUtil.getFieldUnit({
                             unit: deckUnitSelf.unit,
@@ -580,6 +605,17 @@ describe('play-pass-mutation', () => {
           rounds: [
             expectizePlayerRound({
               moves: [
+                expectizeMoveFaction({
+                  faction: deckSelf.faction,
+                  impacts: [
+                    TestUtil.getImpact({
+                      user: self,
+                    }),
+                    TestUtil.getImpact({
+                      user: opponent,
+                    }),
+                  ],
+                }),
                 expectizeMoveUnit({
                   unit: TestUtil.getFieldUnit({
                     unit: deckUnit.unit,
