@@ -4842,6 +4842,7 @@ __metadata:
     jest-junit: "npm:17.0.0"
     log4js: "npm:6.9.1"
     mongodb: "npm:7.5.0"
+    semver: "npm:7.8.6"
     ts-jest: "npm:29.4.15"
     ws: "npm:8.23.0"
   languageName: unknown
