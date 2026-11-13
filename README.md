@@ -128,6 +128,13 @@ To install dependencies, run
 yarn install
 ```
 
+Note: If you do not have yarn installed (you get an error such as `yarn: No such file or directory`), run
+
+```sh
+npm install -g corepack
+corepack enable
+```
+
 ### Build
 
 To build the source code into transpiled javascript, run

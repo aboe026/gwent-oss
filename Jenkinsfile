@@ -167,6 +167,7 @@ node {
                                 docker.image(nodeImage).inside("--network=${uniqueName}") {
                                     stage('Install') {
                                         sh 'node --version'
+                                        sh 'npm install -g corepack'
                                         sh 'yarn --version'
                                         sh 'corepack enable'
                                         retry(retryAttempts) {
