@@ -324,6 +324,14 @@ then run `yarn install` to apply package updates
 
 _Note_: Might need to [upgrade yarn](#upgrade-yarn) if upgrading TypeScript as it has some dependency on Yarn integrating with it.
 
+#### caniuse-lite
+
+To upgrade the Browserlist, run
+
+```sh
+npx update-browserslist-db@latest
+```
+
 #### Upgrade Yarn
 
 To upgrade the version of yarn used in the project, run

@@ -129,7 +129,7 @@ node {
                             'NETWORK_EXTERNAL=true',
                             'RESTART_POLICY=no',
                             "SESSION_SECRET_FILE=${mountDir}/${sessionSecretFile}",
-                            'SESSION_TIMEOUT_SECONDS=60'
+                            'SESSION_TIMEOUT_SECONDS=60',
                         ]
                     }
                     stage('Install Compose') {
@@ -184,8 +184,8 @@ node {
                                             sh 'yarn test-unit'
                                         } catch (err) {
                                             exceptionThrown = true
-                                            println 'Exception was caught in try block of unit tests stage.'
-                                            println err
+                                            echo 'Exception was caught in try block of unit tests stage.'
+                                            echo err
                                         } finally {
                                             junit testResults: 'results/unit.xml', allowEmptyResults: true
                                             recordCoverage(
@@ -215,8 +215,8 @@ node {
                                             }
                                         } catch (err) {
                                             exceptionThrown = true
-                                            println 'Exception was caught in try block of func tests stage.'
-                                            println err
+                                            echo 'Exception was caught in try block of func tests stage.'
+                                            echo err
                                         } finally {
                                             junit testResults: 'results/func.xml', allowEmptyResults: true
                                         }
@@ -281,7 +281,7 @@ node {
                             dbName: e2eDbName,
                             mongoUser: mongoUser,
                             mongoPass: mongoPass,
-                            sessionSecret: sessionSecret
+                            sessionSecret: sessionSecret,
                         ])
                     }
                     archiveArtifacts artifacts: 'test/e2e/screenshots/**/*', allowEmptyArchive: true
@@ -306,7 +306,7 @@ node {
                                     parallel dockerPushes
                                 }
                             } else {
-                                println "Build status of '${currentBuild.currentResult}' does not equal '${hudson.model.Result.SUCCESS}', not pushing images"
+                                echo "Build status of '${currentBuild.currentResult}' does not equal '${hudson.model.Result.SUCCESS}', not pushing images"
                             }
                         }
                     }
@@ -315,8 +315,8 @@ node {
         }
     } catch (err) {
         exceptionThrown = true
-        println 'Exception was caught in try block of jenkins job.'
-        println err
+        echo 'Exception was caught in try block of jenkins job.'
+        echo err
     }  finally {
         if (upload) {
             badges.uploadBuildResult(
@@ -332,7 +332,7 @@ node {
                     archiveArtifacts artifacts: "${uniqueName}-compose.log", allowEmptyArchive: true
                 }
             } catch (err) {
-                println 'Exception caught when trying to get docker-compose logs'
+                echo 'Exception caught when trying to get docker-compose logs'
             }
             try {
                 dir("${workDir}/compose") {
@@ -341,22 +341,22 @@ node {
                     }
                 }
             } catch (err) {
-                println 'Exception caught when trying to bring down compose containers'
-                println err
+                echo 'Exception caught when trying to bring down compose containers'
+                echo err
             }
             [*msvs, 'router', 'database'].each { service ->
                 def containerName = "${uniqueName}-${service}-1"
                 try {
                     sh "docker stop ${containerName}"
                 } catch (err) {
-                    println "non-fatal error trying to stop docker container ${containerName}"
-                    println err
+                    echo "non-fatal error trying to stop docker container ${containerName}"
+                    echo err
                 }
                 try {
                     sh "docker rm ${containerName}"
                 } catch (err) {
-                    println "non-fatal error trying to remove docker container ${containerName}"
-                    println err
+                    echo "non-fatal error trying to remove docker container ${containerName}"
+                    echo err
                 }
             }
             [*msvs, 'router'].each { service ->
@@ -364,8 +364,8 @@ node {
                 try {
                     sh "docker rmi ${imageName}"
                 } catch (err) {
-                    println "non-fatal error trying to remove docker image ${imageName}"
-                    println err
+                    echo "non-fatal error trying to remove docker image ${imageName}"
+                    echo err
                 }
             }
             e2eSuites.each { e2eSuite ->
@@ -373,48 +373,48 @@ node {
                 try {
                     sh "docker stop ${testcafeContainer}"
                 } catch (err) {
-                    println "non-fatal error trying to stop docker container ${testcafeContainer}"
-                    println err
+                    echo "non-fatal error trying to stop docker container ${testcafeContainer}"
+                    echo err
                 }
                 try {
                     sh "docker rm ${testcafeContainer}"
                 } catch (err) {
-                    println "non-fatal error trying to remove docker container ${testcafeContainer}"
-                    println err
+                    echo "non-fatal error trying to remove docker container ${testcafeContainer}"
+                    echo err
                 }
             }
             def testcafeImage = "testcafe/testcafe:${testcafeImageTag}"
             try {
                 sh "docker rmi ${testcafeImage}"
             } catch (err) {
-                println "non-fatal error trying to remove docker image ${testcafeImage}"
-                println err
+                echo "non-fatal error trying to remove docker image ${testcafeImage}"
+                echo err
             }
             try {
                 sh "docker network rm ${uniqueName}"
             } catch (err) {
-                println "non-fatal error trying to remove docker network '${uniqueName}'"
-                println err
+                echo "non-fatal error trying to remove docker network '${uniqueName}'"
+                echo err
             }
             dockerVolumesToDelete.each { volume ->
                 try {
                     sh "docker volume rm ${volume}"
                 } catch (err) {
-                    println "non-fatal error trying to remove docker volume '${volume}'"
-                    println err
+                    echo "non-fatal error trying to remove docker volume '${volume}'"
+                    echo err
                 }
             }
             try {
                 sh "rm -rf ${workDir}"
             } catch (err) {
-                println 'Exception deleting working directory'
-                println err
+                echo 'Exception deleting working directory'
+                echo err
             }
             try {
                 sh "rm -rf ${workDir}@tmp"
             } catch (err) {
-                println 'Exception deleting temporary working directory'
-                println err
+                echo 'Exception deleting temporary working directory'
+                echo err
             }
             if (exceptionThrown) {
                 error('Exception was thrown earlier')
@@ -453,8 +453,8 @@ def runE2eTest(Map cfg) {
             """
         } catch (err) {
             exceptionThrown = true
-            println "Exception was caught in try block of suite '${cfg.suiteName}' tests stage."
-            println err
+            echo "Exception was caught in try block of suite '${cfg.suiteName}' tests stage."
+            echo err
         } finally {
             dir('test/e2e') {
                 def filePath = "results/${cfg.suiteName}.xml"
@@ -496,17 +496,17 @@ def runE2eTest(Map cfg) {
                             }
                         } catch (er) {
                             exceptionThrown = true
-                            println "Exception caught in try block of finally block of suite '${cfg.suiteName}' tests stage."
-                            println er
+                            echo "Exception caught in try block of finally block of suite '${cfg.suiteName}' tests stage."
+                            echo er
                         }
                         junit testResults: filePath
                     } else {
                         exceptionThrown = true
-                        println "Results file '${filePath}' for suite '${cfg.suiteName}' empty"
+                        echo "Results file '${filePath}' for suite '${cfg.suiteName}' empty"
                     }
                 } else {
                     exceptionThrown = true
-                    println "Results file '${filePath}' for suite '${cfg.suiteName}' not found"
+                    echo "Results file '${filePath}' for suite '${cfg.suiteName}' not found"
                 }
             }
         }
@@ -517,5 +517,5 @@ def runE2eTest(Map cfg) {
 }
 
 def isBuildSucceeding() {
-    return hudson.model.Result.SUCCESS.toString() == currentBuild.currentResult
+    hudson.model.Result.SUCCESS.toString() == currentBuild.currentResult
 }
