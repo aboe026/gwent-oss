@@ -24,18 +24,24 @@ export default class Upgrade6 extends Upgrade {
     Upgrade6.logger.trace(`currentFcv: "${currentFcv}"`)
 
     if (semver.lt(`${currentFcv}.0`, `${desiredFcv}.0`)) {
-      Upgrade6.logger.debug(`Current FCV "${currentFcv}" is less than desired FCV "${desiredFcv}", checking Database version for ability to automatically upgrade FCV`)
+      Upgrade6.logger.debug(
+        `Current FCV "${currentFcv}" is less than desired FCV "${desiredFcv}", checking Database version for ability to automatically upgrade FCV`
+      )
       const currentDbVersion = await AdminDb.getDatabaseVersion()
       Upgrade6.logger.trace(`currentDbVersion: "${currentDbVersion}"`)
 
       if (semver.lt(currentDbVersion, `${desiredFcv}.0`)) {
-        throw Error(`Current MongoDB database version "${currentDbVersion}" is less than the required version of "${desiredFcv}". Upgrade MongoDB instance to proceed.`)
+        throw Error(
+          `Current MongoDB database version "${currentDbVersion}" is less than the required version of "${desiredFcv}". Upgrade MongoDB instance to proceed.`
+        )
       }
 
       Upgrade6.logger.debug(`Upgrading FCV from "${currentFcv}" to "${desiredFcv}"`)
       await AdminDb.setFeatureCompatibilityVersion(desiredFcv)
     } else {
-      Upgrade6.logger.debug(`Current FCV "${currentFcv}" not less than desired FCV of "${desiredFcv}", no upgrade necessary`)
+      Upgrade6.logger.debug(
+        `Current FCV "${currentFcv}" not less than desired FCV of "${desiredFcv}", no upgrade necessary`
+      )
     }
   }
 }
