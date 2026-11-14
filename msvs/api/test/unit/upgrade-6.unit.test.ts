@@ -1,9 +1,15 @@
 import AdminDb from '../../src/database/upgrades/admin-db'
 import DbConnector from '../../src/database/db-connector'
+import * as env from '../../src/env'
 import Upgrade6 from '../../src/database/upgrades/upgrade-6'
 
 describe('upgrade-6', () => {
   describe('run', () => {
+    it('does nothing if syncFcv is false', async () => {
+      await testRun({
+        syncFcv: false,
+      })
+    })
     it('does nothing if fcv is already at desired one', async () => {
       await testRun({
         currentFcv: '9.0',
@@ -33,17 +39,25 @@ describe('upgrade-6', () => {
 })
 
 async function testRun({
+  syncFcv = true,
   currentFcv,
   currentDbVersion,
   expected,
 }: {
-  currentFcv: string
+  syncFcv?: boolean
+  currentFcv?: string
   currentDbVersion?: string
   expected?: undefined | Error
 }) {
   const desiredFcv = '9.0'
+  const envSpy = jest.spyOn(env, 'default').mockReturnValue({
+    SYNC_FCV: syncFcv,
+  } as any)
   const connectSpy = jest.spyOn(DbConnector, 'connect').mockImplementation()
-  const getFcvSpy = jest.spyOn(AdminDb, 'getFeatureCompatibilityVersion').mockResolvedValue(currentFcv)
+  const getFcvSpy = jest.spyOn(AdminDb, 'getFeatureCompatibilityVersion')
+  if (currentFcv) {
+    getFcvSpy.mockResolvedValue(currentFcv)
+  }
   const getDbVersionSpy = jest.spyOn(AdminDb, 'getDatabaseVersion')
   if (currentDbVersion) {
     getDbVersionSpy.mockResolvedValue(currentDbVersion)
@@ -65,8 +79,9 @@ async function testRun({
     await expect(promise).resolves.toEqual(undefined)
   }
 
-  expect(connectSpy.mock.calls).toEqual([[]])
-  expect(getFcvSpy.mock.calls).toEqual([[]])
+  expect(envSpy.mock.calls).toEqual([[]])
+  expect(connectSpy.mock.calls).toEqual(syncFcv ? [[]] : [])
+  expect(getFcvSpy.mock.calls).toEqual(syncFcv ? [[]] : [])
   expect(getDbVersionSpy.mock.calls).toEqual(currentDbVersion ? [[]] : [])
   expect(setFcvSpy.mock.calls).toEqual(currentDbVersion && !(expected instanceof Error) ? [[desiredFcv]] : [])
   expect(errorSpy.mock.calls).toEqual(
@@ -78,18 +93,27 @@ async function testRun({
         ]
       : []
   )
-  const debugCalls = [['Connecting to database'], ['Getting current FCV']]
-  const traceCalls = [[`currentFcv: "${currentFcv}"`]]
-  if (currentDbVersion) {
-    debugCalls.push([
-      `Current FCV "${currentFcv}" is less than desired FCV "${desiredFcv}", checking Database version for ability to automatically upgrade FCV`,
-    ])
-    traceCalls.push([`currentDbVersion: "${currentDbVersion}"`])
-    if (!(expected instanceof Error)) {
-      debugCalls.push([`Upgrading FCV from "${currentFcv}" to "${desiredFcv}"`])
+  const debugCalls = []
+  const traceCalls = [[`syncFcv: "${syncFcv}"`]]
+  if (syncFcv) {
+    debugCalls.push(['Connecting to database'])
+    debugCalls.push(['Getting current FCV'])
+    traceCalls.push([`currentFcv: "${currentFcv}"`])
+    if (currentDbVersion) {
+      debugCalls.push([
+        `Current FCV "${currentFcv}" is less than desired FCV "${desiredFcv}", checking Database version for ability to automatically upgrade FCV`,
+      ])
+      traceCalls.push([`currentDbVersion: "${currentDbVersion}"`])
+      if (!(expected instanceof Error)) {
+        debugCalls.push([`Upgrading FCV from "${currentFcv}" to "${desiredFcv}"`])
+      }
+    } else {
+      debugCalls.push([
+        `Current FCV "${currentFcv}" not less than desired FCV of "${desiredFcv}", no upgrade necessary`,
+      ])
     }
   } else {
-    debugCalls.push([`Current FCV "${currentFcv}" not less than desired FCV of "${desiredFcv}", no upgrade necessary`])
+    debugCalls.push(['Environment variable SYNC_FCV not truthy, so not attempting to check or upgrade FCV.'])
   }
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)

@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, port, str, url } from '@gwent-oss/env'
+import getEnv, { bool, NODE_ENV, num, port, str, url } from '@gwent-oss/env'
 
 /**
  * Gets the environment variables that relate to how the API operates.
@@ -76,6 +76,10 @@ export default function env() {
       SUBSCRIPTION_PATH: str({
         desc: 'The URL path where the GraphQL server Subscriptions can be accessed.',
         default: 'subscribe',
+      }),
+      SYNC_FCV: bool({
+        desc: 'Whether or not to set the Feature Compatibility Version on the MongoDB instance to match the version expected on upgrades.',
+        default: true,
       }),
     },
   })
