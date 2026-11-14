@@ -20,6 +20,7 @@ const DENY_LIST: string[] = [
   '@types/url-join', // 5.0 breaks and is not needed for url-join 5.0
   'basic-auth', // 3.0 switched to ESM, need to switch to ESM to be able to use
   'cookie', // 2.0 switched to ESM, need to switch to ESM to be able to use
+  'envalid', // 9.0 switched to ESM, need to switch to ESM to be able to use
   'graphql', // 17 breaks codegen (need to upgrade codegen first, but can't since it's own upgrades requires ESM)
   'graphql-request', // 7.0.0 switched to ESM, need to switch to ESM to be able to use
   'mongodb', // 7.6.0 broke func tests, caused MongoClient.connect to hang when in jest environment somehow

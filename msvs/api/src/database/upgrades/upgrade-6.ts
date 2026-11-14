@@ -31,9 +31,9 @@ export default class Upgrade6 extends Upgrade {
       Upgrade6.logger.trace(`currentDbVersion: "${currentDbVersion}"`)
 
       if (semver.lt(currentDbVersion, `${desiredFcv}.0`)) {
-        throw Error(
-          `Current MongoDB database version "${currentDbVersion}" is less than the required version of "${desiredFcv}". Upgrade MongoDB instance to proceed.`
-        )
+        const message = `Current MongoDB database version "${currentDbVersion}" is less than the required version of "${desiredFcv}". Upgrade MongoDB instance to proceed.`
+        Upgrade6.logger.error(message)
+        throw Error(message)
       }
 
       Upgrade6.logger.debug(`Upgrading FCV from "${currentFcv}" to "${desiredFcv}"`)

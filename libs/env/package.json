@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "dotenv": "18.0.10",
-    "envalid": "9.0.0"
+    "envalid": "8.2.0"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",

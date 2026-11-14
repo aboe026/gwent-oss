@@ -4753,7 +4753,7 @@ __metadata:
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:24.13.3"
     dotenv: "npm:18.0.10"
-    envalid: "npm:9.0.0"
+    envalid: "npm:8.2.0"
     jest-junit: "npm:17.0.0"
     ts-jest: "npm:29.4.15"
   languageName: unknown
@@ -9616,10 +9616,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"envalid@npm:9.0.0":
-  version: 9.0.0
-  resolution: "envalid@npm:9.0.0"
-  checksum: 10/3d28642d0c0918aa9382d2e83b44e195fda5ac77cdefe26ed3046123701afc75d67bbd19802471b30c097b3587e2cc38e95f5c8268315af9cff5f50b5dcb7df1
+"envalid@npm:8.2.0":
+  version: 8.2.0
+  resolution: "envalid@npm:8.2.0"
+  dependencies:
+    tslib: "npm:2.8.1"
+  checksum: 10/46bb91c8a0cfe3755d17be8c4e82a5872abf4679dafe3659883c74a205d39b7317304b3cc7a5e5589fadb48bf4ccfbad2919616d86d392a1b7cb06ba3b5abf1e
   languageName: node
   linkType: hard
 
@@ -17159,6 +17161,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:2.8.1, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
+  version: 2.8.1
+  resolution: "tslib@npm:2.8.1"
+  checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
+  languageName: node
+  linkType: hard
+
 "tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:~2.6.0":
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
@@ -17170,13 +17179,6 @@ __metadata:
   version: 2.8.0
   resolution: "tslib@npm:2.8.0"
   checksum: 10/1bc7c43937477059b4d26f2dbde7e49ef0fb4f38f3014e0603eaea76d6a885742c8b1762af45949145e5e7408a736d20ded949da99dabc8ccba1fc5531d2d927
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^2.8.0, tslib@npm:^2.8.1":
-  version: 2.8.1
-  resolution: "tslib@npm:2.8.1"
-  checksum: 10/3e2e043d5c2316461cb54e5c7fe02c30ef6dccb3384717ca22ae5c6b5bc95232a6241df19c622d9c73b809bea33b187f6dbc73030963e29950c2141bc32a79f7
   languageName: node
   linkType: hard
 
