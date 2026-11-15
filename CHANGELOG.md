@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.28.1 - 2026-11-14
+
+### Fixed
+
+- Upgrade dependencies ([#67](https://github.com/aboe026/gwent-oss/pull/67)) (Adam Boe)
+  - **Database**: Upgrade from MongoDB `8.3` to `9.0`. Set `SYNC_FCV` environment variable to `false` to bypass upgrading Feature Compatibility Version automatically in database upgrade/migration script.
+
 ## 0.28.0 - 2026-11-12
 
 ### Added

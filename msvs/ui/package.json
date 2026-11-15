@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/msv-ui",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "author": "Adam Boe",
   "description": "React frontend to play gwent-oss.",
   "main": "src/index.ts",
