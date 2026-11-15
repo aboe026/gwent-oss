@@ -48,11 +48,6 @@ node {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
-                        try {
-                            throw Error('test error')
-                        } catch (err) {
-                            printException(err)
-                        }
                         retry(retryAttempts) {
                             checkout scm
                         }
@@ -500,10 +495,10 @@ def runE2eTest(Map cfg) {
                                 )
                                 archiveArtifacts artifacts: unstableFileName
                             }
-                        } catch (er) {
+                        } catch (err) {
                             exceptionThrown = true
                             echo "Exception caught in try block of finally block of suite '${cfg.suiteName}' tests stage."
-                            echo er
+                            printException(err)
                         }
                         junit testResults: filePath
                     } else {
@@ -526,7 +521,10 @@ def isBuildSucceeding() {
     hudson.model.Result.SUCCESS.toString() == currentBuild.currentResult
 }
 
+@NonCPS
 def printException(Exception e) {
-    def cleanException = StackTraceUtils.deepSanitize(e)
-    echo "Error: ${cleanException.message}\nStack trace:\n${cleanException.stackTrace.join('\n')}"
+    def sw = new StringWriter()
+    def pw = new PrintWriter(sw)
+    e.printStackTrace(pw)
+    echo sw.toString()
 }
