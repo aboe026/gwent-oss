@@ -48,6 +48,11 @@ node {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
+                        try {
+                            throw Error('test error')
+                        } catch (err) {
+                            printException(err)
+                        }
                         retry(retryAttempts) {
                             checkout scm
                         }
@@ -186,7 +191,7 @@ node {
                                         } catch (err) {
                                             exceptionThrown = true
                                             echo 'Exception was caught in try block of unit tests stage.'
-                                            echo err
+                                            printException(err)
                                         } finally {
                                             junit testResults: 'results/unit.xml', allowEmptyResults: true
                                             recordCoverage(
@@ -217,7 +222,7 @@ node {
                                         } catch (err) {
                                             exceptionThrown = true
                                             echo 'Exception was caught in try block of func tests stage.'
-                                            echo err
+                                            printException(err)
                                         } finally {
                                             junit testResults: 'results/func.xml', allowEmptyResults: true
                                         }
@@ -317,7 +322,7 @@ node {
     } catch (err) {
         exceptionThrown = true
         echo 'Exception was caught in try block of jenkins job.'
-        echo err
+        printException(err)
     }  finally {
         if (upload) {
             badges.uploadBuildResult(
@@ -343,7 +348,7 @@ node {
                 }
             } catch (err) {
                 echo 'Exception caught when trying to bring down compose containers'
-                echo err
+                printException(err)
             }
             [*msvs, 'router', 'database'].each { service ->
                 def containerName = "${uniqueName}-${service}-1"
@@ -351,13 +356,13 @@ node {
                     sh "docker stop ${containerName}"
                 } catch (err) {
                     echo "non-fatal error trying to stop docker container ${containerName}"
-                    echo err
+                    printException(err)
                 }
                 try {
                     sh "docker rm ${containerName}"
                 } catch (err) {
                     echo "non-fatal error trying to remove docker container ${containerName}"
-                    echo err
+                    printException(err)
                 }
             }
             [*msvs, 'router'].each { service ->
@@ -366,7 +371,7 @@ node {
                     sh "docker rmi ${imageName}"
                 } catch (err) {
                     echo "non-fatal error trying to remove docker image ${imageName}"
-                    echo err
+                    printException(err)
                 }
             }
             e2eSuites.each { e2eSuite ->
@@ -375,13 +380,13 @@ node {
                     sh "docker stop ${testcafeContainer}"
                 } catch (err) {
                     echo "non-fatal error trying to stop docker container ${testcafeContainer}"
-                    echo err
+                    printException(err)
                 }
                 try {
                     sh "docker rm ${testcafeContainer}"
                 } catch (err) {
                     echo "non-fatal error trying to remove docker container ${testcafeContainer}"
-                    echo err
+                    printException(err)
                 }
             }
             def testcafeImage = "testcafe/testcafe:${testcafeImageTag}"
@@ -389,33 +394,33 @@ node {
                 sh "docker rmi ${testcafeImage}"
             } catch (err) {
                 echo "non-fatal error trying to remove docker image ${testcafeImage}"
-                echo err
+                printException(err)
             }
             try {
                 sh "docker network rm ${uniqueName}"
             } catch (err) {
                 echo "non-fatal error trying to remove docker network '${uniqueName}'"
-                echo err
+                printException(err)
             }
             dockerVolumesToDelete.each { volume ->
                 try {
                     sh "docker volume rm ${volume}"
                 } catch (err) {
                     echo "non-fatal error trying to remove docker volume '${volume}'"
-                    echo err
+                    printException(err)
                 }
             }
             try {
                 sh "rm -rf ${workDir}"
             } catch (err) {
                 echo 'Exception deleting working directory'
-                echo err
+                printException(err)
             }
             try {
                 sh "rm -rf ${workDir}@tmp"
             } catch (err) {
                 echo 'Exception deleting temporary working directory'
-                echo err
+                printException(err)
             }
             if (exceptionThrown) {
                 error('Exception was thrown earlier')
@@ -455,7 +460,7 @@ def runE2eTest(Map cfg) {
         } catch (err) {
             exceptionThrown = true
             echo "Exception was caught in try block of suite '${cfg.suiteName}' tests stage."
-            echo err
+            printException(err)
         } finally {
             dir('test/e2e') {
                 def filePath = "results/${cfg.suiteName}.xml"
@@ -519,4 +524,9 @@ def runE2eTest(Map cfg) {
 
 def isBuildSucceeding() {
     hudson.model.Result.SUCCESS.toString() == currentBuild.currentResult
+}
+
+def printException(Exception e) {
+    def cleanException = StackTraceUtils.deepSanitize(e)
+    echo "Error: ${cleanException.message}\nStack trace:\n${cleanException.stackTrace.join('\n')}"
 }
