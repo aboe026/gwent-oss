@@ -1,6 +1,6 @@
 ARG APP_DIR=/opt/gwent-oss
 ARG BUILD=0
-ARG NODE_VERSION=24.20.0
+ARG NODE_VERSION=26.13.1
 ARG TARGET=api
 
 #################
@@ -16,6 +16,7 @@ ENV NODE_ENV=production
 COPY . ${APP_DIR}
 
 WORKDIR ${APP_DIR}
+RUN npm install -g corepack
 RUN corepack enable
 # Ensure Yarn binary available on local filesystem for airgapped containers
 RUN yarn set version $(node -p "require('./package.json').packageManager.split('@')[1]") --yarn-path
@@ -37,6 +38,7 @@ WORKDIR ${APP_DIR}/msvs/${TARGET}
 ENV NODE_ENV=production
 
 # Build microservice
+RUN npm install -g corepack
 RUN corepack enable
 RUN yarn build
 

@@ -1,6 +1,6 @@
 {
   "name": "@gwent-oss/test-utils",
-  "version": "0.28.0",
+  "version": "0.28.1",
   "author": "Adam Boe",
   "description": "Utility functions for tests",
   "main": "build/src/index.js",
@@ -21,6 +21,6 @@
     "@types/jest": "30.0.0",
     "@types/node": "24.13.3",
     "jest-junit": "17.0.0",
-    "ts-jest": "29.4.12"
+    "ts-jest": "29.4.15"
   }
 }

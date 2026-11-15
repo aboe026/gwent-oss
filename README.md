@@ -36,6 +36,7 @@ Visit the production instance at [gwent-oss.com](https://gwent-oss.com)
   - [Upgrading](#upgrading)
     - [Upgrade Nodejs](#upgrade-nodejs)
     - [Upgrade Dependencies](#upgrade-dependencies)
+    - [Upgrade caniuse-lite](#caniuse-lite)
     - [Upgrade Yarn](#upgrade-yarn)
     - [Upgrade Others](#upgrade-others)
   - [Changes](./CHANGELOG.md)
@@ -126,6 +127,13 @@ To install dependencies, run
 
 ```sh
 yarn install
+```
+
+Note: If you do not have yarn installed (you get an error such as `yarn: No such file or directory`), run
+
+```sh
+npm install -g corepack
+corepack enable
 ```
 
 ### Build
@@ -323,6 +331,14 @@ yarn upgrade-dependencies
 then run `yarn install` to apply package updates
 
 _Note_: Might need to [upgrade yarn](#upgrade-yarn) if upgrading TypeScript as it has some dependency on Yarn integrating with it.
+
+#### caniuse-lite
+
+To upgrade the Browserlist, run
+
+```sh
+npx update-browserslist-db@latest
+```
 
 #### Upgrade Yarn
 
