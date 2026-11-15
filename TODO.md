@@ -129,6 +129,7 @@ Existing problems in the codebase that need to be fixed.
 - reduce docker image sizes
 - how to run api and ui just from their own specific dirs? (and not need to copy the entire monorepo to the runtime image)?
 - ensure docker images do not re-run "yarn build-libs" when only service files change (add --exlude flag for service dirs on "base" image?)
+- have docker image get node version from .nvmrc?
 - Fold [deck-filter.ts](libs/graphql-schema/src/deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - had to convert [webpack.config.ts](msvs/ui/libs/client/webpack.config.ts) to be ESM because having separate `tsconfig.webpack.json` for it wouldn't work
 - fix upgrade-dependencies.ts not being part of the yarn workspace
