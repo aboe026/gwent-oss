@@ -169,6 +169,29 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
+        <div id="slugs" className="about-section">
+          <div className="about-section-title">Satisfactory Slug Hunt</div>
+          <div>Team Purple (or as Mood Publishing calls them "Pink") Power Slugs for the win!</div>
+          <div>
+            This is related to the{' '}
+            <a href="https://gamefound.com/en/projects/mood-publishing/satisfactory-the-board-game" target="_">
+              Satisfactory Board Game campaign on GameFound
+            </a>
+            .
+          </div>
+          <div>
+            You can participate in the Hunt by joining the{' '}
+            <a href="https://discord.com/channels/1414601029349150901/1570027243500212234" target="_">
+              Discord server
+            </a>
+            .
+          </div>
+          <img
+            src="/images/slugs/Secret_Slug_Hunt_Purple.png"
+            title="Secret Slug Hunt Purple"
+            style={{ maxWidth: '100%' }}
+          ></img>
+        </div>
       </div>
     </div>
   )
