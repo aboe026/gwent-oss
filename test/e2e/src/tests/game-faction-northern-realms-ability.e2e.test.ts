@@ -25,11 +25,13 @@ test('Moves random unit from undrawn into hand if round won and undrawns availab
 
   await gameManager.pass({
     switchTurnsWith: gameManager.self.gamePlayer,
-    factionAbility: {
-      gamePlayer: gameManager.self.gamePlayer,
-      key: FactionKey.NorthernRealms,
-      impacts: 1,
-    },
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.NorthernRealms,
+        impacts: 1,
+      },
+    ],
   })
   const handed = gameManager.self.deck.hand.find((handUnit) => !previousHandIds.includes(handUnit.unit.id))
   if (!handed) {
@@ -208,11 +210,13 @@ test('Does nothing if round won and no undrawn available', async (t) => {
 
   await gameManager.pass({
     switchTurnsWith: gameManager.self.gamePlayer,
-    factionAbility: {
-      gamePlayer: gameManager.self.gamePlayer,
-      key: FactionKey.NorthernRealms,
-      impacts: 0,
-    },
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.NorthernRealms,
+        impacts: 0,
+      },
+    ],
   })
 
   await GamePage.toggleImpacts({
@@ -252,11 +256,13 @@ test('Hides unit on impact for opponent', async (t) => {
 
   await gameManager.pass({
     switchTurnsWith: gameManager.opponent.gamePlayer,
-    factionAbility: {
-      gamePlayer: gameManager.opponent.gamePlayer,
-      key: FactionKey.NorthernRealms,
-      impacts: 1,
-    },
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.opponent.gamePlayer,
+        key: FactionKey.NorthernRealms,
+        impacts: 1,
+      },
+    ],
   })
   const handed = gameManager.opponent.deck.hand.find((handUnit) => !previousHandIds.includes(handUnit.unit.id))
   if (!handed) {
@@ -285,3 +291,5 @@ test('Hides unit on impact for opponent', async (t) => {
     ],
   })
 })
+
+// if both self and opponent have northern realms

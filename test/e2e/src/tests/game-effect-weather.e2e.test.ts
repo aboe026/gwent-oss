@@ -48,6 +48,8 @@ test('Weather does not effect hero', async (t) => {
   })
 })
 
+// TODO: weather does not effect unit with strength of 0
+
 test('Weather does not effect unit with strength of 1', async (t) => {
   const unitName1 = 'Redanian Foot Soldier'
   const unitName2 = 'Biting Frost'

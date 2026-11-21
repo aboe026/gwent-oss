@@ -585,11 +585,13 @@ test('Avenger summoned and Northern Realms faction ability triggered at round en
         turn: gameManager.self.gamePlayer,
       },
     ],
-    factionAbility: {
-      gamePlayer: gameManager.self.gamePlayer,
-      key: FactionKey.NorthernRealms,
-      impacts: 1,
-    },
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.NorthernRealms,
+        impacts: 1,
+      },
+    ],
   })
   await GamePage.toggleImpacts({
     round: gameManager.round,

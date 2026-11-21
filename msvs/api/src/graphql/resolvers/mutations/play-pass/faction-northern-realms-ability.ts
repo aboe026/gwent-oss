@@ -24,7 +24,7 @@ export default class FactionNorthernRealmsAbility {
    *
    * @param config The configuration used to attempt the faction ability.
    * @param config.game The game the faction ability attempt is being made for.
-   * @param config.logPrefix what to prepend log statements with.
+   * @param config.logPrefix What to prepend log statements with.
    */
   static async attemptAbility({ game, logPrefix }: { game: GameDbObject; logPrefix: string }) {
     const roundWinners: GamePlayerDbObject[] = []
@@ -52,27 +52,14 @@ export default class FactionNorthernRealmsAbility {
         )
         throw Error(`${message}.`)
       }
-      const factions = await FactionStore.get({
-        keys: [FactionKey.NorthernRealms],
+      const northernRealms = await FactionStore.getByKey({
+        key: FactionKey.NorthernRealms,
+        logPrefix,
       })
-      if (FactionNorthernRealmsAbility.logger.isTraceEnabled()) {
-        FactionNorthernRealmsAbility.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
-      }
-      if (factions.length === 0) {
-        const message = `Could not find faction "${FactionKey.NorthernRealms}".`
-        FactionNorthernRealmsAbility.logger.error(`${logPrefix} failed: ${message}`)
-        throw Error(`${message}.`)
-      }
-      if (factions.length > 1) {
-        const message = `Found more than 1 faction for "${FactionKey.NorthernRealms}"`
-        FactionNorthernRealmsAbility.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
-        throw Error(`${message}.`)
-      }
-      const northernRealmsFaction = factions[0]
-      if (roundWinner.deck.from?.faction.toString() === northernRealmsFaction._id.toString()) {
+      if (roundWinner.deck.from?.faction.toString() === northernRealms._id.toString()) {
         const factionMove: MoveFactionDbObject = {
           created: new Date(),
-          faction: northernRealmsFaction._id,
+          faction: northernRealms._id,
           type: MoveType.Faction,
           impacts: [],
         }

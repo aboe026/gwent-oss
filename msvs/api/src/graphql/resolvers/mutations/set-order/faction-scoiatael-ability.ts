@@ -21,7 +21,7 @@ export default class FactionScoiaTaelAbility {
    *
    * @param config The configuration used to attempt the faction ability.
    * @param config.game The game the faction ability attempt is being made for.
-   * @param config.logPrefix what to prepend log statements with.
+   * @param config.logPrefix What to prepend log statements with.
    * @param config.scoiaTaelFactionId The ID of the Scoia'Tael faction.
    * @param config.scoiaTaelPlayers All players who chose a Scoia'Tael deck for the game.
    * @param config.userIdsForOrder The User IDs in turn order for the game.

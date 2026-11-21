@@ -17,6 +17,8 @@ import UnitStore from '../../../../database/stores/unit-store'
  * @param config.units Any potential Unit objects which have already been retrieved.
  * @param config.playerId A potential player ID to scope round units to. If not specified, will get round units for all players.
  * @param config.round The round of the game to get Units for. If not provided, will be current round of the game.
+ * @param config.heroes Scope units to those that are heroes or not. Leave undefined to get either.
+ * @param config.specials Scope units to those that are specials or not. Leave undefined to get either.
  * @returns An array of all database Units on the battlefield in the current round of the game, including the unitBeingPlayed.
  */
 export default async function getRoundUnits({
@@ -25,12 +27,16 @@ export default async function getRoundUnits({
   units,
   playerId,
   round,
+  heroes,
+  specials,
 }: {
   game: GameDbObject
   unitBeingPlayed?: UnitDbObject
   units?: UnitDbObject[]
   playerId?: ObjectId
   round?: number
+  heroes?: boolean
+  specials?: boolean
 }): Promise<UnitDbObject[]> {
   const unitIdsToRetrieve: string[] = []
   const gameRound = round === undefined ? game.round - 1 : round
@@ -70,6 +76,8 @@ export default async function getRoundUnits({
     roundUnits.push(
       ...(await UnitStore.get({
         ids: unitIdsToRetrieve,
+        heroes,
+        specials,
       }))
     )
   }

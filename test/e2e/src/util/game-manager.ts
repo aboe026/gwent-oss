@@ -302,14 +302,14 @@ export class GameManager {
     verify,
     switchTurnsWith,
     avenging,
-    factionAbility,
+    factionAbilities,
     victors,
     deckPartSelected,
   }: {
     verify?: boolean
     switchTurnsWith?: GamePlayerExpected
     avenging?: AvengingExpected[]
-    factionAbility?: FactionAbility
+    factionAbilities?: FactionAbility[]
     victors?: string[]
     deckPartSelected?: GameUnitOrigin
   }) {
@@ -370,48 +370,142 @@ export class GameManager {
         this.moves.push([])
         this.round++
       }
-      if (factionAbility) {
-        if (factionAbility.key === FactionKey.NorthernRealms) {
-          factionAbility.gamePlayer.hand = (factionAbility.gamePlayer.hand || 0) + factionAbility.impacts
-          factionAbility.gamePlayer.undrawn = (factionAbility.gamePlayer.undrawn || 0) - factionAbility.impacts
-          const factionPlayer =
-            factionAbility.gamePlayer.name === currentPlayer.gamePlayer.name ? currentPlayer : otherPlayer
-          const previousHands = factionPlayer.deck.hand
-          const previousUndrawns = factionPlayer.deck.undrawn
-          const newDeck = await factionPlayer.client.getGameDeck(this.gameId)
-          if (newDeck.hand.length !== previousHands.length + factionAbility.impacts) {
-            throw Error(
-              `New deck has "${newDeck.hand.length}" units in hand when "${previousHands.length - factionAbility.impacts}" expected`
-            )
-          }
-          if (newDeck.undrawn.length !== previousUndrawns.length - factionAbility.impacts) {
-            throw Error(
-              `New deck has "${newDeck.undrawn.length}" units in undrawn when "${previousUndrawns.length - factionAbility.impacts}" expected`
-            )
-          }
-          const undrawnsMoved = previousUndrawns.filter(
-            (prevUndrawn) => !newDeck.undrawn.some((undrawn) => undrawn.unit.id === prevUndrawn.unit.id)
-          )
-          if (undrawnsMoved.length !== factionAbility.impacts) {
-            throw Error(`Expected "${factionAbility.impacts}" undrawns moved but found "${undrawnsMoved.length}"`)
-          }
-          for (const undrawnMoved of undrawnsMoved) {
-            if (!newDeck.hand.some((handUnit) => handUnit.unit.id === undrawnMoved.unit.id)) {
-              throw Error(`Expected undrawn "${undrawnMoved.unit.name}" to be in hand but not found`)
+      if (factionAbilities) {
+        for (const factionAbility of factionAbilities) {
+          if (factionAbility.key === FactionKey.Monsters) {
+            const factionPlayer =
+              factionAbility.gamePlayer.name === currentPlayer.gamePlayer.name ? currentPlayer : otherPlayer
+            const game = await factionPlayer.client.getGame(this.gameId)
+            const gamePlayer = game.players.find((player) => player.user.name === factionAbility.gamePlayer.name)
+            if (!gamePlayer) {
+              throw Error(`Could not find game player "${factionAbility.gamePlayer.name}" on updated game`)
             }
-          }
-          factionPlayer.deck.hand = newDeck.hand
-          factionPlayer.deck.undrawn = newDeck.undrawn
+            const previousRound = gamePlayer.rounds[this.round - 2]
+            const previousRoundUnits = [
+              ...previousRound.close.units,
+              ...previousRound.ranged.units,
+              ...previousRound.siege.units,
+            ]
+            const previousRoundEligibleIds = previousRoundUnits
+              .filter((unit) => !unit.unit.hero && !unit.unit.special)
+              .map((unit) => unit.unit.id)
+            let preservedUnit:
+              | {
+                  unit: FieldUnit
+                  combat: Combat
+                }
+              | undefined = undefined
+            const closeUnit = gamePlayer.rounds[this.round - 1].close.units.find((unit) =>
+              previousRoundEligibleIds.includes(unit.unit.id)
+            )
+            if (closeUnit) {
+              preservedUnit = {
+                combat: Combat.Close,
+                unit: closeUnit,
+              }
+            } else {
+              const rangedUnit = gamePlayer.rounds[this.round - 1].ranged.units.find((unit) =>
+                previousRoundEligibleIds.includes(unit.unit.id)
+              )
+              if (rangedUnit) {
+                preservedUnit = {
+                  combat: Combat.Ranged,
+                  unit: rangedUnit,
+                }
+              } else {
+                const siegeUnit = gamePlayer.rounds[this.round - 1].siege.units.find((unit) =>
+                  previousRoundEligibleIds.includes(unit.unit.id)
+                )
+                if (siegeUnit) {
+                  preservedUnit = {
+                    combat: Combat.Siege,
+                    unit: siegeUnit,
+                  }
+                }
+              }
+            }
+            if (!preservedUnit) {
+              throw Error(
+                `Could not find preserved unit from previous round units: "${JSON.stringify([...gamePlayer.rounds[this.round - 1].close.units, ...gamePlayer.rounds[this.round - 1].ranged.units, ...gamePlayer.rounds[this.round - 1].siege.units])}"`
+              )
+            }
+            const preservedStrength =
+              preservedUnit.unit.effectiveStrength === undefined || preservedUnit.unit.effectiveStrength === null
+                ? preservedUnit.unit.unit.strength || 0
+                : preservedUnit.unit.effectiveStrength
+            factionAbility.gamePlayer.score = (factionAbility.gamePlayer.score || 0) + preservedStrength
+            if (preservedUnit.combat === Combat.Close && factionAbility.gamePlayer.close?.units) {
+              factionAbility.gamePlayer.close.units.push({
+                name: preservedUnit.unit.unit.name,
+                effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
+                strength: preservedUnit.unit.unit.strength || 0,
+              })
+              factionAbility.gamePlayer.close.score += preservedStrength
+            } else if (preservedUnit.combat === Combat.Ranged && factionAbility.gamePlayer.ranged?.units) {
+              factionAbility.gamePlayer.ranged.units.push({
+                name: preservedUnit.unit.unit.name,
+                effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
+                strength: preservedUnit.unit.unit.strength || 0,
+              })
+              factionAbility.gamePlayer.ranged.score += preservedStrength
+            } else if (preservedUnit.combat === Combat.Siege && factionAbility.gamePlayer.siege?.units) {
+              factionAbility.gamePlayer.siege.units.push({
+                name: preservedUnit.unit.unit.name,
+                effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
+                strength: preservedUnit.unit.unit.strength || 0,
+              })
+              factionAbility.gamePlayer.siege.score += preservedStrength
+            }
+            this.moves[this.moves.length - 1].push({
+              userName: factionAbility.gamePlayer.name,
+              unitName: 'Monsters',
+              impacts: {
+                factionKey: FactionKey.Monsters,
+                number: factionAbility.impacts,
+              },
+            })
+          } else if (factionAbility.key === FactionKey.NorthernRealms) {
+            factionAbility.gamePlayer.hand = (factionAbility.gamePlayer.hand || 0) + factionAbility.impacts
+            factionAbility.gamePlayer.undrawn = (factionAbility.gamePlayer.undrawn || 0) - factionAbility.impacts
+            const factionPlayer =
+              factionAbility.gamePlayer.name === currentPlayer.gamePlayer.name ? currentPlayer : otherPlayer
+            const previousHands = factionPlayer.deck.hand
+            const previousUndrawns = factionPlayer.deck.undrawn
+            const newDeck = await factionPlayer.client.getGameDeck(this.gameId)
+            if (newDeck.hand.length !== previousHands.length + factionAbility.impacts) {
+              throw Error(
+                `New deck has "${newDeck.hand.length}" units in hand when "${previousHands.length - factionAbility.impacts}" expected`
+              )
+            }
+            if (newDeck.undrawn.length !== previousUndrawns.length - factionAbility.impacts) {
+              throw Error(
+                `New deck has "${newDeck.undrawn.length}" units in undrawn when "${previousUndrawns.length - factionAbility.impacts}" expected`
+              )
+            }
+            const undrawnsMoved = previousUndrawns.filter(
+              (prevUndrawn) => !newDeck.undrawn.some((undrawn) => undrawn.unit.id === prevUndrawn.unit.id)
+            )
+            if (undrawnsMoved.length !== factionAbility.impacts) {
+              throw Error(`Expected "${factionAbility.impacts}" undrawns moved but found "${undrawnsMoved.length}"`)
+            }
+            for (const undrawnMoved of undrawnsMoved) {
+              if (!newDeck.hand.some((handUnit) => handUnit.unit.id === undrawnMoved.unit.id)) {
+                throw Error(`Expected undrawn "${undrawnMoved.unit.name}" to be in hand but not found`)
+              }
+            }
+            factionPlayer.deck.hand = newDeck.hand
+            factionPlayer.deck.undrawn = newDeck.undrawn
 
-          this.moves[this.moves.length - 1].push({
-            userName: factionAbility.gamePlayer.name,
-            unitName: 'Northern Realms',
-            impacts: {
-              factionKey: FactionKey.NorthernRealms,
-              number: factionAbility.impacts,
-            },
-            origin: GameUnitOrigin.Undrawn,
-          })
+            this.moves[this.moves.length - 1].push({
+              userName: factionAbility.gamePlayer.name,
+              unitName: 'Northern Realms',
+              impacts: {
+                factionKey: FactionKey.NorthernRealms,
+                number: factionAbility.impacts,
+              },
+              origin: GameUnitOrigin.Undrawn,
+            })
+          }
         }
       }
       if (avenging) {

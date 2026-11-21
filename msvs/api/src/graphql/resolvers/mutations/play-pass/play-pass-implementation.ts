@@ -4,12 +4,14 @@ import { ObjectId } from 'mongodb'
 import CalculateGameEffectiveStrengths from '../util/calculate-game-effective-strengths'
 import DiscardRoundUnits from './discard-round-units'
 import EffectAvenger from '../play-unit/effect-avenger'
+import FactionMonstersAbility from './faction-monsters-ability'
 import FactionNorthernRealmsAbility from './faction-northern-realms-ability'
 import {
   GameDbObject,
   GameUnitOrigin,
   MovePassDbObject,
   MoveReasonType,
+  UnitDbObject,
 } from '@gwent-oss/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import { GameUnitType, MoveType } from '@gwent-oss/graphql-schema'
@@ -87,16 +89,35 @@ export default class PlayPassImplementation {
           game,
         })
 
+        const preservedUnits = await FactionMonstersAbility.attemptAbility({
+          game,
+          logPrefix,
+        })
+
         await FactionNorthernRealmsAbility.attemptAbility({
           game,
           logPrefix,
         })
 
-        await PlayPassImplementation.summonAvengers({
+        const avengedUnits = await PlayPassImplementation.summonAvengers({
           game,
           logPrefix,
           passingPlayerId: userId,
         })
+
+        const newRoundUnits = [...preservedUnits, ...avengedUnits]
+        if (newRoundUnits.length > 0) {
+          CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+            game,
+            units: [...avengedUnits, ...preservedUnits],
+            effects: await getUnitEffects({
+              units: newRoundUnits,
+            }),
+            logPrefix,
+          })
+
+          setGameScores(game)
+        }
       }
     } else {
       SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
@@ -126,6 +147,8 @@ export default class PlayPassImplementation {
    * @param config.game The game being passed on.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.passingPlayerId The ID of the player performing the pass for the round.
+   *
+   * @returns Any potential UnitDbObjects that were summoned to the battlefield by avengers.
    */
   private static async summonAvengers({
     game,
@@ -135,7 +158,7 @@ export default class PlayPassImplementation {
     game: GameDbObject
     logPrefix: string
     passingPlayerId: ObjectId
-  }) {
+  }): Promise<UnitDbObject[]> {
     const previousRoundUnits = await getRoundUnits({
       game,
       round: game.round - 2,
@@ -189,14 +212,7 @@ export default class PlayPassImplementation {
       }
     }
 
-    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
-      game,
-      units: [...previousRoundUnits, ...avengedUnits],
-      effects: unitEffects,
-      logPrefix,
-    })
-
-    setGameScores(game)
+    return avengedUnits
   }
 }
 
