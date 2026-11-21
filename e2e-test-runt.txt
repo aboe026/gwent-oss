@@ -1,0 +1,1176 @@
+adamb@ADAM-DESKTOP UCRT64 /d/Repos/gwent-oss (faction-monsters-ability)
+$ BROWSER=testcafe yarn test-e2e
+(node:22540) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+================================
+ Invalid environment variables:
+    BROWSER: Value "testcafe" not in choices [chrome,edge,firefox,safari]
+================================
+
+ Exiting with error code 1
+ERROR: "start-testcafe" exited with 1.
+
+adamb@ADAM-DESKTOP UCRT64 /d/Repos/gwent-oss (faction-monsters-ability)
+$ BROWSER=firefox yarn test-e2e
+(node:33812) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:33812) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+[BABEL] Note: The code generator has deoptimised the styling of D:\Repos\gwent-oss\libs\node-client\build\generated\node-sdk.js as it exceeds the max of 500KB.
+ Running tests in:
+ - Firefox 160.0 / Windows 11
+ - Firefox 160.0 / Windows 11
+ - Firefox 160.0 / Windows 11
+ - Firefox 160.0 / Windows 11
+ - Firefox 160.0 / Windows 11
+ - Firefox 160.0 / Windows 11
+ - Firefox 160.0 / Windows 11
+ - Firefox 160.0 / Windows 11
+
+ About
+ √ Shows about page without logging in
+ √ Shows about page when logged in
+
+ Banner
+ √ Main title redirects to home page when logged in
+ √ About page does not show menu or username when not logged in
+ √ Main page shows menu and username when logged in
+ √ Username redirects to profile when logged in
+ √ Menu navigates to correct pages
+
+ Deck Create
+ √ Create deck with dropdowns
+ √ Create deck with pickers
+ √ Create disabled if invalid
+ √ Change leader
+ √ Change faction
+ √ Create deck with Select All button
+ √ Cannot create deck with existing name
+ √ Cancel brings user to decks list
+ √ Create deck with random units
+
+ Deck Units Filter
+ √ Available filters specials when locked
+ √ Available filters heroes when locked
+ √ Available filters strength when locked
+ √ Available filters close when locked
+ √ Available filters ranged when locked
+ √ Available filters siege when locked
+ √ Available filters agile when locked
+ √ Available filters avenger when locked
+ √ Available filters berserker when locked
+ √ Available filters bond when locked
+ √ Available filters decoy when locked
+ √ Available filters horn when locked
+ √ Available filters mardroeme when locked
+ √ Available filters medic when locked
+ √ Available filters morale when locked
+ √ Available filters muster when locked
+ √ Available filters scorch when locked
+ √ Available filters spy when locked
+ √ Available filters weather when locked
+ √ Selected filters effects separate from available when unlocked
+ √ Available filters faction when locked
+ √ Selected filters faction separately when unlocked
+ √ Available filters DLC when locked
+ √ Selected filters DLC separately when unlocked
+ √ Available filters Alternate Art when locked
+ √ Available filters name when locked
+ √ Selected filters separately on name when unlocked
+
+ Deck Units Sort
+ √ Available sorts selected by name ascending when locked
+ √ Available sorts selected by strength ascending when locked
+ √ Available sorts selected by name descending when locked
+ √ Available sorts selected by strength descending when locked
+ √ Selected independently sorts by name ascending when unlocked
+ √ Selected independently sorts by strength ascending when unlocked
+ √ Selected independently sorts by name descending when unlocked
+ √ Selected independently sorts by strength descending when unlocked
+
+ Decks Filter
+ √ Filters by name
+ √ Filters by faction
+ √ Filters by name and faction
+
+ Decks Sort
+ √ Sorts by agile descending
+ √ Sorts by agile ascending
+ √ Sorts by close descending
+ √ Sorts by close ascending
+ √ Sorts by created descending
+ √ Sorts by created ascending
+ √ Sorts by heroes descending
+ √ Sorts by heroes ascending
+ √ Sorts by name descending by default
+ √ Sorts by name ascending
+ √ Sorts by ranged descending
+ √ Sorts by ranged ascending
+ √ Sorts by siege descending
+ √ Sorts by siege ascending
+ √ Sorts by specials descending
+ √ Sorts by specials ascending
+ √ Sorts by strength average descending
+ √ Sorts by strength average ascending
+ √ Sorts by strength total descending
+ √ Sorts by strength total ascending
+ √ Sorts by units descending
+ √ Sorts by units ascending
+
+ Decks Subscription
+ √ Deck added through API appears for user on decks page without any decks
+ √ Deck added through API appears for user on decks page with existing deck
+ √ Deck added through API appears for user without decks navigating to decks page from home page
+ √ Deck added through API appears for user with existing deck navigating to decks page from home page
+ √ Deck added through API appears for user without decks navigating from decks page to home page and back to decks page
+ √ Deck added through API appears for user with existing deck navigating from decks page to home page and back to decks page
+ √ Deck added through API appears for user without any decks after they create a deck from decks page
+ √ Deck added through API appears for user without any decks after they create a deck from home page
+ √ Deck added through API appears for user with existing deck after they create a deck from decks page
+ √ Deck added for other user through API does not appear on deck page
+
+ Decks View
+ √ Shows message if no decks
+ √ Displays single deck
+ √ Displays two decks
+ √ List gets updated after deck created from deck page
+ √ List gets updated after deck created from game page
+ √ Shows deck created by api after list refresh button clicked
+
+ Full Card
+ √ Shows correct info for Monster faction
+ √ Shows correct info for Nilfgaardian Empire faction
+ √ Shows correct info for Northern Realms faction
+ √ Shows correct info for Scoiatael faction
+ √ Shows correct info for Skellige faction
+ √ Shows correct info for Neutral faction
+ √ Shows correct info for special
+ √ Shows correct info for hero
+ √ Shows correct info for alternative art
+ √ Shows correct info for Hearts of Stone dlc
+ √ Shows correct info for Blood and Wine dlc
+ √ Shows correct info for Gwent the Witcher Card Game dlc
+ √ Shows correct info for Agile effect
+ √ Shows correct info for Avenger effect
+ √ Shows correct info for Avenger effect
+ √ Shows correct info for Bond effect
+ √ Shows correct info for Decoy effect
+ √ Shows correct info for Horn effect
+ √ Shows correct info for Mardroeme effect
+ √ Shows correct info for Medic effect
+ √ Shows correct info for Morale effect
+ √ Shows correct info for Muster effect
+ √ Shows correct info for Scorch effect
+ √ Shows correct info for Scorch effect
+ √ Shows correct info for Biting Frost weather
+ √ Shows correct info for Clear Weather weather
+ √ Shows correct info for Impenetrable Fog weather
+ √ Shows correct info for Skellige Storm weather
+ √ Shows correct info for Torrential Rain weather
+ √ Moving to previous and next units works for a deck card
+ √ Select card for deck
+ √ Moving to previous and next units works for a hand card
+ √ Moving to previous and next units works for a combat row card
+
+ Game Card Highlights
+ √ Selecting successive hand cards highlights each in turn
+ √ Selecting successive battlefield cards highlights them and history each in turn
+ √ Selecting between battlefield cards history entries highlights each in turn
+ √ Fullscreening different unit types highlights them
+ √ Selecting spied hand card highlights it and impact
+ √ Selecting spying battlefield card highlights it and history
+ √ Selecting spying history highlights it and battlefield card
+ √ Fullscreening spying history units highlights them
+ √ Selecting modifier in history only highlights that modifier and not others
+
+ Game Create
+ √ Errors if opponent does not exist
+ √ Create game with valid opponent
+ √ Cancel brings user to games list
+
+ Game Decking
+ √ Set deck from new one without any existing
+ √ Set deck from new one with single existing
+ √ Set deck from existing one with single existing
+ √ Set deck from existing one with multiple existing
+ √ Cancel on decks list closes decks dialog and remains on game page
+ √ Cancel on deck create closes decks dialog and remains on game page
+
+ Game Effect Agile
+ √ Agile unit can be deployed as Close combat
+ √ Agile unit can be deployed as Ranged combat
+ √ Agile unit cannot be deployed as Siege combat
+
+ Game Effect Avenger
+ √ Avenger not summoned when game ends
+ √ Single avenger for self summoned after opponent scorch
+ √ Avengers for self and opponent summoned after self scorch
+ √ Single avenger for self summoned after round ends
+ √ Single avenger for opponent summoned after round ends
+ √ Multiple avengers for self summoned after round ends
+ √ Multiple avengers for self and opponent summoned after round ends
+ √ Scorched avenger not re-avenged after round ends
+
+ Game Effect Bond
+ √ Bond multiplies base strengths by 2 when single other bonded unit present
+ √ Bond multiplies base strengths by 4 when two other bonded units present
+ √ Bond multiplies base strengths by 8 when three other bonded units present
+ √ Bond is separate for units with different names
+ √ Bond is separate for units on different combat rows
+ √ Bond is separate for same unit as opponent
+
+ Game Effect Decoy
+ √ Cannot decoy if no units on battlefield
+ √ Cannot decoy hero
+ √ Cannot decoy another decoy
+ √ Decoy close combat unit
+ √ Decoy ranged combat unit
+ √ Decoy siege combat unit
+ √ Decoy one of many
+ √ Decoy one of same name
+ √ Decoy unit when opponent has same deployed
+ √ Can redeploy decoyed unit
+ √ Game and hand updated if decoy performed via API
+ √ Selecting hand unit after Decoy highlights history, impact and hand unit
+ √ Selecting history after Decoy highlights history, impact and hand unit
+ √ Selecting impact after Decoy highlights history, impact and hand unit
+
+ Game Effect Horn
+ √ Horn unit does not effect itself
+ √ Horn unit does not effect hero
+ √ Horn unit does not effect unit not in row
+ √ Horn unit does not effect opponent unit
+ √ Horn unit effects regular unit if played before
+ √ Horn modifier effects regular unit if played before
+ √ Horn unit effects regular unit if played after
+ √ Horn modifier effects regular unit if played after
+ √ Horn unit can effect unit in siege row
+ √ Horn modifier can effect unit in siege row
+ √ Horn can only effect unit once
+ √ Horn effects multiple units with different names
+ √ Horn effects multiple units with same names
+
+ Game Effect Mardroeme
+ √ Mardroeme does not effect berserker in different row
+ √ Mardroeme does not effect opponents berserker
+ √ Mardroeme effects berserker if played before
+ √ Mardroeme effects young berserker if played before
+ √ Mardroeme effects berserker if played after
+ √ Mardroeme effects young berserker if played after
+ √ Ermion effects young berserker if played before
+ √ Ermion effects single young berserker if played after
+ √ Ermion effects multiple young berserkers if played after
+ √ Mardroeme has no effect if Ermion already played
+ √ Ermion has no effect if Mardroeme already played
+
+ Game Effect Medic
+ √ Medic has no effect if no units in discard
+ √ Medic has no effect if only hero in discard
+ √ Medic has no effect if only special in discard
+ √ Cannot revive medic that is hero
+ √ Medic revives only unit in discard
+ √ Medic revives after page refresh
+ √ Medic revives medic in discard
+ √ Medic revives medic and unit in discard
+
+ Game Effect Morale
+ √ Morale unit does not effect itself
+ √ Morale unit does not effect hero
+ √ Morale hero unit not effected by other morale
+ √ Morale unit does not effect unit not in row
+ √ Morale unit does not effect opponent unit
+ √ Morale effects normal unit if morale played before
+ √ Morale effects normal unit if morale played after
+ √ Morale effects multiple normal units with different names
+ √ Morale effects multiple normal units with same name
+ √ Multiple morales effect each other
+ √ Multiple morales effect themselves and multiple standard units in same row
+ √ Multiple morales effect themselves and multiple standard units in different rows
+ √ Can see reason for morale in opponents fullcard details
+ √ Morale scores persist to end of game
+
+ Game Effect Muster
+ √ Muster works for single of same unit in undrawn
+ √ Muster works for single of same unit in hand
+ √ Muster works for single of different unit in undrawn
+ √ Muster works for single of different unit in hand
+ √ Muster works for multiple of same units in undrawn
+ √ Muster works for multiple of same units in hand
+ √ Muster works for multiple of same units in hand and undrawn
+ √ Muster works for multiple of different units in undrawn
+ √ Muster works for multiple of different units in hand
+ √ Muster works for multiple of different units in hand and undrawn
+ √ Gaunter O'Dimm musters Gaunter O'Dimm Darkness units
+ √ Gaunter O'Dimm Darkness does not muster Gaunter O'Dimm unit
+ × Does not muster units in Lost pile (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-233\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: User "self-game-effect-muster-1795142061384" has correct score: expected '4' to deeply equal '0'
+
+      + expected - actual
+
+      -4
+      +0
+
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-233\Firefox_160.0_Windows_11\errors\1.png
+
+         87 |      await t.expect(this.elements.TokensWon.count).eql(lives - losses, `User "${name}" has correct tokens won`)
+         88 |      await t.expect(this.elements.TokensLost.count).eql(losses, `User "${name}" has correct tokens lost`)
+         89 |      if (score === undefined) {
+         90 |        await t.expect(this.elements.Score.exists).notOk(`User "${name}" does not have score`)
+         91 |      } else {
+       > 92 |        await t.expect(this.elements.Score.innerText).eql(score.toString(), `User "${name}" has correct score`)
+         93 |      }
+         94 |    }
+         95 |    if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
+         96 |      await t.expect(this.elements.DeckPlaceholder.exists).ok()
+         97 |      await t.expect(this.elements.DeckPlaceholder.visible).ok()
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\components\game-player-info.ts:92:55)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\components\game-player-info.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\components\game-player-info.js:1:452)
+
+
+ √ Can muster same units as opponent
+
+ Game Effect Scorch
+ √ Scorch does nothing if no other units on the battlefield
+ √ Scorch does nothing if only other unit has no strength
+ √ Scorch removes strongest card if on opponents side
+ √ Scorch removes strongest card if on own side
+ √ Opponents scorch removes strongest card if on opponents side
+ √ Opponents scorch removes strongest card if on self side
+ √ Multiple scorches can be played after each other
+ √ Scorch removes opponents unit even after they pass
+ √ Scorch removes strongest units if multiple with highest strength
+ × Scorch removes strongest unit in second round if same unit played in first round (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-244\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected [ Array(8) ] to deeply equal [ Array(7) ]
+
+      + expected - actual
+
+         'opponent-game-effect-scorch-1795142099155: Dol Blathanna Scout deployed as Close'
+         'self-game-effect-scorch-1795142099155: Passed the rest of round 1'
+         'opponent-game-effect-scorch-1795142099155: Passed the rest of round 1'
+         'Round 2'
+      -  'self-game-effect-scorch-1795142099155: Monsters triggered faction ability impacts: 0 Faction Ability'
+         'opponent-game-effect-scorch-1795142099155: Dol Blathanna Scout deployed as Close'
+       ]
+
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-244\Firefox_160.0_Windows_11\errors\1.png
+
+         452 |              }`
+         453 |            )
+         454 |          }
+         455 |        }
+         456 |      }
+       > 457 |      await t.expect(actual).eql(expected)
+         458 |      await t.expect(GamePage.elements.HistoryLoading.exists).eql(!!waiting)
+         459 |      if (waiting) {
+         460 |        await t.expect(GamePage.elements.HistoryLoading.visible).ok()
+         461 |      }
+         462 |    } else {
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:457:30)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Scorch does not effect heroes
+ √ Scorch does not effect unit played after it
+ √ Scorch scoped to Close combat removes strongest Close combat card on opponents side over 10 effective strength
+ √ Scorch scoped to Close combat does not remove opponents Close combat if it is not over 10 effective strength
+ √ Scorch scoped to Close combat does not remove opponents unit over 10 effective strength if not in Close combat row
+ √ Scorch scoped to Range combat removes strongest Ranged combat card on opponents side over 10 effective strength
+ √ Scorch scoped to Ranged combat does not remove opponents Ranged combat if it is not over 10 effective strength
+ √ Scorch scoped to Ranged combat does not remove opponents unit over 10 effective strength if not in Ranged combat row
+ √ Scorch scoped to Siege combat removes strongest Siege combat card on opponents side over 10 effective strength
+ √ Scorch scoped to Siege combat does not remove opponents Siege combat if it is not over 10 effective strength
+ √ Clan Dimun Pirate removes strongest card if on opponents side
+ √ Clan Dimun Pirate removes strongest card if on own side
+ √ Clan Dimun Pirate removes itself if strongest unit
+ √ Clan Dimun Pirate removes itself and others if all strongest units
+ √ Villentretenmerth removes only opponents unit if self has same one
+ √ Toad removes only opponents unit if self has same one
+ √ Schirru removes only opponents unit if self has same one
+
+ Game Effect Spy
+ √ Spy close combat unit
+ √ Spy siege combat unit
+ √ Spy does not show opponents handed units in impacts
+ √ Spy with 1 unit drawn to hand
+ √ Spy with 0 units drawn to hand
+
+ Game Effect Weather
+ √ Weather does not effect hero
+ √ Weather does not effect unit with strength of 1
+ √ Weather does not effect unit in another row
+ √ Biting Frost reduces effective strength of close combat unit
+ √ Impenetrable Fog reduces effective strength of ranged combat unit
+ √ Torrential Rain reduces effective strength of ranged combat unit
+ √ Skellige Storm reduces effective strength of ranged and siege combat units
+ √ Weather applied if played before unit
+ √ Weather applies to all players units for that combat
+ √ Weathers reduce effective strength of all combat units of opponent
+ √ Successive weathers do not stack
+ √ Clear weather removes all weather effects
+ √ Can play weather after Clear Weather
+
+ Game Effects Mixed Agile
+ √ Agile unit can be decoyed and played again as same combat
+ √ Agile unit can be decoyed and played again as different combat
+
+ Game Effects Mixed Avenger
+ √ Cannot summon avenger by decoying
+ √ Summoned avenger can be decoyed and played again
+ √ Summoned avenger does not carry over horn
+ √ Summoned avenger can be horned
+ √ Summoned avenger does not carry over morale
+ √ Summoned avenger can be moraled
+ √ Summoned avenger does not carry over weather
+ √ Summoned avenger can be weathered
+ × Can summon avenger after scorched to discard (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-290\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: User "opponent-game-effects-mixed-avenge-1795142347276" has correct score: expected '6' to deeply equal '0'
+
+      + expected - actual
+
+      -6
+      +0
+
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-290\Firefox_160.0_Windows_11\errors\1.png
+
+         87 |      await t.expect(this.elements.TokensWon.count).eql(lives - losses, `User "${name}" has correct tokens won`)
+         88 |      await t.expect(this.elements.TokensLost.count).eql(losses, `User "${name}" has correct tokens lost`)
+         89 |      if (score === undefined) {
+         90 |        await t.expect(this.elements.Score.exists).notOk(`User "${name}" does not have score`)
+         91 |      } else {
+       > 92 |        await t.expect(this.elements.Score.innerText).eql(score.toString(), `User "${name}" has correct score`)
+         93 |      }
+         94 |    }
+         95 |    if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
+         96 |      await t.expect(this.elements.DeckPlaceholder.exists).ok()
+         97 |      await t.expect(this.elements.DeckPlaceholder.visible).ok()
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\components\game-player-info.ts:92:55)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\components\game-player-info.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\components\game-player-info.js:1:452)
+
+
+ × Can summon avenger after decoyed to hand (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-291\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: User "opponent-game-effects-mixed-avenge-1795142355639" has correct score: expected '6' to deeply equal '0'
+
+      + expected - actual
+
+      -6
+      +0
+
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-291\Firefox_160.0_Windows_11\errors\1.png
+
+         87 |      await t.expect(this.elements.TokensWon.count).eql(lives - losses, `User "${name}" has correct tokens won`)
+         88 |      await t.expect(this.elements.TokensLost.count).eql(losses, `User "${name}" has correct tokens lost`)
+         89 |      if (score === undefined) {
+         90 |        await t.expect(this.elements.Score.exists).notOk(`User "${name}" does not have score`)
+         91 |      } else {
+       > 92 |        await t.expect(this.elements.Score.innerText).eql(score.toString(), `User "${name}" has correct score`)
+         93 |      }
+         94 |    }
+         95 |    if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
+         96 |      await t.expect(this.elements.DeckPlaceholder.exists).ok()
+         97 |      await t.expect(this.elements.DeckPlaceholder.visible).ok()
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\components\game-player-info.ts:92:55)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\components\game-player-info.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\components\game-player-info.js:1:452)
+
+
+ × Cannot summon avenger already on battlefield (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-292\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected [ Array(12) ] to deeply equal [ Array(11) ]
+
+      + expected - actual
+
+         'self-game-effects-mixed-avenge-1795142358849: Cow deployed as Ranged'
+         'opponent-game-effects-mixed-avenge-1795142358849: Passed the rest of round 1'
+         'self-game-effects-mixed-avenge-1795142358849: Passed the rest of round 1'
+         'Round 2'
+      -  'opponent-game-effects-mixed-avenge-1795142358849: Monsters triggered faction ability impacts: 0 Faction Ability'
+         'self-game-effects-mixed-avenge-1795142358849: Bovine Defense Force summoned for self-game-effects-mixed-avenge-1795142358849 as Close impacts: 1 Avenger'
+         'opponent-game-effects-mixed-avenge-1795142358849: Foglet deployed as Close'
+         'self-game-effects-mixed-avenge-1795142358849: Philippa Eilhart deployed as Ranged'
+         'opponent-game-effects-mixed-avenge-1795142358849: Earth Elemental deployed as Siege'
+
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-292\Firefox_160.0_Windows_11\errors\1.png
+
+         452 |              }`
+         453 |            )
+         454 |          }
+         455 |        }
+         456 |      }
+       > 457 |      await t.expect(actual).eql(expected)
+         458 |      await t.expect(GamePage.elements.HistoryLoading.exists).eql(!!waiting)
+         459 |      if (waiting) {
+         460 |        await t.expect(GamePage.elements.HistoryLoading.visible).ok()
+         461 |      }
+         462 |    } else {
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:457:30)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Avenger summoned and Northern Realms faction ability triggered at round end
+
+ Game Effects Mixed Bond
+ √ Bond applied before morale
+ √ Bond does not take into account scorched units
+
+ Game Effects Mixed Decoy
+ √ Decoy bonded unit removes bond effect on other bonded unit
+ √ Decoy horning unit removes horn effect on other unit
+ √ Decoy berserker unit prevents transformation of until played later
+ √ Decoy vildkaarl allows it to be played again
+ √ Decoy moraling unit removes morale effect on other unit
+ √ Decoy mustered unit allows it to be played again
+ √ Decoy not effected by scorch
+
+ Game Effects Mixed Horn
+ √ Horn applied after bond
+ √ Horn applied after morale
+ √ Horn for berserker transfers to vildkaarl after mardroeme
+
+ Game Effects Mixed Many
+ √ Horn applies after bond and morale
+
+ Game Effects Mixed Mardroeme
+ √ Young berserker transforms into Vildkaarl and bonds with existing ones
+ √ Transformed Vildkaarl morales existing unit
+ √ Transformed Vildkaarl morales new unit
+
+ Game Effects Mixed Medic
+ √ Agile unit can be revived to same combat row
+ √ Agile unit can be revived to different combat row
+ √ Avenging units can be revived
+ √ Bonded units can rebond after revival
+ √ Revived unit can be decoyed
+ √ Decoyed medic can revive another unit
+ √ Horned units can rehorn after revival
+ √ Berserker units can be revived and get mardroemed
+ √ Mardroemed units can be revived and remain transformed
+ √ Moraling units can remorale after revival
+ √ Moraled units can do not retain morale after revival
+ × Mustered units can be revived and does not muster other discarded musters (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-321\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) Error: User with name "self-game-effects-mixed-medic-1795142539015" already exists.: {"response":{"errors":[{"message":"User with name \"self-game-effects-mixed-medic-1795142539015\" already
+      exists.","locations":[{"line":2,"column":3}],"path":["addUser"],"extensions":{"code":"INTERNAL_SERVER_ERROR","stacktrace":["PresentableError: User with name \"self-game-effects-mixed-medic-1795142539015\" already exists.","    at
+      AddUserImplementation.addUserImplementation (D:\\Repos\\gwent-oss\\msvs\\api\\src\\graphql\\resolvers\\mutations\\add-user\\add-user-implementation.ts:33:15)","    at processTicksAndRejections (node:internal/process/task_queues:104:5)","    at async
+      AddUserMutation.addUserMutation (D:\\Repos\\gwent-oss\\msvs\\api\\src\\graphql\\resolvers\\mutations\\add-user\\add-user-mutation.ts:25:18)"]}}],"data":null,"status":200,"headers":{}},"request":{"query":"mutation addUser($name: String!, $password: String!) {\n
+      addUser(name: $name, password: $password) {\n    created\n    id\n    name\n  }\n}","variables":{"name":"self-game-effects-mixed-medic-1795142539015","password":"p@ssW0rd"}}}
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-321\Firefox_160.0_Windows_11\errors\1.png
+
+         421 |      typeof result === `string`
+         422 |        ? {
+         423 |            error: result,
+         424 |          }
+         425 |        : result
+       > 426 |    throw new ClientError(
+         427 |      // @ts-expect-error TODO
+         428 |      { ...errorResult, status: response.status, headers: response.headers },
+         429 |      { query, variables }
+         430 |    )
+         431 |  }
+
+         at makeRequest (D:\Repos\gwent-oss\.yarn\__virtual__\graphql-request-virtual-eddb38a8ba\0\cache\graphql-request-npm-6.1.0-d265ce919d-a9c6f2eeaa.zip\node_modules\graphql-request\src\index.ts:426:11)
+
+
+ √ Mustered units can muster revived muster if decoyed into hand
+ √ Scorch unit can scorch itself on revival
+ √ Scorch unit can scorch another unit on revival
+ √ Revived spy still pulls units from undrawn to hand
+
+ Game Effects Mixed Morale
+ √ Morale effect for other units goes away after it gets scorched
+ √ Morale effect for berserker transfers to vildkaarl after mardroeme
+ √ Morale applied to bonded units after bonding applied if played after bonds
+ √ Morale applied to bonded units after bonding applied if played before bonds
+
+ Game Effects Mixed Muster
+ √ Mustered single unit gets moraled if morale already present
+ √ Mustered multiple units get moraled if morale already present
+ √ Mustered units are scorcheable
+ √ Mustered units are moraleable
+ √ Mustered unit with morale shows morale in history
+ √ Can muster units with bonding
+ √ Can muster with berserker and mardroeme present
+ √ Mustered units effected by horn
+
+ Game Effects Mixed Scorch
+ √ Scorch takes into account morale to determine strongest
+ √ Scorch takes into account mardroemes to determine strongest
+ √ Scorch takes into account horn to determine strongest
+ √ Scorch ignores decoyed to determine strongest
+ √ Scorch takes into account weather
+
+ Game Effects Mixed Spy
+ √ Decoyed spy not already in hand can be played again
+ √ Decoyed spy already in hand can be played again
+ √ Spy picks up horn effect of opponent
+ √ Spy picks up morale effect of opponent
+ √ Spy can be scorched
+ √ Spy can be weathered
+
+ Game Effects Mixed Weather
+ √ Weather applied before bond
+ √ Can decoy weathered agile unit and play it in non weathered row for full strength
+ √ Weather applied before horn
+ √ Weather applied before mardroeme
+ √ Weather applied before morale
+ √ Weather applied to musters
+
+ Game Faction Monsters Ability
+ √ Preserves random unit on battlefield if self with monsters faction and single elibigle unit
+ √ Preserves random units on battlefield if both self and opponent with monsters
+
+ Game Faction Northern Realms Ability
+ √ Moves random unit from undrawn into hand if round won and undrawns available
+ √ Does nothing if round won and no undrawn available
+ √ Hides unit on impact for opponent
+
+ Game Faction ScoiaTael Ability
+ √ User with ScoiaTael deck and opponent without it can choose turn order to make self go first
+ √ User with ScoiaTael deck and opponent without it can choose turn order to make opponent go first
+ √ User without ScoiaTael deck and opponent with it must wait for opponent to set order opponent first
+ √ User without ScoiaTael deck and opponent with it must wait for opponent to set order self first
+ √ Order automatically set if both are ScoiaTael
+
+ Game Hand
+ √ Selecting hand unit while turn highlights appropriate single combat row
+ √ Selecting hand unit while turn highlights appropriate multi combat row
+ √ Selecting hand unit while not turn dotted highlights appropriate single combat row
+ √ Selecting hand unit while not turn dotted highlights appropriate multi combat rows
+ √ Selecting another hand unit while turn highlights appropriate card
+ √ Selecting another hand unit while not turn dotted highlights appropriate card
+ √ Playing all units in hand shows message to user to pass or activate leader ability
+ √ Unit gets added to lost pile when round ends
+ √ Unit gets added to lost pile when scorched
+ √ Unit gets removed from draw pile when summoned
+ √ Units get removed from undrawn pile when spying
+ √ Unit gets removed from discard pile when revived
+ √ Avenger summoned from discard pile gets removed from it on scorch
+ × Avenger summoned from discard pile gets removed from it on round end (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-378\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected [ Array(12) ] to deeply equal [ Array(11) ]
+
+      + expected - actual
+
+         'opponent-game-hand-1795142855658: Scorch deployed to battlefield impacts: 1 Scorch'
+         'self-game-hand-1795142855658: Passed the rest of round 1'
+         'opponent-game-hand-1795142855658: Passed the rest of round 1'
+         'Round 2'
+      -  'opponent-game-hand-1795142855658: Monsters triggered faction ability impacts: 0 Faction Ability'
+         'opponent-game-hand-1795142855658: Bovine Defense Force summoned for self-game-hand-1795142855658 as Close impacts: 1 Avenger'
+       ]
+
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-378\Firefox_160.0_Windows_11\errors\1.png
+
+         452 |              }`
+         453 |            )
+         454 |          }
+         455 |        }
+         456 |      }
+       > 457 |      await t.expect(actual).eql(expected)
+         458 |      await t.expect(GamePage.elements.HistoryLoading.exists).eql(!!waiting)
+         459 |      if (waiting) {
+         460 |        await t.expect(GamePage.elements.HistoryLoading.visible).ok()
+         461 |      }
+         462 |    } else {
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:457:30)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Avenger summoned from hand gets removed from it on scorch
+ × Avenger summoned from hand gets removed from it on round end (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-380\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected [ Array(13) ] to deeply equal [ Array(12) ]
+
+      + expected - actual
+
+         'self-game-hand-1795142876722: Cow revived as Ranged by Siege Technician'
+         'opponent-game-hand-1795142876722: Passed the rest of round 1'
+         'self-game-hand-1795142876722: Passed the rest of round 1'
+         'Round 2'
+      -  'opponent-game-hand-1795142876722: Monsters triggered faction ability impacts: 0 Faction Ability'
+         'self-game-hand-1795142876722: Bovine Defense Force summoned for self-game-hand-1795142876722 as Close impacts: 1 Avenger'
+       ]
+
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-380\Firefox_160.0_Windows_11\errors\1.png
+
+         452 |              }`
+         453 |            )
+         454 |          }
+         455 |        }
+         456 |      }
+       > 457 |      await t.expect(actual).eql(expected)
+         458 |      await t.expect(GamePage.elements.HistoryLoading.exists).eql(!!waiting)
+         459 |      if (waiting) {
+         460 |        await t.expect(GamePage.elements.HistoryLoading.visible).ok()
+         461 |      }
+         462 |    } else {
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:457:30)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Opponent scorching units from all players only moves self units to discard
+
+ Game History
+ √ Selecting self unit when not turn in history highlights it and card on battlefield
+ √ Selecting self unit when not turn on combat row highlights it and move in history
+ √ Selecting self unit when turn in history highlights it and card on battlefield
+ √ Selecting self unit when turn on combat row highlights it and move in history
+ √ Selecting opponent unit when turn in history highlights it and card on battlefield
+ √ Selecting opponent unit when turn on combat row highlights it and move in history
+ √ Selecting opponent unit when not turn in history highlights it and card on battlefield
+ √ Selecting opponent unit when not turn on combat row highlights it and move in history
+ √ Select card from history and deselect from battlefield
+ √ Select card from battlefield and deselect from history
+ √ Select card from history deselects card selected in hand
+ √ Select card from battlefield deselects card selected in hand
+ √ Selecting history unit that is no longer on battlefield is dotted
+ √ FullUnit for move preserves effects in time
+ √ Selecting combat card whose history entry is offscreen scrolls it into view
+
+ Game Impact
+ √ Shows no eligibles text if Mardroeme but no impacts
+ √ Shows no eligibles text if Morale but no impacts
+ √ Shows no eligibles text if Muster but no impacts
+ √ Shows no eligibles text if Scorch but no impacts
+ √ Shows single entry if Mardroeme impacts single unit
+ √ Shows single entry if Morale impacts single unit
+ √ Shows single entry if Muster impacts single unit from hand
+ √ Shows single entry if Muster impacts single unit from undrawn
+ √ Shows single entry if Scorch impacts single unit self
+ √ Shows single entry if Scorch impacts single unit opponent
+ √ Shows multiple entries if Mardroeme impacts multiple units
+ √ Shows multiple entries if Morale impacts multiple units
+ √ Shows multiple entries if Muster impacts multiple units from hand and undrawn
+ √ Shows multiple entries if Scorch impacts multiple units
+ √ Highlights separate for unit with same name in different rounds
+ √ Unit impacted multiple times shown properly
+ √ Impact highlighted when unit selected on battlefield
+ √ Battlefield and history unit highlighted when selected in impact
+ √ History unit highlighted when scorched unit selected in impact
+ √ FullUnit for impact preserves effects in time
+ √ Selecting battlefield card scrolls history to first appearance even if impact is more recent
+ √ Impacts can include same unit from both players
+ √ Impacts expandable if multiple with same name
+
+ Game Ordering
+ √ Order automatically set if none are ScoiaTael
+
+ Game Pass
+ √ Pass as first move
+ √ Pass after opponent passes
+ √ Pass after opponent plays unit
+ √ Cancelling pass confirmation does not trigger pass
+ √ Cannot pass when not turn
+ √ Pass moves field units to lost piles
+ √ Pass moves modifiers to lost piles
+ √ Pass moves weathers to lost piles
+
+ Game Play
+ √ Play a close unit as first move
+ √ Play a ranged unit as first move
+ √ Play a siege unit as first move
+ √ Play a unit after opponent plays unit
+ √ Play unit after opponent plays pass
+ √ Cannot play unit on invalid row
+ √ Cannot play unit when not turn
+
+ Game Ready
+ √ Set ready without redrawing any cards before opponent is ready
+ √ Set ready without redrawing any cards after opponent is ready
+ √ Set ready after redrawing once before opponent is ready
+ √ Set ready after redrawing once after opponent is ready
+ × Set ready after redrawing twice before opponent is ready (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-440\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected true to be falsy
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-440\Firefox_160.0_Windows_11\errors\1.png
+
+         775 |    if (wait) {
+         776 |      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+         777 |    } else {
+         778 |      await t.click(GamePage.elements.CoinTossContainer)
+         779 |    }
+       > 780 |    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+         781 |  }
+         782 |
+         783 |  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+         784 |    for (const move of moves) {
+         785 |      const moveElement = await this.getHistoryMove({
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:780:64)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Set ready after redrawing twice after opponent is ready
+
+ Game Redraw Highlight
+ √ Selecting hand card without redraws toggles highlight of first available redraw
+ √ Selecting first from card highlights it dotted
+ √ Fullscreening first from card highlights it dotted
+ √ Selecting first to card highlights it and hand card
+ × Fullscreening first to card highlights it and hand card (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-446\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected true to be falsy
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-446\Firefox_160.0_Windows_11\errors\1.png
+
+         775 |    if (wait) {
+         776 |      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+         777 |    } else {
+         778 |      await t.click(GamePage.elements.CoinTossContainer)
+         779 |    }
+       > 780 |    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+         781 |  }
+         782 |
+         783 |  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+         784 |    for (const move of moves) {
+         785 |      const moveElement = await this.getHistoryMove({
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:780:64)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Selecting first redrawn hand card highlights it and redraw card
+ √ Fullscreening first redrawn hand card highlights it and redraw card
+ √ First to card highlight toggled by both hand and redraw card
+ × Selecting hand card with redraw toggles highlight of last available redraw (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-450\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected true to be falsy
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-450\Firefox_160.0_Windows_11\errors\1.png
+
+         775 |    if (wait) {
+         776 |      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+         777 |    } else {
+         778 |      await t.click(GamePage.elements.CoinTossContainer)
+         779 |    }
+       > 780 |    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+         781 |  }
+         782 |
+         783 |  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+         784 |    for (const move of moves) {
+         785 |      const moveElement = await this.getHistoryMove({
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:780:64)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Redrawing first to card highlight toggled by to or from
+
+ Game Redrawing
+ √ Redraw 1 card before opponent redraws or ready
+ √ Redraw 1 card after opponent redraws
+ × Redraw 1 card after opponent ready (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-454\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected true to be falsy
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-454\Firefox_160.0_Windows_11\errors\1.png
+
+         775 |    if (wait) {
+         776 |      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+         777 |    } else {
+         778 |      await t.click(GamePage.elements.CoinTossContainer)
+         779 |    }
+       > 780 |    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+         781 |  }
+         782 |
+         783 |  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+         784 |    for (const move of moves) {
+         785 |      const moveElement = await this.getHistoryMove({
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:780:64)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Redraw 2 cards before opponent ready
+ × Redraw 2 cards after opponent redraws (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-456\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected true to be falsy
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-456\Firefox_160.0_Windows_11\errors\1.png
+
+         775 |    if (wait) {
+         776 |      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+         777 |    } else {
+         778 |      await t.click(GamePage.elements.CoinTossContainer)
+         779 |    }
+       > 780 |    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+         781 |  }
+         782 |
+         783 |  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+         784 |    for (const move of moves) {
+         785 |      const moveElement = await this.getHistoryMove({
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:780:64)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Redraw 2 cards after opponent ready
+ √ Page automatically updates after first redraw via API
+ √ Page automatically updates after second redraw via API
+ √ Page not updated if use API to redraw from other game
+
+ Game Subscription
+ √ Page updates automatically with deck set via API on game page
+ √ Page updates automatically with deck set via API on games list
+ √ Page does not update with deck set for other game via API
+ √ Page automatically updates if user with ScoiaTael deck uses API to make self go first on game page
+ √ Page automatically updates if user with ScoiaTael deck uses API to make opponent go first on game page
+ × Page automatically updates if user with ScoiaTael deck uses API to make self go first on games list (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-466\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected true to be falsy
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-466\Firefox_160.0_Windows_11\errors\1.png
+
+         775 |    if (wait) {
+         776 |      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+         777 |    } else {
+         778 |      await t.click(GamePage.elements.CoinTossContainer)
+         779 |    }
+       > 780 |    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+         781 |  }
+         782 |
+         783 |  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+         784 |    for (const move of moves) {
+         785 |      const moveElement = await this.getHistoryMove({
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:780:64)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Page automatically updates if user with ScoiaTael deck uses API to make opponent go first on games list
+ √ Page does not automatically update if user with ScoiaTael deck uses API to set order for another game
+ √ Page automatically updates after game ready via API before opponent ready on game page
+ √ Page automatically updates after game ready via API after opponent ready on game page
+ √ Page automatically updates after game ready via API before opponent ready on games list
+ √ Page automatically updates after game ready via API after opponent ready on games list
+ √ Game not marked as ready if use API to mark other game as ready
+ √ Page automatically updates after unit played via API on game page
+ √ Page automatically updates after opponent plays unit via API on game page
+ √ Page automatically updates after unit played via API on games list
+ √ Page automatically updates after pass at round start via API on game page
+ √ Page automatically updates after opponent passes at round start via API on game page
+ √ Page automatically updates after pass at round end via API on game page
+ √ Page automatically updates after opponent passes at round end via API on game page
+ √ Page automatically updates after pass via API on games list
+ √ Page automatically updates after game finished on games list
+
+ Game Victories
+ √ Opponent passes ends in victory after 2 rounds
+ √ Self passes ends in loss after 2 rounds
+ √ All passes ends in tie after 2 rounds
+ √ Win loss win ends in victory
+ √ Win loss loss ends in defeat
+ √ Win loss tie ends in tie
+ √ Loss win win ends in victory
+ √ Loss win loss ends in defeat
+ √ Loss win tie ends in tie
+
+ Game View
+ √ Show not authorized if invalid ID
+ √ Show not authorized if game does not exist
+ √ Show not authorized if not participant of game
+
+ Games Filter
+ √ Filters by user
+ √ Filters by faction
+ √ Filters by status
+ √ Filters by user faction and status
+
+ Games Sort
+ √ Sorts by updated ascending by default
+ √ Sorts by updated descending
+ √ Sorts by created ascending
+ √ Sorts by created descending
+ √ Sorts by owner ascending
+ √ Sorts by owner descending
+ √ Sorts by status ascending
+ √ Sorts by status descending
+
+ Games Status
+ √ Automatically updated with ordering status if decks set through API and self is scoiatael
+ √ Automatically updated with ordering status if decks set through API and opponent is scoiatael
+ √ Games page updated with redrawing status if order set by self through API
+ √ Games page updated with redrawing status if order set by opponent through API
+ √ Games page updated with redrawing status if decks set through API by self last
+ √ Games page updated with redrawing status if decks set through API by opponent last
+ √ Games page updated with playing status if marked ready through API by self last
+ √ Games page updated with playing status if marked ready through API by opponent last
+ √ Games page updated with finished status if passed through API by self last
+ √ Games page updated with finished status if passed through API by opponent last
+
+ Games Subscription
+ √ Game added through API appears for creator on games page without any games
+ √ Game added through API appears for participant on games page without any games
+ √ Game added through API appears for creator on games page with existing game
+ √ Game added through API appears for participant on games page with existing game
+ √ Game added through API appears for creator without games navigating to games page from home page
+ √ Game added through API appears for participant without games navigating to games page from home page
+ √ Game added through API appears for creator with existing game navigating to games page from home page
+ √ Game added through API appears for participant with existing game navigating to games page from home page
+ √ Game added through API appears for creator without games navigating from games page to home page and back to games page
+ √ Game added through API appears for participant without games navigating from games page to home page and back to games page
+ √ Game added through API appears for creator with existing game navigating from games page to home page and back to games page
+ √ Game added through API appears for participant with existing game navigating from games page to home page and back to games page
+ √ Game added through API appears for creator without any games after they create a game from games page
+ √ Game added through API appears for creator without any games after they create a game from home page
+ √ Game added through API appears for creator with existing game after they create a game from games page
+ √ Game added for other user through API does not appear on games page
+
+ Games View
+ √ Shows message if no games
+ √ Displays single game
+ √ Displays two games
+ √ List gets updated after game created
+ √ Shows game created by api after list refresh button clicked
+
+ Home
+ √ Home page displays correctly
+ √ Navigate to profile
+ √ Navigate to new deck
+
+ Lifecycle
+ √ Speed Run
+ √ Scenic Route
+
+ Login
+ √ Shows error for nonexistent user
+ √ Shows error for wrong password
+ √ Logs in existing user
+ √ User session persists across refresh after login
+ √ Logs in after navigating to startup page
+ √ redirects to about page when info icon clicked
+
+ Logout
+ √ Redirects to login page on profile logout
+ √ Direct login URL after logout from page goes to login page
+ √ Direct login URL after logout from URL goes to login page
+ √ Direct home URL after logout goes to signup page
+ √ Signup after direct logout URL redirects to home
+ √ Redirect to Home page on login after user directly navigates and logs into non-home page
+
+ Not Found
+ √ Displays not found page with home link if user navigates to unknown page without loggin in
+ √ Displays not found page with home link if user navigates to unknown page after login
+
+ Profile
+ √ Redirects to profile page after login
+ √ Page refresh stays on profile page
+ √ Logout button redirects to login page
+
+ Session Expiry
+ √ Navigating to home page after session expires redirects to login page
+ √ View decks after session expires
+ √ View new deck after session expires
+ √ Select faction for new deck after session expires
+ √ Change faction for new deck after session expires
+ √ Create new deck after session expires
+ √ Create new game after session expires
+ √ View games after session expires
+ √ List decks for game after session expires
+ √ Set deck for game after session expires
+ √ Create deck for game after session expires
+ × Set game order after session expires (screenshots: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-571\Firefox_160.0_Windows_11\errors\1.png)
+
+   1) AssertionError: expected true to be falsy
+
+      Browser: Firefox 160.0 / Windows 11
+      Screenshot: D:\Repos\gwent-oss\test\e2e\screenshots\2026-11-19_18-20-46\test-571\Firefox_160.0_Windows_11\errors\1.png
+
+         775 |    if (wait) {
+         776 |      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+         777 |    } else {
+         778 |      await t.click(GamePage.elements.CoinTossContainer)
+         779 |    }
+       > 780 |    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+         781 |  }
+         782 |
+         783 |  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+         784 |    for (const move of moves) {
+         785 |      const moveElement = await this.getHistoryMove({
+
+         at <anonymous> (D:\Repos\gwent-oss\test\e2e\src\page-objects\game-page.ts:780:64)
+         at asyncGeneratorStep (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:114)
+         at _next (D:\Repos\gwent-oss\test\e2e\build\src\page-objects\game-page.js:1:452)
+
+
+ √ Redraw unit for game after session expires
+ √ Ready game after session expires
+ √ Change user after session expires shows new users data
+ √ Play unit after session expires
+ √ Play Scorch after session expires
+ √ Play pass to start round after session expires
+ √ Play pass at end of round after session expires
+
+ Signup
+ √ Alerts user and prevents login if username too short
+ √ Alerts user and prevents login if username too long
+ √ Alerts user and prevents login if username contains space
+ √ Alerts user and prevents login if username contains invalid special character
+ √ Alerts user and prevents login if username already taken
+ √ Alerts user and prevents login if password too short
+ √ Alerts user and prevents login if password too long
+ √ Alerts user and prevents login if password has space
+ √ Alerts user and prevents login if password has no special
+ √ Alerts user and prevents login if password has no number
+ √ Alerts user and prevents login if password has no lowercase
+ √ Alerts user and prevents login if password has no uppercase
+ √ Alerts user and prevents login if password has bad special
+ √ Shows error if signing up for user that already exists
+ √ Lands on signup page if new user
+ √ Logs in user after they sign up
+ √ User session persists across refresh after sign up
+ √ Can sign up after switching mode from login
+
+ Subscription
+ √ Connection rejected if invalid session id on cookie
+
+
+ 15/597 failed (43m 03s)
+ERROR: "start-testcafe" exited with 15.
+
+adamb@ADAM-DESKTOP UCRT64 /d/Repos/gwent-oss (faction-monsters-ability)
+$
