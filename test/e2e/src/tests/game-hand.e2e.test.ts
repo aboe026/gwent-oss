@@ -650,6 +650,13 @@ test('Avenger summoned from discard pile gets removed from it on round end', asy
         origin: GameUnitOrigin.Discard,
       },
     ],
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.opponent.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 0,
+      },
+    ],
     deckPartSelected: GameUnitOrigin.Discard,
   })
 
@@ -832,6 +839,13 @@ test('Avenger summoned from hand gets removed from it on round end', async (t) =
         turn: gameManager.self.gamePlayer,
         row: Combat.Close,
         origin: GameUnitOrigin.Hand,
+      },
+    ],
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.opponent.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 0,
       },
     ],
   })

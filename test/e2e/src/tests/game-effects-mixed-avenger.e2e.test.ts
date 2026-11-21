@@ -337,7 +337,7 @@ test('Summoned avenger can be weathered', async (t) => {
 
 test('Can summon avenger after scorched to discard', async (t) => {
   const unitName1 = 'Cow'
-  const unitName2 = 'Fire Elemental'
+  const unitName2 = 'Blueboy Lugos'
   const unitName3 = 'Bovine Defense Force'
   const unitName4 = 'Scorch'
   const unitName5 = 'Etolian Auxiliary Archers'
@@ -348,7 +348,7 @@ test('Can summon avenger after scorched to discard', async (t) => {
       handUnitNames: [unitName1, unitName4, unitName5],
     },
     opponent: {
-      faction: FactionKey.Monsters,
+      faction: FactionKey.Skellige,
       handUnitNames: [unitName2],
     },
   })
@@ -412,7 +412,7 @@ test('Can summon avenger after scorched to discard', async (t) => {
 
 test('Can summon avenger after decoyed to hand', async (t) => {
   const unitName1 = 'Cow'
-  const unitName2 = 'Fire Elemental'
+  const unitName2 = 'Blueboy Lugos'
   const unitName3 = 'Bovine Defense Force'
   const unitName4 = 'Decoy'
   const unitName5 = 'Etolian Auxiliary Archers'
@@ -423,7 +423,7 @@ test('Can summon avenger after decoyed to hand', async (t) => {
       handUnitNames: [unitName1, unitName4, unitName5],
     },
     opponent: {
-      faction: FactionKey.Monsters,
+      faction: FactionKey.Skellige,
       handUnitNames: [unitName2],
     },
   })
@@ -515,6 +515,13 @@ test('Cannot summon avenger already on battlefield', async (t) => {
         turn: gameManager.self.gamePlayer,
         newUnitPlayer: gameManager.self.gamePlayer,
         row: Combat.Close,
+      },
+    ],
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.opponent.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 0,
       },
     ],
   })

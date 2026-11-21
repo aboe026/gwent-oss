@@ -373,88 +373,90 @@ export class GameManager {
       if (factionAbilities) {
         for (const factionAbility of factionAbilities) {
           if (factionAbility.key === FactionKey.Monsters) {
-            const factionPlayer =
-              factionAbility.gamePlayer.name === currentPlayer.gamePlayer.name ? currentPlayer : otherPlayer
-            const game = await factionPlayer.client.getGame(this.gameId)
-            const gamePlayer = game.players.find((player) => player.user.name === factionAbility.gamePlayer.name)
-            if (!gamePlayer) {
-              throw Error(`Could not find game player "${factionAbility.gamePlayer.name}" on updated game`)
-            }
-            const previousRound = gamePlayer.rounds[this.round - 2]
-            const previousRoundUnits = [
-              ...previousRound.close.units,
-              ...previousRound.ranged.units,
-              ...previousRound.siege.units,
-            ]
-            const previousRoundEligibleIds = previousRoundUnits
-              .filter((unit) => !unit.unit.hero && !unit.unit.special)
-              .map((unit) => unit.unit.id)
-            let preservedUnit:
-              | {
-                  unit: FieldUnit
-                  combat: Combat
-                }
-              | undefined = undefined
-            const closeUnit = gamePlayer.rounds[this.round - 1].close.units.find((unit) =>
-              previousRoundEligibleIds.includes(unit.unit.id)
-            )
-            if (closeUnit) {
-              preservedUnit = {
-                combat: Combat.Close,
-                unit: closeUnit,
+            if (factionAbility.impacts !== 0) {
+              const factionPlayer =
+                factionAbility.gamePlayer.name === currentPlayer.gamePlayer.name ? currentPlayer : otherPlayer
+              const game = await factionPlayer.client.getGame(this.gameId)
+              const gamePlayer = game.players.find((player) => player.user.name === factionAbility.gamePlayer.name)
+              if (!gamePlayer) {
+                throw Error(`Could not find game player "${factionAbility.gamePlayer.name}" on updated game`)
               }
-            } else {
-              const rangedUnit = gamePlayer.rounds[this.round - 1].ranged.units.find((unit) =>
+              const previousRound = gamePlayer.rounds[this.round - 2]
+              const previousRoundUnits = [
+                ...previousRound.close.units,
+                ...previousRound.ranged.units,
+                ...previousRound.siege.units,
+              ]
+              const previousRoundEligibleIds = previousRoundUnits
+                .filter((unit) => !unit.unit.hero && !unit.unit.special)
+                .map((unit) => unit.unit.id)
+              let preservedUnit:
+                | {
+                    unit: FieldUnit
+                    combat: Combat
+                  }
+                | undefined = undefined
+              const closeUnit = gamePlayer.rounds[this.round - 1].close.units.find((unit) =>
                 previousRoundEligibleIds.includes(unit.unit.id)
               )
-              if (rangedUnit) {
+              if (closeUnit) {
                 preservedUnit = {
-                  combat: Combat.Ranged,
-                  unit: rangedUnit,
+                  combat: Combat.Close,
+                  unit: closeUnit,
                 }
               } else {
-                const siegeUnit = gamePlayer.rounds[this.round - 1].siege.units.find((unit) =>
+                const rangedUnit = gamePlayer.rounds[this.round - 1].ranged.units.find((unit) =>
                   previousRoundEligibleIds.includes(unit.unit.id)
                 )
-                if (siegeUnit) {
+                if (rangedUnit) {
                   preservedUnit = {
-                    combat: Combat.Siege,
-                    unit: siegeUnit,
+                    combat: Combat.Ranged,
+                    unit: rangedUnit,
+                  }
+                } else {
+                  const siegeUnit = gamePlayer.rounds[this.round - 1].siege.units.find((unit) =>
+                    previousRoundEligibleIds.includes(unit.unit.id)
+                  )
+                  if (siegeUnit) {
+                    preservedUnit = {
+                      combat: Combat.Siege,
+                      unit: siegeUnit,
+                    }
                   }
                 }
               }
-            }
-            if (!preservedUnit) {
-              throw Error(
-                `Could not find preserved unit from previous round units: "${JSON.stringify([...gamePlayer.rounds[this.round - 1].close.units, ...gamePlayer.rounds[this.round - 1].ranged.units, ...gamePlayer.rounds[this.round - 1].siege.units])}"`
-              )
-            }
-            const preservedStrength =
-              preservedUnit.unit.effectiveStrength === undefined || preservedUnit.unit.effectiveStrength === null
-                ? preservedUnit.unit.unit.strength || 0
-                : preservedUnit.unit.effectiveStrength
-            factionAbility.gamePlayer.score = (factionAbility.gamePlayer.score || 0) + preservedStrength
-            if (preservedUnit.combat === Combat.Close && factionAbility.gamePlayer.close?.units) {
-              factionAbility.gamePlayer.close.units.push({
-                name: preservedUnit.unit.unit.name,
-                effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
-                strength: preservedUnit.unit.unit.strength || 0,
-              })
-              factionAbility.gamePlayer.close.score += preservedStrength
-            } else if (preservedUnit.combat === Combat.Ranged && factionAbility.gamePlayer.ranged?.units) {
-              factionAbility.gamePlayer.ranged.units.push({
-                name: preservedUnit.unit.unit.name,
-                effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
-                strength: preservedUnit.unit.unit.strength || 0,
-              })
-              factionAbility.gamePlayer.ranged.score += preservedStrength
-            } else if (preservedUnit.combat === Combat.Siege && factionAbility.gamePlayer.siege?.units) {
-              factionAbility.gamePlayer.siege.units.push({
-                name: preservedUnit.unit.unit.name,
-                effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
-                strength: preservedUnit.unit.unit.strength || 0,
-              })
-              factionAbility.gamePlayer.siege.score += preservedStrength
+              if (!preservedUnit) {
+                throw Error(
+                  `Could not find preserved unit from previous round units: "${JSON.stringify([...gamePlayer.rounds[this.round - 1].close.units, ...gamePlayer.rounds[this.round - 1].ranged.units, ...gamePlayer.rounds[this.round - 1].siege.units])}"`
+                )
+              }
+              const preservedStrength =
+                preservedUnit.unit.effectiveStrength === undefined || preservedUnit.unit.effectiveStrength === null
+                  ? preservedUnit.unit.unit.strength || 0
+                  : preservedUnit.unit.effectiveStrength
+              factionAbility.gamePlayer.score = (factionAbility.gamePlayer.score || 0) + preservedStrength
+              if (preservedUnit.combat === Combat.Close && factionAbility.gamePlayer.close?.units) {
+                factionAbility.gamePlayer.close.units.push({
+                  name: preservedUnit.unit.unit.name,
+                  effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
+                  strength: preservedUnit.unit.unit.strength || 0,
+                })
+                factionAbility.gamePlayer.close.score += preservedStrength
+              } else if (preservedUnit.combat === Combat.Ranged && factionAbility.gamePlayer.ranged?.units) {
+                factionAbility.gamePlayer.ranged.units.push({
+                  name: preservedUnit.unit.unit.name,
+                  effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
+                  strength: preservedUnit.unit.unit.strength || 0,
+                })
+                factionAbility.gamePlayer.ranged.score += preservedStrength
+              } else if (preservedUnit.combat === Combat.Siege && factionAbility.gamePlayer.siege?.units) {
+                factionAbility.gamePlayer.siege.units.push({
+                  name: preservedUnit.unit.unit.name,
+                  effectiveStrength: preservedUnit.unit.effectiveStrength || preservedUnit.unit.unit.strength || 0,
+                  strength: preservedUnit.unit.unit.strength || 0,
+                })
+                factionAbility.gamePlayer.siege.score += preservedStrength
+              }
             }
             this.moves[this.moves.length - 1].push({
               userName: factionAbility.gamePlayer.name,

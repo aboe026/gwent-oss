@@ -12,6 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- fix impact icons in history not being round in firefox
+
 - ensure test files are getting linted properly (also regular files dont seem to error on typescript errors?)
 - fix occurrences for some cards to be correct
 - update text on abilities to be clearer
@@ -215,3 +217,4 @@ Bugs found in external dependencies that have not been resolved (and require wor
 | TestCafe not working on TypeScript files                                                                                                                                                                                 | Need to run `yarn build` on e2e TypeScript files and have TestCafe run using the compiled javascript                                                                                                                        |                                                     |
 | TestCafe image not working with Yarn PnP                                                                                                                                                                                 | Need to run `yarn build-image` in [test/e2e](./test/e2e/) to build custom docker image to work with Yarn PnP.                                                                                                               | https://github.com/DevExpress/testcafe/issues/7419  |
 | TestCafe throws error `ERROR Cannot prepare tests due to the following error: The fixture of 'Shows about page without logging in' test (null) is not of expected type (non-null object).` when overriding context type. | Run script `remove-context-overrides` to remove declarations for `test` and `fixture` from built javascript.                                                                                                                |                                                     |
+| TestCafe hangs with chromium-based browsers (chrome, edge)                                                                                                                                                               | Use firefox browser for E2E tests (i.e. `BROWSER=firefox`)                                                                                                                                                                  | TODO: paste link for issue.                         |

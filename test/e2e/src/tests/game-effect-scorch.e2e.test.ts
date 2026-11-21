@@ -295,7 +295,7 @@ test('Scorch removes strongest unit in second round if same unit played in first
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.Monsters,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName3],
     },
     opponent: {

@@ -447,7 +447,7 @@ test('Does not muster units in Lost pile', async (t) => {
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.Monsters,
+      faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName1, unitName2],
       excludeHandUnitNames: [unitName2, unitName2],
     },
