@@ -12,7 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- fix impact icons in history not being round in firefox
+- make sure all "gameManager.initialize()" calls are after setups (didn't seem like it in avenger testss)
 
 - ensure test files are getting linted properly (also regular files dont seem to error on typescript errors?)
 - fix occurrences for some cards to be correct
