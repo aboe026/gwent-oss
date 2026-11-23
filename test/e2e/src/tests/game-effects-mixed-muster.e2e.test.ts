@@ -403,3 +403,44 @@ test('Mustered units effected by horn', async (t) => {
     ],
   })
 })
+
+test('Muster preserved from Monsters faction ability does not bring other musters with it', async (t) => {
+  const unitName = 'Nekker'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName],
+      specialUnitNames: [unitName],
+      excludeHandUnitNames: [unitName],
+      ignoreUnitNames: [unitName],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName,
+    mustering: [
+      {
+        effectiveStrength: 2,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impact: {
+          type: EffectKey.Muster,
+        },
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 1,
+      },
+    ],
+  })
+})

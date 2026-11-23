@@ -284,3 +284,40 @@ test('Horn for berserker transfers to vildkaarl after mardroeme', async (t) => {
     ],
   })
 })
+
+test('Horn boost does not follow unit perserved by Monsters faction ability', async (t) => {
+  const unitName1 = 'Botchling'
+  const unitName2 = "Commander's Horn"
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    horning: [
+      {
+        name: unitName1,
+        effectiveStrength: 8,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 1,
+      },
+    ],
+  })
+})

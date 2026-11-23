@@ -252,10 +252,10 @@ export class GameManager {
       impacts,
     })
     if (spying) {
-      const expectedHandCount = this.self.gamePlayer.hand
-      this.self.deck.hand = (await this.self.client.getGameDeck(this.gameId)).hand
-      if (this.self.deck.hand.length !== expectedHandCount) {
-        throw Error(`Expected hand count of "${expectedHandCount}" but got "${this.self.deck.hand.length}"`)
+      const expectedHandCount = currentPlayer.gamePlayer.hand
+      currentPlayer.deck.hand = (await currentPlayer.client.getGameDeck(this.gameId)).hand
+      if (currentPlayer.deck.hand.length !== expectedHandCount) {
+        throw Error(`Expected hand count of "${expectedHandCount}" but got "${currentPlayer.deck.hand.length}"`)
       }
       const newHandUnits = currentPlayer.deck.hand.filter((handUnit) => !previousHandUnitIds.includes(handUnit.unit.id))
       for (const newHandUnit of newHandUnits) {

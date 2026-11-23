@@ -12,8 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- make sure all "gameManager.initialize()" calls are after setups (didn't seem like it in avenger testss)
-
 - ensure test files are getting linted properly (also regular files dont seem to error on typescript errors?)
 - fix occurrences for some cards to be correct
 - update text on abilities to be clearer
@@ -47,6 +45,7 @@ Existing problems in the codebase that need to be fixed.
 - rename "undrawn" to "draw" (since its the draw pile?)
 - remove @gwent-oss/graphql-schema dependency from @gwent-oss/test-e2e once filters/sorting in schema
 - have node-client export class instead of function (attempted to but lost typings)
+- publish node-client as npm package
 - restrict/filter subscriptions to just active game?
 - use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
 - move "scopeToUser" logic in subscription-resolver to be on "fields" resolver for subscription type
@@ -217,4 +216,4 @@ Bugs found in external dependencies that have not been resolved (and require wor
 | TestCafe not working on TypeScript files                                                                                                                                                                                 | Need to run `yarn build` on e2e TypeScript files and have TestCafe run using the compiled javascript                                                                                                                        |                                                     |
 | TestCafe image not working with Yarn PnP                                                                                                                                                                                 | Need to run `yarn build-image` in [test/e2e](./test/e2e/) to build custom docker image to work with Yarn PnP.                                                                                                               | https://github.com/DevExpress/testcafe/issues/7419  |
 | TestCafe throws error `ERROR Cannot prepare tests due to the following error: The fixture of 'Shows about page without logging in' test (null) is not of expected type (non-null object).` when overriding context type. | Run script `remove-context-overrides` to remove declarations for `test` and `fixture` from built javascript.                                                                                                                |                                                     |
-| TestCafe hangs with chromium-based browsers (chrome, edge)                                                                                                                                                               | Use firefox browser for E2E tests (i.e. `BROWSER=firefox`)                                                                                                                                                                  | TODO: paste link for issue.                         |
+| TestCafe hangs with chromium-based browsers (chrome, edge)                                                                                                                                                               | Use firefox browser for E2E tests (i.e. `BROWSER=firefox`)                                                                                                                                                                  | https://github.com/DevExpress/testcafe/issues/8573  |

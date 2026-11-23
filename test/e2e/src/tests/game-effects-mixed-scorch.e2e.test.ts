@@ -227,3 +227,44 @@ test('Scorch takes into account weather', async (t) => {
     ],
   })
 })
+
+test('Scorch removes unit from Monster faction ability eligibility', async (t) => {
+  const unitName1 = 'Botchling'
+  const unitName2 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1],
+    },
+    opponent: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 4,
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 0,
+      },
+    ],
+  })
+})

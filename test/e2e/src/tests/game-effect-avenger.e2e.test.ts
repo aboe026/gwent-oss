@@ -21,13 +21,13 @@ test('Avenger not summoned when game ends', async (t) => {
   await gameManager.pass({
     switchTurnsWith: gameManager.opponent.gamePlayer,
   })
-  await gameManager.initialize({})
-
   await gameManager.pass({})
   await gameManager.deploy({
     unitName: unitName1,
     combat: Combat.Ranged,
   })
+  await gameManager.initialize({})
+
   await gameManager.pass({
     victors: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
   })
@@ -48,12 +48,12 @@ test('Single avenger for self summoned after opponent scorch', async (t) => {
       handUnitNames: [unitName2],
     },
   })
-  await gameManager.initialize({})
-
   await gameManager.deploy({
     unitName: unitName1,
     combat: Combat.Ranged,
   })
+  await gameManager.initialize({})
+
   await gameManager.deploy({
     unitName: unitName2,
     scorching: [
@@ -147,16 +147,16 @@ test('Avengers for self and opponent summoned after self scorch', async (t) => {
       handUnitNames: [unitName1],
     },
   })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
   await gameManager.initialize({})
 
-  await gameManager.deploy({
-    unitName: unitName1,
-    combat: Combat.Ranged,
-  })
-  await gameManager.deploy({
-    unitName: unitName1,
-    combat: Combat.Ranged,
-  })
   await gameManager.deploy({
     unitName: unitName2,
     scorching: [
@@ -364,13 +364,13 @@ test('Single avenger for self summoned after round ends', async (t) => {
       handUnitNames: [unitName1],
     },
   })
-  await gameManager.initialize({})
-
   await gameManager.deploy({
     unitName: unitName1,
     combat: Combat.Ranged,
   })
   await gameManager.pass({})
+  await gameManager.initialize({})
+
   await gameManager.pass({
     avenging: [
       {
@@ -451,13 +451,13 @@ test('Single avenger for opponent summoned after round ends', async (t) => {
     },
     opponentFirst: true,
   })
-  await gameManager.initialize({})
-
   await gameManager.deploy({
     unitName: unitName1,
     combat: Combat.Ranged,
   })
   await gameManager.pass({})
+  await gameManager.initialize({})
+
   await gameManager.pass({
     avenging: [
       {
@@ -539,8 +539,6 @@ test('Multiple avengers for self summoned after round ends', async (t) => {
       handUnitNames: [unitName1, unitName2],
     },
   })
-  await gameManager.initialize({})
-
   await gameManager.deploy({
     unitName: unitName1,
     combat: Combat.Ranged,
@@ -550,6 +548,8 @@ test('Multiple avengers for self summoned after round ends', async (t) => {
     unitName: unitName2,
     combat: Combat.Close,
   })
+  await gameManager.initialize({})
+
   await gameManager.pass({
     avenging: [
       {
@@ -740,8 +740,6 @@ test('Multiple avengers for self and opponent summoned after round ends', async 
       handUnitNames: [unitName1, unitName2],
     },
   })
-  await gameManager.initialize({})
-
   await gameManager.deploy({
     unitName: unitName1,
     combat: Combat.Ranged,
@@ -759,6 +757,8 @@ test('Multiple avengers for self and opponent summoned after round ends', async 
     combat: Combat.Close,
   })
   await gameManager.pass({})
+  await gameManager.initialize({})
+
   await gameManager.pass({
     switchTurnsWith: gameManager.opponent.gamePlayer,
     avenging: [
@@ -811,8 +811,6 @@ test('Scorched avenger not re-avenged after round ends', async (t) => {
       handUnitNames: [unitName2],
     },
   })
-  await gameManager.initialize({})
-
   await gameManager.deploy({
     unitName: unitName1,
     combat: Combat.Ranged,
@@ -842,6 +840,8 @@ test('Scorched avenger not re-avenged after round ends', async (t) => {
     combat: Combat.Close,
   })
   await gameManager.pass({})
+  await gameManager.initialize({})
+
   await gameManager.pass({
     switchTurnsWith: gameManager.self.gamePlayer,
     avenging: [

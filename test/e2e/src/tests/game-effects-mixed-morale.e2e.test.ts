@@ -332,3 +332,40 @@ test('Morale applied to bonded units after bonding applied if played before bond
     ],
   })
 })
+
+test('Morale boost does not follow unit perserved by Monsters faction ability', async (t) => {
+  const unitName1 = 'Botchling'
+  const unitName2 = 'Kayran'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    moraling: [
+      {
+        effectiveStrength: 5,
+        row: Combat.Close,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 1,
+      },
+    ],
+  })
+})

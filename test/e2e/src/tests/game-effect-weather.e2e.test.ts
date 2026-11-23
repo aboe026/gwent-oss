@@ -48,7 +48,47 @@ test('Weather does not effect hero', async (t) => {
   })
 })
 
-// TODO: weather does not effect unit with strength of 0
+test('Weather does not effect unit with strength of 0', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Impenetrable Fog'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    weather: true,
+    weathering: [],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+  await FullCard.close()
+  await GamePage.fullscreenWeatherCard({
+    unitName: unitName2,
+  })
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
 
 test('Weather does not effect unit with strength of 1', async (t) => {
   const unitName1 = 'Redanian Foot Soldier'

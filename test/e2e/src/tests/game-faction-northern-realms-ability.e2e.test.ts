@@ -61,7 +61,7 @@ test('Moves random unit from undrawn into hand if round won and undrawns availab
   })
 })
 
-test('Does nothing if round won and no undrawn available', async (t) => {
+test('Does nothing if self round won and no undrawn available', async (t) => {
   const unitName1 = 'Cirilla Fiona Elen Riannon'
   const unitName2 = "Gaunter O'Dimm"
   const unitName3 = 'Mysterious Elf'
@@ -237,6 +237,184 @@ test('Does nothing if round won and no undrawn available', async (t) => {
   })
 })
 
+test('Does nothing if opponent round won and no undrawn available', async (t) => {
+  const unitName1 = 'Cirilla Fiona Elen Riannon'
+  const unitName2 = "Gaunter O'Dimm"
+  const unitName3 = 'Mysterious Elf'
+  const unitName4 = 'Prince Stennis'
+  const unitName5 = 'Sigismund Dijkstra'
+  const unitName6 = 'Thaler'
+  const unitName7 = 'Siegfried of Denesle'
+  const unitName8 = 'Sile de Tansarville'
+  const unitName9 = 'Ves'
+  const unitName10 = 'Yarpen Zigrin'
+  const unitName11 = 'Roach'
+  const unitName12 = "Gaunter O'Dimm Darkness"
+
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+    },
+    opponent: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [
+        unitName1,
+        unitName2,
+        unitName3,
+        unitName4,
+        unitName5,
+        unitName6,
+        unitName7,
+        unitName8,
+        unitName9,
+        unitName10,
+      ],
+      deckUnitNames: [
+        unitName1,
+        unitName2,
+        unitName3,
+        unitName4,
+        unitName5,
+        unitName6,
+        unitName7,
+        unitName8,
+        unitName9,
+        unitName10,
+
+        unitName11,
+        unitName12,
+        unitName12,
+        unitName12,
+        'Ballista',
+        'Dethmold',
+        'Keira Metz',
+        'Sabrina Glevissig',
+        'Sheldon Skaggs',
+        'Siege Tower',
+        'Trebuchet',
+        'Vesemir',
+      ],
+    },
+  })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        name: unitName11,
+        effectiveStrength: 3,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    mustering: [
+      {
+        name: unitName12,
+        effectiveStrength: 4,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Ranged,
+        impact: {
+          type: EffectKey.Muster,
+          instances: 0,
+        },
+      },
+      {
+        name: unitName12,
+        effectiveStrength: 4,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Ranged,
+        impact: {
+          type: EffectKey.Muster,
+          instances: 0,
+        },
+      },
+      {
+        name: unitName12,
+        effectiveStrength: 4,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Ranged,
+        impact: {
+          type: EffectKey.Muster,
+          instances: 0,
+        },
+      },
+    ],
+  })
+  await gameManager.deploy({
+    unitName: unitName3,
+    spying: {
+      name: unitName3,
+      effectiveStrength: 0,
+      opponent: gameManager.self.gamePlayer,
+      player: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName4,
+    spying: {
+      name: unitName4,
+      effectiveStrength: 5,
+      opponent: gameManager.self.gamePlayer,
+      player: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName5,
+    spying: {
+      name: unitName5,
+      effectiveStrength: 4,
+      opponent: gameManager.self.gamePlayer,
+      player: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName6,
+    spying: {
+      name: unitName6,
+      effectiveStrength: 1,
+      opponent: gameManager.self.gamePlayer,
+      player: gameManager.opponent.gamePlayer,
+      row: Combat.Siege,
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.opponent.gamePlayer,
+        key: FactionKey.NorthernRealms,
+        impacts: 0,
+      },
+    ],
+  })
+
+  await GamePage.toggleImpacts({
+    userName: gameManager.opponent.gamePlayer.name,
+    round: gameManager.round,
+    unitName: 'Northern Realms',
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        userName: gameManager.opponent.gamePlayer.name,
+        round: gameManager.round,
+        unitName: 'Northern Realms',
+        factionKey: FactionKey.NorthernRealms,
+        impacts: [],
+      },
+    ],
+  })
+})
+
 test('Hides unit on impact for opponent', async (t) => {
   const unitName = 'Ves'
   const gameManager = await createGameManager({
@@ -292,4 +470,26 @@ test('Hides unit on impact for opponent', async (t) => {
   })
 })
 
-// if both self and opponent have northern realms
+test('No faction ability triggered if both self and opponent Northern Realms and tie', async (t) => {
+  const unitName1 = 'Ves'
+  const unitName2 = 'Siegfried of Denesle'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1],
+    },
+    opponent: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+  })
+})

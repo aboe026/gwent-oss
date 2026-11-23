@@ -657,3 +657,72 @@ test('Avenger summoned and Northern Realms faction ability triggered at round en
     ],
   })
 })
+
+test('Avenger preserved on the battlefield by Monsters faction ability cannot be resummoned', async (t) => {
+  const unitName1 = 'Cow'
+  const unitName2 = 'Bovine Defense Force'
+  const unitName3 = 'Botchling'
+  const unitName4 = 'Leshen'
+  const unitName5 = 'Toad'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName4],
+    },
+    opponent: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName3, unitName5],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    avenging: [
+      {
+        name: unitName2,
+        effectiveStrength: 8,
+        turn: gameManager.self.gamePlayer,
+        newUnitPlayer: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+    factionAbilities: [
+      {
+        gamePlayer: gameManager.self.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 1,
+      },
+      {
+        gamePlayer: gameManager.opponent.gamePlayer,
+        key: FactionKey.Monsters,
+        impacts: 0,
+      },
+    ],
+  })
+  await gameManager.deploy({
+    unitName: unitName3,
+  })
+  await gameManager.deploy({
+    unitName: unitName4,
+    combat: Combat.Ranged,
+  })
+  await gameManager.deploy({
+    unitName: unitName5,
+    combat: Combat.Ranged,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        strength: 0,
+      },
+    ],
+  })
+})
