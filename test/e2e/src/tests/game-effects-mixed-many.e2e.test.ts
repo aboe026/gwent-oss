@@ -10,43 +10,57 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effects Mixed Many')
 
-test('Horn applies after bond and morale', async (t) => {
-  const unitName1 = 'Clan an Craite Warrior'
-  const unitName2 = 'Olaf'
-  const unitName3 = 'Dandelion'
+test('All strength effects applied correctly when performed in order of precedence', async (t) => {
+  const unitName1 = 'Biting Frost'
+  const unitName2 = 'Blue Stripes Commando'
+  const unitName3 = 'Olgierd Von Everec'
+  const unitName4 = "Commander's Horn"
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
-      faction: FactionKey.Skellige,
-      handUnitNames: [unitName1, unitName1, unitName2, unitName3],
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName2, unitName3, unitName4],
     },
   })
-  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, bonding: [] })
-  await gameManager.pass({})
-  const deckUnit2 = await gameManager.deploy({
+  await gameManager.deploy({
     unitName: unitName1,
-    effectiveStrength: 12,
+    weather: true,
+    weathering: [],
+  })
+  await gameManager.pass({})
+  const deckUnit3 = await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 1,
+    bonding: [],
+  })
+  const deckUnit4 = await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 2,
     bonding: [
       {
-        effectiveStrength: 12,
-        name: unitName1,
+        name: unitName2,
+        effectiveStrength: 2,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
       },
     ],
   })
-  const deckUnit3 = await gameManager.deploy({
-    unitName: unitName2,
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName3,
+    combat: Combat.Close,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
+    effectiveStrength: 1,
     moraling: [
       {
-        effectiveStrength: 13,
-        name: unitName1,
+        name: unitName2,
+        effectiveStrength: 3,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
+        instance: 1,
       },
       {
-        effectiveStrength: 13,
-        name: unitName1,
+        name: unitName2,
+        effectiveStrength: 3,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
         instance: 2,
@@ -55,79 +69,62 @@ test('Horn applies after bond and morale', async (t) => {
   })
   await gameManager.initialize({})
 
-  const deckUnit4 = await gameManager.deploy({
-    unitName: unitName3,
-    effectiveStrength: 3,
+  await gameManager.deploy({
+    unitName: unitName4,
+    modifier: true,
     horning: [
       {
-        name: unitName1,
+        name: unitName3,
+        effectiveStrength: 2,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        effectiveStrength: 26,
-      },
-      {
-        name: unitName1,
-        player: gameManager.self.gamePlayer,
-        row: Combat.Close,
-        effectiveStrength: 26,
-        instance: 2,
       },
       {
         name: unitName2,
+        effectiveStrength: 6,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        effectiveStrength: 24,
+        instance: 1,
+      },
+      {
+        name: unitName2,
+        effectiveStrength: 6,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        instance: 2,
       },
     ],
   })
   await GamePage.fullscreenCombatCard({
-    unitName: unitName1,
+    unitName: unitName2,
     row: Combat.Close,
     self: true,
     instance: 2,
   })
   await FullCard.verify({
-    unit: deckUnit2.unit,
+    unit: deckUnit4.unit,
     username: gameManager.self.gamePlayer.name,
-    effectiveStrength: 26,
+    effectiveStrength: 6,
     effects: [
       {
+        operator: EFFECT_OPERATOR.Set,
+        strength: 1,
+        reason: `Weather from ${unitName1}`,
+      },
+      {
         operator: EFFECT_OPERATOR.Double,
-        strength: 12,
-        reason: `Bond from ${unitName1}`,
+        strength: 2,
+        reason: `Bond from ${unitName2}`,
       },
       {
         operator: EFFECT_OPERATOR.Plus,
-        strength: 13,
-        reason: `Morale from ${unitName2}`,
+        strength: 3,
+        reason: `Morale from ${unitName3}`,
       },
       {
         operator: EFFECT_OPERATOR.Double,
-        strength: 26,
-        reason: `Horn from ${unitName3}`,
-      },
-    ],
-  })
-  await FullCard.previous()
-  await FullCard.verify({
-    unit: deckUnit1.unit,
-    username: gameManager.self.gamePlayer.name,
-    effectiveStrength: 26,
-    effects: [
-      {
-        operator: EFFECT_OPERATOR.Double,
-        strength: 12,
-        reason: `Bond from ${unitName1}`,
-      },
-      {
-        operator: EFFECT_OPERATOR.Plus,
-        strength: 13,
-        reason: `Morale from ${unitName2}`,
-      },
-      {
-        operator: EFFECT_OPERATOR.Double,
-        strength: 26,
-        reason: `Horn from ${unitName3}`,
+        strength: 6,
+        reason: `Horn from ${unitName4}`,
       },
     ],
   })
@@ -135,25 +132,196 @@ test('Horn applies after bond and morale', async (t) => {
   await FullCard.verify({
     unit: deckUnit3.unit,
     username: gameManager.self.gamePlayer.name,
-    effectiveStrength: 24,
+    effectiveStrength: 6,
     effects: [
       {
+        operator: EFFECT_OPERATOR.Set,
+        strength: 1,
+        reason: `Weather from ${unitName1}`,
+      },
+      {
         operator: EFFECT_OPERATOR.Double,
-        strength: 24,
-        reason: `Horn from ${unitName3}`,
+        strength: 2,
+        reason: `Bond from ${unitName2}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 3,
+        reason: `Morale from ${unitName3}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 6,
+        reason: `Horn from ${unitName4}`,
       },
     ],
   })
   await FullCard.previous()
   await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 2,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Set,
+        strength: 1,
+        reason: `Weather from ${unitName1}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 2,
+        reason: `Horn from ${unitName4}`,
+      },
+    ],
+  })
+})
+
+test('All strength effects applied correctly when performed in reverse order of precedence', async (t) => {
+  const unitName1 = "Commander's Horn"
+  const unitName2 = 'Olgierd Von Everec'
+  const unitName3 = 'Blue Stripes Commando'
+  const unitName4 = 'Biting Frost'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName3, unitName3, unitName4],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    modifier: true,
+    horning: [],
+  })
+  await gameManager.pass({})
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Close,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
+    effectiveStrength: 12,
+    moraling: [],
+  })
+  const deckUnit3 = await gameManager.deploy({
+    unitName: unitName3,
+    effectiveStrength: 10,
+    bonding: [],
+  })
+  const deckUnit4 = await gameManager.deploy({
+    unitName: unitName3,
+    effectiveStrength: 18,
+    bonding: [
+      {
+        name: unitName3,
+        effectiveStrength: 18,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    weather: true,
+    weathering: [
+      {
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        effectiveStrength: 2,
+        row: Combat.Close,
+      },
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        effectiveStrength: 6,
+        instance: 1,
+        row: Combat.Close,
+      },
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        effectiveStrength: 6,
+        instance: 2,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName3,
+    row: Combat.Close,
+    self: true,
+    instance: 2,
+  })
+  await FullCard.verify({
     unit: deckUnit4.unit,
     username: gameManager.self.gamePlayer.name,
-    effectiveStrength: 3,
+    effectiveStrength: 6,
     effects: [
+      {
+        operator: EFFECT_OPERATOR.Set,
+        strength: 1,
+        reason: `Weather from ${unitName4}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 2,
+        reason: `Bond from ${unitName3}`,
+      },
       {
         operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 6,
+        reason: `Horn from ${unitName1}`,
+      },
+    ],
+  })
+  await FullCard.previous()
+  await FullCard.verify({
+    unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 6,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Set,
+        strength: 1,
+        reason: `Weather from ${unitName4}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 2,
+        reason: `Bond from ${unitName3}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 6,
+        reason: `Horn from ${unitName1}`,
+      },
+    ],
+  })
+  await FullCard.previous()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 2,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Set,
+        strength: 1,
+        reason: `Weather from ${unitName4}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 2,
+        reason: `Horn from ${unitName1}`,
       },
     ],
   })
